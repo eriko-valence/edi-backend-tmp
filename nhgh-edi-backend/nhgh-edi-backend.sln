@@ -4,6 +4,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 16.0.31025.194
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "fa-ccdx-provider", "fa-ccdx-provider\fa-ccdx-provider.csproj", "{C6B29EA3-E3CF-45FE-9B05-EC6AF54D392B}"
+	ProjectSection(ProjectDependencies) = postProject
+		{23501119-A0EE-4766-91C5-4D8F26DF41DD} = {23501119-A0EE-4766-91C5-4D8F26DF41DD}
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "fa-ccdx-consumer", "fa-ccdx-consumer\fa-ccdx-consumer.csproj", "{A20D4C44-0A8C-4326-B080-6987827E8B0A}"
 EndProject
@@ -11,9 +14,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "fa-adf-transform-usbdg", "f
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "fa-adf-transform-cfd50", "fa-adf-transform-cfd50\fa-adf-transform-cfd50.csproj", "{5C34B1BD-BF57-4ABF-AE22-474EF1FC6576}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "lib-edi", "lib-edi\lib-edi.csproj", "{23501119-A0EE-4766-91C5-4D8F26DF41DD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "lib-edi", "lib-edi\lib-edi.csproj", "{23501119-A0EE-4766-91C5-4D8F26DF41DD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "fa-adf-transform-indigo", "fa-adf-transform-indigo\fa-adf-transform-indigo.csproj", "{62AFAA9A-FC21-4AB6-AEAF-ECD79BBB4B57}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "fa-adf-transform-indigo", "fa-adf-transform-indigo\fa-adf-transform-indigo.csproj", "{62AFAA9A-FC21-4AB6-AEAF-ECD79BBB4B57}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Functions", "Functions", "{9349330D-2771-4357-9C93-C161C31DC480}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Libraries", "Libraries", "{64CD169C-2DC2-4467-A6D7-6C485F4B5F8F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -48,6 +55,14 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{C6B29EA3-E3CF-45FE-9B05-EC6AF54D392B} = {9349330D-2771-4357-9C93-C161C31DC480}
+		{A20D4C44-0A8C-4326-B080-6987827E8B0A} = {9349330D-2771-4357-9C93-C161C31DC480}
+		{4182F850-8954-46F9-B3C3-FDF87F58739A} = {9349330D-2771-4357-9C93-C161C31DC480}
+		{5C34B1BD-BF57-4ABF-AE22-474EF1FC6576} = {9349330D-2771-4357-9C93-C161C31DC480}
+		{23501119-A0EE-4766-91C5-4D8F26DF41DD} = {64CD169C-2DC2-4467-A6D7-6C485F4B5F8F}
+		{62AFAA9A-FC21-4AB6-AEAF-ECD79BBB4B57} = {9349330D-2771-4357-9C93-C161C31DC480}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {48FE592C-9504-419F-8FC2-6D997B1FCAAA}

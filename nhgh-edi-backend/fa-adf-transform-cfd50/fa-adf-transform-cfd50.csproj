@@ -5,7 +5,11 @@
     <RootNamespace>fa_adf_transform_cfd50</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.Storage" Version="4.0.5" />
     <PackageReference Include="Microsoft.NET.Sdk.Functions" Version="3.0.13" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\lib-edi\lib-edi.csproj" />
   </ItemGroup>
   <ItemGroup>
     <None Update="host.json">
