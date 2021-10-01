@@ -8,9 +8,9 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
-namespace fa_adf_transform_indigo
+namespace fa_adf_transform_usbdg
 {
-    public static class Function1
+    public static class Transform
     {
         [FunctionName("Function1")]
         public static async Task<IActionResult> Run(

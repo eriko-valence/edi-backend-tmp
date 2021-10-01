@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 
 namespace fa_ccdx_provider
 {
-    public static class Function1
+    public static class Provide
     {
         [FunctionName("Function1")]
         public static void Run([BlobTrigger("samples-workitems/{name}", Connection = "")]Stream myBlob, string name, ILogger log)

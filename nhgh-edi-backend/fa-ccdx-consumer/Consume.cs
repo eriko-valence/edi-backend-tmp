@@ -4,7 +4,7 @@ using Microsoft.Extensions.Logging;
 
 namespace fa_ccdx_consumer
 {
-    public class Function1
+    public class Consume
     {
         // KafkaTrigger sample 
         // Consume the message from "topic" on the LocalBroker.
