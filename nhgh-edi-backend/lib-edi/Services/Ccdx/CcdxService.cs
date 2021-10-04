@@ -134,7 +134,6 @@ namespace lib_edi.Services.Ccdx
 		public static string GetCETypeFromBlobPath(string path)
 		{
 			string ceTypeTemplate = Environment.GetEnvironmentVariable("CCDX_PUBLISHER_HEADER_CE_TYPE");
-			//string ceTypeTemplate = "org.nhgh.{0}.report.dev";
 			string ceType = null;
 
 			if (path != null)
@@ -142,7 +141,7 @@ namespace lib_edi.Services.Ccdx
 				string[] words = path.Split('/');
 				if (words.Length > 1)
 				{
-					string folderName = words[^2];
+					string folderName = words[0];
 					ceType = string.Format(ceTypeTemplate, folderName);
 				}
 			}
@@ -161,7 +160,7 @@ namespace lib_edi.Services.Ccdx
 				string[] words = path.Split('/');
 				if (words.Length > 1)
 				{
-					loggerType = words[^2];
+					loggerType = words[0];
 				}
 			}
 			return loggerType;

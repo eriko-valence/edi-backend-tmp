@@ -16,11 +16,11 @@ namespace lib_edi.Models.Dto.Loggers
 		public string CID { get; set; }
 		public string FID { get; set; }
 		public string LOC { get; set; }
-		public IList<Cfd50DataFileDtoRecordDto> records { get; set; }
+		public IList<Cfd50JsonDataFileRecordDto> records { get; set; }
 		#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 	}
 
-	public class Cfd50DataFileDtoRecordDto
+	public class Cfd50JsonDataFileRecordDto
 	{
 		#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
 		public string ABST { get; set; }

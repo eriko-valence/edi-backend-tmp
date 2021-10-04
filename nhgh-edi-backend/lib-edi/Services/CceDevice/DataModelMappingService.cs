@@ -28,7 +28,7 @@ namespace lib_edi.Services.Loggers
             {
                 List<Cfd50CsvDataRowDto> metaFridgeCsvRows = new List<Cfd50CsvDataRowDto>();
 
-                foreach (Cfd50DataFileDtoRecordDto metaFridgeLogRecord in metaFridgeLogFile.records)
+                foreach (Cfd50JsonDataFileRecordDto metaFridgeLogRecord in metaFridgeLogFile.records)
                 {
                     Cfd50CsvDataRowDto metaFridgeCsvRow = new Cfd50CsvDataRowDto();
 
@@ -131,7 +131,7 @@ namespace lib_edi.Services.Loggers
             {
                 List<UsbdgCsvDataRowDto> usbdbCsvRows = new List<UsbdgCsvDataRowDto>();
 
-                foreach (UsbdgJsonReportFileDto usbdgLogRecord in usbdgLog.records)
+                foreach (UsbdgJsonReportFileRecordDto usbdgLogRecord in usbdgLog.records)
                 {
                     UsbdgCsvDataRowDto csvEmsLogRecord = new UsbdgCsvDataRowDto();
 

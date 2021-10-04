@@ -97,14 +97,17 @@ namespace fa_ccdx_consumer
                         if (headers.ContainsKey("ce_subject"))
                         {
                             log.LogInformation($"- [ccdx-consumer->run]: Initializing variables");
-                            reportFileName = Path.GetFileName(headers["ce_subject"]);
-                            string blobFolder = DateTime.Now.ToString("yyyy-MM-dd");
-                            blobName = $"{blobFolder}/{headers["ce_subject"]}";
+                            reportFileName = Path.GetFileName(GetKeyValueString(headers, "ce_subject"));
+                            
+                            string dateFolder = DateTime.Now.ToString("yyyy-MM-dd");
+                            string loggerType = CcdxService.GetDataLoggerTypeFromBlobPath(GetKeyValueString(headers, "ce_subject"));
+                            blobName = $"{loggerType}/{dateFolder}/{reportFileName}";
+
                             blobContainerName = Environment.GetEnvironmentVariable("CCDX_AZURE_STORAGE_BLOB_CONTAINER_NAME");
                             string storageAccountConnectionString = Environment.GetEnvironmentVariable("CCDX_AZURE_STORAGE_ACCOUNT_CONNECTION_STRING");
                             CcdxService.LogCcdxConsumerStartedEventToAppInsights(reportFileName, log);
                             log.LogInformation($"- [ccdx-consumer->run]: Preparing to upload blob {blobName} to container {blobContainerName}: ");
-                            log.LogInformation($"- [ccdx-consumer->run]:   ce-id: {GetKeyValueString(headers, "ce_id")} ");
+                            log.LogInformation($"- [ccdx-consumer->run]:   ce_id: {GetKeyValueString(headers, "ce_id")} ");
                             log.LogInformation($"- [ccdx-consumer->run]:   ce_type: {GetKeyValueString(headers, "ce_type")} ");
                             log.LogInformation($"- [ccdx-consumer->run]:   ce_time: {GetKeyValueString(headers, "ce_time")} ");
                             log.LogInformation($"- [ccdx-consumer->run]:   ce_subject: {GetKeyValueString(headers, "ce_subject")} ");

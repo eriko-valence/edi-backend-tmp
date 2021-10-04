@@ -71,7 +71,7 @@ namespace fa_ccdx_provider
                     HttpRequestMessage requestMessage = CcdxService.BuildCcdxHttpMultipartFormDataRequestMessage(HttpMethod.Post, ccdxHttpEndpoint, multipartFormDataByteArrayContent, sampleHeaders, ccBlobInputName, log);
 
                     log.LogDebug($"- [ccdx-provider->run]: Request header metadata: ");
-                    log.LogDebug($"- [ccdx-provider->run]:   cd-id: {HttpService.GetHeaderStringValue(requestMessage, "ce-id")}");
+                    log.LogDebug($"- [ccdx-provider->run]:   ce-id: {HttpService.GetHeaderStringValue(requestMessage, "ce-id")}");
                     log.LogDebug($"- [ccdx-provider->run]:   ce-type: {HttpService.GetHeaderStringValue(requestMessage, "ce-type")}");
                     log.LogDebug($"- [ccdx-provider->run]:   ceTime: {HttpService.GetHeaderStringValue(requestMessage, "ce-time")}");
 

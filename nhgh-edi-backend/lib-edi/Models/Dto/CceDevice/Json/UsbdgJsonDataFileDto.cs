@@ -23,12 +23,12 @@ namespace lib_edi.Models.Dto.Loggers
         public string LDAT { get; set; }
         public string SWVER { get; set; }
         public string LPQS { get; set; }
-        public IList<UsbdgJsonReportFileDto> records { get; set; }
+        public IList<UsbdgJsonReportFileRecordDto> records { get; set; }
         public string Source { get; set; }
         #pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
     }
 
-    public class UsbdgJsonReportFileDto
+    public class UsbdgJsonReportFileRecordDto
 	{
 		#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
 		[JsonProperty("RELT")]
