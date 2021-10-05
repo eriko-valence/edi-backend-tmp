@@ -98,10 +98,8 @@ namespace fa_ccdx_consumer
                         {
                             log.LogInformation($"- [ccdx-consumer->run]: Initializing variables");
                             reportFileName = Path.GetFileName(GetKeyValueString(headers, "ce_subject"));
-                            
-                            string dateFolder = DateTime.Now.ToString("yyyy-MM-dd");
-                            string loggerType = CcdxService.GetDataLoggerTypeFromBlobPath(GetKeyValueString(headers, "ce_subject"));
-                            blobName = $"{loggerType}/{dateFolder}/{reportFileName}";
+                           
+                            blobName = CcdxService.BuildRawCcdxConsumerBlobPath(GetKeyValueString(headers, "ce_subject"));
 
                             blobContainerName = Environment.GetEnvironmentVariable("CCDX_AZURE_STORAGE_BLOB_CONTAINER_NAME");
                             string storageAccountConnectionString = Environment.GetEnvironmentVariable("CCDX_AZURE_STORAGE_ACCOUNT_CONNECTION_STRING");

@@ -3,6 +3,7 @@ using lib_edi.Models.Dto.CceDevice.Csv;
 using lib_edi.Models.Dto.Http;
 using lib_edi.Models.Dto.Loggers;
 using lib_edi.Services.Azure;
+using lib_edi.Services.Ccdx;
 using lib_edi.Services.Errors;
 using Microsoft.Azure.Storage.Blob;
 using Microsoft.Extensions.Logging;
@@ -271,7 +272,13 @@ namespace lib_edi.Services.Loggers
 				{
 					try
 					{
-						blobName = $"{requestBody.Path}out.csv";
+						//string loggerType = CcdxService.GetDataLoggerTypeFromBlobPath(requestBody.Path);
+						//string dateFolder = DateTime.UtcNow.ToString("yyyy-MM-dd/HH");
+						//string guidFolder = CcdxService.GetGuidFromBlobPath(requestBody.Path);
+
+						blobName = CcdxService.BuildCuratedCcdxConsumerBlobPath(requestBody.Path);
+
+						//blobName = $"{dateFolder}/{guidFolder}/out.csv";
 						log.LogInformation($"  - Blob: {blobName}");
 						log.LogInformation($"  - Get block blob reference");
 						CloudBlockBlob outBlob = cloudBlobContainer.GetBlockBlobReference(blobName);

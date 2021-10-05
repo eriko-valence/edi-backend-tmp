@@ -149,6 +149,25 @@ namespace lib_edi.Services.Ccdx
 		}
 
 		/// <summary>
+		/// Builds EDI (EMS Data Integration) ADF (Azure Data Factory) curated blob path a using staged input blob path
+		/// </summary>
+		/// <param name="path">Blob path in string format</param>
+		/// <example>
+		/// ADF uncompresses a telemetry report file at 11:59:59 PM on 2021-10-04 to the staged input blob container:
+		///   Staged input blob path: "usbdg/2021-10-04/23/0161a794-173a-4843-879b-189ee4c625aa/"
+		/// The ADF data transformation function processes these staged input files and uploads the results 
+		/// to the curated blob container at 12:00:01 AM on 2021-10-05: 
+		///   Curated output blob path: "usbdg/2021-10-05/00/0161a794-173a-4843-879b-189ee4c625aa/"
+		/// </example>
+		public static string BuildCuratedCcdxConsumerBlobPath(string path)
+		{
+			string loggerType = CcdxService.GetDataLoggerTypeFromBlobPath(path);
+			string dateFolder = DateTime.UtcNow.ToString("yyyy-MM-dd/HH");
+			string guidFolder = CcdxService.GetGuidFromBlobPath(path);
+			return $"{loggerType}/{dateFolder}/{guidFolder}/out.csv";
+		}
+
+		/// <summary>
 		/// Extracts data logger type from a string formatted blob path
 		/// </summary>
 		/// <param name="path">Blob path in string format</param>
@@ -164,6 +183,46 @@ namespace lib_edi.Services.Ccdx
 				}
 			}
 			return loggerType;
+		}
+
+		/// <summary>
+		/// Builds raw CCDX consumer blob path using raw CCDX provider blob path
+		/// </summary>
+		/// <param name="path">Blob path in string format</param>
+		/// <example>
+		/// A telemetry report file is uploaded to the raw CCDX provider container at 11:59:59 PM on 2021-10-04:
+		///   Raw CCDX provider blob path: "usbdg/2021-10-04/usbdg001_2021-10-04_1629928806_logdata.json.zip"
+		/// This telemetry report file is uploaded to the raw CCDX consumer container at 12:00:01 AM on 2021-10-05: 
+		///   Raw CCDX consumer blob path: "usbdg/2021-10-05/usbdg001_2021-10-04_1629928806_logdata.json.zip"
+		/// </example>
+		public static string BuildRawCcdxConsumerBlobPath(string blobPath)
+		{
+			string reportFileName = Path.GetFileName(blobPath);
+
+			string dateFolder = DateTime.UtcNow.ToString("yyyy-MM-dd");
+			string loggerType = CcdxService.GetDataLoggerTypeFromBlobPath(blobPath);
+			return $"{loggerType}/{dateFolder}/{reportFileName}";
+		}
+
+		/// <summary>
+		/// Extracts guid from a string formatted blob path
+		/// </summary>
+		/// <param name="path">Blob path in string format</param>
+		/// <example>
+		/// path = "usbdg/2021-10-04/11/0161a794-173a-4843-879b-189ee4c625aa/"
+		/// </example>
+		public static string GetGuidFromBlobPath(string path)
+		{
+			string guid = null;
+			if (path != null)
+			{
+				string[] words = path.Split('/');
+				if (words.Length > 2)
+				{
+					guid = words[words.Length -2];
+				}
+			}
+			return guid;
 		}
 
 		/// <summary>
