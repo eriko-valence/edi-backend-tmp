@@ -23,7 +23,7 @@ namespace lib_edi.Services.Errors
 				//var emsErrorCodeFile = Path.Combine(context.FunctionAppDirectory, "Config", "ems_error_codes.json");
 				var binpath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
 				var rootpath = Path.GetFullPath(Path.Combine(binpath, ".."));
-				var emsErrorCodeFile = Path.Combine(rootpath, "Config", "ems_error_codes.json");
+				var emsErrorCodeFile = Path.Combine(rootpath, "Config", "edi_error_codes.json");
 
 				try
 				{
