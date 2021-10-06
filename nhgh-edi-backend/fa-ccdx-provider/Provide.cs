@@ -22,6 +22,14 @@ namespace fa_ccdx_provider
     /// <remarks>
     /// Telemetry Providers represent the source of cold chain telemetry data. The terms report, 
     /// message, and event are used interchangeably to mean a package of data. 
+    /// EDI architecture: 
+    /// - "A compressed data report file (and optionally a metadata file) 
+    /// is sent from a New Horizons-managed Cold Chain Equipment (CCE) device (e.g. Metafridge, 
+    /// Indigo, USBDG, etc) to a container (container_1) within an Azure Data Lake gen2 (ADLS) 
+    /// instance."
+    /// - "An Azure Blob Storage trigger defined on container_1 invokes an Azure Function (the CCDX Provider) 
+    /// to send the file(s) received 'as-is' to a Kafka topic within the Cold Chain Data Interchange (CCDX) platform. 
+    /// Report file(s) are removed from container_1 upon successful transmission to CCDX."
     /// </remarks>
     public static class Provide
     {
@@ -45,6 +53,8 @@ namespace fa_ccdx_provider
             string reportFileName = null;
             try
             {
+                string storageConnectionString = Environment.GetEnvironmentVariable("AZURE_STORAGE_INPUT_CONNECTION_STRING");
+                string inputContainerName = Environment.GetEnvironmentVariable("AZURE_STORAGE_BLOB_CONTAINER_NAME_INPUT");
                 log.LogInformation($"- [ccdx-provider->run]: Received telemetry file {ccBlobInputName}");
                 reportFileName = Path.GetFileName(ccBlobInputName);
                 log.LogInformation($"- [ccdx-provider->run]: Track ccdx provider started event (app insights)");
@@ -55,9 +65,9 @@ namespace fa_ccdx_provider
                     log.LogInformation($"- [ccdx-provider->run]: Confirmed. Blob originated from supported data logger");
                     var sr = new StreamReader(ccBlobInput);
                     var body = await sr.ReadToEndAsync();
-                    string storageConnectionString = Environment.GetEnvironmentVariable("AZURE_STORAGE_INPUT_CONNECTION_STRING");
+                    
                     string storageConnectionStringConfig = Environment.GetEnvironmentVariable("AZURE_STORAGE_INPUT_CONNECTION_STRING");
-                    string inputContainerName = Environment.GetEnvironmentVariable("AZURE_STORAGE_BLOB_CONTAINER_NAME_INPUT");
+                    
                     string blobContainerNameConfig = Environment.GetEnvironmentVariable("AZURE_STORAGE_BLOB_CONTAINER_NAME_CONFIG");
                     string fileCcdxPublisherSampleHeaderValues = Environment.GetEnvironmentVariable("CCDX_PUBLISHER_HEADER_SAMPLE_VALUES_FILENAME");
 
@@ -114,6 +124,9 @@ namespace fa_ccdx_provider
                     log.LogInformation($"- [ccdx-provider->run]: Track ccdx provider unsupported logger event (app insights)");
                     CcdxService.LogCcdxProviderUnsupportedLoggerEventToAppInsights(reportFileName, log);
                 }
+                log.LogInformation($"- [ccdx-provider->run]: Deleting telemetry file {ccBlobInputName}");
+                await AzureStorageBlobService.DeleteBlob(storageConnectionString, inputContainerName, ccBlobInputName);
+                log.LogInformation($"- [ccdx-provider->run]: SUCCESS");
             }
             catch (Exception e)
             {
