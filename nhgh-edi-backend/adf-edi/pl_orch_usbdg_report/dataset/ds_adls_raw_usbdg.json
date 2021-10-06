@@ -1,0 +1,26 @@
+{
+    "name": "ds_adls_raw_usbdg",
+    "properties": {
+        "linkedServiceName": {
+            "referenceName": "ls_adls_adlsedidev",
+            "type": "LinkedServiceReference"
+        },
+        "folder": {
+            "name": "Raw"
+        },
+        "annotations": [],
+        "type": "Json",
+        "typeProperties": {
+            "location": {
+                "type": "AzureBlobFSLocation",
+                "fileSystem": "raw-ccdx-consumer"
+            },
+            "compression": {
+                "type": "ZipDeflate",
+                "level": "Optimal"
+            }
+        },
+        "schema": {}
+    },
+    "type": "Microsoft.DataFactory/factories/datasets"
+}

@@ -1,0 +1,86 @@
+{
+    "name": "pl_load_usbdg_report",
+    "properties": {
+        "activities": [
+            {
+                "name": "Load",
+                "type": "Copy",
+                "dependsOn": [],
+                "policy": {
+                    "timeout": "7.00:00:00",
+                    "retry": 0,
+                    "retryIntervalInSeconds": 30,
+                    "secureOutput": false,
+                    "secureInput": false
+                },
+                "userProperties": [],
+                "typeProperties": {
+                    "source": {
+                        "type": "DelimitedTextSource",
+                        "storeSettings": {
+                            "type": "AzureBlobFSReadSettings",
+                            "recursive": true,
+                            "wildcardFolderPath": {
+                                "value": "@pipeline().parameters.PL_P_PARAM_LOG_DIR_GUID",
+                                "type": "Expression"
+                            },
+                            "wildcardFileName": "out.csv",
+                            "enablePartitionDiscovery": false
+                        },
+                        "formatSettings": {
+                            "type": "DelimitedTextReadSettings"
+                        }
+                    },
+                    "sink": {
+                        "type": "AzureSqlSink",
+                        "sqlWriterStoredProcedureName": "[ems_data].[uspLoadUsbdgLoggerData]",
+                        "sqlWriterTableType": "[ems_data].[logger_data_type]",
+                        "storedProcedureTableTypeParameterName": "logger_data",
+                        "disableMetricsCollection": false
+                    },
+                    "enableStaging": false,
+                    "translator": {
+                        "type": "TabularTranslator",
+                        "typeConversion": true,
+                        "typeConversionSettings": {
+                            "allowDataTruncation": true,
+                            "treatBooleanAsNumber": false
+                        }
+                    }
+                },
+                "inputs": [
+                    {
+                        "referenceName": "ds_adls_curated_usbdg",
+                        "type": "DatasetReference"
+                    }
+                ],
+                "outputs": [
+                    {
+                        "referenceName": "ds_sql_usbdg",
+                        "type": "DatasetReference"
+                    }
+                ]
+            }
+        ],
+        "parameters": {
+            "PL_P_PARAM_TRIGGER_TIME": {
+                "type": "string"
+            },
+            "PL_P_PARAM_FOLDER_NAME": {
+                "type": "string"
+            },
+            "PL_P_PARAM_FILE_NAME": {
+                "type": "string"
+            },
+            "PL_P_PARAM_LOG_DIR_GUID": {
+                "type": "string"
+            }
+        },
+        "folder": {
+            "name": "Load"
+        },
+        "annotations": [],
+        "lastPublishTime": "2021-10-05T22:38:29Z"
+    },
+    "type": "Microsoft.DataFactory/factories/pipelines"
+}

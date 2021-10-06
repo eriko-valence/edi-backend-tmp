@@ -1,0 +1,138 @@
+{
+    "name": "pl_orch_usbdg_report",
+    "properties": {
+        "activities": [
+            {
+                "name": "pl_extract_usbdg_report",
+                "type": "ExecutePipeline",
+                "dependsOn": [],
+                "userProperties": [],
+                "typeProperties": {
+                    "pipeline": {
+                        "referenceName": "pl_extract_usbdg_report",
+                        "type": "PipelineReference"
+                    },
+                    "waitOnCompletion": true,
+                    "parameters": {
+                        "PL_P_PARAM_FILE_NAME": {
+                            "value": "@pipeline().parameters.PL_P_PARAM_FILE_NAME",
+                            "type": "Expression"
+                        },
+                        "PL_P_PARAM_FOLDER_NAME": {
+                            "value": "@pipeline().parameters.PL_P_PARAM_FOLDER_NAME",
+                            "type": "Expression"
+                        },
+                        "PL_P_PARAM_TRIGGER_TIME": {
+                            "value": "@pipeline().parameters.PL_P_PARAM_TRIGGER_TIME",
+                            "type": "Expression"
+                        },
+                        "PL_P_PARAM_LOG_DIR_GUID": {
+                            "value": "@pipeline().parameters.PL_P_PARAM_LOG_DIR_GUID",
+                            "type": "Expression"
+                        }
+                    }
+                }
+            },
+            {
+                "name": "pl_load_usbdg_report",
+                "type": "ExecutePipeline",
+                "dependsOn": [
+                    {
+                        "activity": "pl_transform_usbdg_report",
+                        "dependencyConditions": [
+                            "Succeeded"
+                        ]
+                    }
+                ],
+                "userProperties": [],
+                "typeProperties": {
+                    "pipeline": {
+                        "referenceName": "pl_load_usbdg_report",
+                        "type": "PipelineReference"
+                    },
+                    "waitOnCompletion": true,
+                    "parameters": {
+                        "PL_P_PARAM_TRIGGER_TIME": {
+                            "value": "@pipeline().parameters.PL_P_PARAM_TRIGGER_TIME",
+                            "type": "Expression"
+                        },
+                        "PL_P_PARAM_FOLDER_NAME": {
+                            "value": "@pipeline().parameters.PL_P_PARAM_FOLDER_NAME",
+                            "type": "Expression"
+                        },
+                        "PL_P_PARAM_FILE_NAME": {
+                            "value": "@pipeline().parameters.PL_P_PARAM_FILE_NAME",
+                            "type": "Expression"
+                        },
+                        "PL_P_PARAM_LOG_DIR_GUID": {
+                            "value": "@pipeline().parameters.PL_P_PARAM_LOG_DIR_GUID",
+                            "type": "Expression"
+                        }
+                    }
+                }
+            },
+            {
+                "name": "pl_transform_usbdg_report",
+                "type": "ExecutePipeline",
+                "dependsOn": [
+                    {
+                        "activity": "pl_extract_usbdg_report",
+                        "dependencyConditions": [
+                            "Succeeded"
+                        ]
+                    }
+                ],
+                "userProperties": [],
+                "typeProperties": {
+                    "pipeline": {
+                        "referenceName": "pl_transform_usbdg_report",
+                        "type": "PipelineReference"
+                    },
+                    "waitOnCompletion": true,
+                    "parameters": {
+                        "PL_P_PARAM_TRIGGER_TIME": {
+                            "value": "@pipeline().parameters.PL_P_PARAM_TRIGGER_TIME",
+                            "type": "Expression"
+                        },
+                        "PL_P_PARAM_FOLDER_NAME": {
+                            "value": "@pipeline().parameters.PL_P_PARAM_FOLDER_NAME",
+                            "type": "Expression"
+                        },
+                        "PL_P_PARAM_FILE_NAME": {
+                            "value": "@pipeline().parameters.PL_P_PARAM_FILE_NAME",
+                            "type": "Expression"
+                        },
+                        "PL_P_PARAM_LOG_DIR_GUID": {
+                            "value": "@pipeline().parameters.PL_P_PARAM_LOG_DIR_GUID",
+                            "type": "Expression"
+                        },
+                        "PL_C_PARAM_REQ_JSON": {
+                            "value": "@CONCAT('{\"path\":\"', pipeline().parameters.PL_P_PARAM_LOG_DIR_GUID,'\",\"fileName\":\"',pipeline().parameters.PL_P_PARAM_FILE_NAME,'\"}')",
+                            "type": "Expression"
+                        }
+                    }
+                }
+            }
+        ],
+        "parameters": {
+            "PL_P_PARAM_FILE_NAME": {
+                "type": "string"
+            },
+            "PL_P_PARAM_FOLDER_NAME": {
+                "type": "string"
+            },
+            "PL_P_PARAM_LOG_DIR_GUID": {
+                "type": "string"
+            },
+            "PL_P_PARAM_TRIGGER_TIME": {
+                "type": "string"
+            }
+        },
+        "folder": {
+            "name": "Orchestration"
+        },
+        "annotations": [],
+        "lastPublishTime": "2021-10-05T23:56:47Z"
+    },
+    "type": "Microsoft.DataFactory/factories/pipelines"
+}

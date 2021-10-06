@@ -1,0 +1,55 @@
+{
+    "name": "pl_transform_usbdg_report",
+    "properties": {
+        "activities": [
+            {
+                "name": "Transform",
+                "type": "AzureFunctionActivity",
+                "dependsOn": [],
+                "policy": {
+                    "timeout": "7.00:00:00",
+                    "retry": 0,
+                    "retryIntervalInSeconds": 30,
+                    "secureOutput": false,
+                    "secureInput": false
+                },
+                "userProperties": [],
+                "typeProperties": {
+                    "functionName": "transform",
+                    "method": "POST",
+                    "body": {
+                        "value": "@json(pipeline().parameters.PL_C_PARAM_REQ_JSON)",
+                        "type": "Expression"
+                    }
+                },
+                "linkedServiceName": {
+                    "referenceName": "ls_func_usbdg_time_correction",
+                    "type": "LinkedServiceReference"
+                }
+            }
+        ],
+        "parameters": {
+            "PL_P_PARAM_TRIGGER_TIME": {
+                "type": "string"
+            },
+            "PL_P_PARAM_FOLDER_NAME": {
+                "type": "string"
+            },
+            "PL_P_PARAM_FILE_NAME": {
+                "type": "string"
+            },
+            "PL_P_PARAM_LOG_DIR_GUID": {
+                "type": "string"
+            },
+            "PL_C_PARAM_REQ_JSON": {
+                "type": "string"
+            }
+        },
+        "folder": {
+            "name": "Transform"
+        },
+        "annotations": [],
+        "lastPublishTime": "2021-10-05T22:33:58Z"
+    },
+    "type": "Microsoft.DataFactory/factories/pipelines"
+}
