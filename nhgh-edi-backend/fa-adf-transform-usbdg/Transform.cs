@@ -36,6 +36,12 @@ namespace fa_adf_transform_usbdg
         /// <param name="ouputContainer">Azure storage blob container where transformed USBDG log files are uploaded</param>
         /// <param name="emsConfgContainer">Azure storage blob container where EMS configuration files reside</param>
         /// <param name="log">Microsoft logging object</param>
+        /// <remarks>
+        /// - Indigo is not an EMD. It is considered a "logger" and would need something like a USBDG attached to it to send reports.
+        /// - There may never be a "USBDG" report as it would probably always be sending data from some other device.
+        /// - EMD's aren't usually the "source". They are just the relay for some other device's reports.
+        /// - Unclear how USBDG+Indigo pairing will play out from a report standpoint
+        /// </remarks>
         [FunctionName("transform")]
         public static async Task<IActionResult> Run(
             [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequest req,

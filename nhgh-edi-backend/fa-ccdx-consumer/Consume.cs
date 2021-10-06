@@ -21,6 +21,10 @@ namespace fa_ccdx_consumer
     /// pairs, which restricts access to topics shared with the Telemetry Consumer by the Data Owner. For data 
     /// privacy, all connections to the Data Interchange are encrypted with SSL."
     ///   - source: https://www.cold-chain-data.com/integration/telemetry-consumer
+    /// EDI architecture: 
+    /// - "An Azure Function known as the CCDX Consumer is subscribed to the CCDX Kafka topic and receives the 
+    /// original report file(s) from CCDX and stores them in another container (container_2) within the same Azure 
+    /// Data Lake instance."
     /// </remarks>
     public class Consume
     {
