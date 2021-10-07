@@ -114,6 +114,13 @@ namespace fa_ccdx_provider
                         //Scope of holding container: To be used only for situations with CCDX transmission.
                         log.LogInformation($"- [ccdx-provider->run]: Move failed telemetry file {reportFileName} to holding container {blobContainerName} for further investigation");
                         byte[] bytes = StreamService.ReadToEnd(ccBlobInput);
+
+                        // EDI architecture: "Container where files are placed when there is a problem sending to CCDX via the provider. Examples 
+                        // includes files that are too large (>5MB), or when the backend has a problem such as Kafka brokers unavailable. This 
+                        // condition is typically indicated by a 5xx HTTP response from the CCDX POST by the provider. The purpose of this container 
+                        // is to allow for further analysis and troubleshooting. No retry logic is currently implemented for files in this container, 
+                        // but may be added in the future."
+
                         await AzureStorageBlobService.UploadBlobToContainerUsingSdk(bytes, storageAccountConnectionString, blobContainerName, reportFileName);
                         log.LogInformation($"- [ccdx-provider->run]: Confirmed. Telemetry file {reportFileName} moved to container {blobContainerName}");
                     }

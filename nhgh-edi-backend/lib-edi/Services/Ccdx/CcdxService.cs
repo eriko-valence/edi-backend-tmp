@@ -188,13 +188,21 @@ namespace lib_edi.Services.Ccdx
 		/// <summary>
 		/// Builds raw CCDX consumer blob path using raw CCDX provider blob path
 		/// </summary>
-		/// <param name="path">Blob path in string format</param>
+		/// <param name="blobPath">Blob path in string format</param>
 		/// <example>
 		/// A telemetry report file is uploaded to the raw CCDX provider container at 11:59:59 PM on 2021-10-04:
 		///   Raw CCDX provider blob path: "usbdg/2021-10-04/usbdg001_2021-10-04_1629928806_logdata.json.zip"
 		/// This telemetry report file is uploaded to the raw CCDX consumer container at 12:00:01 AM on 2021-10-05: 
 		///   Raw CCDX consumer blob path: "usbdg/2021-10-05/usbdg001_2021-10-04_1629928806_logdata.json.zip"
 		/// </example>
+		/// <remarks>
+		/// EDI architecture: 
+		/// - "The 'day' folder is derived dynamically from the current time, so it’s possible that the day value 
+		/// in the consumer container is different than the day value in the provider container (e.g. if the event 
+		/// happened right around midnight, or there was some extended delay in processing."
+		/// - "The DEVICE_TYPE folder is derived using the ce-subject value added/returned by CCDX which contains 
+		/// the original file path from the file sent by the provider."
+		/// </remarks>
 		public static string BuildRawCcdxConsumerBlobPath(string blobPath)
 		{
 			string reportFileName = Path.GetFileName(blobPath);
