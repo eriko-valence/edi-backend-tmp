@@ -1,0 +1,129 @@
+{
+    "name": "pl_extract_usbdg_report",
+    "properties": {
+        "activities": [
+            {
+                "name": "Extract",
+                "type": "Copy",
+                "dependsOn": [],
+                "policy": {
+                    "timeout": "7.00:00:00",
+                    "retry": 0,
+                    "retryIntervalInSeconds": 30,
+                    "secureOutput": false,
+                    "secureInput": false
+                },
+                "userProperties": [],
+                "typeProperties": {
+                    "source": {
+                        "type": "JsonSource",
+                        "storeSettings": {
+                            "type": "AzureBlobFSReadSettings",
+                            "recursive": true,
+                            "wildcardFolderPath": "*",
+                            "wildcardFileName": {
+                                "value": "@pipeline().parameters.PL_P_PARAM_FILE_NAME",
+                                "type": "Expression"
+                            },
+                            "enablePartitionDiscovery": false
+                        },
+                        "formatSettings": {
+                            "type": "JsonReadSettings",
+                            "compressionProperties": {
+                                "type": "ZipDeflateReadSettings",
+                                "preserveZipFileNameAsFolder": false
+                            }
+                        }
+                    },
+                    "sink": {
+                        "type": "JsonSink",
+                        "storeSettings": {
+                            "type": "AzureBlobFSWriteSettings"
+                        },
+                        "formatSettings": {
+                            "type": "JsonWriteSettings"
+                        }
+                    },
+                    "enableStaging": false
+                },
+                "inputs": [
+                    {
+                        "referenceName": "ds_adls_raw_usbdg",
+                        "type": "DatasetReference"
+                    }
+                ],
+                "outputs": [
+                    {
+                        "referenceName": "ds_adls_stage_usbdg",
+                        "type": "DatasetReference",
+                        "parameters": {
+                            "PL_P_PARAM_LOG_DIR_GUID": {
+                                "value": "@pipeline().parameters.PL_P_PARAM_LOG_DIR_GUID",
+                                "type": "Expression"
+                            }
+                        }
+                    }
+                ]
+            },
+            {
+                "name": "Delete",
+                "type": "Delete",
+                "dependsOn": [
+                    {
+                        "activity": "Extract",
+                        "dependencyConditions": [
+                            "Succeeded"
+                        ]
+                    }
+                ],
+                "policy": {
+                    "timeout": "7.00:00:00",
+                    "retry": 0,
+                    "retryIntervalInSeconds": 30,
+                    "secureOutput": false,
+                    "secureInput": false
+                },
+                "userProperties": [],
+                "typeProperties": {
+                    "dataset": {
+                        "referenceName": "ds_adls_raw_usbdg",
+                        "type": "DatasetReference"
+                    },
+                    "enableLogging": false,
+                    "storeSettings": {
+                        "type": "AzureBlobFSReadSettings",
+                        "recursive": true,
+                        "wildcardFileName": {
+                            "value": "@{pipeline().parameters.PL_P_PARAM_FULL_FILE_NAME}",
+                            "type": "Expression"
+                        },
+                        "enablePartitionDiscovery": false
+                    }
+                }
+            }
+        ],
+        "parameters": {
+            "PL_P_PARAM_FILE_NAME": {
+                "type": "string"
+            },
+            "PL_P_PARAM_FOLDER_NAME": {
+                "type": "string"
+            },
+            "PL_P_PARAM_TRIGGER_TIME": {
+                "type": "string"
+            },
+            "PL_P_PARAM_LOG_DIR_GUID": {
+                "type": "string"
+            },
+            "PL_P_PARAM_FULL_FILE_NAME": {
+                "type": "string"
+            }
+        },
+        "folder": {
+            "name": "Extract"
+        },
+        "annotations": [],
+        "lastPublishTime": "2021-10-07T05:08:32Z"
+    },
+    "type": "Microsoft.DataFactory/factories/pipelines"
+}

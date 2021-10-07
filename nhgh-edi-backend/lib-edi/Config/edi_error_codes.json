@@ -1,0 +1,287 @@
+{
+	"list": {
+		"K3E5": {
+			"error-code": "K3E5",
+			"error-message": "Unable to list blobs in container {0} for directory {1}",
+			"error-source": "Azure Blob Storage",
+			"error-mitigation": null
+		},
+		"ND82": {
+			"error-code": "ND82",
+			"error-message": "An exception was thrown while processing USBDG log {0}",
+			"error-source": "CCDX Provider",
+			"error-mitigation": null
+		},
+		"2XYK": {
+			"error-code": "2XYK",
+			"error-message": "Received http status code {0} when attempting to put {1} into {2}",
+			"error-source": "CCDX Provider",
+			"error-mitigation": null
+		},
+		"21SQ": {
+			"error-code": "21SQ",
+			"error-message": "An exception was thrown while downloading blob contents to stream for blob {0} in container {1}",
+			"error-source": "EMS Azure Blob Storage",
+			"error-mitigation": null
+		},
+		"L72L": {
+			"error-code": "L72L",
+			"error-message": "An exception was thrown while uploading blob {0} to container {1} using the Azure Blob Storage REST API",
+			"error-source": "EMS Azure Blob Storage",
+			"error-mitigation": null
+		},
+		"R6C5": {
+			"error-code": "R6C5",
+			"error-message": "An exception was thrown while uploading blob {0} to container {1} using the Azure Blob Storage SDK",
+			"error-source": "EMS Azure Blob Storage",
+			"error-mitigation": null
+		},
+		"747H": {
+			"error-code": "747H",
+			"error-message": "An exception was thrown while downloading blob contents as a string for blob {0} in container {1} for storage account {2}",
+			"error-source": "EMS Azure Blob Storage",
+			"error-mitigation": null
+		},
+		"Q9W9": {
+			"error-code": "Q9W9",
+			"error-message": "An exception was thrown while deleting blobs from folder {0} in container {1}",
+			"error-source": "EMS Azure Blob Storage",
+			"error-mitigation": null
+		},
+		"RH84": {
+			"error-code": "RH84",
+			"error-message": "An exception was thrown while deleting blob {0} from container {1}",
+			"error-source": "EMS Azure Blob Storage",
+			"error-mitigation": null
+		},
+		"9L96": {
+			"error-code": "9L96",
+			"error-message": "Unable download text for blob {0} in container {1}",
+			"error-source": "EMS Azure Blob Storage",
+			"error-mitigation": null
+		},
+		"3B6U": {
+			"error-code": "3B6U",
+			"error-message": "Unable to map metafridge log records",
+			"error-source": "EMS Data Mapping Service",
+			"error-mitigation": null
+		},
+		"D39Y": {
+			"error-code": "D39Y",
+			"error-message": "Unable to map USBDG log records",
+			"error-source": "EMS Data Mapping Service",
+			"error-mitigation": null
+		},
+		"SB49": {
+			"error-code": "SB49",
+			"error-message": "Unable to deserialize the http request body",
+			"error-source": "EMS HTTP Service",
+			"error-mitigation": null
+		},
+		"X83E": {
+			"error-code": "X83E",
+			"error-message": "Unable to serialize the http request body",
+			"error-source": "EMS HTTP Service",
+			"error-mitigation": null
+		},
+		"26ZZ": {
+			"error-code": "26ZZ",
+			"error-message": "The http requst body must have 'path' and 'fileName' properties",
+			"error-source": "EMS HTTP Service",
+			"error-mitigation": null
+		},
+		"SR54": {
+			"error-code": "SR54",
+			"error-message": "The http request body cannot be empty",
+			"error-source": "EMS HTTP Service",
+			"error-mitigation": null
+		},
+		"X7Z1": {
+			"error-code": "X7Z1",
+			"error-message": "Unable to deserialize blob {0}",
+			"error-source": "EMS MetaFridge Log Processing Service",
+			"error-mitigation": null
+		},
+		"A21P": {
+			"error-code": "A21P",
+			"error-message": "No MetaFridge log blobs found at {0}",
+			"error-source": "EMS MetaFridge Log Processing Service",
+			"error-mitigation": null
+		},
+		"3L4P": {
+			"error-code": "3L4P",
+			"error-message": "No MetaFridge log blobs downloaded from {0}",
+			"error-source": "EMS MetaFridge Log Processing Service",
+			"error-mitigation": null
+		},
+		"582N": {
+			"error-code": "582N",
+			"error-message": "Unable to deserialize blob {0}",
+			"error-source": "EMS USBDG Log Processing Service",
+			"error-mitigation": null
+		},
+		"89EX": {
+			"error-code": "89EX",
+			"error-message": "Unable to deserialize blob {0}",
+			"error-source": "EMS USBDG Log Processing Service",
+			"error-mitigation": null
+		},
+		"48TV": {
+			"error-code": "48TV",
+			"error-message": "Unable to serialize ems log",
+			"error-source": "EMS USBDG Log Processing Service",
+			"error-mitigation": null
+		},
+		"K72U": {
+			"error-code": "K72U",
+			"error-message": "An exception was thrown while downloading blob contents to stream for blob {0} in container {1}",
+			"error-source": "EMS Azure Blob Storage",
+			"error-mitigation": null
+		},
+		"L91T": {
+			"error-code": "L91T",
+			"error-message": "No USBDG log blobs found at {0}",
+			"error-source": "EMS USBDG Log Processing Service",
+			"error-mitigation": null
+		},
+		"RV62": {
+			"error-code": "RV62",
+			"error-message": "No USBDG log report blobs found at {0}",
+			"error-source": "EMS USBDG Log Processing Service",
+			"error-mitigation": null
+		},
+		"M34T": {
+			"error-code": "M34T",
+			"error-message": "Unable to convert relative time {0} from usbdg log. Source file: {1}.",
+			"error-source": "EMS USBDG Log Processing Service",
+			"error-mitigation": null
+		},
+		"A89R": {
+			"error-code": "A89R",
+			"error-message": "Unable to convert relative time '{0}' to total seconds.",
+			"error-source": "EMS USBDG Log Processing Service",
+			"error-mitigation": null
+		},
+		"EZ56": {
+			"error-code": "EZ56",
+			"error-message": "Unable to convert relative time to total seconds",
+			"error-source": "EMS USBDG Log Processing Service",
+			"error-mitigation": null
+		},
+		"4Q5D": {
+			"error-code": "4Q5D",
+			"error-message": "Unable to calculate USBDG record absolute time using report absolute time {0} and record relative time {1}. Source file: {2}",
+			"error-source": "EMS USBDG Log Processing Service",
+			"error-mitigation": null
+		},
+		"Q25U": {
+			"error-code": "Q25U",
+			"error-message": "Unable to write usbdg log {0} to azure storage blob container {1}",
+			"error-source": "EMS USBDG Log Processing Service",
+			"error-mitigation": null
+		},
+		"C26Z": {
+			"error-code": "C26Z",
+			"error-message": "No USBDG log blobs downloaded from {0}",
+			"error-source": "EMS USBDG Log Processing Service",
+			"error-mitigation": null
+		},
+		"FY84": {
+			"error-code": "FY84",
+			"error-message": "An exception was thrown while validating the USBDG log json structure",
+			"error-source": "EMS USBDG Log Processing Service",
+			"error-mitigation": null
+		},
+		"R85Y": {
+			"error-code": "R85Y",
+			"error-message": "USBDG log {0} failed json schema validation for the following reason: {1}",
+			"error-source": "EMS USBDG Log Processing Service",
+			"error-mitigation": null
+		},
+		"P76H": {
+			"error-code": "P76H",
+			"error-message": "USBDG log report blob not downloaded at {0}",
+			"error-source": "EMS USBDG Log Processing Service",
+			"error-mitigation": null
+		},
+		"M92H": {
+			"error-code": "M92H",
+			"error-message": "An exception was thrown while building the CCDX provider http multipart form data request message",
+			"error-source": "CCDX Service",
+			"error-mitigation": null
+		},
+		"743B": {
+			"error-code": "743B",
+			"error-message": "An exception was thrown while consuming the message from CCDX",
+			"error-source": "CCDX Service",
+			"error-mitigation": null
+		},
+		"H39L": {
+			"error-code": "H39L",
+			"error-message": "An exception was thrown while sending an HTTP {0} response to {1}",
+			"error-source": "EMS HTTP Service",
+			"error-mitigation": null
+		},
+		"YT86": {
+			"error-code": "YT86",
+			"error-message": "An exception was thrown while building an HTTP multipart/form-data MIME container with byte array content with name {0} and file name {1}",
+			"error-source": "EMS HTTP Service",
+			"error-mitigation": null
+		},
+		"32L6": {
+			"error-code": "32L6",
+			"error-message": "An exception was thrown while building an HTTP multipart/form-data MIME container with string content with name {0} and file name {1}",
+			"error-source": "EMS HTTP Service",
+			"error-mitigation": null
+		},
+		"U791": {
+			"error-code": "U791",
+			"error-message": "An exception was thrown while converting a stream into a byte array",
+			"error-source": "EMS Stream Service",
+			"error-mitigation": null
+		},
+		"C36G": {
+			"error-code": "C36G",
+			"error-message": "HTTP response was unsuccessful while querying azure application insights: {0}",
+			"error-source": "Azure App Insights Service",
+			"error-mitigation": null
+		},
+		"EN5G": {
+			"error-code": "EN5G",
+			"error-message": "Azure app insights settings are missing",
+			"error-source": "Azure App Insights Service",
+			"error-mitigation": null
+		},
+		"QDJ3": {
+			"error-code": "QDJ3",
+			"error-message": "An exception was thrown while retrieving app insights custom events",
+			"error-source": "Azure App Insights Service",
+			"error-mitigation": null
+		},
+		"97E7": {
+			"error-code": "97E7",
+			"error-message": "An exception was thrown while sending telemetry to app insights",
+			"error-source": "Azure App Insights Service",
+			"error-mitigation": null
+		},
+		"E2N8": {
+			"error-code": "E2N8",
+			"error-message": "An exception was thrown while applying time correction logic to usbdg report files",
+			"error-source": "EMS Data Transformation",
+			"error-mitigation": null
+		},
+		"K79T": {
+			"error-code": "K79T",
+			"error-message": "An exception was thrown while applying time correction logic to metafridge report files",
+			"error-source": "EMS Data Transformation",
+			"error-mitigation": null
+		},
+		"JC16": {
+			"error-code": "JC16",
+			"error-message": "CCDX Consumer header 'ce_type' environment variable is missing",
+			"error-source": "CCDX Consumer",
+			"error-mitigation": null
+		}
+	}
+}
+
