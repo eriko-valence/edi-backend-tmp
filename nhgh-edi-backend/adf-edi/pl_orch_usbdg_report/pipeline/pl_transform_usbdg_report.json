@@ -61,10 +61,6 @@
                     "storeSettings": {
                         "type": "AzureBlobFSReadSettings",
                         "recursive": true,
-                        "wildcardFileName": {
-                            "value": "@{pipeline().parameters.PL_P_PARAM_LOG_DIR_GUID}",
-                            "type": "Expression"
-                        },
                         "enablePartitionDiscovery": false
                     }
                 }
@@ -91,7 +87,7 @@
             "name": "Transform"
         },
         "annotations": [],
-        "lastPublishTime": "2021-10-05T22:33:58Z"
+        "lastPublishTime": "2021-10-07T05:23:38Z"
     },
     "type": "Microsoft.DataFactory/factories/pipelines"
 }
