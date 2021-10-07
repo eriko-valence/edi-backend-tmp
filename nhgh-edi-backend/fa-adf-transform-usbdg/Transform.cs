@@ -107,6 +107,11 @@ namespace fa_adf_transform_usbdg
                 string responseBody = HttpService.SerializeHttpResponseBody(csvOutputBlobName);
 
                 log.LogInformation(" - Send http response message");
+
+                CcdxService.LogEmsTransformSucceededEventToAppInsights(payload.FileName, log);
+
+                //log.LogInformation(" - Deleting input azure storage blob folder");
+                //AzureStorageBlobService.DeleteFolder(inputContainer, payload.Path);
                 log.LogInformation(" - SUCCESS");
 
                 CcdxService.LogEmsTransformSucceededEventToAppInsights(payload.FileName, log);

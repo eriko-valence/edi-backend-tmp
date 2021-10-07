@@ -44,7 +44,13 @@
 		},
 		"Q9W9": {
 			"error-code": "Q9W9",
-			"error-message": "An exception was thrown while blob {0} from container {1}",
+			"error-message": "An exception was thrown while deleting blobs from folder {0} in container {1}",
+			"error-source": "EMS Azure Blob Storage",
+			"error-mitigation": null
+		},
+		"RH84": {
+			"error-code": "RH84",
+			"error-message": "An exception was thrown while deleting blob {0} from container {1}",
 			"error-source": "EMS Azure Blob Storage",
 			"error-mitigation": null
 		},

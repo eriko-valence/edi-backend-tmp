@@ -34,7 +34,6 @@ namespace lib_edi.Services.Azure
 		public static List<CloudBlockBlob> ListBlobsInDirectory(CloudBlobContainer cloudBlobContainer, string directoryPath, string fullBlobPath)
 		{
 			List<CloudBlockBlob> listCloudBlockBlob = new List<CloudBlockBlob>();
-
 			try
 			{
 				var logDirectory = cloudBlobContainer.GetDirectoryReference(directoryPath);
@@ -110,7 +109,6 @@ namespace lib_edi.Services.Azure
 				CloudBlockBlob cloudBlockBlob = cloudBlobContainer.GetBlockBlobReference(blobName);
 				cloudBlockBlob.DownloadToStream(mem);
 				return mem;
-
 			}
 			catch (Exception e)
 			{
@@ -136,16 +134,11 @@ namespace lib_edi.Services.Azure
 			try
 			{
 				string SasToken = "?sv=2020-04-08&st=2021-07-13T16%3A52%3A34Z&se=2021-07-17T16%3A52%3A00Z&sr=c&sp=racwdxlt&sig=16EmXUO8MlmdaiBx5Sx9YplpzkvMGPgcoPhsYMPLILE%3D";
-
 				bool isUploaded = false;
-
 				string baseUri = "https://usbdatagrabberstorage.blob.core.windows.net";
 				string URI = $"{baseUri}/{containerName}/{name}{SasToken}";
-
 				byte[] requestPayload = StreamService.ReadToEnd(s);
-
 				HttpRequestMessage httpRequestMessage = new HttpRequestMessage(HttpMethod.Put, URI);
-
 				httpRequestMessage.Content = (requestPayload == null) ? null : new ByteArrayContent(requestPayload);
 
 				// Add the request headers for x-ms-date and x-ms-version.
@@ -218,7 +211,6 @@ namespace lib_edi.Services.Azure
 			CloudStorageAccount storageAccount = null;
 			try
 			{
-
 				if (CloudStorageAccount.TryParse(storageConnString, out storageAccount))
 				{
 					CloudBlobClient cloudBlobClient = storageAccount.CreateCloudBlobClient();
@@ -236,7 +228,6 @@ namespace lib_edi.Services.Azure
 				string customErrorMessage = EdiErrorsService.BuildExceptionMessageString(e, "747H", EdiErrorsService.BuildErrorVariableArrayList(fileName, containerName, storageAccount.Credentials.AccountName));
 				throw new Exception(customErrorMessage);
 			}
-
 		}
 
 		/// <summary>
@@ -252,7 +243,6 @@ namespace lib_edi.Services.Azure
 				BlobServiceClient blobServiceClient = new BlobServiceClient(storageConnString);
 				BlobContainerClient blobContainerClient = blobServiceClient.GetBlobContainerClient(containerName);
 				await blobContainerClient.CreateIfNotExistsAsync();
-
 				Response response = await blobContainerClient.DeleteBlobAsync(fileName);
 			}
 			catch (Exception e)
@@ -260,8 +250,29 @@ namespace lib_edi.Services.Azure
 				string customErrorMessage = EdiErrorsService.BuildExceptionMessageString(e, "Q9W9", EdiErrorsService.BuildErrorVariableArrayList(fileName, containerName));
 				throw new Exception(customErrorMessage);
 			}
+		}
 
-
+		/// <summary>
+		/// Deletes blob folder
+		/// </summary>
+		/// <param name="container">Azure blob container object</param>
+		/// <param name="path">Azure blob folder path</param>
+		public static void DeleteFolder(CloudBlobContainer container, string path)
+		{
+			try
+			{
+				foreach (IListBlobItem blob in container.GetDirectoryReference(path).ListBlobs(true))
+				{
+					if (blob.GetType() == typeof(CloudBlob) || blob.GetType().BaseType == typeof(CloudBlob))
+					{
+						((CloudBlob)blob).DeleteIfExists();
+					}
+				}
+			} catch (Exception e)
+			{
+				string customErrorMessage = EdiErrorsService.BuildExceptionMessageString(e, "RH84", EdiErrorsService.BuildErrorVariableArrayList(path, container.Name));
+				throw new Exception(customErrorMessage);
+			}
 		}
 	}
 }
