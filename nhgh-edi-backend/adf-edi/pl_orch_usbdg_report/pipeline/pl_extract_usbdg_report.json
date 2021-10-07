@@ -64,6 +64,42 @@
                         }
                     }
                 ]
+            },
+            {
+                "name": "Delete",
+                "type": "Delete",
+                "dependsOn": [
+                    {
+                        "activity": "Extract",
+                        "dependencyConditions": [
+                            "Succeeded"
+                        ]
+                    }
+                ],
+                "policy": {
+                    "timeout": "7.00:00:00",
+                    "retry": 0,
+                    "retryIntervalInSeconds": 30,
+                    "secureOutput": false,
+                    "secureInput": false
+                },
+                "userProperties": [],
+                "typeProperties": {
+                    "dataset": {
+                        "referenceName": "ds_adls_raw_usbdg",
+                        "type": "DatasetReference"
+                    },
+                    "enableLogging": false,
+                    "storeSettings": {
+                        "type": "AzureBlobFSReadSettings",
+                        "recursive": true,
+                        "wildcardFileName": {
+                            "value": "@{pipeline().parameters.PL_P_PARAM_FULL_FILE_NAME}",
+                            "type": "Expression"
+                        },
+                        "enablePartitionDiscovery": false
+                    }
+                }
             }
         ],
         "parameters": {
@@ -87,7 +123,7 @@
             "name": "Extract"
         },
         "annotations": [],
-        "lastPublishTime": "2021-10-05T23:41:20Z"
+        "lastPublishTime": "2021-10-06T23:20:39Z"
     },
     "type": "Microsoft.DataFactory/factories/pipelines"
 }

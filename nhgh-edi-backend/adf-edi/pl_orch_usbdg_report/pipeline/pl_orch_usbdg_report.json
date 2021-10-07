@@ -3,7 +3,7 @@
     "properties": {
         "activities": [
             {
-                "name": "pl_extract_usbdg_report",
+                "name": "Extract",
                 "type": "ExecutePipeline",
                 "dependsOn": [],
                 "userProperties": [],
@@ -29,16 +29,20 @@
                         "PL_P_PARAM_LOG_DIR_GUID": {
                             "value": "@pipeline().parameters.PL_P_PARAM_LOG_DIR_GUID",
                             "type": "Expression"
+                        },
+                        "PL_P_PARAM_FULL_FILE_NAME": {
+                            "value": "@pipeline().parameters.PL_P_PARAM_FULL_FILE_NAME",
+                            "type": "Expression"
                         }
                     }
                 }
             },
             {
-                "name": "pl_load_usbdg_report",
+                "name": "Load",
                 "type": "ExecutePipeline",
                 "dependsOn": [
                     {
-                        "activity": "pl_transform_usbdg_report",
+                        "activity": "Transform",
                         "dependencyConditions": [
                             "Succeeded"
                         ]
@@ -72,11 +76,11 @@
                 }
             },
             {
-                "name": "pl_transform_usbdg_report",
+                "name": "Transform",
                 "type": "ExecutePipeline",
                 "dependsOn": [
                     {
-                        "activity": "pl_extract_usbdg_report",
+                        "activity": "Extract",
                         "dependencyConditions": [
                             "Succeeded"
                         ]
@@ -126,13 +130,16 @@
             },
             "PL_P_PARAM_TRIGGER_TIME": {
                 "type": "string"
+            },
+            "PL_P_PARAM_FULL_FILE_NAME": {
+                "type": "string"
             }
         },
         "folder": {
             "name": "Orchestration"
         },
         "annotations": [],
-        "lastPublishTime": "2021-10-05T23:56:47Z"
+        "lastPublishTime": "2021-10-06T20:52:20Z"
     },
     "type": "Microsoft.DataFactory/factories/pipelines"
 }

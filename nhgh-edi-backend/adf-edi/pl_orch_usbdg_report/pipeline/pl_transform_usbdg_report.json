@@ -26,6 +26,48 @@
                     "referenceName": "ls_func_usbdg_time_correction",
                     "type": "LinkedServiceReference"
                 }
+            },
+            {
+                "name": "Delete",
+                "type": "Delete",
+                "dependsOn": [
+                    {
+                        "activity": "Transform",
+                        "dependencyConditions": [
+                            "Succeeded"
+                        ]
+                    }
+                ],
+                "policy": {
+                    "timeout": "7.00:00:00",
+                    "retry": 0,
+                    "retryIntervalInSeconds": 30,
+                    "secureOutput": false,
+                    "secureInput": false
+                },
+                "userProperties": [],
+                "typeProperties": {
+                    "dataset": {
+                        "referenceName": "ds_adls_stage_usbdg",
+                        "type": "DatasetReference",
+                        "parameters": {
+                            "PL_P_PARAM_LOG_DIR_GUID": {
+                                "value": "@pipeline().parameters.PL_P_PARAM_LOG_DIR_GUID",
+                                "type": "Expression"
+                            }
+                        }
+                    },
+                    "enableLogging": false,
+                    "storeSettings": {
+                        "type": "AzureBlobFSReadSettings",
+                        "recursive": true,
+                        "wildcardFileName": {
+                            "value": "@{pipeline().parameters.PL_P_PARAM_LOG_DIR_GUID}",
+                            "type": "Expression"
+                        },
+                        "enablePartitionDiscovery": false
+                    }
+                }
             }
         ],
         "parameters": {
