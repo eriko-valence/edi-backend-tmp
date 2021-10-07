@@ -12,9 +12,10 @@
                 "parameters": {
                     "PL_P_PARAM_FILE_NAME": "@triggerBody().fileName",
                     "PL_P_PARAM_FOLDER_NAME": "@triggerBody().folderPath",
-                    "PL_P_PARAM_LOG_DIR_GUID": "@concat('usbdg/',formatDateTime(trigger().startTime, 'yyyy-MM-dd'),'/', formatDateTime(trigger().startTime, 'HH'), '/', guid(),'/')",
+                    "PL_P_PARAM_LOG_DIR_GUID": "@concat(split(triggerBody().folderPath,'/')[1],'/',formatDateTime(trigger().startTime, 'yyyy-MM-dd'),'/', formatDateTime(trigger().startTime, 'HH'), '/', guid(),'/')",
                     "PL_P_PARAM_TRIGGER_TIME": "@trigger().startTime",
-                    "PL_P_PARAM_FULL_FILE_NAME": "@concat('usbdg/',formatDateTime(trigger().startTime, 'yyyy-MM-dd'),'/', formatDateTime(trigger().startTime, 'HH'), '/', guid(),'/', triggerBody().fileName)"
+                    "PL_P_PARAM_FULL_FILE_NAME": "@concat(split(triggerBody().folderPath,'/')[1],'/',formatDateTime(trigger().startTime, 'yyyy-MM-dd'),'/', formatDateTime(trigger().startTime, 'HH'), '/', guid(),'/', triggerBody().fileName)",
+                    "PL_P_DEVICE_TYPE": "@split(triggerBody().folderPath,'/')[1]"
                 }
             }
         ],

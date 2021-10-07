@@ -133,13 +133,16 @@
             },
             "PL_P_PARAM_FULL_FILE_NAME": {
                 "type": "string"
+            },
+            "PL_P_DEVICE_TYPE": {
+                "type": "string"
             }
         },
         "folder": {
             "name": "Orchestration"
         },
         "annotations": [],
-        "lastPublishTime": "2021-10-06T20:52:20Z"
+        "lastPublishTime": "2021-10-07T05:29:37Z"
     },
     "type": "Microsoft.DataFactory/factories/pipelines"
 }
