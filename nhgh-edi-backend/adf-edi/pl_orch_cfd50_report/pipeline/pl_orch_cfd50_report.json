@@ -1,0 +1,148 @@
+{
+    "name": "pl_orch_cfd50_report",
+    "properties": {
+        "activities": [
+            {
+                "name": "Execute Pipeline1",
+                "type": "ExecutePipeline",
+                "dependsOn": [],
+                "userProperties": [],
+                "typeProperties": {
+                    "pipeline": {
+                        "referenceName": "pl_extract_cfd50_report",
+                        "type": "PipelineReference"
+                    },
+                    "waitOnCompletion": true,
+                    "parameters": {
+                        "PL_P_PARAM_FILE_NAME": {
+                            "value": "@pipeline().parameters.PL_P_PARAM_FILE_NAME",
+                            "type": "Expression"
+                        },
+                        "PL_P_PARAM_FOLDER_NAME": {
+                            "value": "@pipeline().parameters.PL_P_PARAM_FOLDER_NAME",
+                            "type": "Expression"
+                        },
+                        "PL_P_PARAM_TRIGGER_TIME": {
+                            "value": "@pipeline().parameters.PL_P_PARAM_TRIGGER_TIME",
+                            "type": "Expression"
+                        },
+                        "PL_P_PARAM_LOG_DIR_GUID": {
+                            "value": "@pipeline().parameters.PL_P_PARAM_LOG_DIR_GUID",
+                            "type": "Expression"
+                        },
+                        "PL_P_PARAM_FULL_FILE_NAME": {
+                            "value": "@pipeline().parameters.PL_P_PARAM_FILE_NAME",
+                            "type": "Expression"
+                        }
+                    }
+                }
+            },
+            {
+                "name": "Execute Pipeline2",
+                "type": "ExecutePipeline",
+                "dependsOn": [
+                    {
+                        "activity": "Execute Pipeline1",
+                        "dependencyConditions": [
+                            "Succeeded"
+                        ]
+                    }
+                ],
+                "userProperties": [],
+                "typeProperties": {
+                    "pipeline": {
+                        "referenceName": "pl_transform_cfd50_report",
+                        "type": "PipelineReference"
+                    },
+                    "waitOnCompletion": true,
+                    "parameters": {
+                        "PL_P_PARAM_TRIGGER_TIME": {
+                            "value": "@pipeline().parameters.PL_P_PARAM_TRIGGER_TIME",
+                            "type": "Expression"
+                        },
+                        "PL_P_PARAM_FOLDER_NAME": {
+                            "value": "@pipeline().parameters.PL_P_PARAM_FOLDER_NAME",
+                            "type": "Expression"
+                        },
+                        "PL_P_PARAM_FILE_NAME": {
+                            "value": "@pipeline().parameters.PL_P_PARAM_FILE_NAME",
+                            "type": "Expression"
+                        },
+                        "PL_P_PARAM_LOG_DIR_GUID": {
+                            "value": "@pipeline().parameters.PL_P_PARAM_LOG_DIR_GUID",
+                            "type": "Expression"
+                        },
+                        "PL_C_PARAM_REQ_JSON": {
+                            "value": "@CONCAT('{\"path\":\"', pipeline().parameters.PL_P_PARAM_LOG_DIR_GUID,'\",\"fileName\":\"',pipeline().parameters.PL_P_PARAM_FILE_NAME,'\"}')",
+                            "type": "Expression"
+                        }
+                    }
+                }
+            },
+            {
+                "name": "Execute Pipeline3",
+                "type": "ExecutePipeline",
+                "dependsOn": [
+                    {
+                        "activity": "Execute Pipeline2",
+                        "dependencyConditions": [
+                            "Succeeded"
+                        ]
+                    }
+                ],
+                "userProperties": [],
+                "typeProperties": {
+                    "pipeline": {
+                        "referenceName": "pl_load_cfd50_report",
+                        "type": "PipelineReference"
+                    },
+                    "waitOnCompletion": true,
+                    "parameters": {
+                        "PL_P_PARAM_TRIGGER_TIME": {
+                            "value": "@pipeline().parameters.PL_P_PARAM_TRIGGER_TIME",
+                            "type": "Expression"
+                        },
+                        "PL_P_PARAM_FOLDER_NAME": {
+                            "value": "@pipeline().parameters.PL_P_PARAM_FOLDER_NAME",
+                            "type": "Expression"
+                        },
+                        "PL_P_PARAM_FILE_NAME": {
+                            "value": "@pipeline().parameters.PL_P_PARAM_FILE_NAME",
+                            "type": "Expression"
+                        },
+                        "PL_P_PARAM_LOG_DIR_GUID": {
+                            "value": "@pipeline().parameters.PL_P_PARAM_LOG_DIR_GUID",
+                            "type": "Expression"
+                        }
+                    }
+                }
+            }
+        ],
+        "parameters": {
+            "PL_P_PARAM_FILE_NAME": {
+                "type": "string"
+            },
+            "PL_P_PARAM_FOLDER_NAME": {
+                "type": "string"
+            },
+            "PL_P_PARAM_LOG_DIR_GUID": {
+                "type": "string"
+            },
+            "PL_P_PARAM_TRIGGER_TIME": {
+                "type": "string"
+            },
+            "PL_P_PARAM_FULL_FILE_NAME": {
+                "type": "string"
+            },
+            "PL_P_DEVICE_TYPE": {
+                "type": "string"
+            }
+        },
+        "folder": {
+            "name": "Orchestration"
+        },
+        "annotations": [],
+        "lastPublishTime": "2021-10-08T05:21:38Z"
+    },
+    "type": "Microsoft.DataFactory/factories/pipelines"
+}

@@ -237,17 +237,36 @@ namespace lib_edi.Services.Ccdx
 		/// Validate data logger type is supported by ETL pipeline
 		/// </summary>
 		/// <param name="path">Blob path in string format</param>
-		public static bool ValidateCETypeHeaderUsingBlobPath(string path)
+		public static bool ValidateLoggerType(string loggerType)
 		{
 			bool result = false;
-			string loggerType = GetDataLoggerTypeFromBlobPath(path);
 
 			if (loggerType != null)
 			{
 				if (loggerType.ToUpper() == DataLoggerTypeEnum.Name.USBDG.ToString())
 				{
 					result = true;
+				} else if (loggerType.ToUpper() == DataLoggerTypeEnum.Name.CFD50.ToString())
+				{
+					result = true;
 				}
+			}
+			return result;
+		}
+
+		/// <summary>
+		/// Validate ccdx type is supported by ETL pipeline
+		/// </summary>
+		/// <param name="path">Blob path in string format</param>
+		public static bool ValidateCeTypeHeader(string ceType)
+		{
+			bool result = false;
+			if (Environment.GetEnvironmentVariable("CCDX_PUBLISHER_HEADER_CE_TYPE_USBDG") == ceType)
+			{
+				result = true;
+			} else if (Environment.GetEnvironmentVariable("CCDX_PUBLISHER_HEADER_CE_TYPE_CFD50") == ceType)
+			{
+				result = true;
 			}
 			return result;
 		}

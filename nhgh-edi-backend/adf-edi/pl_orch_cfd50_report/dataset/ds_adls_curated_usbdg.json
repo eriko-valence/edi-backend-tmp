@@ -1,0 +1,251 @@
+{
+    "name": "ds_adls_curated_usbdg",
+    "properties": {
+        "linkedServiceName": {
+            "referenceName": "ls_adls_adlsedidev",
+            "type": "LinkedServiceReference"
+        },
+        "folder": {
+            "name": "Curated"
+        },
+        "annotations": [],
+        "type": "DelimitedText",
+        "typeProperties": {
+            "location": {
+                "type": "AzureBlobFSLocation",
+                "fileSystem": "curated-output"
+            },
+            "columnDelimiter": ",",
+            "escapeChar": "\\",
+            "firstRowAsHeader": true,
+            "quoteChar": "\""
+        },
+        "schema": [
+            {
+                "name": "RELT",
+                "type": "String"
+            },
+            {
+                "name": "RTCW",
+                "type": "String"
+            },
+            {
+                "name": "SV",
+                "type": "String"
+            },
+            {
+                "name": "CDRW",
+                "type": "String"
+            },
+            {
+                "name": "HCOM",
+                "type": "String"
+            },
+            {
+                "name": "TCON",
+                "type": "String"
+            },
+            {
+                "name": "CMPS",
+                "type": "String"
+            },
+            {
+                "name": "FANS",
+                "type": "String"
+            },
+            {
+                "name": "TPCB",
+                "type": "String"
+            },
+            {
+                "name": "MSW",
+                "type": "String"
+            },
+            {
+                "name": "TVC",
+                "type": "String"
+            },
+            {
+                "name": "TFRZ",
+                "type": "String"
+            },
+            {
+                "name": "T1",
+                "type": "String"
+            },
+            {
+                "name": "T2",
+                "type": "String"
+            },
+            {
+                "name": "T3",
+                "type": "String"
+            },
+            {
+                "name": "TF1",
+                "type": "String"
+            },
+            {
+                "name": "Hamb",
+                "type": "String"
+            },
+            {
+                "name": "AMFR",
+                "type": "String"
+            },
+            {
+                "name": "AMOD",
+                "type": "String"
+            },
+            {
+                "name": "ASER",
+                "type": "String"
+            },
+            {
+                "name": "ADAT",
+                "type": "String"
+            },
+            {
+                "name": "APQS",
+                "type": "String"
+            },
+            {
+                "name": "CNAM",
+                "type": "String"
+            },
+            {
+                "name": "CSER",
+                "type": "String"
+            },
+            {
+                "name": "CSOF",
+                "type": "String"
+            },
+            {
+                "name": "CDAT",
+                "type": "String"
+            },
+            {
+                "name": "SVA",
+                "type": "String"
+            },
+            {
+                "name": "CMPR",
+                "type": "String"
+            },
+            {
+                "name": "TCLD",
+                "type": "String"
+            },
+            {
+                "name": "DOOR",
+                "type": "String"
+            },
+            {
+                "name": "TAMB",
+                "type": "String"
+            },
+            {
+                "name": "LOC",
+                "type": "String"
+            },
+            {
+                "name": "AID",
+                "type": "String"
+            },
+            {
+                "name": "LID",
+                "type": "String"
+            },
+            {
+                "name": "EID",
+                "type": "String"
+            },
+            {
+                "name": "CID",
+                "type": "String"
+            },
+            {
+                "name": "FID",
+                "type": "String"
+            },
+            {
+                "name": "EMFR",
+                "type": "String"
+            },
+            {
+                "name": "EMOD",
+                "type": "String"
+            },
+            {
+                "name": "ESER",
+                "type": "String"
+            },
+            {
+                "name": "EDAT",
+                "type": "String"
+            },
+            {
+                "name": "EMSV",
+                "type": "String"
+            },
+            {
+                "name": "EPQS",
+                "type": "String"
+            },
+            {
+                "name": "ABST",
+                "type": "String"
+            },
+            {
+                "name": "BEMD",
+                "type": "String"
+            },
+            {
+                "name": "LMFR",
+                "type": "String"
+            },
+            {
+                "name": "LMOD",
+                "type": "String"
+            },
+            {
+                "name": "LSER",
+                "type": "String"
+            },
+            {
+                "name": "LDAT",
+                "type": "String"
+            },
+            {
+                "name": "SWVER",
+                "type": "String"
+            },
+            {
+                "name": "LPQS",
+                "type": "String"
+            },
+            {
+                "name": "BLOG",
+                "type": "String"
+            },
+            {
+                "name": "duration_secs",
+                "type": "String"
+            },
+            {
+                "name": "emd_relt",
+                "type": "String"
+            },
+            {
+                "name": "emd_abs",
+                "type": "String"
+            },
+            {
+                "name": "utc_timestamp",
+                "type": "String"
+            }
+        ]
+    },
+    "type": "Microsoft.DataFactory/factories/datasets"
+}
