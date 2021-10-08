@@ -24,55 +24,60 @@ namespace fa_adf_transform_cfd50
     public static class Transform
     {
         /// <summary>
-        /// Azure function that transforms MetaFridge log files
+        /// Azure function that transforms (including applying time correction) CFD50 log files
         /// </summary>
         /// <param name="req">Http request object that triggers this function</param>
-        /// <param name="inputContainer">Azure storage blob container with MetaFridge log files to transform</param>
-        /// <param name="ouputContainer">Azure storage blob container were transformed MetaFridge log files are uploaded</param>
+        /// <param name="inputContainer">Azure storage blob container with CFD50 log files to transform</param>
+        /// <param name="ouputContainer">Azure storage blob container where transformed CFD50 log files are uploaded</param>
+        /// <param name="emsConfgContainer">Azure storage blob container where EMS configuration files reside</param>
         /// <param name="log">Microsoft logging object</param>
-        [FunctionName("transformMF")]
-        public static async Task<IActionResult> RunMf(
-        [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequest req,
-        [Blob("%AZURE_STORAGE_BLOB_CONTAINER_NAME_INPUT_UNCOMPRESSED%", FileAccess.ReadWrite, Connection = "AZURE_STORAGE_INPUT_CONNECTION_STRING")] CloudBlobContainer inputContainer,
-        [Blob("%AZURE_STORAGE_BLOB_CONTAINER_NAME_OUTPUT_PROCESSED%", FileAccess.ReadWrite, Connection = "AZURE_STORAGE_INPUT_CONNECTION_STRING")] CloudBlobContainer ouputContainer,
-        ILogger log)
+        [FunctionName("transform")]
+        public static async Task<IActionResult> Run(
+            [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequest req,
+            [Blob("%AZURE_STORAGE_BLOB_CONTAINER_NAME_INPUT_UNCOMPRESSED%", FileAccess.ReadWrite, Connection = "AZURE_STORAGE_INPUT_CONNECTION_STRING")] CloudBlobContainer inputContainer,
+            [Blob("%AZURE_STORAGE_BLOB_CONTAINER_NAME_OUTPUT_PROCESSED%", FileAccess.ReadWrite, Connection = "AZURE_STORAGE_INPUT_CONNECTION_STRING")] CloudBlobContainer ouputContainer,
+            [Blob("%AZURE_STORAGE_BLOB_CONTAINER_NAME_EMS_CONFIG%", FileAccess.ReadWrite, Connection = "AZURE_STORAGE_INPUT_CONNECTION_STRING")] CloudBlobContainer emsConfgContainer,
+            ILogger log)
         {
-            string logType = "metafridge";
+            string logType = "cfd50";
             TransformHttpRequestMessageBodyDto payload = null;
             try
             {
 
-                log.LogInformation($"- Deserialize {logType} log transformation http request body");
+                log.LogInformation($"- [transform-cdf50->run]: Deserialize {logType} log transformation http request body");
                 payload = await HttpService.DeserializeHttpRequestBody(req);
 
                 CcdxService.LogMetaFridgeTransformStartedEventToAppInsights(payload.FileName, log);
 
-                log.LogInformation("- Validate http request body");
+                log.LogInformation("- [transform-cdf50->run]: Validate http request body");
                 HttpService.ValidateHttpRequestBody(payload);
 
-                log.LogInformation($"- Building input blob path");
-                string inputBlobPath = $"{inputContainer.Name}/{payload.Path}";
-                log.LogInformation($"  - Path: {inputBlobPath}");
+                string loggerType = CcdxService.GetDataLoggerTypeFromBlobPath(payload.FileName);
+                log.LogInformation($"- [transform-cdf50->run]: Extracted logger type: {loggerType}");
 
-                log.LogInformation($"- List blobs in storage container {inputContainer.Name}/{payload.Path}");
+                log.LogInformation($"- [transform-cdf50->run]: Building input blob path");
+                string inputBlobPath = $"{inputContainer.Name}/{payload.Path}";
+                log.LogInformation($"- [transform-cdf50->run]: - Path: {inputBlobPath}");
+
+                log.LogInformation($"- [transform-cdf50->run]: List blobs in storage container {inputContainer.Name}/{payload.Path}");
                 IEnumerable<IListBlobItem> logDirectoryBlobs = AzureStorageBlobService.ListBlobsInDirectory(inputContainer, payload.Path, inputBlobPath);
 
-                log.LogInformation($"- Filter for {logType} log blobs");
+                log.LogInformation($"- [transform-cdf50->run]: Filter for {logType} log blobs");
                 List<CloudBlockBlob> metaFridgeLogBlobs = Cfd50DataProcessorService.FindMetaFridgeLogBlobs(logDirectoryBlobs, inputBlobPath);
 
-                log.LogInformation("- Download metafridge log blobs");
+                log.LogInformation("- [transform-cdf50->run]: Download metafridge log blobs");
                 List<Cfd50JsonDataFileDto> metaFridgeLogFiles = await Cfd50DataProcessorService.DownloadsAndDeserializesMetaFridgeLogBlobs(metaFridgeLogBlobs, inputContainer, inputBlobPath, log);
 
-                log.LogInformation($"- Map {logType} log objects to csv records");
+                log.LogInformation($"- [transform-cdf50->run]: Map {logType} log objects to csv records");
                 List<Cfd50CsvDataRowDto> metaFridgeCsvRows = DataModelMappingService.MapMetaFridgeLogs(metaFridgeLogFiles);
 
-                log.LogInformation($"- Write {logType} csv records to azure blob storage");
+                log.LogInformation($"- [transform-cdf50->run]: Write {logType} csv records to azure blob storage");
                 string csvOutputBlobName = await Cfd50DataProcessorService.WriteMetaFridgeLogRecordsToCsvBlob(ouputContainer, payload, metaFridgeCsvRows, log);
 
-                log.LogInformation(" - Serialize http response body");
+                log.LogInformation("- [transform-cdf50->run]: Serialize http response body");
                 string responseBody = HttpService.SerializeHttpResponseBody(csvOutputBlobName);
-                log.LogInformation(" - Send http response message");
-                log.LogInformation(" - SUCCESS");
+                log.LogInformation("- [transform-cdf50->run]: Send http response message");
+                log.LogInformation("- [transform-cdf50->run]: SUCCESS");
                 CcdxService.LogMetaFridgeTransformSucceededEventToAppInsights(payload.FileName, log);
                 return new OkObjectResult(responseBody);
 

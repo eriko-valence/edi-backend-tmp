@@ -1,0 +1,37 @@
+{
+    "name": "ds_adls_stage_cfd50",
+    "properties": {
+        "linkedServiceName": {
+            "referenceName": "ls_adls_adlsedidev",
+            "type": "LinkedServiceReference"
+        },
+        "parameters": {
+            "PL_P_PARAM_LOG_DIR_GUID": {
+                "type": "string"
+            },
+            "PL_P_PARAM_FILE_NAME": {
+                "type": "string"
+            }
+        },
+        "folder": {
+            "name": "Stage"
+        },
+        "annotations": [],
+        "type": "Json",
+        "typeProperties": {
+            "location": {
+                "type": "AzureBlobFSLocation",
+                "fileName": {
+                    "value": "@dataset().PL_P_PARAM_FILE_NAME",
+                    "type": "Expression"
+                },
+                "folderPath": {
+                    "value": "@dataset().PL_P_PARAM_LOG_DIR_GUID",
+                    "type": "Expression"
+                },
+                "fileSystem": "staged-input"
+            }
+        },
+        "schema": {}
+    }
+}

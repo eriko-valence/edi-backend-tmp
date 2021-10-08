@@ -91,9 +91,9 @@ namespace fa_ccdx_consumer
                         string errorCode = "JC16";
                         string errorMessage = EdiErrorsService.BuildExceptionMessageString(null, errorCode, EdiErrorsService.BuildErrorVariableArrayList());
                         log.LogError($"- [ccdx-consumer->run]: {errorMessage}");
-                    }
-                    else if (headers["ce_type"].Equals(ccdxHttpHeaderCETypeUsbdg))
-                    {
+                    } 
+                    else if (CcdxService.ValidateCeTypeHeader(headers["ce_type"]))
+					{
                         string blobName = "";
                         string blobContainerName = "";
                         log.LogInformation($"- [ccdx-consumer->run]: Confirmed. Content is cold chain telemetry file. Proceed with processing.");

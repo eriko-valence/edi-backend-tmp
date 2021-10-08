@@ -59,10 +59,14 @@ namespace fa_ccdx_provider
                 reportFileName = Path.GetFileName(ccBlobInputName);
                 log.LogInformation($"- [ccdx-provider->run]: Track ccdx provider started event (app insights)");
                 CcdxService.LogCcdxProviderStartedEventToAppInsights(reportFileName, log);
+                
+                string loggerType = CcdxService.GetDataLoggerTypeFromBlobPath(ccBlobInputName);
+                log.LogInformation($"- [ccdx-provider->run]: Extracted logger type: {loggerType}");
+
                 log.LogInformation($"- [ccdx-provider->run]: Validate incoming blob originated from supported data logger");
-                if (CcdxService.ValidateCETypeHeaderUsingBlobPath(ccBlobInputName))
+                if (CcdxService.ValidateLoggerType(loggerType))
                 {
-                    log.LogInformation($"- [ccdx-provider->run]: Confirmed. Blob originated from supported data logger");
+                    log.LogInformation($"- [ccdx-provider->run]: Confirmed. Blob originated from supported data logger '{loggerType}'");
                     var sr = new StreamReader(ccBlobInput);
                     var body = await sr.ReadToEndAsync();
                     
@@ -80,10 +84,10 @@ namespace fa_ccdx_provider
                     MultipartFormDataContent multipartFormDataByteArrayContent = HttpService.BuildMultipartFormDataByteArrayContent(ccBlobInput, "file", ccBlobInputName);
                     HttpRequestMessage requestMessage = CcdxService.BuildCcdxHttpMultipartFormDataRequestMessage(HttpMethod.Post, ccdxHttpEndpoint, multipartFormDataByteArrayContent, sampleHeaders, ccBlobInputName, log);
 
-                    log.LogDebug($"- [ccdx-provider->run]: Request header metadata: ");
-                    log.LogDebug($"- [ccdx-provider->run]:   ce-id: {HttpService.GetHeaderStringValue(requestMessage, "ce-id")}");
-                    log.LogDebug($"- [ccdx-provider->run]:   ce-type: {HttpService.GetHeaderStringValue(requestMessage, "ce-type")}");
-                    log.LogDebug($"- [ccdx-provider->run]:   ceTime: {HttpService.GetHeaderStringValue(requestMessage, "ce-time")}");
+                    log.LogInformation($"- [ccdx-provider->run]: Request header metadata: ");
+                    log.LogInformation($"- [ccdx-provider->run]:   ce-id: {HttpService.GetHeaderStringValue(requestMessage, "ce-id")}");
+                    log.LogInformation($"- [ccdx-provider->run]:   ce-type: {HttpService.GetHeaderStringValue(requestMessage, "ce-type")}");
+                    log.LogInformation($"- [ccdx-provider->run]:   ce-time: {HttpService.GetHeaderStringValue(requestMessage, "ce-time")}");
 
                     // Send the http request
                     log.LogInformation($"- [ccdx-provider->run]: Send the http request to {ccdxHttpEndpoint}");
