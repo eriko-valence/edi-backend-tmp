@@ -46,7 +46,7 @@ namespace lib_edi.Models.Dto.Loggers
     public class UsbdgJsonReportFileRecordDto
 	{
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
-		public string ABST { get; set; }
+		//public string ABST { get; set; }
 		public double ACCD { get; set; }
 		public double ACSV { get; set; }
 		public string ALRM { get; set; }
