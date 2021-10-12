@@ -110,8 +110,6 @@ namespace fa_adf_transform_usbdg
 
                 CcdxService.LogEmsTransformSucceededEventToAppInsights(payload.FileName, log);
 
-                //log.LogInformation(" - Deleting input azure storage blob folder");
-                //AzureStorageBlobService.DeleteFolder(inputContainer, payload.Path);
                 log.LogInformation(" - SUCCESS");
 
                 CcdxService.LogEmsTransformSucceededEventToAppInsights(payload.FileName, log);
