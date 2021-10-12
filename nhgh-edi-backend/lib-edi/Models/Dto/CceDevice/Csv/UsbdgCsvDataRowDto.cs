@@ -67,10 +67,10 @@ namespace lib_edi.Models.Dto.CceDevice.Csv
 		public string LSER { get; set; }
 		public string LSV { get; set; }
 		public string RNAM { get; set; }
-		public int duration_secs { get; set; } // relative time (duration) in seconds (set by azure function)
-		public int emd_relt { get; set; }
-		public DateTime emd_abs { get; set; }
-		public DateTime utc_timestamp { get; set; }
+		public int DurationSecs { get; set; } // relative time (duration) in seconds (set by azure function)
+		//public int emd_relt { get; set; }
+		//public DateTime emd_abs { get; set; }
+		public DateTime UtcTimestamp { get; set; }
 		[Ignore]
 		public string Source { get; set; }
 		#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member

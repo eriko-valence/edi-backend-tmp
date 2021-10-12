@@ -165,7 +165,7 @@ namespace lib_edi.Services.Loggers
 				try
 				{
 					TimeSpan ts = XmlConvert.ToTimeSpan(record.RELT);
-					record.duration_secs = Convert.ToInt32(ts.TotalSeconds);
+					record.DurationSecs = Convert.ToInt32(ts.TotalSeconds);
 				}
 				catch (Exception e)
 				{
@@ -190,7 +190,7 @@ namespace lib_edi.Services.Loggers
 			foreach (UsbdgCsvDataRowDto record in records)
 			{
 				DateTime dt = CalculateAbsoluteTimeForUsbdgRecord(reportAbsoluteTimestamp, reportDurationSeconds, record.RELT, record.Source);
-				record.utc_timestamp = dt;
+				record.UtcTimestamp = dt;
 			}
 			return records;
 		}

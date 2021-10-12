@@ -92,7 +92,7 @@ namespace fa_adf_transform_usbdg
                 usbdbLogCsvRows = UsbdgDataProcessorService.ConvertRelativeTimeToTotalSecondsForUsbdgLogRecords(usbdbLogCsvRows);
 
                 log.LogInformation($"  - Sort csv records using relative time total seconds");
-                List<UsbdgCsvDataRowDto> sortedUsbdbLogCsvRows = usbdbLogCsvRows.OrderBy(i => (i.duration_secs)).ToList();
+                List<UsbdgCsvDataRowDto> sortedUsbdbLogCsvRows = usbdbLogCsvRows.OrderBy(i => (i.DurationSecs)).ToList();
 
                 log.LogInformation($"  - Convert relative time (e.g., 'P9DT59M53S') to total seconds (report only)");
                 int report_duration_total_seconds = UsbdgDataProcessorService.ConvertRelativeTimeStringToTotalSeconds(emsLogMetadata.emd_relt); // convert timespan to seconds
