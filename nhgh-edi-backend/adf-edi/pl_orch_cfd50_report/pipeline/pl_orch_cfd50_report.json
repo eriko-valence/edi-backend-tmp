@@ -3,7 +3,7 @@
     "properties": {
         "activities": [
             {
-                "name": "Execute Pipeline1",
+                "name": "Extract",
                 "type": "ExecutePipeline",
                 "dependsOn": [],
                 "userProperties": [],
@@ -33,16 +33,20 @@
                         "PL_P_PARAM_FULL_FILE_NAME": {
                             "value": "@pipeline().parameters.PL_P_PARAM_FILE_NAME",
                             "type": "Expression"
+                        },
+                        "PL_P_TRIGGER_BLOB_NAME": {
+                            "value": "@pipeline().parameters.PL_P_TRIGGER_BLOB_NAME",
+                            "type": "Expression"
                         }
                     }
                 }
             },
             {
-                "name": "Execute Pipeline2",
+                "name": "Transform",
                 "type": "ExecutePipeline",
                 "dependsOn": [
                     {
-                        "activity": "Execute Pipeline1",
+                        "activity": "Extract",
                         "dependencyConditions": [
                             "Succeeded"
                         ]
@@ -80,11 +84,11 @@
                 }
             },
             {
-                "name": "Execute Pipeline3",
+                "name": "Load",
                 "type": "ExecutePipeline",
                 "dependsOn": [
                     {
-                        "activity": "Execute Pipeline2",
+                        "activity": "Transform",
                         "dependencyConditions": [
                             "Succeeded"
                         ]
@@ -136,13 +140,16 @@
             },
             "PL_P_DEVICE_TYPE": {
                 "type": "string"
+            },
+            "PL_P_TRIGGER_BLOB_NAME": {
+                "type": "string"
             }
         },
         "folder": {
             "name": "Orchestration"
         },
         "annotations": [],
-        "lastPublishTime": "2021-10-08T05:21:38Z"
+        "lastPublishTime": "2021-10-14T00:07:30Z"
     },
     "type": "Microsoft.DataFactory/factories/pipelines"
 }
