@@ -3,7 +3,7 @@
     "properties": {
         "activities": [
             {
-                "name": "Execute Pipeline1",
+                "name": "Extract",
                 "type": "ExecutePipeline",
                 "dependsOn": [],
                 "userProperties": [],
@@ -42,11 +42,11 @@
                 }
             },
             {
-                "name": "Execute Pipeline2",
+                "name": "Transform",
                 "type": "ExecutePipeline",
                 "dependsOn": [
                     {
-                        "activity": "Execute Pipeline1",
+                        "activity": "Extract",
                         "dependencyConditions": [
                             "Succeeded"
                         ]
@@ -84,11 +84,11 @@
                 }
             },
             {
-                "name": "Execute Pipeline3",
+                "name": "Load",
                 "type": "ExecutePipeline",
                 "dependsOn": [
                     {
-                        "activity": "Execute Pipeline2",
+                        "activity": "Transform",
                         "dependencyConditions": [
                             "Succeeded"
                         ]
