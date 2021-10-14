@@ -3,7 +3,7 @@
     "properties": {
         "activities": [
             {
-                "name": "Copy data1",
+                "name": "Load",
                 "type": "Copy",
                 "dependsOn": [],
                 "policy": {
@@ -80,7 +80,7 @@
             "name": "Load"
         },
         "annotations": [],
-        "lastPublishTime": "2021-10-08T04:12:44Z"
+        "lastPublishTime": "2021-10-14T00:02:02Z"
     },
     "type": "Microsoft.DataFactory/factories/pipelines"
 }
