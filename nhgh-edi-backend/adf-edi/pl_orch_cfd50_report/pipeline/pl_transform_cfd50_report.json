@@ -26,6 +26,48 @@
                     "referenceName": "ls_func_cfd50_data_merge",
                     "type": "LinkedServiceReference"
                 }
+            },
+            {
+                "name": "Delete",
+                "type": "Delete",
+                "dependsOn": [
+                    {
+                        "activity": "Transform",
+                        "dependencyConditions": [
+                            "Succeeded"
+                        ]
+                    }
+                ],
+                "policy": {
+                    "timeout": "7.00:00:00",
+                    "retry": 0,
+                    "retryIntervalInSeconds": 30,
+                    "secureOutput": false,
+                    "secureInput": false
+                },
+                "userProperties": [],
+                "typeProperties": {
+                    "dataset": {
+                        "referenceName": "ds_adls_stage_cfd50",
+                        "type": "DatasetReference",
+                        "parameters": {
+                            "PL_P_PARAM_LOG_DIR_GUID": {
+                                "value": "@pipeline().parameters.PL_P_PARAM_LOG_DIR_GUID",
+                                "type": "Expression"
+                            },
+                            "PL_P_PARAM_FILE_NAME": {
+                                "value": "@pipeline().parameters.PL_P_PARAM_FILE_NAME",
+                                "type": "Expression"
+                            }
+                        }
+                    },
+                    "enableLogging": false,
+                    "storeSettings": {
+                        "type": "AzureBlobFSReadSettings",
+                        "recursive": true,
+                        "enablePartitionDiscovery": false
+                    }
+                }
             }
         ],
         "parameters": {
