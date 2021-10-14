@@ -3,7 +3,7 @@
     "properties": {
         "activities": [
             {
-                "name": "Exract",
+                "name": "Extract",
                 "type": "Copy",
                 "dependsOn": [],
                 "policy": {
@@ -73,7 +73,7 @@
                 "type": "Delete",
                 "dependsOn": [
                     {
-                        "activity": "Exract",
+                        "activity": "Extract",
                         "dependencyConditions": [
                             "Succeeded"
                         ]
