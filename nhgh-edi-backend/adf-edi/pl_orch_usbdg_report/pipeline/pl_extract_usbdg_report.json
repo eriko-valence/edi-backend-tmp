@@ -94,7 +94,7 @@
                         "type": "AzureBlobFSReadSettings",
                         "recursive": true,
                         "wildcardFileName": {
-                            "value": "@{pipeline().parameters.PL_P_PARAM_FULL_FILE_NAME}",
+                            "value": "@{pipeline().parameters.PL_P_TRIGGER_BLOB_NAME}",
                             "type": "Expression"
                         },
                         "enablePartitionDiscovery": false
@@ -116,6 +116,9 @@
                 "type": "string"
             },
             "PL_P_PARAM_FULL_FILE_NAME": {
+                "type": "string"
+            },
+            "PL_P_TRIGGER_BLOB_NAME": {
                 "type": "string"
             }
         },
