@@ -77,11 +77,17 @@ namespace lib_edi.Services.Loggers
 		/// <returns>
 		/// Serialized USBDG log text; Exception (48TV) otherwise
 		/// </returns>
-		private static string SerializeUsbdgLogReportText(UsbdgJsonDataFileDto emsLog)
+		private static string SerializeUsbdgLogText(UsbdgJsonDataFileDto emsLog)
 		{
 			try
 			{
-				return JsonConvert.SerializeObject(emsLog);
+				var settings = new JsonSerializerSettings
+				{
+					NullValueHandling = NullValueHandling.Ignore,
+					MissingMemberHandling = MissingMemberHandling.Ignore
+				};
+
+				return JsonConvert.SerializeObject(emsLog, settings);
 			}
 			catch (Exception e)
 			{
@@ -366,7 +372,7 @@ namespace lib_edi.Services.Loggers
 
 			foreach (UsbdgJsonDataFileDto emsLog in emsLogs)
 			{
-				string emsLogText = SerializeUsbdgLogReportText(emsLog);
+				string emsLogText = SerializeUsbdgLogText(emsLog);
 
 				ICollection<ValidationError> errors = emsLogJsonSchema.Validate(emsLogText);
 				if (errors.Count == 0)
