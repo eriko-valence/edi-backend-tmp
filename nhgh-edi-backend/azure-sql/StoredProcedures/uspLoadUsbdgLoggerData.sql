@@ -1,0 +1,72 @@
+CREATE PROCEDURE [ems_data].[uspLoadUsbdgLoggerData] @logger_data [ems_data].[logger_data_type] READONLY
+AS
+BEGIN
+
+	MERGE [ems_data].[logger_data] AS tpr
+	USING @logger_data AS tvp
+	ON tpr.[RELT] = tvp.[RELT] and tpr.[LSER] = tvp.[LSER]
+	WHEN NOT MATCHED THEN 
+	INSERT ([ABST],[ADOP],[AID],[AMFR],[AMOD],[APQS],[ASER],[CDAT],[CID],[CNAM],[CSER],[CSOF],[DNAM],[EDOP],[EID],[EMFR],[EMOD],[EMSV],[EPQS],[ESER],[FID],[FNAM],[LDOP],[LID],[LMFR],[LMOD],[LPQS],[LSER],[LSV],[RNAM],[ACCD],[ACSV],[ALRM],[BEMD],[BLOG],[CMPR],[CMPS],[DCCD],[DCSV],[DORF],[DORV],[EERR],[FANS],[HAMB],[HCOM],[HOLD],[LAT],[LERR],[LNG],[MSW],[RELT],[RTCW],[SVA],[TAMB],[TCON],[TFRZ],[TPCB],[TVC],[duration_secs],[utc_timestamp]) 
+	VALUES(
+	tvp.[ABST],
+	tvp.[ADOP],
+	tvp.[AID],
+	tvp.[AMFR],
+	tvp.[AMOD],
+	tvp.[APQS],
+	tvp.[ASER],
+	tvp.[CDAT],
+	tvp.[CID],
+	tvp.[CNAM],
+	tvp.[CSER],
+	tvp.[CSOF],
+	tvp.[DNAM],
+	tvp.[EDOP],
+	tvp.[EID],
+	tvp.[EMFR],
+	tvp.[EMOD],
+	tvp.[EMSV],
+	tvp.[EPQS],
+	tvp.[ESER],
+	tvp.[FID],
+	tvp.[FNAM],
+	tvp.[LDOP],
+	tvp.[LID],
+	tvp.[LMFR],
+	tvp.[LMOD],
+	tvp.[LPQS],
+	tvp.[LSER],
+	tvp.[LSV],
+	tvp.[RNAM],
+	tvp.[ACCD],
+	tvp.[ACSV],
+	tvp.[ALRM],
+	tvp.[BEMD],
+	tvp.[BLOG],
+	tvp.[CMPR],
+	tvp.[CMPS],
+	tvp.[DCCD],
+	tvp.[DCSV],
+	tvp.[DORF],
+	tvp.[DORV],
+	tvp.[EERR],
+	tvp.[FANS],
+	tvp.[HAMB],
+	tvp.[HCOM],
+	tvp.[HOLD],
+	tvp.[LAT],
+	tvp.[LERR],
+	tvp.[LNG],
+	tvp.[MSW],
+	tvp.[RELT],
+	tvp.[RTCW],
+	tvp.[SVA],
+	tvp.[TAMB],
+	tvp.[TCON],
+	tvp.[TFRZ],
+	tvp.[TPCB],
+	tvp.[TVC],
+	tvp.[duration_secs],
+	tvp.[utc_timestamp]);
+END
+GO
