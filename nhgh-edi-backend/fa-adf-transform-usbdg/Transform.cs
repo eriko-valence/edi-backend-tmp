@@ -55,20 +55,17 @@ namespace fa_adf_transform_usbdg
 
             try
             {
-
-
                 log.LogInformation($"- Deserialize {logType} log transformation http request body");
                 payload = await HttpService.DeserializeHttpRequestBody(req);
 
                 log.LogInformation("- Validate http request body");
                 HttpService.ValidateHttpRequestBody(payload);
 
+                log.LogInformation("- Log started event to app insights");
                 CcdxService.LogEmsTransformStartedEventToAppInsights(payload.FileName, log);
 
                 string inputBlobPath = $"{inputContainer.Name}/{payload.Path}";
                 log.LogInformation($"- Building input blob path: {inputBlobPath}");
-
-
 
                 log.LogInformation($"- List blobs in azure blob storage location {inputBlobPath}");
                 IEnumerable<IListBlobItem> logDirectoryBlobs = AzureStorageBlobService.ListBlobsInDirectory(inputContainer, payload.Path, inputBlobPath);
@@ -109,15 +106,11 @@ namespace fa_adf_transform_usbdg
                 string responseBody = HttpService.SerializeHttpResponseBody(csvOutputBlobName);
 
                 log.LogInformation(" - Send http response message");
-
+                log.LogInformation("- Log successfully completed event to app insights");
                 CcdxService.LogEmsTransformSucceededEventToAppInsights(payload.FileName, log);
-
                 log.LogInformation(" - SUCCESS");
 
-                CcdxService.LogEmsTransformSucceededEventToAppInsights(payload.FileName, log);
-
                 return new OkObjectResult(responseBody);
-
             }
             catch (Exception e)
             {
