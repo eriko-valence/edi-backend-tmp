@@ -97,10 +97,10 @@ namespace fa_adf_transform_usbdg
                 List<UsbdgCsvDataRowDto> sortedUsbdbLogCsvRows = usbdbLogCsvRows.OrderBy(i => (i.DurationSecs)).ToList();
 
                 log.LogInformation($"  - Convert relative time (e.g., 'P9DT59M53S') to total seconds (report only)");
-                int report_duration_total_seconds = UsbdgDataProcessorService.ConvertRelativeTimeStringToTotalSeconds(emsLogMetadata.emd_relt); // convert timespan to seconds
+                int report_duration_total_seconds = UsbdgDataProcessorService.ConvertRelativeTimeStringToTotalSeconds(emsLogMetadata.RELT); // convert timespan to seconds
 
-                log.LogInformation($"  - Calculate absolute time for each record using record relative time (781193) and report absolute time ('2021-06-20T23:00:02Z')");
-                sortedUsbdbLogCsvRows = UsbdgDataProcessorService.CalculateAbsoluteTimeForUsbdgRecords(sortedUsbdbLogCsvRows, report_duration_total_seconds, emsLogMetadata.emd_abs);
+                log.LogInformation($"  - Calculate absolute time for each record using record relative time (e.g., 781193) and report absolute time ('2021-06-20T23:00:02Z')");
+                sortedUsbdbLogCsvRows = UsbdgDataProcessorService.CalculateAbsoluteTimeForUsbdgRecords(sortedUsbdbLogCsvRows, report_duration_total_seconds, emsLogMetadata.ABST);
 
                 log.LogInformation($"- Write {logType} csv records to azure blob storage");
                 string csvOutputBlobName = await UsbdgDataProcessorService.WriteUsbdgLogRecordsToCsvBlob(ouputContainer, payload, sortedUsbdbLogCsvRows, log);

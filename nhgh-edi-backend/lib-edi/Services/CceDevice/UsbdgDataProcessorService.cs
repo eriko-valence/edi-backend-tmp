@@ -5,6 +5,7 @@ using lib_edi.Models.Dto.Loggers;
 using lib_edi.Services.Azure;
 using lib_edi.Services.Ccdx;
 using lib_edi.Services.Errors;
+using lib_edi.Services.System;
 using Microsoft.Azure.Storage.Blob;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
@@ -247,7 +248,9 @@ namespace lib_edi.Services.Loggers
 			{
 				int recordDurationSeconds = ConvertRelativeTimeStringToTotalSeconds(recordRelativeTime);
 				int elapsedSeconds = reportDurationSeconds - recordDurationSeconds; // How far away time wise is this record compared to the absolute time
-				DateTime reportAbsoluteDateTime = DateTime.Parse(reportAbsoluteTime);
+				
+				DateTime reportAbsoluteDateTime = DateTimeService.ConvertIso8601CompliantString(reportAbsoluteTime);
+
 				TimeSpan ts = TimeSpan.FromSeconds(elapsedSeconds);
 				DateTime UtcTime = reportAbsoluteDateTime.Subtract(ts);
 				return UtcTime;

@@ -11,41 +11,65 @@ namespace lib_edi.Models.Dto.Loggers
 	public class UsbdgJsonReportFileDto
 	{
 		#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
-		[JsonProperty("country")]
-		public string country { get; set; }
+		[JsonProperty("ABST")]
+		public string ABST { get; set; }
 
-		[JsonProperty("district")]
-		public string district { get; set; }
+		[JsonProperty("AID")]
+		public string AID { get; set; }
 
-		[JsonProperty("managerName")]
-		public string managerName { get; set; }
+		[JsonProperty("ALRM")]
+		public string ALRM { get; set; }
 
-		[JsonProperty("managerPhone")]
-		public string managerPhone { get; set; }
+		[JsonProperty("BEMD")]
+		public string BEMD { get; set; }
 
-		[JsonProperty("name")]
-		public string name { get; set; }
+		[JsonProperty("CID")]
+		public string CID { get; set; }
 
-		[JsonProperty("state")]
-		public string state { get; set; }
+		[JsonProperty("DNAM")]
+		public string DNAM { get; set; }
 
-		[JsonProperty("accuracy")]
-		public string accuracy { get; set; }
+		[JsonProperty("EDOP")]
+		public string EDOP { get; set; }
 
-		[JsonProperty("latitude")]
-		public string latitude { get; set; }
+		[JsonProperty("EERR")]
+		public string EERR { get; set; }
 
-		[JsonProperty("longitude")]
-		public string longitude { get; set; }
+		[JsonProperty("EID")]
+		public string EID { get; set; }
 
-		[JsonProperty("emd_abs")]
-		public string emd_abs { get; set; }
+		[JsonProperty("EMFR")]
+		public string EMFR { get; set; }
 
-		[JsonProperty("emd_relt")]
-		public string emd_relt { get; set; }
+		[JsonProperty("EMOD")]
+		public string EMOD { get; set; }
+
+		[JsonProperty("EMSV")]
+		public string EMSV { get; set; }
+
+		[JsonProperty("EPQS")]
+		public string EPQS { get; set; }
 
 		[JsonProperty("ESER")]
 		public string ESER { get; set; }
+
+		[JsonProperty("FID")]
+		public string FID { get; set; }
+
+		[JsonProperty("FNAM")]
+		public string FNAM { get; set; }
+
+		[JsonProperty("LAT")]
+		public string LAT { get; set; }
+
+		[JsonProperty("LNG")]
+		public string LNG { get; set; }
+
+		[JsonProperty("RNAM")]
+		public string RNAM { get; set; }
+
+		[JsonProperty("RELT")]
+		public string RELT { get; set; }
 		#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 	}
 }
