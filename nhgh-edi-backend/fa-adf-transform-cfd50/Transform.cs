@@ -43,14 +43,13 @@ namespace fa_adf_transform_cfd50
             TransformHttpRequestMessageBodyDto payload = null;
             try
             {
-
                 log.LogInformation($"- [transform-cdf50->run]: Deserialize {logType} log transformation http request body");
                 payload = await HttpService.DeserializeHttpRequestBody(req);
 
-                CcdxService.LogMetaFridgeTransformStartedEventToAppInsights(payload.FileName, log);
-
                 log.LogInformation("- [transform-cdf50->run]: Validate http request body");
                 HttpService.ValidateHttpRequestBody(payload);
+
+                CcdxService.LogMetaFridgeTransformStartedEventToAppInsights(payload.FileName, log);
 
                 string loggerType = CcdxService.GetDataLoggerTypeFromBlobPath(payload.FileName);
                 log.LogInformation($"- [transform-cdf50->run]: Extracted logger type: {loggerType}");
@@ -86,7 +85,7 @@ namespace fa_adf_transform_cfd50
             {
                 string errorCode = "K79T";
 
-                CcdxService.LogMetaFridgeTransformErrorEventToAppInsights(payload.FileName, log, e, errorCode);
+                CcdxService.LogMetaFridgeTransformErrorEventToAppInsights(payload?.FileName, log, e, errorCode);
 
                 if (e is BadRequestException)
                 {

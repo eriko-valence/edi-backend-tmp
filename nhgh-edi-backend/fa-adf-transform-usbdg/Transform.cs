@@ -60,13 +60,15 @@ namespace fa_adf_transform_usbdg
                 log.LogInformation($"- Deserialize {logType} log transformation http request body");
                 payload = await HttpService.DeserializeHttpRequestBody(req);
 
+                log.LogInformation("- Validate http request body");
+                HttpService.ValidateHttpRequestBody(payload);
+
                 CcdxService.LogEmsTransformStartedEventToAppInsights(payload.FileName, log);
 
                 string inputBlobPath = $"{inputContainer.Name}/{payload.Path}";
                 log.LogInformation($"- Building input blob path: {inputBlobPath}");
 
-                log.LogInformation("- Validate http request body");
-                HttpService.ValidateHttpRequestBody(payload);
+
 
                 log.LogInformation($"- List blobs in azure blob storage location {inputBlobPath}");
                 IEnumerable<IListBlobItem> logDirectoryBlobs = AzureStorageBlobService.ListBlobsInDirectory(inputContainer, payload.Path, inputBlobPath);
@@ -123,7 +125,7 @@ namespace fa_adf_transform_usbdg
                 string errorMessage = EdiErrorsService.BuildExceptionMessageString(e, errorCode, EdiErrorsService.BuildErrorVariableArrayList());
                 string exceptionInnerMessage = EdiErrorsService.GetInnerException(e);
 
-                CcdxService.LogEmsTransformErrorEventToAppInsights(payload.FileName, log, e, errorCode);
+                CcdxService.LogEmsTransformErrorEventToAppInsights(payload?.FileName, log, e, errorCode);
 
                 if (e is BadRequestException)
                 {
