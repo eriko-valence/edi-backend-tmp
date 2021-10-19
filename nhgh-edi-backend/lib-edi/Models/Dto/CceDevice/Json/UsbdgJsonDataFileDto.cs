@@ -39,7 +39,7 @@ namespace lib_edi.Models.Dto.Loggers
 		public string LSV { get; set; }
 		public string RNAM { get; set; }
 		public IList<UsbdgJsonReportFileRecordDto> records { get; set; }
-        public string Source { get; set; }
+        public string _SOURCE { get; set; }
         #pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
     }
 

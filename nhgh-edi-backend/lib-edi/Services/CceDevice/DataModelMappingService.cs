@@ -103,12 +103,12 @@ namespace lib_edi.Services.Loggers
         /// <returns>
         /// A consolidated list of csv USBDG MetaFridge log file records  if successful; Exception (D39Y) if any failures occur 
         /// </returns>
-        public static List<UsbdgCsvDataRowDto> MapUsbdgLogs(List<UsbdgJsonDataFileDto> usbdgLogFiles)
+        public static List<UsbdgCsvDataRowDto> MapUsbdgLogs(List<UsbdgJsonDataFileDto> usbdgLogFiles, UsbdgJsonReportFileDto reportFile)
         {
             List<UsbdgCsvDataRowDto> usbdbLogCsvRows = new List<UsbdgCsvDataRowDto>();
             foreach (UsbdgJsonDataFileDto usbdbLog in usbdgLogFiles)
             {
-                usbdbLogCsvRows.AddRange(MapUsbdgLogFileRecords(usbdbLog));
+                usbdbLogCsvRows.AddRange(MapUsbdgLogFileRecords(usbdbLog, reportFile));
             }
 
             return usbdbLogCsvRows;
@@ -125,37 +125,37 @@ namespace lib_edi.Services.Loggers
         /// <returns>
         /// A list of csv compatible USBDG log file records, if successful; Exception (D39Y) if any failures occur 
         /// </returns>
-        public static List<UsbdgCsvDataRowDto> MapUsbdgLogFileRecords(UsbdgJsonDataFileDto usbdgLog)
+        public static List<UsbdgCsvDataRowDto> MapUsbdgLogFileRecords(UsbdgJsonDataFileDto usbdgLog, UsbdgJsonReportFileDto reportFile)
         {
             try
             {
                 List<UsbdgCsvDataRowDto> usbdbCsvRows = new List<UsbdgCsvDataRowDto>();
-
+             
                 foreach (UsbdgJsonReportFileRecordDto usbdgLogRecord in usbdgLog.records)
                 {
                     UsbdgCsvDataRowDto csvEmsLogRecord = new UsbdgCsvDataRowDto();
-                    csvEmsLogRecord.ABST = usbdgLog.ABST;
+                    csvEmsLogRecord.ABST = reportFile.ABST;
                     csvEmsLogRecord.ADOP = usbdgLog.ADOP;
-                    csvEmsLogRecord.AID = usbdgLog.AID;
+                    csvEmsLogRecord.AID = reportFile.AID;
                     csvEmsLogRecord.AMFR = usbdgLog.AMFR;
                     csvEmsLogRecord.AMOD = usbdgLog.AMOD;
                     csvEmsLogRecord.APQS = usbdgLog.APQS;
                     csvEmsLogRecord.ASER = usbdgLog.ASER;
                     csvEmsLogRecord.CDAT = usbdgLog.CDAT;
-                    csvEmsLogRecord.CID = usbdgLog.CID;
+                    csvEmsLogRecord.CID = reportFile.CID;
                     csvEmsLogRecord.CNAM = usbdgLog.CNAM;
                     csvEmsLogRecord.CSER = usbdgLog.CSER;
                     csvEmsLogRecord.CSOF = usbdgLog.CSOF;
-                    csvEmsLogRecord.DNAM = usbdgLog.DNAM;
-                    csvEmsLogRecord.EDOP = usbdgLog.EDOP;
-                    csvEmsLogRecord.EID = usbdgLog.EID;
-                    csvEmsLogRecord.EMFR = usbdgLog.EMFR;
-                    csvEmsLogRecord.EMOD = usbdgLog.EMOD;
-                    csvEmsLogRecord.EMSV = usbdgLog.EMSV;
-                    csvEmsLogRecord.EPQS = usbdgLog.EPQS;
-                    csvEmsLogRecord.ESER = usbdgLog.ESER;
-                    csvEmsLogRecord.FID = usbdgLog.FID;
-                    csvEmsLogRecord.FNAM = usbdgLog.FNAM;
+                    csvEmsLogRecord.DNAM = reportFile.DNAM;
+                    csvEmsLogRecord.EDOP = reportFile.EDOP;
+                    csvEmsLogRecord.EID = reportFile.EID;
+                    csvEmsLogRecord.EMFR = reportFile.EMFR;
+                    csvEmsLogRecord.EMOD = reportFile.EMOD;
+                    csvEmsLogRecord.EMSV = reportFile.EMSV;
+                    csvEmsLogRecord.EPQS = reportFile.EPQS;
+                    csvEmsLogRecord.ESER = reportFile.ESER;
+                    csvEmsLogRecord.FID = reportFile.FID;
+                    csvEmsLogRecord.FNAM = reportFile.FNAM;
                     csvEmsLogRecord.LDOP = usbdgLog.LDOP;
                     csvEmsLogRecord.LID = usbdgLog.LID;
                     csvEmsLogRecord.LMFR = usbdgLog.LMFR;
@@ -163,12 +163,13 @@ namespace lib_edi.Services.Loggers
                     csvEmsLogRecord.LPQS = usbdgLog.LPQS;
                     csvEmsLogRecord.LSER = usbdgLog.LSER;
                     csvEmsLogRecord.LSV = usbdgLog.LSV;
-                    csvEmsLogRecord.RNAM = usbdgLog.RNAM;
+                    csvEmsLogRecord.RNAM = reportFile.RNAM;
+                    csvEmsLogRecord.ALRM = reportFile.ALRM;
+                    csvEmsLogRecord.EERR = reportFile.EERR;
 
                     // json record properties
                     csvEmsLogRecord.ACCD = usbdgLogRecord.ACCD;
                     csvEmsLogRecord.ACSV = usbdgLogRecord.ACSV;
-                    csvEmsLogRecord.ALRM = usbdgLogRecord.ALRM;
                     csvEmsLogRecord.BEMD = usbdgLogRecord.BEMD;
                     csvEmsLogRecord.BLOG = usbdgLogRecord.BLOG;
                     csvEmsLogRecord.CMPR = usbdgLogRecord.CMPR;
@@ -177,7 +178,7 @@ namespace lib_edi.Services.Loggers
                     csvEmsLogRecord.DCSV = usbdgLogRecord.DCSV;
                     csvEmsLogRecord.DORF = usbdgLogRecord.DORF;
                     csvEmsLogRecord.DORV = usbdgLogRecord.DORV;
-                    csvEmsLogRecord.EERR = usbdgLogRecord.EERR;
+                    
                     csvEmsLogRecord.FANS = usbdgLogRecord.FANS;
                     csvEmsLogRecord.HAMB = usbdgLogRecord.HAMB;
                     csvEmsLogRecord.HCOM = usbdgLogRecord.HCOM;
@@ -194,7 +195,7 @@ namespace lib_edi.Services.Loggers
                     csvEmsLogRecord.TFRZ = usbdgLogRecord.TFRZ;
                     csvEmsLogRecord.TPCB = usbdgLogRecord.TPCB;
                     csvEmsLogRecord.TVC = usbdgLogRecord.TVC;
-                    csvEmsLogRecord.Source = usbdgLog.Source;
+                    csvEmsLogRecord.Source = usbdgLog._SOURCE;
                     usbdbCsvRows.Add(csvEmsLogRecord);
                 }
 

@@ -172,7 +172,7 @@ namespace lib_edi.Services.Loggers
 				try
 				{
 					TimeSpan ts = XmlConvert.ToTimeSpan(record.RELT);
-					record.DurationSecs = Convert.ToInt32(ts.TotalSeconds);
+					record._RELT_SECS = Convert.ToInt32(ts.TotalSeconds);
 				}
 				catch (Exception e)
 				{
@@ -197,7 +197,7 @@ namespace lib_edi.Services.Loggers
 			foreach (UsbdgCsvDataRowDto record in records)
 			{
 				DateTime dt = CalculateAbsoluteTimeForUsbdgRecord(reportAbsoluteTimestamp, reportDurationSeconds, record.RELT, record.Source);
-				record.UtcTimestamp = dt;
+				record._ABST = dt;
 			}
 			return records;
 		}
@@ -330,7 +330,7 @@ namespace lib_edi.Services.Loggers
 				log.LogInformation($"  - Blob: {emsBlobPath}");
 				string emsLogJsonText = await AzureStorageBlobService.DownloadBlobTextAsync(cloudBlobContainer, logBlob.Name);
 				UsbdgJsonDataFileDto emsLog = DeserializeUsbdgLogText(logBlob.Name, emsLogJsonText);
-				emsLog.Source = $"{emsBlobPath}";
+				emsLog._SOURCE = $"{emsBlobPath}";
 				usbdgLogFiles.Add(emsLog);
 			}
 
@@ -387,7 +387,7 @@ namespace lib_edi.Services.Loggers
 				{
 					string validationResultString = BuildJsonValidationErrorString(errors);
 					log.LogError($"    - Validated: No - {validationResultString}");
-					string customErrorMessage = EdiErrorsService.BuildExceptionMessageString(null, "R85Y", EdiErrorsService.BuildErrorVariableArrayList(emsLog.Source, validationResultString));
+					string customErrorMessage = EdiErrorsService.BuildExceptionMessageString(null, "R85Y", EdiErrorsService.BuildErrorVariableArrayList(emsLog._SOURCE, validationResultString));
 					throw new Exception(customErrorMessage);
 				}
 			}
