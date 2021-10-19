@@ -33,7 +33,7 @@ CREATE TABLE [ems_data].[logger_data](
 	[ACSV] [decimal](4, 1) NULL,
 	[ALRM] [varchar](20) NULL,
 	[BEMD] [decimal](5, 1) NULL,
-	[BLOG] [int] NULL,
+	[BLOG] [decimal](5, 1) NULL,
 	[CMPR] [int] NULL,
 	[CMPS] [int] NULL,
 	[DCCD] [decimal](3, 1) NULL,
@@ -57,7 +57,7 @@ CREATE TABLE [ems_data].[logger_data](
 	[TFRZ] [decimal](5, 2) NULL,
 	[TPCB] [decimal](5, 2) NULL,
 	[TVC] [decimal](5, 2) NULL,
-	[duration_secs] [varchar](20) NULL,
-	[utc_timestamp] [varchar](20) NULL
+	[_RELT_SECS] [varchar](20) NULL,
+	[_ABST] [varchar](20) NULL
 ) ON [PRIMARY]
 GO

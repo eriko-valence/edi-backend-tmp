@@ -6,7 +6,7 @@ BEGIN
 	USING @logger_data AS tvp
 	ON tpr.[RELT] = tvp.[RELT] and tpr.[LSER] = tvp.[LSER]
 	WHEN NOT MATCHED THEN 
-	INSERT ([ABST],[ADOP],[AID],[AMFR],[AMOD],[APQS],[ASER],[CDAT],[CID],[CNAM],[CSER],[CSOF],[DNAM],[EDOP],[EID],[EMFR],[EMOD],[EMSV],[EPQS],[ESER],[FID],[FNAM],[LDOP],[LID],[LMFR],[LMOD],[LPQS],[LSER],[LSV],[RNAM],[ACCD],[ACSV],[ALRM],[BEMD],[BLOG],[CMPR],[CMPS],[DCCD],[DCSV],[DORF],[DORV],[EERR],[FANS],[HAMB],[HCOM],[HOLD],[LAT],[LERR],[LNG],[MSW],[RELT],[RTCW],[SVA],[TAMB],[TCON],[TFRZ],[TPCB],[TVC],[duration_secs],[utc_timestamp]) 
+	INSERT ([ABST],[ADOP],[AID],[AMFR],[AMOD],[APQS],[ASER],[CDAT],[CID],[CNAM],[CSER],[CSOF],[DNAM],[EDOP],[EID],[EMFR],[EMOD],[EMSV],[EPQS],[ESER],[FID],[FNAM],[LDOP],[LID],[LMFR],[LMOD],[LPQS],[LSER],[LSV],[RNAM],[ACCD],[ACSV],[ALRM],[BEMD],[BLOG],[CMPR],[CMPS],[DCCD],[DCSV],[DORF],[DORV],[EERR],[FANS],[HAMB],[HCOM],[HOLD],[LAT],[LERR],[LNG],[MSW],[RELT],[RTCW],[SVA],[TAMB],[TCON],[TFRZ],[TPCB],[TVC],[_RELT_SECS],[_ABST]) 
 	VALUES(
 	tvp.[ABST],
 	tvp.[ADOP],
@@ -66,7 +66,7 @@ BEGIN
 	tvp.[TFRZ],
 	tvp.[TPCB],
 	tvp.[TVC],
-	tvp.[duration_secs],
-	tvp.[utc_timestamp]);
+	tvp.[_RELT_SECS],
+	tvp.[_ABST]);
 END
 GO
