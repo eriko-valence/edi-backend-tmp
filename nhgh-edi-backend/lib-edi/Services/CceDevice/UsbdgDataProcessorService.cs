@@ -263,6 +263,31 @@ namespace lib_edi.Services.Loggers
 		}
 
 		/// <summary>
+		/// Calculate a record's elapsed time (in seconds) since the logger activation relative time
+		/// </summary>
+		/// <param name="loggerActivationRelativeTime">Logger activation relative time</param>
+		/// <param name="recordRelativeTime">Record's relative time</param>
+		/// <returns>
+		/// Seconds that elapsed snce logger activation relative time
+		/// </returns>
+		public static int CalculateElapsedSecondsFromLoggerActivationRelativeTime(string loggerActivationRelativeTime, string recordRelativeTime)
+		{
+			try
+			{
+				int loggerActivationRelativeTimeSecs = ConvertRelativeTimeStringToTotalSeconds(loggerActivationRelativeTime); // convert timespan to seconds
+				int recordRelativeTimeSecs = ConvertRelativeTimeStringToTotalSeconds(recordRelativeTime);
+				int elapsedSeconds = loggerActivationRelativeTimeSecs - recordRelativeTimeSecs; // How far away time wise is this record compared to the absolute time
+				return elapsedSeconds;
+			}
+			catch (Exception e)
+			{
+				//string customErrorMessage = EdiErrorsService.BuildExceptionMessageString(e, "4Q5D", EdiErrorsService.BuildErrorVariableArrayList(reportAbsoluteTime, recordRelativeTime, sourceLogFile));
+				//throw new Exception(customErrorMessage);
+				throw e;
+			}
+		}
+
+		/// <summary>
 		/// Writes denormalized USBDG log file csv records to Azure blob storage
 		/// </summary>
 		/// <param name="cloudBlobContainer">A container in the Microsoft Azure Blob service</param>
