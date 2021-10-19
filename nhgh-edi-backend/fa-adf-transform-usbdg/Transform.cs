@@ -19,6 +19,7 @@ using lib_edi.Models.Dto.Loggers;
 using lib_edi.Models.Dto.CceDevice.Csv;
 using lib_edi.Services.Errors;
 using lib_edi.Exceptions;
+using lib_edi.Services.System;
 
 namespace fa_adf_transform_usbdg
 {
@@ -55,18 +56,17 @@ namespace fa_adf_transform_usbdg
 
             try
             {
-
-
                 log.LogInformation($"- Deserialize {logType} log transformation http request body");
                 payload = await HttpService.DeserializeHttpRequestBody(req);
 
+                log.LogInformation("- Validate http request body");
+                HttpService.ValidateHttpRequestBody(payload);
+
+                log.LogInformation("- Log started event to app insights");
                 CcdxService.LogEmsTransformStartedEventToAppInsights(payload.FileName, log);
 
                 string inputBlobPath = $"{inputContainer.Name}/{payload.Path}";
                 log.LogInformation($"- Building input blob path: {inputBlobPath}");
-
-                log.LogInformation("- Validate http request body");
-                HttpService.ValidateHttpRequestBody(payload);
 
                 log.LogInformation($"- List blobs in azure blob storage location {inputBlobPath}");
                 IEnumerable<IListBlobItem> logDirectoryBlobs = AzureStorageBlobService.ListBlobsInDirectory(inputContainer, payload.Path, inputBlobPath);
@@ -85,20 +85,43 @@ namespace fa_adf_transform_usbdg
                 List<UsbdgJsonDataFileDto> validatedUsbdgLogFiles = await UsbdgDataProcessorService.ValidateUsbdgLogBlobs(emsConfgContainer, usbdgLogFiles, log);
 
                 log.LogInformation($"- Map {logType} log objects to csv records");
-                List<UsbdgCsvDataRowDto> usbdbLogCsvRows = DataModelMappingService.MapUsbdgLogs(usbdgLogFiles);
+                List<UsbdgCsvDataRowDto> usbdbLogCsvRows = DataModelMappingService.MapUsbdgLogs(usbdgLogFiles, emsLogMetadata);
 
                 log.LogInformation($"- Transform {logType} csv records");
+
                 log.LogInformation($"  - Convert relative time to total seconds (all records)");
                 usbdbLogCsvRows = UsbdgDataProcessorService.ConvertRelativeTimeToTotalSecondsForUsbdgLogRecords(usbdbLogCsvRows);
 
                 log.LogInformation($"  - Sort csv records using relative time total seconds");
-                List<UsbdgCsvDataRowDto> sortedUsbdbLogCsvRows = usbdbLogCsvRows.OrderBy(i => (i.duration_secs)).ToList();
+                List<UsbdgCsvDataRowDto> sortedUsbdbLogCsvRows = usbdbLogCsvRows.OrderBy(i => (i._RELT_SECS)).ToList();
 
                 log.LogInformation($"  - Convert relative time (e.g., 'P9DT59M53S') to total seconds (report only)");
-                int report_duration_total_seconds = UsbdgDataProcessorService.ConvertRelativeTimeStringToTotalSeconds(emsLogMetadata.emd_relt); // convert timespan to seconds
+                int DurationSecs = UsbdgDataProcessorService.ConvertRelativeTimeStringToTotalSeconds(emsLogMetadata.RELT); // convert timespan to seconds
 
-                log.LogInformation($"  - Calculate absolute time for each record using record relative time (781193) and report absolute time ('2021-06-20T23:00:02Z')");
-                sortedUsbdbLogCsvRows = UsbdgDataProcessorService.CalculateAbsoluteTimeForUsbdgRecords(sortedUsbdbLogCsvRows, report_duration_total_seconds, emsLogMetadata.emd_abs);
+                log.LogInformation($"  - Calculate absolute time for each record using record relative time (e.g., 781193) and report absolute time ('2021-06-20T23:00:02Z')");
+                sortedUsbdbLogCsvRows = UsbdgDataProcessorService.CalculateAbsoluteTimeForUsbdgRecords(sortedUsbdbLogCsvRows, DurationSecs, emsLogMetadata.ABST);
+
+                log.LogInformation($"  - Cloud upload times: ");
+                log.LogInformation($"    - EMD (source: linux cellular ntp lookup) : {DateTimeService.ConvertIso8601CompliantString(emsLogMetadata.ABST)} (UTC)");
+                log.LogInformation($"    - Logger (source: battery backed real time clock) : {emsLogMetadata.RELT} (Relative Time)");
+                log.LogInformation($"    - Logger (source: battery backed real time clock) : {UsbdgDataProcessorService.ConvertRelativeTimeStringToTotalSeconds(emsLogMetadata.RELT)} (Duration in Seconds)");
+                log.LogInformation($"  - Absolute time calculation results (first two records): ");
+                if (usbdbLogCsvRows.Count > 1)
+				{
+                    log.LogInformation($"    - record[0].ElapsedSecs (Elapsed secs from activation time): {UsbdgDataProcessorService.CalculateElapsedSecondsFromLoggerActivationRelativeTime(emsLogMetadata.RELT, usbdbLogCsvRows[0].RELT)}");
+                    log.LogInformation($"    - record[0].ABST (EMD cloud upload absolute time): {usbdbLogCsvRows[0].ABST}");
+                    log.LogInformation($"    - record[0].RELT (Logger cloud upload relative time): {usbdbLogCsvRows[0].RELT}");
+                    log.LogInformation($"    - record[0]._RELT_SECS (Logger cloud upload relative time seconds): {usbdbLogCsvRows[0]._RELT_SECS}");
+                    log.LogInformation($"    - record[0]._ABST (calculated absolute time): {usbdbLogCsvRows[0]._ABST}");
+                    log.LogInformation($" ");
+                    log.LogInformation($"    - record[1].ElapsedSecs (Elapsed secs from activation time): {UsbdgDataProcessorService.CalculateElapsedSecondsFromLoggerActivationRelativeTime(emsLogMetadata.RELT, usbdbLogCsvRows[1].RELT)}");
+                    log.LogInformation($"    - record[1].ABST (EMD cloud upload absolute time): {usbdbLogCsvRows[1].ABST}");
+                    log.LogInformation($"    - record[1].RELT (Logger cloud upload relative time): {usbdbLogCsvRows[1].RELT}");
+                    log.LogInformation($"    - record[1]._RELT_SECS (Logger cloud upload relative time seconds): {usbdbLogCsvRows[1]._RELT_SECS}");
+                    log.LogInformation($"    - record[1]._ABST (calculated absolute time): {usbdbLogCsvRows[1]._ABST}");
+                }
+
+
 
                 log.LogInformation($"- Write {logType} csv records to azure blob storage");
                 string csvOutputBlobName = await UsbdgDataProcessorService.WriteUsbdgLogRecordsToCsvBlob(ouputContainer, payload, sortedUsbdbLogCsvRows, log);
@@ -107,17 +130,11 @@ namespace fa_adf_transform_usbdg
                 string responseBody = HttpService.SerializeHttpResponseBody(csvOutputBlobName);
 
                 log.LogInformation(" - Send http response message");
-
+                log.LogInformation("- Log successfully completed event to app insights");
                 CcdxService.LogEmsTransformSucceededEventToAppInsights(payload.FileName, log);
-
-                //log.LogInformation(" - Deleting input azure storage blob folder");
-                //AzureStorageBlobService.DeleteFolder(inputContainer, payload.Path);
                 log.LogInformation(" - SUCCESS");
 
-                CcdxService.LogEmsTransformSucceededEventToAppInsights(payload.FileName, log);
-
                 return new OkObjectResult(responseBody);
-
             }
             catch (Exception e)
             {
@@ -125,7 +142,7 @@ namespace fa_adf_transform_usbdg
                 string errorMessage = EdiErrorsService.BuildExceptionMessageString(e, errorCode, EdiErrorsService.BuildErrorVariableArrayList());
                 string exceptionInnerMessage = EdiErrorsService.GetInnerException(e);
 
-                CcdxService.LogEmsTransformErrorEventToAppInsights(payload.FileName, log, e, errorCode);
+                CcdxService.LogEmsTransformErrorEventToAppInsights(payload?.FileName, log, e, errorCode);
 
                 if (e is BadRequestException)
                 {

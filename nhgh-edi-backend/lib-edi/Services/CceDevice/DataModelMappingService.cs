@@ -103,12 +103,12 @@ namespace lib_edi.Services.Loggers
         /// <returns>
         /// A consolidated list of csv USBDG MetaFridge log file records  if successful; Exception (D39Y) if any failures occur 
         /// </returns>
-        public static List<UsbdgCsvDataRowDto> MapUsbdgLogs(List<UsbdgJsonDataFileDto> usbdgLogFiles)
+        public static List<UsbdgCsvDataRowDto> MapUsbdgLogs(List<UsbdgJsonDataFileDto> usbdgLogFiles, UsbdgJsonReportFileDto reportFile)
         {
             List<UsbdgCsvDataRowDto> usbdbLogCsvRows = new List<UsbdgCsvDataRowDto>();
             foreach (UsbdgJsonDataFileDto usbdbLog in usbdgLogFiles)
             {
-                usbdbLogCsvRows.AddRange(MapUsbdgLogFileRecords(usbdbLog));
+                usbdbLogCsvRows.AddRange(MapUsbdgLogFileRecords(usbdbLog, reportFile));
             }
 
             return usbdbLogCsvRows;
@@ -125,58 +125,77 @@ namespace lib_edi.Services.Loggers
         /// <returns>
         /// A list of csv compatible USBDG log file records, if successful; Exception (D39Y) if any failures occur 
         /// </returns>
-        public static List<UsbdgCsvDataRowDto> MapUsbdgLogFileRecords(UsbdgJsonDataFileDto usbdgLog)
+        public static List<UsbdgCsvDataRowDto> MapUsbdgLogFileRecords(UsbdgJsonDataFileDto usbdgLog, UsbdgJsonReportFileDto reportFile)
         {
             try
             {
                 List<UsbdgCsvDataRowDto> usbdbCsvRows = new List<UsbdgCsvDataRowDto>();
-
+             
                 foreach (UsbdgJsonReportFileRecordDto usbdgLogRecord in usbdgLog.records)
                 {
                     UsbdgCsvDataRowDto csvEmsLogRecord = new UsbdgCsvDataRowDto();
-
-                    csvEmsLogRecord.ADAT = usbdgLog.ADAT;
+                    csvEmsLogRecord.ABST = reportFile.ABST;
+                    csvEmsLogRecord.ADOP = usbdgLog.ADOP;
+                    csvEmsLogRecord.AID = reportFile.AID;
                     csvEmsLogRecord.AMFR = usbdgLog.AMFR;
                     csvEmsLogRecord.AMOD = usbdgLog.AMOD;
                     csvEmsLogRecord.APQS = usbdgLog.APQS;
                     csvEmsLogRecord.ASER = usbdgLog.ASER;
                     csvEmsLogRecord.CDAT = usbdgLog.CDAT;
+                    csvEmsLogRecord.CID = reportFile.CID;
                     csvEmsLogRecord.CNAM = usbdgLog.CNAM;
                     csvEmsLogRecord.CSER = usbdgLog.CSER;
                     csvEmsLogRecord.CSOF = usbdgLog.CSOF;
+                    csvEmsLogRecord.DNAM = reportFile.DNAM;
+                    csvEmsLogRecord.EDOP = reportFile.EDOP;
+                    csvEmsLogRecord.EID = reportFile.EID;
+                    csvEmsLogRecord.EMFR = reportFile.EMFR;
+                    csvEmsLogRecord.EMOD = reportFile.EMOD;
+                    csvEmsLogRecord.EMSV = reportFile.EMSV;
+                    csvEmsLogRecord.EPQS = reportFile.EPQS;
+                    csvEmsLogRecord.ESER = reportFile.ESER;
+                    csvEmsLogRecord.FID = reportFile.FID;
+                    csvEmsLogRecord.FNAM = reportFile.FNAM;
+                    csvEmsLogRecord.LDOP = usbdgLog.LDOP;
+                    csvEmsLogRecord.LID = usbdgLog.LID;
                     csvEmsLogRecord.LMFR = usbdgLog.LMFR;
                     csvEmsLogRecord.LMOD = usbdgLog.LMOD;
-                    csvEmsLogRecord.LSER = usbdgLog.LSER;
-                    csvEmsLogRecord.LDAT = usbdgLog.LDAT;
-                    csvEmsLogRecord.SWVER = usbdgLog.SWVER;
                     csvEmsLogRecord.LPQS = usbdgLog.LPQS;
+                    csvEmsLogRecord.LSER = usbdgLog.LSER;
+                    csvEmsLogRecord.LSV = usbdgLog.LSV;
+                    csvEmsLogRecord.RNAM = reportFile.RNAM;
+                    csvEmsLogRecord.ALRM = reportFile.ALRM;
+                    csvEmsLogRecord.EERR = reportFile.EERR;
 
                     // json record properties
+                    csvEmsLogRecord.ACCD = usbdgLogRecord.ACCD;
+                    csvEmsLogRecord.ACSV = usbdgLogRecord.ACSV;
+                    csvEmsLogRecord.BEMD = usbdgLogRecord.BEMD;
+                    csvEmsLogRecord.BLOG = usbdgLogRecord.BLOG;
+                    csvEmsLogRecord.CMPR = usbdgLogRecord.CMPR;
+                    csvEmsLogRecord.CMPS = usbdgLogRecord.CMPS;
+                    csvEmsLogRecord.DCCD = usbdgLogRecord.DCCD;
+                    csvEmsLogRecord.DCSV = usbdgLogRecord.DCSV;
+                    csvEmsLogRecord.DORF = usbdgLogRecord.DORF;
+                    csvEmsLogRecord.DORV = usbdgLogRecord.DORV;
+                    
+                    csvEmsLogRecord.FANS = usbdgLogRecord.FANS;
+                    csvEmsLogRecord.HAMB = usbdgLogRecord.HAMB;
+                    csvEmsLogRecord.HCOM = usbdgLogRecord.HCOM;
+                    csvEmsLogRecord.HOLD = usbdgLogRecord.HOLD;
+                    csvEmsLogRecord.LAT = usbdgLogRecord.LAT;
+                    csvEmsLogRecord.LERR = usbdgLogRecord.LERR;
+                    csvEmsLogRecord.LNG = usbdgLogRecord.LNG;
+                    csvEmsLogRecord.MSW = usbdgLogRecord.MSW;
                     csvEmsLogRecord.RELT = usbdgLogRecord.RELT;
                     csvEmsLogRecord.RTCW = usbdgLogRecord.RTCW;
-                    csvEmsLogRecord.SV = usbdgLogRecord.SV;
-                    csvEmsLogRecord.CDRW = usbdgLogRecord.CDRW;
-                    csvEmsLogRecord.HCOM = usbdgLogRecord.HCOM;
-                    csvEmsLogRecord.TCON = usbdgLogRecord.TCON;
-                    csvEmsLogRecord.CMPS = usbdgLogRecord.CMPS;
-                    csvEmsLogRecord.FANS = usbdgLogRecord.FANS;
-                    csvEmsLogRecord.TPCB = usbdgLogRecord.TPCB;
-                    csvEmsLogRecord.MSW = usbdgLogRecord.MSW;
-                    csvEmsLogRecord.TVC = usbdgLogRecord.TVC;
-                    csvEmsLogRecord.TFRZ = usbdgLogRecord.TFRZ;
-                    csvEmsLogRecord.T1 = usbdgLogRecord.T1;
-                    csvEmsLogRecord.T2 = usbdgLogRecord.T2;
-                    csvEmsLogRecord.T3 = usbdgLogRecord.T3;
-                    csvEmsLogRecord.TF1 = usbdgLogRecord.TF1;
-                    csvEmsLogRecord.Hamb = usbdgLogRecord.Hamb;
                     csvEmsLogRecord.SVA = usbdgLogRecord.SVA;
-                    csvEmsLogRecord.CMPR = usbdgLogRecord.CMPR;
-                    csvEmsLogRecord.TCLD = usbdgLogRecord.TCLD;
-                    csvEmsLogRecord.DOOR = usbdgLogRecord.DOOR;
                     csvEmsLogRecord.TAMB = usbdgLogRecord.TAMB;
-                    csvEmsLogRecord.BLOG = usbdgLogRecord.BLOG;
-                    csvEmsLogRecord.Source = usbdgLog.Source;
-
+                    csvEmsLogRecord.TCON = usbdgLogRecord.TCON;
+                    csvEmsLogRecord.TFRZ = usbdgLogRecord.TFRZ;
+                    csvEmsLogRecord.TPCB = usbdgLogRecord.TPCB;
+                    csvEmsLogRecord.TVC = usbdgLogRecord.TVC;
+                    csvEmsLogRecord.Source = usbdgLog._SOURCE;
                     usbdbCsvRows.Add(csvEmsLogRecord);
                 }
 

@@ -5,6 +5,7 @@ using lib_edi.Models.Dto.Loggers;
 using lib_edi.Services.Azure;
 using lib_edi.Services.Ccdx;
 using lib_edi.Services.Errors;
+using lib_edi.Services.System;
 using Microsoft.Azure.Storage.Blob;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
@@ -77,11 +78,17 @@ namespace lib_edi.Services.Loggers
 		/// <returns>
 		/// Serialized USBDG log text; Exception (48TV) otherwise
 		/// </returns>
-		private static string SerializeUsbdgLogReportText(UsbdgJsonDataFileDto emsLog)
+		private static string SerializeUsbdgLogText(UsbdgJsonDataFileDto emsLog)
 		{
 			try
 			{
-				return JsonConvert.SerializeObject(emsLog);
+				var settings = new JsonSerializerSettings
+				{
+					NullValueHandling = NullValueHandling.Ignore,
+					MissingMemberHandling = MissingMemberHandling.Ignore
+				};
+
+				return JsonConvert.SerializeObject(emsLog, settings);
 			}
 			catch (Exception e)
 			{
@@ -165,7 +172,7 @@ namespace lib_edi.Services.Loggers
 				try
 				{
 					TimeSpan ts = XmlConvert.ToTimeSpan(record.RELT);
-					record.duration_secs = Convert.ToInt32(ts.TotalSeconds);
+					record._RELT_SECS = Convert.ToInt32(ts.TotalSeconds);
 				}
 				catch (Exception e)
 				{
@@ -190,7 +197,7 @@ namespace lib_edi.Services.Loggers
 			foreach (UsbdgCsvDataRowDto record in records)
 			{
 				DateTime dt = CalculateAbsoluteTimeForUsbdgRecord(reportAbsoluteTimestamp, reportDurationSeconds, record.RELT, record.Source);
-				record.utc_timestamp = dt;
+				record._ABST = dt;
 			}
 			return records;
 		}
@@ -241,7 +248,9 @@ namespace lib_edi.Services.Loggers
 			{
 				int recordDurationSeconds = ConvertRelativeTimeStringToTotalSeconds(recordRelativeTime);
 				int elapsedSeconds = reportDurationSeconds - recordDurationSeconds; // How far away time wise is this record compared to the absolute time
-				DateTime reportAbsoluteDateTime = DateTime.Parse(reportAbsoluteTime);
+				
+				DateTime reportAbsoluteDateTime = DateTimeService.ConvertIso8601CompliantString(reportAbsoluteTime);
+
 				TimeSpan ts = TimeSpan.FromSeconds(elapsedSeconds);
 				DateTime UtcTime = reportAbsoluteDateTime.Subtract(ts);
 				return UtcTime;
@@ -250,6 +259,31 @@ namespace lib_edi.Services.Loggers
 			{
 				string customErrorMessage = EdiErrorsService.BuildExceptionMessageString(e, "4Q5D", EdiErrorsService.BuildErrorVariableArrayList(reportAbsoluteTime, recordRelativeTime, sourceLogFile));
 				throw new Exception(customErrorMessage);
+			}
+		}
+
+		/// <summary>
+		/// Calculate a record's elapsed time (in seconds) since the logger activation relative time
+		/// </summary>
+		/// <param name="loggerActivationRelativeTime">Logger activation relative time</param>
+		/// <param name="recordRelativeTime">Record's relative time</param>
+		/// <returns>
+		/// Seconds that elapsed snce logger activation relative time
+		/// </returns>
+		public static int CalculateElapsedSecondsFromLoggerActivationRelativeTime(string loggerActivationRelativeTime, string recordRelativeTime)
+		{
+			try
+			{
+				int loggerActivationRelativeTimeSecs = ConvertRelativeTimeStringToTotalSeconds(loggerActivationRelativeTime); // convert timespan to seconds
+				int recordRelativeTimeSecs = ConvertRelativeTimeStringToTotalSeconds(recordRelativeTime);
+				int elapsedSeconds = loggerActivationRelativeTimeSecs - recordRelativeTimeSecs; // How far away time wise is this record compared to the absolute time
+				return elapsedSeconds;
+			}
+			catch (Exception e)
+			{
+				//string customErrorMessage = EdiErrorsService.BuildExceptionMessageString(e, "4Q5D", EdiErrorsService.BuildErrorVariableArrayList(reportAbsoluteTime, recordRelativeTime, sourceLogFile));
+				//throw new Exception(customErrorMessage);
+				throw e;
 			}
 		}
 
@@ -321,7 +355,7 @@ namespace lib_edi.Services.Loggers
 				log.LogInformation($"  - Blob: {emsBlobPath}");
 				string emsLogJsonText = await AzureStorageBlobService.DownloadBlobTextAsync(cloudBlobContainer, logBlob.Name);
 				UsbdgJsonDataFileDto emsLog = DeserializeUsbdgLogText(logBlob.Name, emsLogJsonText);
-				emsLog.Source = $"{emsBlobPath}";
+				emsLog._SOURCE = $"{emsBlobPath}";
 				usbdgLogFiles.Add(emsLog);
 			}
 
@@ -366,7 +400,7 @@ namespace lib_edi.Services.Loggers
 
 			foreach (UsbdgJsonDataFileDto emsLog in emsLogs)
 			{
-				string emsLogText = SerializeUsbdgLogReportText(emsLog);
+				string emsLogText = SerializeUsbdgLogText(emsLog);
 
 				ICollection<ValidationError> errors = emsLogJsonSchema.Validate(emsLogText);
 				if (errors.Count == 0)
@@ -378,7 +412,7 @@ namespace lib_edi.Services.Loggers
 				{
 					string validationResultString = BuildJsonValidationErrorString(errors);
 					log.LogError($"    - Validated: No - {validationResultString}");
-					string customErrorMessage = EdiErrorsService.BuildExceptionMessageString(null, "R85Y", EdiErrorsService.BuildErrorVariableArrayList(emsLog.Source, validationResultString));
+					string customErrorMessage = EdiErrorsService.BuildExceptionMessageString(null, "R85Y", EdiErrorsService.BuildErrorVariableArrayList(emsLog._SOURCE, validationResultString));
 					throw new Exception(customErrorMessage);
 				}
 			}
