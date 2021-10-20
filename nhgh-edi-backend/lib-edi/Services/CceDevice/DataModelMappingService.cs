@@ -1,8 +1,10 @@
 ﻿using lib_edi.Models.Dto.CceDevice.Csv;
 using lib_edi.Models.Dto.Loggers;
 using lib_edi.Services.Errors;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Text;
 
 namespace lib_edi.Services.Loggers
@@ -103,10 +105,12 @@ namespace lib_edi.Services.Loggers
         /// <returns>
         /// A consolidated list of csv USBDG MetaFridge log file records  if successful; Exception (D39Y) if any failures occur 
         /// </returns>
-        public static List<UsbdgCsvDataRowDto> MapUsbdgLogs(List<UsbdgJsonDataFileDto> usbdgLogFiles, UsbdgJsonReportFileDto reportFile)
+        public static List<UsbdgCsvDataRowDto> MapUsbdgLogs(List<dynamic> usbdgLogFiles, dynamic reportFile)
         {
+
+
             List<UsbdgCsvDataRowDto> usbdbLogCsvRows = new List<UsbdgCsvDataRowDto>();
-            foreach (UsbdgJsonDataFileDto usbdbLog in usbdgLogFiles)
+            foreach (dynamic usbdbLog in usbdgLogFiles)
             {
                 usbdbLogCsvRows.AddRange(MapUsbdgLogFileRecords(usbdbLog, reportFile));
             }
@@ -125,14 +129,57 @@ namespace lib_edi.Services.Loggers
         /// <returns>
         /// A list of csv compatible USBDG log file records, if successful; Exception (D39Y) if any failures occur 
         /// </returns>
-        public static List<UsbdgCsvDataRowDto> MapUsbdgLogFileRecords(UsbdgJsonDataFileDto usbdgLog, UsbdgJsonReportFileDto reportFile)
+        public static List<UsbdgCsvDataRowDto> MapUsbdgLogFileRecords(dynamic usbdgLog, dynamic reportFile)
         {
             try
             {
                 List<UsbdgCsvDataRowDto> usbdbCsvRows = new List<UsbdgCsvDataRowDto>();
-             
+
+                UsbdgCsvOutput output = new UsbdgCsvOutput();
+
+                JObject jObject = (JObject)usbdgLog;
+                JObject jObjectMetadata = (JObject)reportFile;
+
+                
+                UsbdgCsvMetadataDto csvEmsMetadata = new UsbdgCsvMetadataDto();
+
+                foreach (KeyValuePair<string, JToken> x in jObjectMetadata)
+                {
+                    string name = x.Key;
+                    JToken value = x.Value;
+                    Console.WriteLine($"debug: {name} --> {value} --> {value.Type}");
+                    SetObjectValue(ref csvEmsMetadata, x.Key, x.Value);
+                }
+
+                foreach (KeyValuePair<string, JToken> x in jObject)
+                {
+                    string name = x.Key;
+                    JToken value = x.Value;
+                    if (value.Type == JTokenType.Array)
+                    {
+                        foreach (JObject z in value.Children<JObject>())
+                        {
+                            UsbdgCsvDataRowDto csvEmsLogRecord1 = new UsbdgCsvDataRowDto();
+                            foreach (JProperty prop in z.Properties())
+                            {
+                                SetObjectValue(ref csvEmsLogRecord1, prop.Name, prop.Value);
+                            }
+                            usbdbCsvRows.Add(csvEmsLogRecord1);
+                        }
+                    }
+                    else
+                    {
+                        SetObjectValue(ref csvEmsMetadata, x.Key, x.Value);
+                    }
+                }
+
+                output.records = usbdbCsvRows;
+                output.metadata = csvEmsMetadata;
+
+
                 foreach (UsbdgJsonReportFileRecordDto usbdgLogRecord in usbdgLog.records)
                 {
+
                     UsbdgCsvDataRowDto csvEmsLogRecord = new UsbdgCsvDataRowDto();
                     csvEmsLogRecord.ABST = reportFile.ABST;
                     csvEmsLogRecord.ADOP = usbdgLog.ADOP;
@@ -219,6 +266,22 @@ namespace lib_edi.Services.Loggers
         private static bool ConvertStringBitToBool(string bitValue)
         {
             return (bitValue == "1");
+        }
+
+        private static void SetObjectValue(ref UsbdgCsvMetadataDto csvEmsMetadata, string key, JToken token)
+		{
+            PropertyInfo propertyInfo = csvEmsMetadata.GetType().GetProperty(key);
+            Type test = csvEmsMetadata.GetType();
+            propertyInfo.SetValue(csvEmsMetadata, Convert.ChangeType(token, propertyInfo.PropertyType), null);
+            Console.WriteLine("debug");
+        }
+
+        private static void SetObjectValue(ref UsbdgCsvDataRowDto csvEmsRecord, string key, JToken token)
+        {
+            PropertyInfo propertyInfo = csvEmsRecord.GetType().GetProperty(key);
+            Type test = csvEmsRecord.GetType();
+            propertyInfo.SetValue(csvEmsRecord, Convert.ChangeType(token, propertyInfo.PropertyType), null);
+            Console.WriteLine("debug");
         }
     }
 }

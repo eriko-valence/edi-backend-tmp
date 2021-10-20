@@ -9,6 +9,7 @@ using lib_edi.Services.System;
 using Microsoft.Azure.Storage.Blob;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using NJsonSchema;
 using NJsonSchema.Validation;
 using System;
@@ -37,11 +38,15 @@ namespace lib_edi.Services.Loggers
 		/// <returns>
 		/// Deserialized USBDG log object; Exception (582N) otherwise
 		/// </returns>
-		private static UsbdgJsonDataFileDto DeserializeUsbdgLogText(string blobName, string blobText)
+		private static JObject DeserializeUsbdgLogText(string blobName, string blobText)
 		{
 			try
 			{
-				return JsonConvert.DeserializeObject<UsbdgJsonDataFileDto>(blobText);
+				//return JsonConvert.DeserializeObject<UsbdgJsonDataFileDto>(blobText);
+				//return JsonConvert.DeserializeObject(blobText);
+				dynamic results = JsonConvert.DeserializeObject<dynamic>(blobText);
+				//JObject results = JObject.Parse(blobText);
+				return results;
 			}
 			catch (Exception e)
 			{
@@ -58,11 +63,11 @@ namespace lib_edi.Services.Loggers
 		/// <returns>
 		/// Deserializes USBDG log report object; Exception (89EX) otherwise
 		/// </returns>
-		private static UsbdgJsonReportFileDto DeserializeUsbdgLogReportText(string blobName, string blobText)
+		private static dynamic DeserializeUsbdgLogReportText(string blobName, string blobText)
 		{
 			try
 			{
-				return JsonConvert.DeserializeObject<UsbdgJsonReportFileDto>(blobText);
+				return JsonConvert.DeserializeObject<dynamic>(blobText);
 			}
 			catch (Exception e)
 			{
@@ -345,16 +350,16 @@ namespace lib_edi.Services.Loggers
 		/// <returns>
 		/// A list of deserialized USBDG log objects that have been downloaded from Azure blob storage; Exception (C26Z) if no blobs found
 		/// </returns>
-		public static async Task<List<UsbdgJsonDataFileDto>> DownloadUsbdgLogBlobs(List<CloudBlockBlob> blobs, CloudBlobContainer cloudBlobContainer, string blobPath, ILogger log)
+		public static async Task<List<dynamic>> DownloadUsbdgLogBlobs(List<CloudBlockBlob> blobs, CloudBlobContainer cloudBlobContainer, string blobPath, ILogger log)
 		{
 
-			List<UsbdgJsonDataFileDto> usbdgLogFiles = new List<UsbdgJsonDataFileDto>();
+			List<dynamic> usbdgLogFiles = new List<dynamic>();
 			foreach (CloudBlockBlob logBlob in blobs)
 			{
 				string emsBlobPath = $"{ cloudBlobContainer.Name}/{ logBlob.Name}";
 				log.LogInformation($"  - Blob: {emsBlobPath}");
 				string emsLogJsonText = await AzureStorageBlobService.DownloadBlobTextAsync(cloudBlobContainer, logBlob.Name);
-				UsbdgJsonDataFileDto emsLog = DeserializeUsbdgLogText(logBlob.Name, emsLogJsonText);
+				dynamic emsLog = DeserializeUsbdgLogText(logBlob.Name, emsLogJsonText);
 				emsLog._SOURCE = $"{emsBlobPath}";
 				usbdgLogFiles.Add(emsLog);
 			}
@@ -377,7 +382,7 @@ namespace lib_edi.Services.Loggers
 		/// <returns>
 		/// A list of validated USBDG log objects; Exception thrown if at least one report fails validation (R85Y) or if the json definition file failed to be retrieved 
 		/// </returns>
-		public static async Task<List<UsbdgJsonDataFileDto>> ValidateUsbdgLogBlobs(CloudBlobContainer cloudBlobContainer, List<UsbdgJsonDataFileDto> emsLogs, ILogger log)
+		public static async Task<List<UsbdgJsonDataFileDto>> ValidateUsbdgLogBlobs(CloudBlobContainer cloudBlobContainer, List<dynamic> emsLogs, ILogger log)
 		{
 			List<UsbdgJsonDataFileDto> validatedEmsLogs = new List<UsbdgJsonDataFileDto>();
 
@@ -398,7 +403,7 @@ namespace lib_edi.Services.Loggers
 				throw new Exception(customErrorMessage);
 			}
 
-			foreach (UsbdgJsonDataFileDto emsLog in emsLogs)
+			foreach (dynamic emsLog in emsLogs)
 			{
 				string emsLogText = SerializeUsbdgLogText(emsLog);
 
@@ -457,9 +462,9 @@ namespace lib_edi.Services.Loggers
 		/// <returns>
 		/// A list of deserialized USBDG log report objects that have been downloaded from Azure blob storage; Exception (P76H) otherwise
 		/// </returns>
-		public static async Task<UsbdgJsonReportFileDto> DownloadUsbdgLogReportBlobs(List<CloudBlockBlob> blobs, CloudBlobContainer cloudBlobContainer, string blobPath, ILogger log)
+		public static async Task<dynamic> DownloadUsbdgLogReportBlobs(List<CloudBlockBlob> blobs, CloudBlobContainer cloudBlobContainer, string blobPath, ILogger log)
 		{
-			UsbdgJsonReportFileDto emsLogMetadata = null;
+			dynamic emsLogMetadata = null;
 			foreach (CloudBlockBlob reportBlob in blobs)
 			{
 				log.LogInformation($"  - Blob: {cloudBlobContainer.Name}/{reportBlob.Name}");
