@@ -181,6 +181,7 @@ namespace lib_edi.Services.Loggers
                 {
 
                     UsbdgCsvDataRowDto csvEmsLogRecord = new UsbdgCsvDataRowDto();
+                    /*
                     csvEmsLogRecord.ABST = reportFile.ABST;
                     csvEmsLogRecord.ADOP = usbdgLog.ADOP;
                     csvEmsLogRecord.AID = reportFile.AID;
@@ -213,35 +214,36 @@ namespace lib_edi.Services.Loggers
                     csvEmsLogRecord.RNAM = reportFile.RNAM;
                     csvEmsLogRecord.ALRM = reportFile.ALRM;
                     csvEmsLogRecord.EERR = reportFile.EERR;
+                    */
 
                     // json record properties
-                    csvEmsLogRecord.ACCD = usbdgLogRecord.ACCD;
-                    csvEmsLogRecord.ACSV = usbdgLogRecord.ACSV;
-                    csvEmsLogRecord.BEMD = usbdgLogRecord.BEMD;
-                    csvEmsLogRecord.BLOG = usbdgLogRecord.BLOG;
-                    csvEmsLogRecord.CMPR = usbdgLogRecord.CMPR;
-                    csvEmsLogRecord.CMPS = usbdgLogRecord.CMPS;
-                    csvEmsLogRecord.DCCD = usbdgLogRecord.DCCD;
-                    csvEmsLogRecord.DCSV = usbdgLogRecord.DCSV;
-                    csvEmsLogRecord.DORF = usbdgLogRecord.DORF;
-                    csvEmsLogRecord.DORV = usbdgLogRecord.DORV;
+                    //csvEmsLogRecord.ACCD = usbdgLogRecord.ACCD;
+                    //csvEmsLogRecord.ACSV = usbdgLogRecord.ACSV;
+                    //csvEmsLogRecord.BEMD = usbdgLogRecord.BEMD;
+                    //csvEmsLogRecord.BLOG = usbdgLogRecord.BLOG;
+                    //csvEmsLogRecord.CMPR = usbdgLogRecord.CMPR;
+                    //csvEmsLogRecord.CMPS = usbdgLogRecord.CMPS;
+                    //csvEmsLogRecord.DCCD = usbdgLogRecord.DCCD;
+                    //csvEmsLogRecord.DCSV = usbdgLogRecord.DCSV;
+                    //csvEmsLogRecord.DORF = usbdgLogRecord.DORF;
+                    //csvEmsLogRecord.DORV = usbdgLogRecord.DORV;
                     
-                    csvEmsLogRecord.FANS = usbdgLogRecord.FANS;
-                    csvEmsLogRecord.HAMB = usbdgLogRecord.HAMB;
-                    csvEmsLogRecord.HCOM = usbdgLogRecord.HCOM;
-                    csvEmsLogRecord.HOLD = usbdgLogRecord.HOLD;
-                    csvEmsLogRecord.LAT = usbdgLogRecord.LAT;
-                    csvEmsLogRecord.LERR = usbdgLogRecord.LERR;
-                    csvEmsLogRecord.LNG = usbdgLogRecord.LNG;
-                    csvEmsLogRecord.MSW = usbdgLogRecord.MSW;
-                    csvEmsLogRecord.RELT = usbdgLogRecord.RELT;
-                    csvEmsLogRecord.RTCW = usbdgLogRecord.RTCW;
-                    csvEmsLogRecord.SVA = usbdgLogRecord.SVA;
-                    csvEmsLogRecord.TAMB = usbdgLogRecord.TAMB;
-                    csvEmsLogRecord.TCON = usbdgLogRecord.TCON;
-                    csvEmsLogRecord.TFRZ = usbdgLogRecord.TFRZ;
-                    csvEmsLogRecord.TPCB = usbdgLogRecord.TPCB;
-                    csvEmsLogRecord.TVC = usbdgLogRecord.TVC;
+                    //csvEmsLogRecord.FANS = usbdgLogRecord.FANS;
+                    //csvEmsLogRecord.HAMB = usbdgLogRecord.HAMB;
+                    //csvEmsLogRecord.HCOM = usbdgLogRecord.HCOM;
+                    //csvEmsLogRecord.HOLD = usbdgLogRecord.HOLD;
+                    //csvEmsLogRecord.LAT = usbdgLogRecord.LAT;
+                    //csvEmsLogRecord.LERR = usbdgLogRecord.LERR;
+                    //csvEmsLogRecord.LNG = usbdgLogRecord.LNG;
+                    //csvEmsLogRecord.MSW = usbdgLogRecord.MSW;
+                    //csvEmsLogRecord.RELT = usbdgLogRecord.RELT;
+                    //csvEmsLogRecord.RTCW = usbdgLogRecord.RTCW;
+                    //csvEmsLogRecord.SVA = usbdgLogRecord.SVA;
+                    //csvEmsLogRecord.TAMB = usbdgLogRecord.TAMB;
+                    //csvEmsLogRecord.TCON = usbdgLogRecord.TCON;
+                    //csvEmsLogRecord.TFRZ = usbdgLogRecord.TFRZ;
+                    //csvEmsLogRecord.TPCB = usbdgLogRecord.TPCB;
+                    //csvEmsLogRecord.TVC = usbdgLogRecord.TVC;
                     csvEmsLogRecord.Source = usbdgLog._SOURCE;
                     usbdbCsvRows.Add(csvEmsLogRecord);
                 }
@@ -273,7 +275,7 @@ namespace lib_edi.Services.Loggers
             PropertyInfo propertyInfo = csvEmsMetadata.GetType().GetProperty(key);
             Type test = csvEmsMetadata.GetType();
             propertyInfo.SetValue(csvEmsMetadata, Convert.ChangeType(token, propertyInfo.PropertyType), null);
-            Console.WriteLine("debug");
+            //Console.WriteLine("debug");
         }
 
         private static void SetObjectValue(ref UsbdgCsvDataRowDto csvEmsRecord, string key, JToken token)
@@ -281,7 +283,7 @@ namespace lib_edi.Services.Loggers
             PropertyInfo propertyInfo = csvEmsRecord.GetType().GetProperty(key);
             Type test = csvEmsRecord.GetType();
             propertyInfo.SetValue(csvEmsRecord, Convert.ChangeType(token, propertyInfo.PropertyType), null);
-            Console.WriteLine("debug");
+            //Console.WriteLine("debug");
         }
     }
 }
