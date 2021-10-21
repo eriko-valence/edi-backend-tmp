@@ -20,6 +20,8 @@ using lib_edi.Models.Dto.CceDevice.Csv;
 using lib_edi.Services.Errors;
 using lib_edi.Exceptions;
 using lib_edi.Services.System;
+using Newtonsoft.Json.Linq;
+using lib_edi.Helpers;
 
 namespace fa_adf_transform_usbdg
 {
@@ -81,6 +83,9 @@ namespace fa_adf_transform_usbdg
                 log.LogInformation($"- Download {logType} log report blobs");
                 dynamic emsLogMetadata = await UsbdgDataProcessorService.DownloadUsbdgLogReportBlobs(usbdgLogReportBlobs, inputContainer, inputBlobPath, log);
 
+                string emdRelativeTime = ObjectManager.GetJObjectPropertyValueAsString(emsLogMetadata,"RELT");
+                string emdAbsoluteTime = ObjectManager.GetJObjectPropertyValueAsString(emsLogMetadata, "ABST");
+
                 log.LogInformation($"- Validate {logType} log blobs");
                 List<dynamic> validatedUsbdgLogFiles = await UsbdgDataProcessorService.ValidateUsbdgLogBlobs(emsConfgContainer, usbdgLogFiles, log);
 
@@ -102,26 +107,24 @@ namespace fa_adf_transform_usbdg
                 sortedUsbdbLogCsvRows = UsbdgDataProcessorService.CalculateAbsoluteTimeForUsbdgRecords(sortedUsbdbLogCsvRows, DurationSecs, emsLogMetadata);
 
                 log.LogInformation($"  - Cloud upload times: ");
-                //log.LogInformation($"    - EMD (source: linux cellular ntp lookup) : {DateTimeService.ConvertIso8601CompliantString(emsLogMetadata.ABST)} (UTC)");
-                //log.LogInformation($"    - Logger (source: battery backed real time clock) : {emsLogMetadata.RELT} (Relative Time)");
-                //log.LogInformation($"    - Logger (source: battery backed real time clock) : {UsbdgDataProcessorService.ConvertRelativeTimeStringToTotalSeconds(emsLogMetadata.RELT)} (Duration in Seconds)");
+                log.LogInformation($"    - EMD (source: cellular) : {DateTimeService.ConvertIso8601CompliantString(emdAbsoluteTime)} (UTC)");
+                log.LogInformation($"    - Logger (source: real time clock) : {emdRelativeTime} (Relative Time)");
+                log.LogInformation($"    - Logger (source: real time clock) : {UsbdgDataProcessorService.ConvertRelativeTimeStringToTotalSeconds(emdRelativeTime)} (Duration in Seconds)");
                 log.LogInformation($"  - Absolute time calculation results (first two records): ");
                 if (usbdbLogCsvRows.Count > 1)
 				{
-                    //log.LogInformation($"    - record[0].ElapsedSecs (Elapsed secs from activation time): {UsbdgDataProcessorService.CalculateElapsedSecondsFromLoggerActivationRelativeTime(emsLogMetadata.RELT, usbdbLogCsvRows[0].RELT)}");
-                    //log.LogInformation($"    - record[0].ABST (EMD cloud upload absolute time): {usbdbLogCsvRows[0].ABST}");
-                    //log.LogInformation($"    - record[0].RELT (Logger cloud upload relative time): {usbdbLogCsvRows[0].RELT}");
+                    log.LogInformation($"    - record[0].ElapsedSecs (Elapsed secs from activation time): {UsbdgDataProcessorService.CalculateElapsedSecondsFromLoggerActivationRelativeTime(emdRelativeTime, usbdbLogCsvRows[0].RELT)}");
+                    log.LogInformation($"    - record[0].ABST (EMD cloud upload absolute time): {usbdbLogCsvRows[0].ABST}");
+                    log.LogInformation($"    - record[0].RELT (Logger cloud upload relative time): {usbdbLogCsvRows[0].RELT}");
                     log.LogInformation($"    - record[0]._RELT_SECS (Logger cloud upload relative time seconds): {usbdbLogCsvRows[0]._RELT_SECS}");
                     log.LogInformation($"    - record[0]._ABST (calculated absolute time): {usbdbLogCsvRows[0]._ABST}");
                     log.LogInformation($" ");
-                    //log.LogInformation($"    - record[1].ElapsedSecs (Elapsed secs from activation time): {UsbdgDataProcessorService.CalculateElapsedSecondsFromLoggerActivationRelativeTime(emsLogMetadata.RELT, usbdbLogCsvRows[1].RELT)}");
-                    //log.LogInformation($"    - record[1].ABST (EMD cloud upload absolute time): {usbdbLogCsvRows[1].ABST}");
+                    log.LogInformation($"    - record[1].ElapsedSecs (Elapsed secs from activation time): {UsbdgDataProcessorService.CalculateElapsedSecondsFromLoggerActivationRelativeTime(emdRelativeTime, usbdbLogCsvRows[1].RELT)}");
+                    log.LogInformation($"    - record[1].ABST (EMD cloud upload absolute time): {usbdbLogCsvRows[1].ABST}");
                     log.LogInformation($"    - record[1].RELT (Logger cloud upload relative time): {usbdbLogCsvRows[1].RELT}");
                     log.LogInformation($"    - record[1]._RELT_SECS (Logger cloud upload relative time seconds): {usbdbLogCsvRows[1]._RELT_SECS}");
                     log.LogInformation($"    - record[1]._ABST (calculated absolute time): {usbdbLogCsvRows[1]._ABST}");
                 }
-
-
 
                 log.LogInformation($"- Write {logType} csv records to azure blob storage");
                 string csvOutputBlobName = await UsbdgDataProcessorService.WriteUsbdgLogRecordsToCsvBlob(ouputContainer, payload, sortedUsbdbLogCsvRows, log);

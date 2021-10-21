@@ -1,4 +1,5 @@
-﻿using lib_edi.Models.Dto.CceDevice.Csv;
+﻿using lib_edi.Helpers;
+using lib_edi.Models.Dto.CceDevice.Csv;
 using lib_edi.Models.Dto.Loggers;
 using lib_edi.Services.Errors;
 using Newtonsoft.Json.Linq;
@@ -135,7 +136,6 @@ namespace lib_edi.Services.Loggers
         {
             try
             {
-                //List<UsbdgCsvDataRowDto> usbdbCsvRows = new List<UsbdgCsvDataRowDto>();
                 List<EmsCsvRecordDto> usbdbCsvRecords = new List<EmsCsvRecordDto>();
 
                 /* ######################################################################
@@ -150,14 +150,14 @@ namespace lib_edi.Services.Loggers
                 UsbdgCsvMetadataDto csvEmsMetadata = new UsbdgCsvMetadataDto();
                 foreach (KeyValuePair<string, JToken> x in JObjMetadataFile)
                 {
-                    SetObjectValue(ref csvEmsMetadata, x.Key, x.Value);
+                    ObjectManager.SetObjectValue(ref csvEmsMetadata, x.Key, x.Value);
                 }
                 foreach (KeyValuePair<string, JToken> x in JObjLoggerDataFile)
                 {
                     // Filter out records array
                     if (x.Value.Type != JTokenType.Array)
                     {
-                        SetObjectValue(ref csvEmsMetadata, x.Key, x.Value);
+                        ObjectManager.SetObjectValue(ref csvEmsMetadata, x.Key, x.Value);
                     }
                 }
 
@@ -168,7 +168,6 @@ namespace lib_edi.Services.Loggers
                 {
                     if (x.Value.Type == JTokenType.Array)
                     {
-
                         //Iterate each logger collection event
                         foreach (JObject z in x.Value.Children<JObject>())
                         {
@@ -176,12 +175,12 @@ namespace lib_edi.Services.Loggers
                             //Add metadata to each collected event record
                             foreach (PropertyInfo prop in csvEmsMetadata.GetType().GetProperties())
                             {
-                                SetObjectValue(ref emsCsvRecord, prop.Name, prop.GetValue(csvEmsMetadata, null));
+                                ObjectManager.SetObjectValue(ref emsCsvRecord, prop.Name, prop.GetValue(csvEmsMetadata, null));
                             }
                             //Add collected event data to record
                             foreach (JProperty prop in z.Properties())
                             {
-                                SetObjectValue(ref emsCsvRecord, prop.Name, prop.Value);
+                                ObjectManager.SetObjectValue(ref emsCsvRecord, prop.Name, prop.Value);
                             }
                             usbdbCsvRecords.Add(emsCsvRecord);
                         }
@@ -209,40 +208,5 @@ namespace lib_edi.Services.Loggers
             return (bitValue == "1");
         }
 
-        /// <summary>
-        /// Dynamically sets property value on an object
-        /// </summary>
-        /// <param name="csvEmsMetadata"></param>
-        /// <param name="key"></param>
-        /// <param name="token"></param>
-        private static void SetObjectValue(ref UsbdgCsvMetadataDto csvEmsMetadata, string key, JToken token)
-		{
-            PropertyInfo propertyInfo = csvEmsMetadata.GetType().GetProperty(key);
-            propertyInfo.SetValue(csvEmsMetadata, Convert.ChangeType(token, propertyInfo.PropertyType), null);
-        }
-
-        /// <summary>
-        /// Dynamically sets property value on an object
-        /// </summary>
-        /// <param name="csvEmsRecord"></param>
-        /// <param name="key"></param>
-        /// <param name="value"></param>
-        private static void SetObjectValue(ref EmsCsvRecordDto csvEmsRecord, string key, Object value)
-        {
-            PropertyInfo propertyInfo = csvEmsRecord.GetType().GetProperty(key);
-            propertyInfo.SetValue(csvEmsRecord, value, null);
-        }
-
-        /// <summary>
-        /// Dynamically sets property value on an object
-        /// </summary>
-        /// <param name="csvEmsRecord"></param>
-        /// <param name="key"></param>
-        /// <param name="token"></param>
-        private static void SetObjectValue(ref EmsCsvRecordDto csvEmsRecord, string key, JToken token)
-        {
-            PropertyInfo propertyInfo = csvEmsRecord.GetType().GetProperty(key);
-            propertyInfo.SetValue(csvEmsRecord, Convert.ChangeType(token, propertyInfo.PropertyType), null);
-        }
     }
 }

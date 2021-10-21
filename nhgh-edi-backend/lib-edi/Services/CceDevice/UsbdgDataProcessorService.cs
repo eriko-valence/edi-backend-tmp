@@ -1,4 +1,5 @@
 ﻿using CsvHelper;
+using lib_edi.Helpers;
 using lib_edi.Models.Dto.CceDevice.Csv;
 using lib_edi.Models.Dto.Http;
 using lib_edi.Models.Dto.Loggers;
@@ -200,7 +201,7 @@ namespace lib_edi.Services.Loggers
 		//public static List<EmsCsvRecordDto> CalculateAbsoluteTimeForUsbdgRecords(List<EmsCsvRecordDto> records, int reportDurationSeconds, string reportAbsoluteTimestamp)
 		public static List<EmsCsvRecordDto> CalculateAbsoluteTimeForUsbdgRecords(List<EmsCsvRecordDto> records, int reportDurationSeconds, dynamic reportAbsoluteTimestamp)
 		{
-			string absoluteTime = GetPropValue(reportAbsoluteTimestamp, "ABST");
+			string absoluteTime = ObjectManager.GetPropValue(reportAbsoluteTimestamp, "ABST");
 
 			foreach (EmsCsvRecordDto record in records)
 			{
@@ -223,7 +224,7 @@ namespace lib_edi.Services.Loggers
 
 			try
 			{
-				relativeTime = GetPropValue(metadata, "RELT");
+				relativeTime = ObjectManager.GetPropValue(metadata, "RELT");
 				TimeSpan ts = XmlConvert.ToTimeSpan(relativeTime); // parse iso 8601 duration string to timespan
 				return Convert.ToInt32(ts.TotalSeconds);
 			}
@@ -516,10 +517,8 @@ namespace lib_edi.Services.Loggers
 			return emsLogMetadata;
 		}
 
-		private static string GetPropValue(JObject targetObject, string key)
-		{
-			JToken jTokenRELT = targetObject[key];
-			return jTokenRELT.ToString();
-		}
+
+
+
 	}
 }
