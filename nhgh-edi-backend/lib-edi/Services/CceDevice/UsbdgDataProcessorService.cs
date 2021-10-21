@@ -83,7 +83,7 @@ namespace lib_edi.Services.Loggers
 		/// <returns>
 		/// Serialized USBDG log text; Exception (48TV) otherwise
 		/// </returns>
-		private static string SerializeUsbdgLogText(UsbdgJsonDataFileDto emsLog)
+		private static string SerializeUsbdgLogText(dynamic emsLog)
 		{
 			try
 			{
@@ -245,6 +245,35 @@ namespace lib_edi.Services.Loggers
 		}
 
 		/// <summary>
+		/// Converts relative time to total seconds
+		/// </summary>
+		/// <param name="relativeTime">Relative time (e.g., P8DT30S)</param>
+		/// <returns>
+		/// Total seconds calculated from relative time; Exception (A89R) or (EZ56) otherwise
+		/// </returns>
+		public static int ConvertRelativeTimeStringToTotalSeconds(string relativeTime)
+		{
+			try
+			{
+				TimeSpan ts = XmlConvert.ToTimeSpan(relativeTime); // parse iso 8601 duration string to timespan
+				return Convert.ToInt32(ts.TotalSeconds);
+			}
+			catch (Exception e)
+			{
+				if (relativeTime != null)
+				{
+					string customErrorMessage = EdiErrorsService.BuildExceptionMessageString(e, "A89R", EdiErrorsService.BuildErrorVariableArrayList(relativeTime));
+					throw new Exception(customErrorMessage);
+				}
+				else
+				{
+					string customErrorMessage = EdiErrorsService.BuildExceptionMessageString(e, "EZ56", null);
+					throw new Exception(customErrorMessage);
+				}
+			}
+		}
+
+		/// <summary>
 		/// Gets the absolute timestamp of a USBDG record using the report absolute timestamp and record relative time
 		/// </summary>
 		/// <param name="reportAbsoluteTime">USBDG log report absolute timestamp</param>
@@ -388,9 +417,9 @@ namespace lib_edi.Services.Loggers
 		/// <returns>
 		/// A list of validated USBDG log objects; Exception thrown if at least one report fails validation (R85Y) or if the json definition file failed to be retrieved 
 		/// </returns>
-		public static async Task<List<UsbdgJsonDataFileDto>> ValidateUsbdgLogBlobs(CloudBlobContainer cloudBlobContainer, List<dynamic> emsLogs, ILogger log)
+		public static async Task<List<dynamic>> ValidateUsbdgLogBlobs(CloudBlobContainer cloudBlobContainer, List<dynamic> emsLogs, ILogger log)
 		{
-			List<UsbdgJsonDataFileDto> validatedEmsLogs = new List<UsbdgJsonDataFileDto>();
+			List<dynamic> validatedEmsLogs = new List<dynamic>();
 
 			string usbdgConfigBlobName;
 			string usbdgConfigBlobJson;
