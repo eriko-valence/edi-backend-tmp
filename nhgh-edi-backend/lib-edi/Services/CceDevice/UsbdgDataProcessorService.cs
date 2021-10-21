@@ -170,9 +170,9 @@ namespace lib_edi.Services.Loggers
 		/// <returns>
 		/// List of denormalized USBDG records (with the calculated duration seconds); Exception (M34T) otherwise
 		/// </returns>
-		public static List<UsbdgCsvDataRowDto> ConvertRelativeTimeToTotalSecondsForUsbdgLogRecords(List<UsbdgCsvDataRowDto> records)
+		public static List<EmsCsvRecordDto> ConvertRelativeTimeToTotalSecondsForUsbdgLogRecords(List<EmsCsvRecordDto> records)
 		{
-			foreach (UsbdgCsvDataRowDto record in records)
+			foreach (EmsCsvRecordDto record in records)
 			{
 				try
 				{
@@ -197,11 +197,14 @@ namespace lib_edi.Services.Loggers
 		/// <returns>
 		/// Absolute timestamp (DateTime) of a USBDG record; Exception (4Q5D) otherwise
 		/// </returns>
-		public static List<UsbdgCsvDataRowDto> CalculateAbsoluteTimeForUsbdgRecords(List<UsbdgCsvDataRowDto> records, int reportDurationSeconds, string reportAbsoluteTimestamp)
+		//public static List<EmsCsvRecordDto> CalculateAbsoluteTimeForUsbdgRecords(List<EmsCsvRecordDto> records, int reportDurationSeconds, string reportAbsoluteTimestamp)
+		public static List<EmsCsvRecordDto> CalculateAbsoluteTimeForUsbdgRecords(List<EmsCsvRecordDto> records, int reportDurationSeconds, dynamic reportAbsoluteTimestamp)
 		{
-			foreach (UsbdgCsvDataRowDto record in records)
+			string absoluteTime = GetPropValue(reportAbsoluteTimestamp, "ABST");
+
+			foreach (EmsCsvRecordDto record in records)
 			{
-				DateTime dt = CalculateAbsoluteTimeForUsbdgRecord(reportAbsoluteTimestamp, reportDurationSeconds, record.RELT, record.Source);
+				DateTime dt = CalculateAbsoluteTimeForUsbdgRecord(absoluteTime, reportDurationSeconds, record.RELT, record.Source);
 				record._ABST = dt;
 			}
 			return records;
@@ -214,10 +217,13 @@ namespace lib_edi.Services.Loggers
 		/// <returns>
 		/// Total seconds calculated from relative time; Exception (A89R) or (EZ56) otherwise
 		/// </returns>
-		public static int ConvertRelativeTimeStringToTotalSeconds(string relativeTime)
+		public static int ConvertRelativeTimeStringToTotalSeconds(dynamic metadata)
 		{
+			string relativeTime = null;
+
 			try
 			{
+				relativeTime = GetPropValue(metadata, "RELT");
 				TimeSpan ts = XmlConvert.ToTimeSpan(relativeTime); // parse iso 8601 duration string to timespan
 				return Convert.ToInt32(ts.TotalSeconds);
 			}
@@ -302,7 +308,7 @@ namespace lib_edi.Services.Loggers
 		/// <returns>
 		/// Blob name of USBDG csv formatted log file; Exception (Q25U)
 		/// </returns>
-		public static async Task<string> WriteUsbdgLogRecordsToCsvBlob(CloudBlobContainer cloudBlobContainer, TransformHttpRequestMessageBodyDto requestBody, List<UsbdgCsvDataRowDto> usbdgRecords, ILogger log)
+		public static async Task<string> WriteUsbdgLogRecordsToCsvBlob(CloudBlobContainer cloudBlobContainer, TransformHttpRequestMessageBodyDto requestBody, List<EmsCsvRecordDto> usbdgRecords, ILogger log)
 		{
 			string blobName = "";
 			if (requestBody != null)
@@ -479,6 +485,12 @@ namespace lib_edi.Services.Loggers
 			}
 
 			return emsLogMetadata;
+		}
+
+		private static string GetPropValue(JObject targetObject, string key)
+		{
+			JToken jTokenRELT = targetObject[key];
+			return jTokenRELT.ToString();
 		}
 	}
 }

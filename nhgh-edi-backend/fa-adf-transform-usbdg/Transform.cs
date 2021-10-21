@@ -85,7 +85,7 @@ namespace fa_adf_transform_usbdg
                 //List<UsbdgJsonDataFileDto> validatedUsbdgLogFiles = await UsbdgDataProcessorService.ValidateUsbdgLogBlobs(emsConfgContainer, usbdgLogFiles, log);
 
                 log.LogInformation($"- Map {logType} log objects to csv records");
-                List<UsbdgCsvDataRowDto> usbdbLogCsvRows = DataModelMappingService.MapUsbdgLogs(usbdgLogFiles, emsLogMetadata);
+                List<EmsCsvRecordDto> usbdbLogCsvRows = DataModelMappingService.MapUsbdgLogs(usbdgLogFiles, emsLogMetadata);
 
                 log.LogInformation($"- Transform {logType} csv records");
 
@@ -93,13 +93,13 @@ namespace fa_adf_transform_usbdg
                 usbdbLogCsvRows = UsbdgDataProcessorService.ConvertRelativeTimeToTotalSecondsForUsbdgLogRecords(usbdbLogCsvRows);
 
                 log.LogInformation($"  - Sort csv records using relative time total seconds");
-                List<UsbdgCsvDataRowDto> sortedUsbdbLogCsvRows = usbdbLogCsvRows.OrderBy(i => (i._RELT_SECS)).ToList();
+                List<EmsCsvRecordDto> sortedUsbdbLogCsvRows = usbdbLogCsvRows.OrderBy(i => (i._RELT_SECS)).ToList();
 
                 log.LogInformation($"  - Convert relative time (e.g., 'P9DT59M53S') to total seconds (report only)");
-                int DurationSecs = UsbdgDataProcessorService.ConvertRelativeTimeStringToTotalSeconds(emsLogMetadata.RELT); // convert timespan to seconds
+                int DurationSecs = UsbdgDataProcessorService.ConvertRelativeTimeStringToTotalSeconds(emsLogMetadata); // convert timespan to seconds
 
                 log.LogInformation($"  - Calculate absolute time for each record using record relative time (e.g., 781193) and report absolute time ('2021-06-20T23:00:02Z')");
-                sortedUsbdbLogCsvRows = UsbdgDataProcessorService.CalculateAbsoluteTimeForUsbdgRecords(sortedUsbdbLogCsvRows, DurationSecs, emsLogMetadata.ABST);
+                sortedUsbdbLogCsvRows = UsbdgDataProcessorService.CalculateAbsoluteTimeForUsbdgRecords(sortedUsbdbLogCsvRows, DurationSecs, emsLogMetadata);
 
                 log.LogInformation($"  - Cloud upload times: ");
                 log.LogInformation($"    - EMD (source: linux cellular ntp lookup) : {DateTimeService.ConvertIso8601CompliantString(emsLogMetadata.ABST)} (UTC)");
@@ -164,5 +164,6 @@ namespace fa_adf_transform_usbdg
 
 
         }
+
     }
 }
