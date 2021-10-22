@@ -1,4 +1,5 @@
 ﻿using CsvHelper;
+using lib_edi.Helpers;
 using lib_edi.Models.Dto.CceDevice.Csv;
 using lib_edi.Models.Dto.Http;
 using lib_edi.Models.Dto.Loggers;
@@ -9,6 +10,7 @@ using lib_edi.Services.System;
 using Microsoft.Azure.Storage.Blob;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using NJsonSchema;
 using NJsonSchema.Validation;
 using System;
@@ -37,11 +39,15 @@ namespace lib_edi.Services.Loggers
 		/// <returns>
 		/// Deserialized USBDG log object; Exception (582N) otherwise
 		/// </returns>
-		private static UsbdgJsonDataFileDto DeserializeUsbdgLogText(string blobName, string blobText)
+		private static JObject DeserializeUsbdgLogText(string blobName, string blobText)
 		{
 			try
 			{
-				return JsonConvert.DeserializeObject<UsbdgJsonDataFileDto>(blobText);
+				//return JsonConvert.DeserializeObject<UsbdgJsonDataFileDto>(blobText);
+				//return JsonConvert.DeserializeObject(blobText);
+				dynamic results = JsonConvert.DeserializeObject<dynamic>(blobText);
+				//JObject results = JObject.Parse(blobText);
+				return results;
 			}
 			catch (Exception e)
 			{
@@ -58,11 +64,11 @@ namespace lib_edi.Services.Loggers
 		/// <returns>
 		/// Deserializes USBDG log report object; Exception (89EX) otherwise
 		/// </returns>
-		private static UsbdgJsonReportFileDto DeserializeUsbdgLogReportText(string blobName, string blobText)
+		private static dynamic DeserializeUsbdgLogReportText(string blobName, string blobText)
 		{
 			try
 			{
-				return JsonConvert.DeserializeObject<UsbdgJsonReportFileDto>(blobText);
+				return JsonConvert.DeserializeObject<dynamic>(blobText);
 			}
 			catch (Exception e)
 			{
@@ -78,7 +84,7 @@ namespace lib_edi.Services.Loggers
 		/// <returns>
 		/// Serialized USBDG log text; Exception (48TV) otherwise
 		/// </returns>
-		private static string SerializeUsbdgLogText(UsbdgJsonDataFileDto emsLog)
+		private static string SerializeUsbdgLogText(dynamic emsLog)
 		{
 			try
 			{
@@ -165,9 +171,9 @@ namespace lib_edi.Services.Loggers
 		/// <returns>
 		/// List of denormalized USBDG records (with the calculated duration seconds); Exception (M34T) otherwise
 		/// </returns>
-		public static List<UsbdgCsvDataRowDto> ConvertRelativeTimeToTotalSecondsForUsbdgLogRecords(List<UsbdgCsvDataRowDto> records)
+		public static List<EmsCsvRecordDto> ConvertRelativeTimeToTotalSecondsForUsbdgLogRecords(List<EmsCsvRecordDto> records)
 		{
-			foreach (UsbdgCsvDataRowDto record in records)
+			foreach (EmsCsvRecordDto record in records)
 			{
 				try
 				{
@@ -192,14 +198,51 @@ namespace lib_edi.Services.Loggers
 		/// <returns>
 		/// Absolute timestamp (DateTime) of a USBDG record; Exception (4Q5D) otherwise
 		/// </returns>
-		public static List<UsbdgCsvDataRowDto> CalculateAbsoluteTimeForUsbdgRecords(List<UsbdgCsvDataRowDto> records, int reportDurationSeconds, string reportAbsoluteTimestamp)
+		//public static List<EmsCsvRecordDto> CalculateAbsoluteTimeForUsbdgRecords(List<EmsCsvRecordDto> records, int reportDurationSeconds, string reportAbsoluteTimestamp)
+		public static List<EmsCsvRecordDto> CalculateAbsoluteTimeForUsbdgRecords(List<EmsCsvRecordDto> records, int reportDurationSeconds, dynamic reportAbsoluteTimestamp)
 		{
-			foreach (UsbdgCsvDataRowDto record in records)
+			string absoluteTime = ObjectManager.GetPropValue(reportAbsoluteTimestamp, "ABST");
+
+			foreach (EmsCsvRecordDto record in records)
 			{
-				DateTime dt = CalculateAbsoluteTimeForUsbdgRecord(reportAbsoluteTimestamp, reportDurationSeconds, record.RELT, record.Source);
+				DateTime dt = CalculateAbsoluteTimeForUsbdgRecord(absoluteTime, reportDurationSeconds, record.RELT, record.Source);
 				record._ABST = dt;
 			}
 			return records;
+		}
+
+		/// <summary>
+		/// Converts relative time to total seconds
+		/// </summary>
+		/// <param name="relativeTime">Relative time (e.g., P8DT30S)</param>
+		/// <returns>
+		/// Total seconds calculated from relative time; Exception (A89R) or (EZ56) otherwise
+		/// </returns>
+		public static int ConvertRelativeTimeStringToTotalSeconds(dynamic metadata)
+		{
+			string relativeTime = null;
+
+			try
+			{
+				relativeTime = ObjectManager.GetPropValue(metadata, "RELT");
+				TimeSpan ts = XmlConvert.ToTimeSpan(relativeTime); // parse iso 8601 duration string to timespan
+				return Convert.ToInt32(ts.TotalSeconds);
+			}
+			catch (Exception e)
+			{
+				if (relativeTime != null)
+				{
+					string customErrorMessage = EdiErrorsService.BuildExceptionMessageString(e, "A89R", EdiErrorsService.BuildErrorVariableArrayList(relativeTime));
+					throw new Exception(customErrorMessage);
+				}
+				else
+				{
+					string customErrorMessage = EdiErrorsService.BuildExceptionMessageString(e, "EZ56", null);
+					throw new Exception(customErrorMessage);
+				}
+
+
+			}
 		}
 
 		/// <summary>
@@ -228,8 +271,6 @@ namespace lib_edi.Services.Loggers
 					string customErrorMessage = EdiErrorsService.BuildExceptionMessageString(e, "EZ56", null);
 					throw new Exception(customErrorMessage);
 				}
-
-
 			}
 		}
 
@@ -249,7 +290,7 @@ namespace lib_edi.Services.Loggers
 				int recordDurationSeconds = ConvertRelativeTimeStringToTotalSeconds(recordRelativeTime);
 				int elapsedSeconds = reportDurationSeconds - recordDurationSeconds; // How far away time wise is this record compared to the absolute time
 				
-				DateTime reportAbsoluteDateTime = DateTimeService.ConvertIso8601CompliantString(reportAbsoluteTime);
+				DateTime reportAbsoluteDateTime = DateConverter.ConvertIso8601CompliantString(reportAbsoluteTime);
 
 				TimeSpan ts = TimeSpan.FromSeconds(elapsedSeconds);
 				DateTime UtcTime = reportAbsoluteDateTime.Subtract(ts);
@@ -297,7 +338,7 @@ namespace lib_edi.Services.Loggers
 		/// <returns>
 		/// Blob name of USBDG csv formatted log file; Exception (Q25U)
 		/// </returns>
-		public static async Task<string> WriteUsbdgLogRecordsToCsvBlob(CloudBlobContainer cloudBlobContainer, TransformHttpRequestMessageBodyDto requestBody, List<UsbdgCsvDataRowDto> usbdgRecords, ILogger log)
+		public static async Task<string> WriteUsbdgLogRecordsToCsvBlob(CloudBlobContainer cloudBlobContainer, TransformHttpRequestMessageBodyDto requestBody, List<EmsCsvRecordDto> usbdgRecords, ILogger log)
 		{
 			string blobName = "";
 			if (requestBody != null)
@@ -345,16 +386,16 @@ namespace lib_edi.Services.Loggers
 		/// <returns>
 		/// A list of deserialized USBDG log objects that have been downloaded from Azure blob storage; Exception (C26Z) if no blobs found
 		/// </returns>
-		public static async Task<List<UsbdgJsonDataFileDto>> DownloadUsbdgLogBlobs(List<CloudBlockBlob> blobs, CloudBlobContainer cloudBlobContainer, string blobPath, ILogger log)
+		public static async Task<List<dynamic>> DownloadUsbdgLogBlobs(List<CloudBlockBlob> blobs, CloudBlobContainer cloudBlobContainer, string blobPath, ILogger log)
 		{
 
-			List<UsbdgJsonDataFileDto> usbdgLogFiles = new List<UsbdgJsonDataFileDto>();
+			List<dynamic> usbdgLogFiles = new List<dynamic>();
 			foreach (CloudBlockBlob logBlob in blobs)
 			{
 				string emsBlobPath = $"{ cloudBlobContainer.Name}/{ logBlob.Name}";
 				log.LogInformation($"  - Blob: {emsBlobPath}");
 				string emsLogJsonText = await AzureStorageBlobService.DownloadBlobTextAsync(cloudBlobContainer, logBlob.Name);
-				UsbdgJsonDataFileDto emsLog = DeserializeUsbdgLogText(logBlob.Name, emsLogJsonText);
+				dynamic emsLog = DeserializeUsbdgLogText(logBlob.Name, emsLogJsonText);
 				emsLog._SOURCE = $"{emsBlobPath}";
 				usbdgLogFiles.Add(emsLog);
 			}
@@ -377,9 +418,9 @@ namespace lib_edi.Services.Loggers
 		/// <returns>
 		/// A list of validated USBDG log objects; Exception thrown if at least one report fails validation (R85Y) or if the json definition file failed to be retrieved 
 		/// </returns>
-		public static async Task<List<UsbdgJsonDataFileDto>> ValidateUsbdgLogBlobs(CloudBlobContainer cloudBlobContainer, List<UsbdgJsonDataFileDto> emsLogs, ILogger log)
+		public static async Task<List<dynamic>> ValidateUsbdgLogBlobs(CloudBlobContainer cloudBlobContainer, List<dynamic> emsLogs, ILogger log)
 		{
-			List<UsbdgJsonDataFileDto> validatedEmsLogs = new List<UsbdgJsonDataFileDto>();
+			List<dynamic> validatedEmsLogs = new List<dynamic>();
 
 			string usbdgConfigBlobName;
 			string usbdgConfigBlobJson;
@@ -398,7 +439,7 @@ namespace lib_edi.Services.Loggers
 				throw new Exception(customErrorMessage);
 			}
 
-			foreach (UsbdgJsonDataFileDto emsLog in emsLogs)
+			foreach (dynamic emsLog in emsLogs)
 			{
 				string emsLogText = SerializeUsbdgLogText(emsLog);
 
@@ -457,9 +498,9 @@ namespace lib_edi.Services.Loggers
 		/// <returns>
 		/// A list of deserialized USBDG log report objects that have been downloaded from Azure blob storage; Exception (P76H) otherwise
 		/// </returns>
-		public static async Task<UsbdgJsonReportFileDto> DownloadUsbdgLogReportBlobs(List<CloudBlockBlob> blobs, CloudBlobContainer cloudBlobContainer, string blobPath, ILogger log)
+		public static async Task<dynamic> DownloadUsbdgLogReportBlobs(List<CloudBlockBlob> blobs, CloudBlobContainer cloudBlobContainer, string blobPath, ILogger log)
 		{
-			UsbdgJsonReportFileDto emsLogMetadata = null;
+			dynamic emsLogMetadata = null;
 			foreach (CloudBlockBlob reportBlob in blobs)
 			{
 				log.LogInformation($"  - Blob: {cloudBlobContainer.Name}/{reportBlob.Name}");
@@ -475,5 +516,9 @@ namespace lib_edi.Services.Loggers
 
 			return emsLogMetadata;
 		}
+
+
+
+
 	}
 }

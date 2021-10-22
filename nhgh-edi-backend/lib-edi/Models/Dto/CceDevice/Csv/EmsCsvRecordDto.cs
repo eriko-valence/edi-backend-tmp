@@ -5,9 +5,9 @@ using System.Text;
 
 namespace lib_edi.Models.Dto.CceDevice.Csv
 {
-	public class UsbdgCsvDataRowDto
+	public class EmsCsvRecordDto
 	{
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
+		#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
 		public string ABST { get; set; }
 		public double ACCD { get; set; }
 		public double ACSV { get; set; }
@@ -68,10 +68,11 @@ namespace lib_edi.Models.Dto.CceDevice.Csv
 		public string LSV { get; set; }
 		public string RNAM { get; set; }
 		public int _RELT_SECS { get; set; } // relative time (duration) in seconds (set by azure function)
-		//public int emd_relt { get; set; }
-		//public DateTime emd_abs { get; set; }
+											//public int emd_relt { get; set; }
+											//public DateTime emd_abs { get; set; }
 		public DateTime _ABST { get; set; }
 		[Ignore]
+		public string _SOURCE { get; set; }
 		public string Source { get; set; }
 		#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 	}

@@ -2,10 +2,11 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
+using lib_edi.Services.Errors;
 
-namespace lib_edi.Services.System
+namespace lib_edi.Helpers
 {
-	public class DateTimeService
+	public class DateConverter
 	{
 		/// <summary>
 		/// Converts ISO 8601 compliant date/time string to DateTime object
@@ -19,10 +20,20 @@ namespace lib_edi.Services.System
 		/// </example>
 		public static DateTime ConvertIso8601CompliantString(string s)
 		{
-			string format = "yyyyMMddTHHmmssZ"; //20211018T164303Z
-			var cultureInfo = new CultureInfo("en-US");
-			DateTime reportAbsoluteDateTime = DateTime.ParseExact(s, format, cultureInfo);
-			return reportAbsoluteDateTime;
+			try
+			{
+				string format = "yyyyMMddTHHmmssZ"; //20211018T164303Z
+				var cultureInfo = new CultureInfo("en-US");
+				DateTime reportAbsoluteDateTime = DateTime.ParseExact(s, format, cultureInfo);
+				return reportAbsoluteDateTime;
+			}
+			catch (Exception e)
+			{
+				s ??= "''";
+				string customErrorMessage = EdiErrorsService.BuildExceptionMessageString(e, "HQ37", EdiErrorsService.BuildErrorVariableArrayList(s));
+				throw new Exception(customErrorMessage);
+			}
+
 		}
 
 		/// <summary>
