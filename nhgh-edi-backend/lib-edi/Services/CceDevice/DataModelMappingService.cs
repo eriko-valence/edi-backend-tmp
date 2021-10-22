@@ -27,45 +27,68 @@ namespace lib_edi.Services.Loggers
         /// <returns>
 		/// A list of csv compatible MetaFridge log file records if successful; Exception (3B6U) if any there are any failures
 		/// </returns>
-        public static List<Cfd50CsvDataRowDto> MapMetaFridgeLogFileRecords(Cfd50JsonDataFileDto metaFridgeLogFile)
+        public static List<EmsCfd50CsvRecordDto> MapMetaFridgeLogFileRecords(dynamic metaFridgeLogFile)
         {
             try
             {
-                List<Cfd50CsvDataRowDto> metaFridgeCsvRows = new List<Cfd50CsvDataRowDto>();
 
-                foreach (Cfd50JsonDataFileRecordDto metaFridgeLogRecord in metaFridgeLogFile.records)
+                List<EmsCfd50CsvRecordDto> usbdbCsvRecords = new List<EmsCfd50CsvRecordDto>();
+
+                /* ######################################################################
+                 * # Cast dynamic data file objects to JSON
+                 * ###################################################################### */
+                JObject JObjLoggerDataFile = (JObject)metaFridgeLogFile;
+
+                /* ######################################################################
+                 * # Merge EMD and logger metadata
+                 * ###################################################################### */
+                EmsCfd50Metadata csvEmsMetadata = new EmsCfd50Metadata();
+                foreach (KeyValuePair<string, JToken> x in JObjLoggerDataFile)
                 {
-                    Cfd50CsvDataRowDto metaFridgeCsvRow = new Cfd50CsvDataRowDto();
-
-                    metaFridgeCsvRow.AMFR = metaFridgeLogFile.AMFR;
-                    metaFridgeCsvRow.AMOD = metaFridgeLogFile.AMOD;
-                    metaFridgeCsvRow.APQS = metaFridgeLogFile.APQS;
-                    metaFridgeCsvRow.ASER = metaFridgeLogFile.ASER;
-                    metaFridgeCsvRow.AID = metaFridgeLogFile.AID;
-                    metaFridgeCsvRow.ADAT = metaFridgeLogFile.ADAT;
-                    metaFridgeCsvRow.CID = metaFridgeLogFile.CID;
-                    metaFridgeCsvRow.FID = metaFridgeLogFile.FID;
-                    metaFridgeCsvRow.LOC = metaFridgeLogFile.LOC;
-
-                    metaFridgeCsvRow.ABST = metaFridgeLogRecord.ABST;
-                    metaFridgeCsvRow.TAMB = metaFridgeLogRecord.TAMB;
-                    metaFridgeCsvRow.TCLD = metaFridgeLogRecord.TCLD;
-                    metaFridgeCsvRow.TVC = metaFridgeLogRecord.TVC;
-                    metaFridgeCsvRow.CMPR = ConvertStringBitToBool(metaFridgeLogRecord.CMPR);
-                    metaFridgeCsvRow.SVA = metaFridgeLogRecord.SVA;
-                    metaFridgeCsvRow.EVDC = metaFridgeLogRecord.EVDC;
-                    metaFridgeCsvRow.CDRW = metaFridgeLogRecord.CDRW;
-                    metaFridgeCsvRow.DOOR = ConvertStringBitToBool(metaFridgeLogRecord.DOOR);
-                    metaFridgeCsvRow.HOLD = metaFridgeLogRecord.HOLD;
-                    metaFridgeCsvRow.BEMD = metaFridgeLogRecord.BEMD;
-                    metaFridgeCsvRow.TCON = metaFridgeLogRecord.TCON;
-                    metaFridgeCsvRow.CMPS = metaFridgeLogRecord.CMPS;
-                    metaFridgeCsvRow.CSOF = metaFridgeLogRecord.CSOF;
-
-                    metaFridgeCsvRows.Add(metaFridgeCsvRow);
+                    // Filter out records array
+                    if (x.Value.Type != JTokenType.Array)
+                    {
+                        ObjectManager.SetObjectValue(ref csvEmsMetadata, x.Key, x.Value);
+                    }
                 }
 
-                return metaFridgeCsvRows;
+                /* ######################################################################
+                 * # Format logger collection events for serialization to CSV 
+                 * ###################################################################### */
+                foreach (KeyValuePair<string, JToken> x in JObjLoggerDataFile)
+                {
+                    if (x.Value.Type == JTokenType.Array)
+                    {
+                        //Iterate each logger collection event
+                        foreach (JObject z in x.Value.Children<JObject>())
+                        {
+                            EmsCfd50CsvRecordDto emsCsvRecord = new EmsCfd50CsvRecordDto();
+                            //Add metadata to each collected event record
+                            foreach (PropertyInfo prop in csvEmsMetadata.GetType().GetProperties())
+                            {
+                                //if (prop.PropertyType.Name)
+
+                                ObjectManager.SetObjectValue(ref emsCsvRecord, prop.Name, prop.GetValue(csvEmsMetadata, null));
+                            }
+                            //Add collected event data to record
+                            foreach (JProperty prop in z.Properties())
+                            {
+                                if (prop.Name == "ABST")
+                                {
+                                    DateTime emdAbsoluteTime = DateConverter.ConvertIso8601CompliantString(prop.Value.ToString());
+                                    ObjectManager.SetObjectValue(ref emsCsvRecord, prop.Name, emdAbsoluteTime);
+                                }
+                                else
+                                {
+                                    ObjectManager.SetObjectValue(ref emsCsvRecord, prop.Name, prop.Value);
+                                }
+                            }
+                            usbdbCsvRecords.Add(emsCsvRecord);
+                        }
+                    }
+                }
+                return usbdbCsvRecords;
+
             }
             catch (Exception e)
             {
@@ -86,10 +109,10 @@ namespace lib_edi.Services.Loggers
         /// <returns>
         /// A consolidated list of csv compatible MetaFridge log file records if successful; Exception (3B6U) if any there are any failures
         /// </returns>
-        public static List<Cfd50CsvDataRowDto> MapMetaFridgeLogs(List<Cfd50JsonDataFileDto> metaFridgeLogFiles)
+        public static List<EmsCfd50CsvRecordDto> MapMetaFridgeLogs(List<dynamic> metaFridgeLogFiles)
         {
-            List<Cfd50CsvDataRowDto> metaFridgeCsvRow = new List<Cfd50CsvDataRowDto>();
-            foreach (Cfd50JsonDataFileDto metaFridgeLogFile in metaFridgeLogFiles)
+            List<EmsCfd50CsvRecordDto> metaFridgeCsvRow = new List<EmsCfd50CsvRecordDto>();
+            foreach (dynamic metaFridgeLogFile in metaFridgeLogFiles)
             {
                 metaFridgeCsvRow = DataModelMappingService.MapMetaFridgeLogFileRecords(metaFridgeLogFile);
             }
@@ -108,11 +131,11 @@ namespace lib_edi.Services.Loggers
         /// <returns>
         /// A consolidated list of csv USBDG MetaFridge log file records  if successful; Exception (D39Y) if any failures occur 
         /// </returns>
-        public static List<EmsCsvRecordDto> MapUsbdgLogs(List<dynamic> usbdgLogFiles, dynamic reportFile)
+        public static List<EmsUsbdgSimCsvRecordDto> MapUsbdgLogs(List<dynamic> usbdgLogFiles, dynamic reportFile)
         {
 
 
-            List<EmsCsvRecordDto> usbdbLogCsvRows = new List<EmsCsvRecordDto>();
+            List<EmsUsbdgSimCsvRecordDto> usbdbLogCsvRows = new List<EmsUsbdgSimCsvRecordDto>();
             foreach (dynamic usbdbLog in usbdgLogFiles)
             {
                 usbdbLogCsvRows.AddRange(MapUsbdgLogFileRecords(usbdbLog, reportFile));
@@ -133,11 +156,11 @@ namespace lib_edi.Services.Loggers
         /// <returns>
         /// A list of CSV compatible EMD + logger data records, if successful; Exception (D39Y) if any failures occur 
         /// </returns>
-        public static List<EmsCsvRecordDto> MapUsbdgLogFileRecords(dynamic emdLogFile, dynamic metadataFile)
+        public static List<EmsUsbdgSimCsvRecordDto> MapUsbdgLogFileRecords(dynamic emdLogFile, dynamic metadataFile)
         {
             try
             {
-                List<EmsCsvRecordDto> usbdbCsvRecords = new List<EmsCsvRecordDto>();
+                List<EmsUsbdgSimCsvRecordDto> usbdbCsvRecords = new List<EmsUsbdgSimCsvRecordDto>();
 
                 /* ######################################################################
                  * # Cast dynamic data file objects to JSON
@@ -148,7 +171,7 @@ namespace lib_edi.Services.Loggers
                 /* ######################################################################
                  * # Merge EMD and logger metadata
                  * ###################################################################### */
-                EmsMetadata csvEmsMetadata = new EmsMetadata();
+                EmsUsbdgSimMetadata csvEmsMetadata = new EmsUsbdgSimMetadata();
                 foreach (KeyValuePair<string, JToken> x in JObjMetadataFile)
                 {
                     ObjectManager.SetObjectValue(ref csvEmsMetadata, x.Key, x.Value);
@@ -172,7 +195,7 @@ namespace lib_edi.Services.Loggers
                         //Iterate each logger collection event
                         foreach (JObject z in x.Value.Children<JObject>())
                         {
-                            EmsCsvRecordDto emsCsvRecord = new EmsCsvRecordDto();
+                            EmsUsbdgSimCsvRecordDto emsCsvRecord = new EmsUsbdgSimCsvRecordDto();
                             //Add metadata to each collected event record
                             foreach (PropertyInfo prop in csvEmsMetadata.GetType().GetProperties())
                             {
@@ -181,7 +204,16 @@ namespace lib_edi.Services.Loggers
                             //Add collected event data to record
                             foreach (JProperty prop in z.Properties())
                             {
-                                ObjectManager.SetObjectValue(ref emsCsvRecord, prop.Name, prop.Value);
+                                if (prop.Name == "ABST")
+								{
+                                    DateTime emdAbsoluteTime = DateConverter.ConvertIso8601CompliantString(prop.Value.ToString());
+                                    ObjectManager.SetObjectValue(ref emsCsvRecord, prop.Name, emdAbsoluteTime);
+
+                                } else
+								{
+                                    ObjectManager.SetObjectValue(ref emsCsvRecord, prop.Name, prop.Value);
+                                }
+                                
                             }
                             usbdbCsvRecords.Add(emsCsvRecord);
                         }

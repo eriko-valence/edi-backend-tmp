@@ -41,7 +41,7 @@ namespace lib_edi.Helpers
         /// <param name="csvEmsMetadata"></param>
         /// <param name="key"></param>
         /// <param name="token"></param>
-        public static void SetObjectValue(ref EmsMetadata csvEmsMetadata, string key, JToken token)
+        public static void SetObjectValue(ref EmsUsbdgSimMetadata csvEmsMetadata, string key, JToken token)
         {
             try
 			{
@@ -54,7 +54,28 @@ namespace lib_edi.Helpers
 			{
                 //Ignore any exceptions as we do not want processing to stop due to a nonexistent property
             }
+        }
 
+        /// <summary>
+        /// Dynamically sets property value on an object
+        /// </summary>
+        /// <param name="csvEmsMetadata"></param>
+        /// <param name="key"></param>
+        /// <param name="token"></param>
+        public static void SetObjectValue(ref EmsCfd50Metadata csvEmsMetadata, string key, JToken token)
+        {
+            try
+            {
+                PropertyInfo propertyInfo = csvEmsMetadata.GetType().GetProperty(key);
+                if (propertyInfo != null)
+                {
+                    propertyInfo.SetValue(csvEmsMetadata, Convert.ChangeType(token, propertyInfo.PropertyType), null);
+                }
+            }
+            catch (Exception)
+            {
+                //Ignore any exceptions as we do not want processing to stop due to a nonexistent property
+            }
         }
 
         /// <summary>
@@ -63,7 +84,31 @@ namespace lib_edi.Helpers
         /// <param name="csvEmsRecord"></param>
         /// <param name="key"></param>
         /// <param name="value"></param>
-        public static void SetObjectValue(ref EmsCsvRecordDto csvEmsRecord, string key, Object value)
+        public static void SetObjectValue(ref EmsCfd50CsvRecordDto csvEmsRecord, string key, Object value)
+        {
+            try
+            {
+                PropertyInfo propertyInfo = csvEmsRecord.GetType().GetProperty(key);
+                if (propertyInfo != null)
+                {
+                    propertyInfo.SetValue(csvEmsRecord, value, null);
+                }
+
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("debug");
+                //Ignore any exceptions as we do not want processing to stop due to a nonexistent property
+            }
+        }
+
+        /// <summary>
+        /// Dynamically sets property value on an object
+        /// </summary>
+        /// <param name="csvEmsRecord"></param>
+        /// <param name="key"></param>
+        /// <param name="value"></param>
+        public static void SetObjectValue(ref EmsUsbdgSimCsvRecordDto csvEmsRecord, string key, Object value)
         {
             try
 			{
@@ -85,7 +130,7 @@ namespace lib_edi.Helpers
         /// <param name="csvEmsRecord"></param>
         /// <param name="key"></param>
         /// <param name="token"></param>
-        public static void SetObjectValue(ref EmsCsvRecordDto csvEmsRecord, string key, JToken token)
+        public static void SetObjectValue(ref EmsUsbdgSimCsvRecordDto csvEmsRecord, string key, JToken token)
         {
             try
 			{
@@ -96,6 +141,28 @@ namespace lib_edi.Helpers
                 }
             } catch (Exception)
 			{
+                //Ignore any exceptions as we do not want processing to stop due to a nonexistent property
+            }
+        }
+
+        /// <summary>
+        /// Dynamically sets property value on an object
+        /// </summary>
+        /// <param name="csvEmsRecord"></param>
+        /// <param name="key"></param>
+        /// <param name="token"></param>
+        public static void SetObjectValue(ref EmsCfd50CsvRecordDto csvEmsRecord, string key, JToken token)
+        {
+            try
+            {
+                PropertyInfo propertyInfo = csvEmsRecord.GetType().GetProperty(key);
+                if (propertyInfo != null)
+                {
+                    propertyInfo.SetValue(csvEmsRecord, Convert.ChangeType(token, propertyInfo.PropertyType), null);
+                }
+            }
+            catch (Exception)
+            {
                 //Ignore any exceptions as we do not want processing to stop due to a nonexistent property
             }
         }

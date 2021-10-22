@@ -171,9 +171,9 @@ namespace lib_edi.Services.Loggers
 		/// <returns>
 		/// List of denormalized USBDG records (with the calculated duration seconds); Exception (M34T) otherwise
 		/// </returns>
-		public static List<EmsCsvRecordDto> ConvertRelativeTimeToTotalSecondsForUsbdgLogRecords(List<EmsCsvRecordDto> records)
+		public static List<EmsUsbdgSimCsvRecordDto> ConvertRelativeTimeToTotalSecondsForUsbdgLogRecords(List<EmsUsbdgSimCsvRecordDto> records)
 		{
-			foreach (EmsCsvRecordDto record in records)
+			foreach (EmsUsbdgSimCsvRecordDto record in records)
 			{
 				try
 				{
@@ -199,11 +199,11 @@ namespace lib_edi.Services.Loggers
 		/// Absolute timestamp (DateTime) of a USBDG record; Exception (4Q5D) otherwise
 		/// </returns>
 		//public static List<EmsCsvRecordDto> CalculateAbsoluteTimeForUsbdgRecords(List<EmsCsvRecordDto> records, int reportDurationSeconds, string reportAbsoluteTimestamp)
-		public static List<EmsCsvRecordDto> CalculateAbsoluteTimeForUsbdgRecords(List<EmsCsvRecordDto> records, int reportDurationSeconds, dynamic reportAbsoluteTimestamp)
+		public static List<EmsUsbdgSimCsvRecordDto> CalculateAbsoluteTimeForUsbdgRecords(List<EmsUsbdgSimCsvRecordDto> records, int reportDurationSeconds, dynamic reportAbsoluteTimestamp)
 		{
 			string absoluteTime = ObjectManager.GetPropValue(reportAbsoluteTimestamp, "ABST");
 
-			foreach (EmsCsvRecordDto record in records)
+			foreach (EmsUsbdgSimCsvRecordDto record in records)
 			{
 				DateTime dt = CalculateAbsoluteTimeForUsbdgRecord(absoluteTime, reportDurationSeconds, record.RELT, record.Source);
 				record._ABST = dt;
@@ -338,7 +338,7 @@ namespace lib_edi.Services.Loggers
 		/// <returns>
 		/// Blob name of USBDG csv formatted log file; Exception (Q25U)
 		/// </returns>
-		public static async Task<string> WriteUsbdgLogRecordsToCsvBlob(CloudBlobContainer cloudBlobContainer, TransformHttpRequestMessageBodyDto requestBody, List<EmsCsvRecordDto> usbdgRecords, ILogger log)
+		public static async Task<string> WriteUsbdgLogRecordsToCsvBlob(CloudBlobContainer cloudBlobContainer, TransformHttpRequestMessageBodyDto requestBody, List<EmsUsbdgSimCsvRecordDto> usbdgRecords, ILogger log)
 		{
 			string blobName = "";
 			if (requestBody != null)
