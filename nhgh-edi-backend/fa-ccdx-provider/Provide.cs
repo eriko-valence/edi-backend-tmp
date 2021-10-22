@@ -30,6 +30,10 @@ namespace fa_ccdx_provider
     /// - "An Azure Blob Storage trigger defined on container_1 invokes an Azure Function (the CCDX Provider) 
     /// to send the file(s) received 'as-is' to a Kafka topic within the Cold Chain Data Interchange (CCDX) platform. 
     /// Report file(s) are removed from container_1 upon successful transmission to CCDX."
+    /// Deletion behavior:
+    /// - Blob ONLY gets deleted if there are no exceptions thrown
+    /// - A blob is moved to a holding container ONLY if the http response from the CCDX upload was not successful
+    /// - We will continue to evaluate the current deletion behavior - monitoring will help identify gaps (NHGH-1720)
     /// </remarks>
     public static class Provide
     {
