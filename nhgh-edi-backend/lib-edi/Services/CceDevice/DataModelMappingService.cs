@@ -1,4 +1,5 @@
 ﻿using lib_edi.Helpers;
+using lib_edi.Models.Domain.CceDevice;
 using lib_edi.Models.Dto.CceDevice.Csv;
 using lib_edi.Models.Dto.Loggers;
 using lib_edi.Services.Errors;
@@ -147,7 +148,7 @@ namespace lib_edi.Services.Loggers
                 /* ######################################################################
                  * # Merge EMD and logger metadata
                  * ###################################################################### */
-                UsbdgCsvMetadataDto csvEmsMetadata = new UsbdgCsvMetadataDto();
+                EmsMetadata csvEmsMetadata = new EmsMetadata();
                 foreach (KeyValuePair<string, JToken> x in JObjMetadataFile)
                 {
                     ObjectManager.SetObjectValue(ref csvEmsMetadata, x.Key, x.Value);

@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace lib_edi.Models.Dto.CceDevice.Csv
+namespace lib_edi.Models.Domain.CceDevice
 {
-	public class UsbdgCsvMetadataDto
+	public class EmsMetadata
 	{
 		public string ABST { get; set; }
 		public string ALRM { get; set; }

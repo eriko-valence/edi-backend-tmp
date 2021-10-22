@@ -85,7 +85,7 @@ namespace fa_adf_transform_usbdg
 
                 log.LogInformation($"- Retrieving time values from EMD metadata");
                 string emdRelativeTime = ObjectManager.GetJObjectPropertyValueAsString(emsLogMetadata,"RELT");
-                string emdAbsoluteTime = ObjectManager.GetJObjectPropertyValueAsString(emsLogMetadata, "ABST1");
+                string emdAbsoluteTime = ObjectManager.GetJObjectPropertyValueAsString(emsLogMetadata, "ABST");
 
                 log.LogInformation($"- Validate {logType} log blobs");
                 List<dynamic> validatedUsbdgLogFiles = await UsbdgDataProcessorService.ValidateUsbdgLogBlobs(emsConfgContainer, usbdgLogFiles, log);

@@ -1,4 +1,5 @@
-﻿using lib_edi.Models.Dto.CceDevice.Csv;
+﻿using lib_edi.Models.Domain.CceDevice;
+using lib_edi.Models.Dto.CceDevice.Csv;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -40,7 +41,7 @@ namespace lib_edi.Helpers
         /// <param name="csvEmsMetadata"></param>
         /// <param name="key"></param>
         /// <param name="token"></param>
-        public static void SetObjectValue(ref UsbdgCsvMetadataDto csvEmsMetadata, string key, JToken token)
+        public static void SetObjectValue(ref EmsMetadata csvEmsMetadata, string key, JToken token)
         {
             try
 			{
