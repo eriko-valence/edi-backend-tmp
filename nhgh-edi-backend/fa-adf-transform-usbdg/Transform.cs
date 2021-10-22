@@ -83,6 +83,7 @@ namespace fa_adf_transform_usbdg
                 log.LogInformation($"- Download {logType} log report blobs");
                 dynamic emsLogMetadata = await UsbdgDataProcessorService.DownloadUsbdgLogReportBlobs(usbdgLogReportBlobs, inputContainer, inputBlobPath, log);
 
+                log.LogInformation($"- Retrieving time values from EMD metadata");
                 string emdRelativeTime = ObjectManager.GetJObjectPropertyValueAsString(emsLogMetadata,"RELT");
                 string emdAbsoluteTime = ObjectManager.GetJObjectPropertyValueAsString(emsLogMetadata, "ABST");
 
