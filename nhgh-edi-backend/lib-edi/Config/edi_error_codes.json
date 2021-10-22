@@ -281,6 +281,12 @@
 			"error-message": "CCDX Consumer header 'ce_type' environment variable is missing",
 			"error-source": "CCDX Consumer",
 			"error-mitigation": null
+		},
+		"HQ37": {
+			"error-code": "HQ37",
+			"error-message": "An exception was thrown while converting time {0}",
+			"error-source": "Date Converter",
+			"error-mitigation": null
 		}
 	}
 }

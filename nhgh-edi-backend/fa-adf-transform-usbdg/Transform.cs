@@ -85,7 +85,7 @@ namespace fa_adf_transform_usbdg
 
                 log.LogInformation($"- Retrieving time values from EMD metadata");
                 string emdRelativeTime = ObjectManager.GetJObjectPropertyValueAsString(emsLogMetadata,"RELT");
-                string emdAbsoluteTime = ObjectManager.GetJObjectPropertyValueAsString(emsLogMetadata, "ABST");
+                string emdAbsoluteTime = ObjectManager.GetJObjectPropertyValueAsString(emsLogMetadata, "ABST1");
 
                 log.LogInformation($"- Validate {logType} log blobs");
                 List<dynamic> validatedUsbdgLogFiles = await UsbdgDataProcessorService.ValidateUsbdgLogBlobs(emsConfgContainer, usbdgLogFiles, log);
@@ -108,8 +108,8 @@ namespace fa_adf_transform_usbdg
                 sortedUsbdbLogCsvRows = UsbdgDataProcessorService.CalculateAbsoluteTimeForUsbdgRecords(sortedUsbdbLogCsvRows, DurationSecs, emsLogMetadata);
 
                 log.LogInformation($"  - Cloud upload times: ");
-                log.LogInformation($"    - EMD (source: cellular) : {DateTimeService.ConvertIso8601CompliantString(emdAbsoluteTime)} (UTC)");
-                log.LogInformation($"    - Logger (source: real time clock) : {emdRelativeTime} (Relative Time)");
+                log.LogInformation($"    - EMD (source: cellular) : {DateConverter.ConvertIso8601CompliantString(emdAbsoluteTime)} (UTC)");
+                log.LogInformation($"    - Logger (source: real time clock) : {emdRelativeTime ?? ""} (Relative Time)");
                 log.LogInformation($"    - Logger (source: real time clock) : {UsbdgDataProcessorService.ConvertRelativeTimeStringToTotalSeconds(emdRelativeTime)} (Duration in Seconds)");
                 log.LogInformation($"  - Absolute time calculation results (first two records): ");
                 if (usbdbLogCsvRows.Count > 1)

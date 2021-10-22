@@ -290,7 +290,7 @@ namespace lib_edi.Services.Loggers
 				int recordDurationSeconds = ConvertRelativeTimeStringToTotalSeconds(recordRelativeTime);
 				int elapsedSeconds = reportDurationSeconds - recordDurationSeconds; // How far away time wise is this record compared to the absolute time
 				
-				DateTime reportAbsoluteDateTime = DateTimeService.ConvertIso8601CompliantString(reportAbsoluteTime);
+				DateTime reportAbsoluteDateTime = DateConverter.ConvertIso8601CompliantString(reportAbsoluteTime);
 
 				TimeSpan ts = TimeSpan.FromSeconds(elapsedSeconds);
 				DateTime UtcTime = reportAbsoluteDateTime.Subtract(ts);
