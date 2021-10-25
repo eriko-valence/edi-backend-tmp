@@ -5,10 +5,10 @@ using System.Text;
 
 namespace lib_edi.Models.Dto.CceDevice.Csv
 {
-	public class EmsCsvRecordDto
+	public class EmsUsbdgSimCsvRecordDto
 	{
 		#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
-		public string ABST { get; set; }
+		public DateTime ABST { get; set; }
 		public double ACCD { get; set; }
 		public double ACSV { get; set; }
 		public string ALRM { get; set; }

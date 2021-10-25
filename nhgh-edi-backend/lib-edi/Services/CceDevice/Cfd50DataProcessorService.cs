@@ -29,11 +29,11 @@ namespace lib_edi.Services.Loggers
 		/// <returns>
 		/// Deserialized MetaFridge log object if successful; Exception (X7Z1) otherwise
 		/// </returns>
-		private static Cfd50JsonDataFileDto DeserializeMetaFridgeLogText(string blobName, string blobText)
+		private static dynamic DeserializeMetaFridgeLogText(string blobName, string blobText)
 		{
 			try
 			{
-				return JsonConvert.DeserializeObject<Cfd50JsonDataFileDto>(blobText);
+				return JsonConvert.DeserializeObject<dynamic>(blobText);
 			}
 			catch (Exception e)
 			{
@@ -55,7 +55,7 @@ namespace lib_edi.Services.Loggers
 
 			foreach (CloudBlockBlob logBlob in logDirectoryBlobs)
 			{
-				if (logBlob.Name.Contains("EMS") || logBlob.Name.Contains("SAMPLE"))
+				if (logBlob.Name.Contains("CFD50"))
 				{
 					metaFridgeLogBlobs.Add(logBlob);
 				}
@@ -80,7 +80,7 @@ namespace lib_edi.Services.Loggers
 		/// <returns>
 		/// Blob name of MetaFridge csv formatted log file; Exception (Q25U) otherwise
 		/// </returns>
-		public static async Task<string> WriteMetaFridgeLogRecordsToCsvBlob(CloudBlobContainer cloudBlobContainer, TransformHttpRequestMessageBodyDto requestBody, List<Cfd50CsvDataRowDto> metaFridgeRecords, ILogger log)
+		public static async Task<string> WriteMetaFridgeLogRecordsToCsvBlob(CloudBlobContainer cloudBlobContainer, TransformHttpRequestMessageBodyDto requestBody, List<EmsCfd50CsvRecordDto> metaFridgeRecords, ILogger log)
 		{
 			string blobName = "";
 
@@ -112,9 +112,9 @@ namespace lib_edi.Services.Loggers
 		/// <returns>
 		/// A list of deserialized MetaFridge log objects that have been downloaded from Azure blob storage; Exception (3L4P) otherwise
 		/// </returns>
-		public static async Task<List<Cfd50JsonDataFileDto>> DownloadsAndDeserializesMetaFridgeLogBlobs(List<CloudBlockBlob> blobs, CloudBlobContainer cloudBlobContainer, string blobPath, ILogger log)
+		public static async Task<List<dynamic>> DownloadsAndDeserializesMetaFridgeLogBlobs(List<CloudBlockBlob> blobs, CloudBlobContainer cloudBlobContainer, string blobPath, ILogger log)
 		{
-			List<Cfd50JsonDataFileDto> metaFridgeLogFiles = new List<Cfd50JsonDataFileDto>();
+			List<dynamic> metaFridgeLogFiles = new List<dynamic>();
 			foreach (CloudBlockBlob logBlob in blobs)
 			{
 				log.LogInformation($"  - Blob: {cloudBlobContainer.Name}/{logBlob.Name}");

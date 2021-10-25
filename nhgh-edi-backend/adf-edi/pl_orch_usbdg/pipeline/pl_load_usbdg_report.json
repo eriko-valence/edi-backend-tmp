@@ -453,7 +453,7 @@
                                     "type": "Decimal",
                                     "physicalType": "decimal",
                                     "scale": 1,
-                                    "precision": 4
+                                    "precision": 5
                                 }
                             },
                             {
@@ -464,8 +464,10 @@
                                 },
                                 "sink": {
                                     "name": "BLOG",
-                                    "type": "Int16",
-                                    "physicalType": "smallint"
+                                    "type": "Decimal",
+                                    "physicalType": "decimal",
+                                    "scale": 1,
+                                    "precision": 5
                                 }
                             },
                             {
@@ -476,8 +478,8 @@
                                 },
                                 "sink": {
                                     "name": "CMPR",
-                                    "type": "Int16",
-                                    "physicalType": "smallint"
+                                    "type": "Int32",
+                                    "physicalType": "int"
                                 }
                             },
                             {
@@ -488,8 +490,8 @@
                                 },
                                 "sink": {
                                     "name": "CMPS",
-                                    "type": "Int16",
-                                    "physicalType": "smallint"
+                                    "type": "Int32",
+                                    "physicalType": "int"
                                 }
                             },
                             {
@@ -528,8 +530,8 @@
                                 },
                                 "sink": {
                                     "name": "DORF",
-                                    "type": "Int16",
-                                    "physicalType": "smallint"
+                                    "type": "Int32",
+                                    "physicalType": "int"
                                 }
                             },
                             {
@@ -540,8 +542,8 @@
                                 },
                                 "sink": {
                                     "name": "DORV",
-                                    "type": "Int16",
-                                    "physicalType": "smallint"
+                                    "type": "Int32",
+                                    "physicalType": "int"
                                 }
                             },
                             {
@@ -595,7 +597,7 @@
                                     "type": "Decimal",
                                     "physicalType": "decimal",
                                     "scale": 1,
-                                    "precision": 4
+                                    "precision": 3
                                 }
                             },
                             {
@@ -623,7 +625,7 @@
                                     "type": "Decimal",
                                     "physicalType": "decimal",
                                     "scale": 3,
-                                    "precision": 5
+                                    "precision": 6
                                 }
                             },
                             {
@@ -649,7 +651,7 @@
                                     "type": "Decimal",
                                     "physicalType": "decimal",
                                     "scale": 3,
-                                    "precision": 5
+                                    "precision": 6
                                 }
                             },
                             {
@@ -696,8 +698,8 @@
                                 },
                                 "sink": {
                                     "name": "SVA",
-                                    "type": "Int16",
-                                    "physicalType": "smallint"
+                                    "type": "Int32",
+                                    "physicalType": "int"
                                 }
                             },
                             {
@@ -710,8 +712,8 @@
                                     "name": "TAMB",
                                     "type": "Decimal",
                                     "physicalType": "decimal",
-                                    "scale": 1,
-                                    "precision": 3
+                                    "scale": 2,
+                                    "precision": 5
                                 }
                             },
                             {
@@ -724,8 +726,8 @@
                                     "name": "TCON",
                                     "type": "Decimal",
                                     "physicalType": "decimal",
-                                    "scale": 1,
-                                    "precision": 4
+                                    "scale": 2,
+                                    "precision": 5
                                 }
                             },
                             {
@@ -738,8 +740,8 @@
                                     "name": "TFRZ",
                                     "type": "Decimal",
                                     "physicalType": "decimal",
-                                    "scale": 1,
-                                    "precision": 3
+                                    "scale": 2,
+                                    "precision": 5
                                 }
                             },
                             {
@@ -752,8 +754,8 @@
                                     "name": "TPCB",
                                     "type": "Decimal",
                                     "physicalType": "decimal",
-                                    "scale": 1,
-                                    "precision": 4
+                                    "scale": 2,
+                                    "precision": 5
                                 }
                             },
                             {
@@ -766,32 +768,32 @@
                                     "name": "TVC",
                                     "type": "Decimal",
                                     "physicalType": "decimal",
-                                    "scale": 1,
-                                    "precision": 4
+                                    "scale": 2,
+                                    "precision": 5
                                 }
                             },
                             {
                                 "source": {
-                                    "name": "DurationSecs",
+                                    "name": "_RELT_SECS",
                                     "type": "String",
                                     "physicalType": "String"
                                 },
                                 "sink": {
-                                    "name": "duration_secs",
-                                    "type": "Int64",
-                                    "physicalType": "bigint"
+                                    "name": "_RELT_SECS",
+                                    "type": "String",
+                                    "physicalType": "varchar"
                                 }
                             },
                             {
                                 "source": {
-                                    "name": "UtcTimestamp",
+                                    "name": "_ABST",
                                     "type": "String",
                                     "physicalType": "String"
                                 },
                                 "sink": {
-                                    "name": "utc_timestamp",
-                                    "type": "DateTimeOffset",
-                                    "physicalType": "datetimeoffset"
+                                    "name": "_ABST",
+                                    "type": "String",
+                                    "physicalType": "varchar"
                                 }
                             }
                         ],
@@ -834,7 +836,7 @@
             "name": "Load"
         },
         "annotations": [],
-        "lastPublishTime": "2021-10-15T00:04:40Z"
+        "lastPublishTime": "2021-10-18T23:25:00Z"
     },
     "type": "Microsoft.DataFactory/factories/pipelines"
 }

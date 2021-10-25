@@ -4,9 +4,9 @@ using System.Text;
 
 namespace lib_edi.Models.Dto.CceDevice.Csv
 {
-	public class Cfd50CsvDataRowDto
+	public class EmsCfd50CsvRecordDto
 	{
-		#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
 		// Log Header
 		public string AMFR { get; set; }
 		public string AMOD { get; set; }
@@ -35,6 +35,6 @@ namespace lib_edi.Models.Dto.CceDevice.Csv
 		public int CMPS { get; set; }
 		public string CSOF { get; set; }
 		public string ALRM { get; set; }
-		#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 	}
 }

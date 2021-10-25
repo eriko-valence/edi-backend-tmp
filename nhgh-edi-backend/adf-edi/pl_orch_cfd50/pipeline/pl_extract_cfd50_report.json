@@ -31,7 +31,11 @@
                             "enablePartitionDiscovery": false
                         },
                         "formatSettings": {
-                            "type": "JsonReadSettings"
+                            "type": "JsonReadSettings",
+                            "compressionProperties": {
+                                "type": "ZipDeflateReadSettings",
+                                "preserveZipFileNameAsFolder": false
+                            }
                         }
                     },
                     "sink": {
@@ -58,10 +62,6 @@
                         "parameters": {
                             "PL_P_PARAM_LOG_DIR_GUID": {
                                 "value": "@pipeline().parameters.PL_P_PARAM_LOG_DIR_GUID",
-                                "type": "Expression"
-                            },
-                            "PL_P_PARAM_FILE_NAME": {
-                                "value": "@pipeline().parameters.PL_P_PARAM_FULL_FILE_NAME",
                                 "type": "Expression"
                             }
                         }
@@ -129,7 +129,7 @@
             "name": "Extract"
         },
         "annotations": [],
-        "lastPublishTime": "2021-10-14T00:07:29Z"
+        "lastPublishTime": "2021-10-14T17:51:42Z"
     },
     "type": "Microsoft.DataFactory/factories/pipelines"
 }

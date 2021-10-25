@@ -4,7 +4,7 @@ using System.Text;
 
 namespace lib_edi.Models.Domain.CceDevice
 {
-	public class EmsMetadata
+	public class EmsUsbdgSimMetadata
 	{
 		public string ABST { get; set; }
 		public string ALRM { get; set; }
