@@ -63,10 +63,6 @@
                             "PL_P_PARAM_LOG_DIR_GUID": {
                                 "value": "@pipeline().parameters.PL_P_PARAM_LOG_DIR_GUID",
                                 "type": "Expression"
-                            },
-                            "PL_P_PARAM_FILE_NAME": {
-                                "value": "@pipeline().parameters.PL_P_PARAM_FILE_NAME",
-                                "type": "Expression"
                             }
                         }
                     }

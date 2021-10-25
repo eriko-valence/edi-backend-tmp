@@ -8,9 +8,6 @@
         "parameters": {
             "PL_P_PARAM_LOG_DIR_GUID": {
                 "type": "string"
-            },
-            "PL_P_PARAM_FILE_NAME": {
-                "type": "string"
             }
         },
         "folder": {
@@ -21,10 +18,6 @@
         "typeProperties": {
             "location": {
                 "type": "AzureBlobFSLocation",
-                "fileName": {
-                    "value": "@dataset().PL_P_PARAM_FILE_NAME",
-                    "type": "Expression"
-                },
                 "folderPath": {
                     "value": "@dataset().PL_P_PARAM_LOG_DIR_GUID",
                     "type": "Expression"
