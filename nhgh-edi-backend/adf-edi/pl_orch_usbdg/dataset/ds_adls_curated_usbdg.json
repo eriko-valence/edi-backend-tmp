@@ -230,19 +230,11 @@
                 "type": "String"
             },
             {
-                "name": "duration_secs",
+                "name": "_RELT_SECS",
                 "type": "String"
             },
             {
-                "name": "emd_relt",
-                "type": "String"
-            },
-            {
-                "name": "emd_abs",
-                "type": "String"
-            },
-            {
-                "name": "utc_timestamp",
+                "name": "_ABST",
                 "type": "String"
             }
         ]

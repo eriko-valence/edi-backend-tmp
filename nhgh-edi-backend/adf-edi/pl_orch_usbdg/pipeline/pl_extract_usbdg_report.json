@@ -1,5 +1,5 @@
 {
-    "name": "pl_extract_cfd50_report",
+    "name": "pl_extract_usbdg_report",
     "properties": {
         "activities": [
             {
@@ -20,10 +20,7 @@
                         "storeSettings": {
                             "type": "AzureBlobFSReadSettings",
                             "recursive": true,
-                            "wildcardFolderPath": {
-                                "value": "*",
-                                "type": "Expression"
-                            },
+                            "wildcardFolderPath": "*",
                             "wildcardFileName": {
                                 "value": "@pipeline().parameters.PL_P_PARAM_FILE_NAME",
                                 "type": "Expression"
@@ -31,7 +28,11 @@
                             "enablePartitionDiscovery": false
                         },
                         "formatSettings": {
-                            "type": "JsonReadSettings"
+                            "type": "JsonReadSettings",
+                            "compressionProperties": {
+                                "type": "ZipDeflateReadSettings",
+                                "preserveZipFileNameAsFolder": false
+                            }
                         }
                     },
                     "sink": {
@@ -47,21 +48,17 @@
                 },
                 "inputs": [
                     {
-                        "referenceName": "ds_adls_raw_cfd50",
+                        "referenceName": "ds_adls_raw_usbdg",
                         "type": "DatasetReference"
                     }
                 ],
                 "outputs": [
                     {
-                        "referenceName": "ds_adls_stage_cfd50",
+                        "referenceName": "ds_adls_stage_usbdg",
                         "type": "DatasetReference",
                         "parameters": {
                             "PL_P_PARAM_LOG_DIR_GUID": {
                                 "value": "@pipeline().parameters.PL_P_PARAM_LOG_DIR_GUID",
-                                "type": "Expression"
-                            },
-                            "PL_P_PARAM_FILE_NAME": {
-                                "value": "@pipeline().parameters.PL_P_PARAM_FULL_FILE_NAME",
                                 "type": "Expression"
                             }
                         }
@@ -89,7 +86,7 @@
                 "userProperties": [],
                 "typeProperties": {
                     "dataset": {
-                        "referenceName": "ds_adls_raw_cfd50",
+                        "referenceName": "ds_adls_raw_usbdg",
                         "type": "DatasetReference"
                     },
                     "enableLogging": false,
@@ -129,7 +126,7 @@
             "name": "Extract"
         },
         "annotations": [],
-        "lastPublishTime": "2021-10-14T00:07:29Z"
+        "lastPublishTime": "2021-10-14T16:15:34Z"
     },
     "type": "Microsoft.DataFactory/factories/pipelines"
 }

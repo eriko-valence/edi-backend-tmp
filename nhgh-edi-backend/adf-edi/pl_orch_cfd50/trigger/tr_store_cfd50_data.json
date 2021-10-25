@@ -23,7 +23,7 @@
         "type": "BlobEventsTrigger",
         "typeProperties": {
             "blobPathBeginsWith": "/raw-ccdx-consumer/blobs/cfd50",
-            "blobPathEndsWith": ".json",
+            "blobPathEndsWith": ".zip",
             "ignoreEmptyBlobs": true,
             "scope": "/subscriptions/2972ffd4-e5b4-4b98-87b9-360c084c2959/resourceGroups/rg-edi-dev/providers/Microsoft.Storage/storageAccounts/adlsedidev",
             "events": [

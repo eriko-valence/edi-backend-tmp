@@ -14,6 +14,10 @@
             "location": {
                 "type": "AzureBlobFSLocation",
                 "fileSystem": "raw-ccdx-consumer"
+            },
+            "compression": {
+                "type": "ZipDeflate",
+                "level": "Optimal"
             }
         },
         "schema": {}
