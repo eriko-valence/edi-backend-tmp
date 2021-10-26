@@ -5,7 +5,7 @@ BEGIN
 	USING @mf_logger_data AS tvp
 	ON mld.[ABST] = tvp.[ABST] AND mld.[ASER] = tvp.[ASER]
 	WHEN NOT MATCHED THEN 
-	INSERT ([AMFR],[AMOD],[APQS],[ASER],[AID],[ADAT],[CID],[FID],[LAT],[LNG],[ABST],[TAMB],[TFRZ],[TVC],[CMPR],[SVA],[EVDC],[CDRW],[DOOR],[HOLD],[BEMD],[TCON],[CMPS],[CSOF],[ALRM]) 
+	INSERT ([AMFR],[AMOD],[APQS],[ASER],[AID],[ADAT],[CID],[FID],[LAT],[LNG],[ABST],[TAMB],[TFRZ],[TVC],[CMPR],[SVA],[EVDC],[CDRW],[DOOR],[HOLD],[BEMD],[TCON],[CMPS],[CSOF],[ALRM],[DATEADDED]) 
 	VALUES(
 tvp.[AMFR],
 tvp.[AMOD],
@@ -31,6 +31,7 @@ tvp.[BEMD],
 tvp.[TCON],
 tvp.[CMPS],
 tvp.[CSOF],
-tvp.[ALRM]);
+tvp.[ALRM],
+GETDATE());
 END
 GO

@@ -37,6 +37,34 @@ namespace lib_edi.Helpers
 		}
 
 		/// <summary>
+		/// Converts a date string with dashes
+		/// </summary>
+		/// <param name="s">date/time string in format "yyyy-MM-dd" </param>
+		/// <returns>
+		/// A DateTime object representing the ISO 8601 compliant date/time string
+		/// </returns>
+		/// <example>
+		/// date string with dashes in format "yyyy-MM-dd": 2019-04-19
+		/// </example>
+		public static DateTime ConvertDateWithDashesString(string s)
+		{
+			try
+			{
+				string format = "yyyy-MM-dd";
+				var cultureInfo = new CultureInfo("en-US");
+				DateTime reportAbsoluteDateTime = DateTime.ParseExact(s, format, cultureInfo);
+				return reportAbsoluteDateTime;
+			}
+			catch (Exception e)
+			{
+				s ??= "''";
+				string customErrorMessage = EdiErrorsService.BuildExceptionMessageString(e, "7ZE5", EdiErrorsService.BuildErrorVariableArrayList(s));
+				throw new Exception(customErrorMessage);
+			}
+
+		}
+
+		/// <summary>
 		/// Converts the specified string representation of a date and time to an equivalent date and time value
 		/// </summary>
 		/// <param name="s">Date and time string </param>

@@ -68,7 +68,16 @@ namespace lib_edi.Services.Loggers
                             {
                                 //if (prop.PropertyType.Name)
 
-                                ObjectManager.SetObjectValue(ref emsCsvRecord, prop.Name, prop.GetValue(csvEmsMetadata, null));
+                                if (prop.Name == "ADAT")
+                                {
+                                    DateTime adatDate = DateConverter.ConvertDateWithDashesString(prop.GetValue(csvEmsMetadata, null).ToString());
+                                    ObjectManager.SetObjectValue(ref emsCsvRecord, prop.Name, adatDate);
+                                } else
+								{
+                                    ObjectManager.SetObjectValue(ref emsCsvRecord, prop.Name, prop.GetValue(csvEmsMetadata, null));
+                                }
+
+                                
                             }
                             //Add collected event data to record
                             foreach (JProperty prop in z.Properties())

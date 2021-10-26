@@ -287,6 +287,12 @@
 			"error-message": "An exception was thrown while converting time {0}",
 			"error-source": "Date Converter",
 			"error-mitigation": null
+		},
+		"7ZE5": {
+			"error-code": "7ZE5",
+			"error-message": "An exception was thrown while converting date {0}",
+			"error-source": "Date Converter",
+			"error-mitigation": null
 		}
 	}
 }

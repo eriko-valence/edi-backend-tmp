@@ -1,0 +1,406 @@
+{
+    "name": "pl_load_cfd50_report",
+    "properties": {
+        "activities": [
+            {
+                "name": "Load",
+                "type": "Copy",
+                "dependsOn": [],
+                "policy": {
+                    "timeout": "7.00:00:00",
+                    "retry": 0,
+                    "retryIntervalInSeconds": 30,
+                    "secureOutput": false,
+                    "secureInput": false
+                },
+                "userProperties": [],
+                "typeProperties": {
+                    "source": {
+                        "type": "DelimitedTextSource",
+                        "storeSettings": {
+                            "type": "AzureBlobFSReadSettings",
+                            "recursive": true,
+                            "wildcardFolderPath": {
+                                "value": "@pipeline().parameters.PL_P_PARAM_LOG_DIR_GUID",
+                                "type": "Expression"
+                            },
+                            "wildcardFileName": "out_mf.csv",
+                            "enablePartitionDiscovery": false
+                        },
+                        "formatSettings": {
+                            "type": "DelimitedTextReadSettings"
+                        }
+                    },
+                    "sink": {
+                        "type": "AzureSqlSink",
+                        "sqlWriterStoredProcedureName": "[ems_data].[uspLoadMFLoggerData]",
+                        "sqlWriterTableType": "[ems_data].[mf_logger_data_type]",
+                        "storedProcedureTableTypeParameterName": "mf_logger_data",
+                        "disableMetricsCollection": false
+                    },
+                    "enableStaging": false,
+                    "translator": {
+                        "type": "TabularTranslator",
+                        "mappings": [
+                            {
+                                "source": {
+                                    "name": "AMFR",
+                                    "type": "String",
+                                    "physicalType": "String"
+                                },
+                                "sink": {
+                                    "name": "AMFR",
+                                    "type": "String",
+                                    "physicalType": "varchar"
+                                }
+                            },
+                            {
+                                "source": {
+                                    "name": "AMOD",
+                                    "type": "String",
+                                    "physicalType": "String"
+                                },
+                                "sink": {
+                                    "name": "AMOD",
+                                    "type": "String",
+                                    "physicalType": "varchar"
+                                }
+                            },
+                            {
+                                "source": {
+                                    "name": "APQS",
+                                    "type": "String",
+                                    "physicalType": "String"
+                                },
+                                "sink": {
+                                    "name": "APQS",
+                                    "type": "String",
+                                    "physicalType": "varchar"
+                                }
+                            },
+                            {
+                                "source": {
+                                    "name": "ASER",
+                                    "type": "String",
+                                    "physicalType": "String"
+                                },
+                                "sink": {
+                                    "name": "ASER",
+                                    "type": "String",
+                                    "physicalType": "varchar"
+                                }
+                            },
+                            {
+                                "source": {
+                                    "name": "AID",
+                                    "type": "String",
+                                    "physicalType": "String"
+                                },
+                                "sink": {
+                                    "name": "AID",
+                                    "type": "String",
+                                    "physicalType": "varchar"
+                                }
+                            },
+                            {
+                                "source": {
+                                    "name": "ADAT",
+                                    "type": "String",
+                                    "physicalType": "String"
+                                },
+                                "sink": {
+                                    "name": "ADAT",
+                                    "type": "DateTime",
+                                    "physicalType": "date"
+                                }
+                            },
+                            {
+                                "source": {
+                                    "name": "CID",
+                                    "type": "String",
+                                    "physicalType": "String"
+                                },
+                                "sink": {
+                                    "name": "CID",
+                                    "type": "String",
+                                    "physicalType": "varchar"
+                                }
+                            },
+                            {
+                                "source": {
+                                    "name": "FID",
+                                    "type": "String",
+                                    "physicalType": "String"
+                                },
+                                "sink": {
+                                    "name": "FID",
+                                    "type": "String",
+                                    "physicalType": "varchar"
+                                }
+                            },
+                            {
+                                "source": {
+                                    "name": "LAT",
+                                    "type": "String",
+                                    "physicalType": "String"
+                                },
+                                "sink": {
+                                    "name": "LAT",
+                                    "type": "Decimal",
+                                    "physicalType": "decimal",
+                                    "scale": 5,
+                                    "precision": 7
+                                }
+                            },
+                            {
+                                "source": {
+                                    "name": "LNG",
+                                    "type": "String",
+                                    "physicalType": "String"
+                                },
+                                "sink": {
+                                    "name": "LNG",
+                                    "type": "Decimal",
+                                    "physicalType": "decimal",
+                                    "scale": 5,
+                                    "precision": 7
+                                }
+                            },
+                            {
+                                "source": {
+                                    "name": "ABST",
+                                    "type": "String",
+                                    "physicalType": "String"
+                                },
+                                "sink": {
+                                    "name": "ABST",
+                                    "type": "DateTime",
+                                    "physicalType": "date"
+                                }
+                            },
+                            {
+                                "source": {
+                                    "name": "TAMB",
+                                    "type": "String",
+                                    "physicalType": "String"
+                                },
+                                "sink": {
+                                    "name": "TAMB",
+                                    "type": "Decimal",
+                                    "physicalType": "decimal",
+                                    "scale": 1,
+                                    "precision": 3
+                                }
+                            },
+                            {
+                                "source": {
+                                    "name": "TFRZ",
+                                    "type": "String",
+                                    "physicalType": "String"
+                                },
+                                "sink": {
+                                    "name": "TFRZ",
+                                    "type": "Decimal",
+                                    "physicalType": "decimal",
+                                    "scale": 1,
+                                    "precision": 3
+                                }
+                            },
+                            {
+                                "source": {
+                                    "name": "TVC",
+                                    "type": "String",
+                                    "physicalType": "String"
+                                },
+                                "sink": {
+                                    "name": "TVC",
+                                    "type": "Decimal",
+                                    "physicalType": "decimal",
+                                    "scale": 1,
+                                    "precision": 3
+                                }
+                            },
+                            {
+                                "source": {
+                                    "name": "CMPR",
+                                    "type": "String",
+                                    "physicalType": "String"
+                                },
+                                "sink": {
+                                    "name": "CMPR",
+                                    "type": "Byte",
+                                    "physicalType": "tinyint"
+                                }
+                            },
+                            {
+                                "source": {
+                                    "name": "SVA",
+                                    "type": "String",
+                                    "physicalType": "String"
+                                },
+                                "sink": {
+                                    "name": "SVA",
+                                    "type": "Int16",
+                                    "physicalType": "smallint"
+                                }
+                            },
+                            {
+                                "source": {
+                                    "name": "EVDC",
+                                    "type": "String",
+                                    "physicalType": "String"
+                                },
+                                "sink": {
+                                    "name": "EVDC",
+                                    "type": "Decimal",
+                                    "physicalType": "decimal",
+                                    "scale": 1,
+                                    "precision": 3
+                                }
+                            },
+                            {
+                                "source": {
+                                    "name": "CDRW",
+                                    "type": "String",
+                                    "physicalType": "String"
+                                },
+                                "sink": {
+                                    "name": "CDRW",
+                                    "type": "Byte",
+                                    "physicalType": "tinyint"
+                                }
+                            },
+                            {
+                                "source": {
+                                    "name": "DOOR",
+                                    "type": "String",
+                                    "physicalType": "String"
+                                },
+                                "sink": {
+                                    "name": "DOOR",
+                                    "type": "Byte",
+                                    "physicalType": "tinyint"
+                                }
+                            },
+                            {
+                                "source": {
+                                    "name": "HOLD",
+                                    "type": "String",
+                                    "physicalType": "String"
+                                },
+                                "sink": {
+                                    "name": "HOLD",
+                                    "type": "Decimal",
+                                    "physicalType": "decimal",
+                                    "scale": 1,
+                                    "precision": 4
+                                }
+                            },
+                            {
+                                "source": {
+                                    "name": "BEMD",
+                                    "type": "String",
+                                    "physicalType": "String"
+                                },
+                                "sink": {
+                                    "name": "BEMD",
+                                    "type": "Decimal",
+                                    "physicalType": "decimal",
+                                    "scale": 1,
+                                    "precision": 5
+                                }
+                            },
+                            {
+                                "source": {
+                                    "name": "TCON",
+                                    "type": "String",
+                                    "physicalType": "String"
+                                },
+                                "sink": {
+                                    "name": "TCON",
+                                    "type": "Decimal",
+                                    "physicalType": "decimal",
+                                    "scale": 1,
+                                    "precision": 3
+                                }
+                            },
+                            {
+                                "source": {
+                                    "name": "CMPS",
+                                    "type": "String",
+                                    "physicalType": "String"
+                                },
+                                "sink": {
+                                    "name": "CMPS",
+                                    "type": "Int16",
+                                    "physicalType": "smallint"
+                                }
+                            },
+                            {
+                                "source": {
+                                    "name": "CSOF",
+                                    "type": "String",
+                                    "physicalType": "String"
+                                },
+                                "sink": {
+                                    "name": "CSOF",
+                                    "type": "String",
+                                    "physicalType": "varchar"
+                                }
+                            },
+                            {
+                                "source": {
+                                    "name": "ALRM",
+                                    "type": "String",
+                                    "physicalType": "String"
+                                },
+                                "sink": {
+                                    "name": "ALRM",
+                                    "type": "String",
+                                    "physicalType": "varchar"
+                                }
+                            }
+                        ],
+                        "typeConversion": true,
+                        "typeConversionSettings": {
+                            "allowDataTruncation": true,
+                            "treatBooleanAsNumber": false
+                        }
+                    }
+                },
+                "inputs": [
+                    {
+                        "referenceName": "ds_adls_curated_usbdg",
+                        "type": "DatasetReference"
+                    }
+                ],
+                "outputs": [
+                    {
+                        "referenceName": "ds_sql_usbdg",
+                        "type": "DatasetReference"
+                    }
+                ]
+            }
+        ],
+        "parameters": {
+            "PL_P_PARAM_TRIGGER_TIME": {
+                "type": "string"
+            },
+            "PL_P_PARAM_FOLDER_NAME": {
+                "type": "string"
+            },
+            "PL_P_PARAM_FILE_NAME": {
+                "type": "string"
+            },
+            "PL_P_PARAM_LOG_DIR_GUID": {
+                "type": "string"
+            }
+        },
+        "folder": {
+            "name": "Load"
+        },
+        "annotations": [],
+        "lastPublishTime": "2021-10-14T17:42:20Z"
+    },
+    "type": "Microsoft.DataFactory/factories/pipelines"
+}
