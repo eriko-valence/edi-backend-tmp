@@ -7,10 +7,11 @@ CREATE TYPE [ems_data].[mf_logger_data_type] AS TABLE(
 	[ADAT] [date] NOT NULL,
 	[CID] [varchar](3) NOT NULL,
 	[FID] [varchar](46) NOT NULL,
-	[LOC] [varchar](15) NOT NULL,
+	[LAT] [varchar](45) NOT NULL,
+	[LNG] [varchar](45) NOT NULL,
 	[ABST] [varchar](19) NOT NULL,
 	[TAMB] [numeric](4, 1) NOT NULL,
-	[TCLD] [numeric](3, 1) NOT NULL,
+	[TFRZ] [numeric](4, 1) NOT NULL,
 	[TVC] [numeric](3, 1) NOT NULL,
 	[CMPR] [bit] NOT NULL,
 	[SVA] [int] NOT NULL,
@@ -21,6 +22,7 @@ CREATE TYPE [ems_data].[mf_logger_data_type] AS TABLE(
 	[BEMD] [numeric](4, 1) NOT NULL,
 	[TCON] [numeric](4, 1) NOT NULL,
 	[CMPS] [int] NOT NULL,
-	[CSOF] [varchar](14) NOT NULL
+	[CSOF] [varchar](45) NOT NULL,
+	[ALRM] [varchar](45) NOT NULL
 )
 GO
