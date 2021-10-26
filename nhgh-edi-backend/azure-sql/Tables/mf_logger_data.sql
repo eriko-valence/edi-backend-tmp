@@ -17,12 +17,12 @@ CREATE TABLE [ems_data].[mf_logger_data](
 	[SVA] [smallint] NOT NULL,
 	[EVDC] [numeric](3, 1) NOT NULL,
 	[CDRW] [tinyint] NOT NULL,
-	[DOOR] [bit] NOT NULL,
+	[DOOR] [tinyint] NOT NULL,
 	[HOLD] [numeric](4, 1) NOT NULL,
 	[BEMD] [numeric](5, 1) NOT NULL,
 	[TCON] [numeric](3, 1) NOT NULL,
 	[CMPS] [smallint] NOT NULL,
 	[CSOF] [varchar](50) NOT NULL,
-	[ALRM] [varchar](10) NOT NULL
+	[ALRM] [varchar](10) NULL
 ) ON [PRIMARY]
 GO

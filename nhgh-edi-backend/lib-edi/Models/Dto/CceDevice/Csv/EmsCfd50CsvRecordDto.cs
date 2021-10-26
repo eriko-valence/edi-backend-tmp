@@ -12,12 +12,12 @@ namespace lib_edi.Models.Dto.CceDevice.Csv
 		public string AMOD { get; set; }
 		public double APQS { get; set; }
 		public string ASER { get; set; }
+		public string AID { get; set; }
 		public string ADAT { get; set; }
 		public string CID { get; set; }
 		public string FID { get; set; }
 		public double LAT { get; set; }
 		public double LNG { get; set; }
-		public string _SOURCE { get; set; }
 
 		// Log Record
 		public DateTime ABST { get; set; }
