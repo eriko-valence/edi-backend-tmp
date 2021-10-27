@@ -6,7 +6,7 @@ namespace lib_edi.Models.Domain.CceDevice
 {
 	public class EmsUsbdgSimMetadata
 	{
-		public string ABST { get; set; }
+		public DateTime ABST { get; set; }
 		public string ALRM { get; set; }
 		public double BEMD { get; set; }
 		public string EERR { get; set; }

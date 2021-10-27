@@ -183,7 +183,14 @@ namespace lib_edi.Services.Loggers
                 EmsUsbdgSimMetadata csvEmsMetadata = new EmsUsbdgSimMetadata();
                 foreach (KeyValuePair<string, JToken> x in JObjMetadataFile)
                 {
-                    ObjectManager.SetObjectValue(ref csvEmsMetadata, x.Key, x.Value);
+                    if (x.Key == "ABST")
+					{
+                        DateTime emdAbsoluteTime = DateConverter.ConvertIso8601CompliantString(x.Value.ToString());
+                        ObjectManager.SetObjectValue(ref csvEmsMetadata, x.Key, emdAbsoluteTime);
+                    } else
+					{
+                        ObjectManager.SetObjectValue(ref csvEmsMetadata, x.Key, x.Value);
+                    }   
                 }
                 foreach (KeyValuePair<string, JToken> x in JObjLoggerDataFile)
                 {
