@@ -53,8 +53,8 @@ namespace lib_edi.Services.Loggers
                 }
 
                 /* ######################################################################
-                 * # Format logger collection events for serialization to CSV 
-                 * ###################################################################### */
+                * # Format logger collection events for serialization to CSV 
+                * ###################################################################### */
                 foreach (KeyValuePair<string, JToken> x in JObjLoggerDataFile)
                 {
                     if (x.Value.Type == JTokenType.Array)
@@ -70,12 +70,13 @@ namespace lib_edi.Services.Loggers
                                 {
                                     var adatValue = prop.GetValue(csvEmsMetadata, null);
                                     if (adatValue != null)
-									{
+                                    {
                                         DateTime adatDate = DateConverter.ConvertDateWithDashesString(adatValue.ToString());
                                         ObjectManager.SetObjectValue(ref emsCsvRecord, prop.Name, adatDate);
                                     }
-                                } else
-								{
+                                }
+                                else
+                                {
                                     ObjectManager.SetObjectValue(ref emsCsvRecord, prop.Name, prop.GetValue(csvEmsMetadata, null));
                                 }
                             }
@@ -96,8 +97,13 @@ namespace lib_edi.Services.Loggers
                         }
                     }
                 }
-                return usbdbCsvRecords;
 
+                if (usbdbCsvRecords.Count == 0)
+				{
+                    throw new Exception(EdiErrorsService.BuildExceptionMessageString(null, "B98R", null));
+                }
+
+                return usbdbCsvRecords;
             }
             catch (Exception e)
             {
