@@ -7,7 +7,7 @@ CREATE TYPE [ems_data].[logger_data_type] AS TABLE(
 	[CID] [varchar](10) NULL,
 	[FID] [varchar](100) NULL,
 	[LAT] [numeric](7, 5) NULL,
-	[LNG] [numeric](7, 5) NULL,
+	[LNG] [numeric](8, 5) NULL,
 	[ABST] [datetime] NULL,
 	[TAMB] [numeric](3, 1) NULL,
 	[TFRZ] [numeric](3, 1) NULL,

@@ -4,12 +4,12 @@ CREATE TABLE [ems_data].[mf_logger_data](
 	[APQS] [varchar](50) NOT NULL,
 	[ASER] [varchar](50) NOT NULL,
 	[AID] [varchar](50) NOT NULL,
-	[ADAT] [date] NOT NULL, 
+	[ADAT] [date] NOT NULL,
 	[CID] [varchar](10) NOT NULL,
 	[FID] [varchar](100) NOT NULL,
 	[LAT] [numeric](7, 5) NOT NULL,
-	[LNG] [numeric](7, 5) NOT NULL,
-	[ABST] [varchar](25) NOT NULL,
+	[LNG] [numeric](8, 5) NOT NULL,
+	[ABST] [datetime] NOT NULL,
 	[TAMB] [numeric](3, 1) NOT NULL,
 	[TFRZ] [numeric](3, 1) NOT NULL,
 	[TVC] [numeric](3, 1) NOT NULL,
@@ -23,6 +23,7 @@ CREATE TABLE [ems_data].[mf_logger_data](
 	[TCON] [numeric](3, 1) NOT NULL,
 	[CMPS] [smallint] NOT NULL,
 	[CSOF] [varchar](50) NOT NULL,
-	[ALRM] [varchar](10) NULL
+	[ALRM] [varchar](10) NULL,
+	[DATEADDED] [datetime] NOT NULL
 ) ON [PRIMARY]
 GO
