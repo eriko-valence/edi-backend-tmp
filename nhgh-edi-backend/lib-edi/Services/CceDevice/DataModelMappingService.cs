@@ -53,8 +53,8 @@ namespace lib_edi.Services.Loggers
                 }
 
                 /* ######################################################################
-                 * # Format logger collection events for serialization to CSV 
-                 * ###################################################################### */
+                * # Format logger collection events for serialization to CSV 
+                * ###################################################################### */
                 foreach (KeyValuePair<string, JToken> x in JObjLoggerDataFile)
                 {
                     if (x.Value.Type == JTokenType.Array)
@@ -66,18 +66,19 @@ namespace lib_edi.Services.Loggers
                             //Add metadata to each collected event record
                             foreach (PropertyInfo prop in csvEmsMetadata.GetType().GetProperties())
                             {
-                                //if (prop.PropertyType.Name)
-
                                 if (prop.Name == "ADAT")
                                 {
-                                    DateTime adatDate = DateConverter.ConvertDateWithDashesString(prop.GetValue(csvEmsMetadata, null).ToString());
-                                    ObjectManager.SetObjectValue(ref emsCsvRecord, prop.Name, adatDate);
-                                } else
-								{
+                                    var adatValue = prop.GetValue(csvEmsMetadata, null);
+                                    if (adatValue != null)
+                                    {
+                                        DateTime adatDate = DateConverter.ConvertDateWithDashesString(adatValue.ToString());
+                                        ObjectManager.SetObjectValue(ref emsCsvRecord, prop.Name, adatDate);
+                                    }
+                                }
+                                else
+                                {
                                     ObjectManager.SetObjectValue(ref emsCsvRecord, prop.Name, prop.GetValue(csvEmsMetadata, null));
                                 }
-
-                                
                             }
                             //Add collected event data to record
                             foreach (JProperty prop in z.Properties())
@@ -96,8 +97,13 @@ namespace lib_edi.Services.Loggers
                         }
                     }
                 }
-                return usbdbCsvRecords;
 
+                if (usbdbCsvRecords.Count == 0)
+				{
+                    throw new Exception(EdiErrorsService.BuildExceptionMessageString(null, "B98R", null));
+                }
+
+                return usbdbCsvRecords;
             }
             catch (Exception e)
             {

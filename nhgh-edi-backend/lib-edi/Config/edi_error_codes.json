@@ -62,13 +62,19 @@
 		},
 		"3B6U": {
 			"error-code": "3B6U",
-			"error-message": "Unable to map metafridge log records",
+			"error-message": "Unable to map CFD50 log records",
 			"error-source": "EMS Data Mapping Service",
 			"error-mitigation": null
 		},
 		"D39Y": {
 			"error-code": "D39Y",
 			"error-message": "Unable to map USBDG log records",
+			"error-source": "EMS Data Mapping Service",
+			"error-mitigation": null
+		},
+		"B98R": {
+			"error-code": "B98R",
+			"error-message": "No CFD50 log records found",
 			"error-source": "EMS Data Mapping Service",
 			"error-mitigation": null
 		},
@@ -272,7 +278,7 @@
 		},
 		"K79T": {
 			"error-code": "K79T",
-			"error-message": "An exception was thrown while applying time correction logic to metafridge report files",
+			"error-message": "An exception was thrown while applying time correction logic to MetaFridge report files",
 			"error-source": "EMS Data Transformation",
 			"error-mitigation": null
 		},
