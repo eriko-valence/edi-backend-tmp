@@ -2,19 +2,40 @@
 using lib_edi.Models.Dto.CceDevice.Csv;
 using Newtonsoft.Json.Linq;
 using System;
-using System.Collections.Generic;
 using System.Reflection;
-using System.Text;
 
 namespace lib_edi.Helpers
 {
-	public class ObjectManager
+    /// <summary>
+    /// Helper class for managing objects
+    /// </summary>
+    public class ObjectManager
 	{
-		public static string GetJObjectPropertyValueAsString(JObject targetJObject, string key)
+        /// <summary>
+        /// Gets the Newtonsoft.Json.Linq.JObject with the specified property name
+        /// </summary>
+        /// <param name="jTokenObject">Newtonsoft.Json.Linq.JObject</param>
+        /// <param name="propertyName">Property name of Newtonsoft.Json.Linq.JObject that will be retrieved</param>
+        /// <returns>
+        /// Newtonsoft.Json.Linq.JObject if successful; null otherwise
+        /// </returns>
+        public static string GetJObjectPropertyValueAsString(JObject jTokenObject, string propertyName)
 		{
 			try
 			{
-				return targetJObject.GetValue(key).Value<string>();
+                if (jTokenObject != null)
+				{
+                    if (propertyName != null)
+					{
+                        return jTokenObject.GetValue(propertyName).Value<string>();
+                    } else
+					{
+                        return null;
+					}
+                } else
+				{
+                    return null;
+				}
 			}
 			catch
 			{
@@ -22,33 +43,26 @@ namespace lib_edi.Helpers
 			}
 		}
 
-		public static string GetPropValue(JObject targetObject, string key)
-		{
-            try
-			{
-                JToken jTokenRELT = targetObject[key];
-                return jTokenRELT.ToString();
-            } catch (Exception)
-			{
-                return null;
-			}
-
-		}
-
         /// <summary>
-        /// Dynamically sets property value on an object
+        /// Sets the property value of a specified object with a JToken value
         /// </summary>
-        /// <param name="csvEmsMetadata"></param>
-        /// <param name="key"></param>
-        /// <param name="token"></param>
-        public static void SetObjectValue(ref EmsUsbdgSimMetadata csvEmsMetadata, string key, JToken token)
+        /// <param name="usbdgSimMetadata"> The UsbdgSimMetadata object whose property value will be set</param>
+        /// <param name="propertyName">The property name of the UsbdgSimMetadata object that will be set with the JToken value</param>
+        /// <param name="token">The new JToken property value</param>
+        public static void SetObjectValue(ref UsbdgSimMetadata usbdgSimMetadata, string propertyName, JToken token)
         {
             try
 			{
-                PropertyInfo propertyInfo = csvEmsMetadata.GetType().GetProperty(key);
-                if (propertyInfo != null)
+                if (token != null)
 				{
-                    propertyInfo.SetValue(csvEmsMetadata, Convert.ChangeType(token, propertyInfo.PropertyType), null);
+                    if (propertyName != null)
+					{
+                        PropertyInfo propertyInfo = usbdgSimMetadata.GetType().GetProperty(propertyName);
+                        if (propertyInfo != null)
+                        {
+                            propertyInfo.SetValue(usbdgSimMetadata, Convert.ChangeType(token, propertyInfo.PropertyType), null);
+                        }
+                    }
                 }
             } catch (Exception)
 			{
@@ -57,19 +71,25 @@ namespace lib_edi.Helpers
         }
 
         /// <summary>
-        /// Dynamically sets property value on an object
+        /// Sets the property value of a specified object with a JToken value
         /// </summary>
-        /// <param name="csvEmsMetadata"></param>
-        /// <param name="key"></param>
-        /// <param name="token"></param>
-        public static void SetObjectValue(ref EmsCfd50Metadata csvEmsMetadata, string key, JToken token)
+        /// <param name="cfd50Metadata"> The Cfd50Metadata object whose property value will be set</param>
+        /// <param name="propertyName">The property name of the Cfd50Metadata object that will be set with the JToken value</param>
+        /// <param name="token">The new JToken property value</param>
+        public static void SetObjectValue(ref Cfd50Metadata cfd50Metadata, string propertyName, JToken token)
         {
             try
             {
-                PropertyInfo propertyInfo = csvEmsMetadata.GetType().GetProperty(key);
-                if (propertyInfo != null)
-                {
-                    propertyInfo.SetValue(csvEmsMetadata, Convert.ChangeType(token, propertyInfo.PropertyType), null);
+                if (token != null)
+				{
+                    if (propertyName != null)
+					{
+                        PropertyInfo propertyInfo = cfd50Metadata.GetType().GetProperty(propertyName);
+                        if (propertyInfo != null)
+                        {
+                            propertyInfo.SetValue(cfd50Metadata, Convert.ChangeType(token, propertyInfo.PropertyType), null);
+                        }
+                    }
                 }
             }
             catch (Exception)
@@ -79,45 +99,54 @@ namespace lib_edi.Helpers
         }
 
         /// <summary>
-        /// Dynamically sets property value on an object
+        /// Sets the property value of a specified object with a System.Object value
         /// </summary>
-        /// <param name="csvEmsRecord"></param>
-        /// <param name="key"></param>
-        /// <param name="value"></param>
-        public static void SetObjectValue(ref EmsCfd50CsvRecordDto csvEmsRecord, string key, Object value)
+        /// <param name="cfd50CsvRecordDto"> The Cfd50CsvRecordDto object whose property value will be set</param>
+        /// <param name="propertyName">The property name of the Cfd50CsvRecordDto object that will be set with the System.Object value</param>
+        /// <param name="obj">The new System.Object property value</param>
+        public static void SetObjectValue(ref Cfd50CsvRecordDto cfd50CsvRecordDto, string propertyName, object obj)
         {
             try
             {
-                PropertyInfo propertyInfo = csvEmsRecord.GetType().GetProperty(key);
-                if (propertyInfo != null)
-                {
-                    propertyInfo.SetValue(csvEmsRecord, value, null);
+                if (obj != null)
+				{
+                    if (propertyName != null)
+					{
+                        PropertyInfo propertyInfo = cfd50CsvRecordDto.GetType().GetProperty(propertyName);
+                        if (propertyInfo != null)
+                        {
+                            propertyInfo.SetValue(cfd50CsvRecordDto, obj, null);
+                        }
+                    }
                 }
-
             }
-            catch (Exception e)
+            catch (Exception)
             {
-                Console.WriteLine("debug");
                 //Ignore any exceptions as we do not want processing to stop due to a nonexistent property
             }
         }
 
         /// <summary>
-        /// Dynamically sets property value on an object
+        /// Sets the property value of a specified object with a System.Object value
         /// </summary>
-        /// <param name="csvEmsRecord"></param>
-        /// <param name="key"></param>
-        /// <param name="value"></param>
-        public static void SetObjectValue(ref EmsUsbdgSimCsvRecordDto csvEmsRecord, string key, Object value)
+        /// <param name="usbdgSimCsvRecordDto"> The UsbdgSimCsvRecordDto object whose property value will be set</param>
+        /// <param name="propertyName">The property name of the UsbdgSimCsvRecordDto object that will be set with the System.Object value</param>
+        /// <param name="obj">The new System.Object property value</param>
+        public static void SetObjectValue(ref UsbdgSimCsvRecordDto usbdgSimCsvRecordDto, string propertyName, object obj)
         {
             try
 			{
-                PropertyInfo propertyInfo = csvEmsRecord.GetType().GetProperty(key);
-                if (propertyInfo != null)
+                if (obj != null)
 				{
-                    propertyInfo.SetValue(csvEmsRecord, value, null);
+                    if (propertyName != null)
+					{
+                        PropertyInfo propertyInfo = usbdgSimCsvRecordDto.GetType().GetProperty(propertyName);
+                        if (propertyInfo != null)
+                        {
+                            propertyInfo.SetValue(usbdgSimCsvRecordDto, obj, null);
+                        }
+                    }
                 }
-
             } catch (Exception)
 			{
                 //Ignore any exceptions as we do not want processing to stop due to a nonexistent property
@@ -125,19 +154,25 @@ namespace lib_edi.Helpers
         }
 
         /// <summary>
-        /// Dynamically sets property value on an object
+        /// Sets the property value of a specified object with a JToken value
         /// </summary>
-        /// <param name="csvEmsRecord"></param>
-        /// <param name="key"></param>
-        /// <param name="token"></param>
-        public static void SetObjectValue(ref EmsUsbdgSimCsvRecordDto csvEmsRecord, string key, JToken token)
+        /// <param name="usbdgSimCsvRecordDto"> The UsbdgSimCsvRecordDto object whose property value will be set</param>
+        /// <param name="propertyName">The property name of the UsbdgSimCsvRecordDto object that will be set with the JToken value</param>
+        /// <param name="token">The new JToken property value</param>
+        public static void SetObjectValue(ref UsbdgSimCsvRecordDto usbdgSimCsvRecordDto, string propertyName, JToken token)
         {
             try
 			{
-                PropertyInfo propertyInfo = csvEmsRecord.GetType().GetProperty(key);
-                if (propertyInfo != null)
+                if (token != null)
 				{
-                    propertyInfo.SetValue(csvEmsRecord, Convert.ChangeType(token, propertyInfo.PropertyType), null);
+                    if (propertyName != null)
+					{
+                        PropertyInfo propertyInfo = usbdgSimCsvRecordDto.GetType().GetProperty(propertyName);
+                        if (propertyInfo != null)
+                        {
+                            propertyInfo.SetValue(usbdgSimCsvRecordDto, Convert.ChangeType(token, propertyInfo.PropertyType), null);
+                        }
+                    }
                 }
             } catch (Exception)
 			{
@@ -146,19 +181,25 @@ namespace lib_edi.Helpers
         }
 
         /// <summary>
-        /// Dynamically sets property value on an object
+        /// Sets the property value of a specified object with a JToken value
         /// </summary>
-        /// <param name="csvEmsRecord"></param>
-        /// <param name="key"></param>
-        /// <param name="token"></param>
-        public static void SetObjectValue(ref EmsCfd50CsvRecordDto csvEmsRecord, string key, JToken token)
+        /// <param name="cfd50CsvRecordDto"> The Cfd50CsvRecordDto object whose property value will be set</param>
+        /// <param name="propertyName">The property name of the Cfd50CsvRecordDto object that will be set with the JToken value</param>
+        /// <param name="token">The new JToken property value</param>
+        public static void SetObjectValue(ref Cfd50CsvRecordDto cfd50CsvRecordDto, string propertyName, JToken token)
         {
             try
             {
-                PropertyInfo propertyInfo = csvEmsRecord.GetType().GetProperty(key);
-                if (propertyInfo != null)
-                {
-                    propertyInfo.SetValue(csvEmsRecord, Convert.ChangeType(token, propertyInfo.PropertyType), null);
+                if (token != null)
+				{
+                    if (propertyName != null)
+					{
+                        PropertyInfo propertyInfo = cfd50CsvRecordDto.GetType().GetProperty(propertyName);
+                        if (propertyInfo != null)
+                        {
+                            propertyInfo.SetValue(cfd50CsvRecordDto, Convert.ChangeType(token, propertyInfo.PropertyType), null);
+                        }
+                    }
                 }
             }
             catch (Exception)
