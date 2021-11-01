@@ -4,7 +4,7 @@ using System.Text;
 
 namespace lib_edi.Models.Domain.CceDevice
 {
-	public class EmsCfd50Metadata
+	public class Cfd50Metadata
 	{
 		public string AMFR { get; set; }
 		public string AMOD { get; set; }

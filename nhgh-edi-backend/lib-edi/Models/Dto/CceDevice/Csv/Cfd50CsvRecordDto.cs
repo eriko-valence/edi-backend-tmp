@@ -4,7 +4,7 @@ using System.Text;
 
 namespace lib_edi.Models.Dto.CceDevice.Csv
 {
-	public class EmsCfd50CsvRecordDto
+	public class Cfd50CsvRecordDto
 	{
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
 		// Log Header
