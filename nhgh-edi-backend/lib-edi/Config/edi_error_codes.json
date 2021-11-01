@@ -299,6 +299,18 @@
 			"error-message": "An exception was thrown while converting date {0}",
 			"error-source": "Date Converter",
 			"error-mitigation": null
+		},
+		"23EJ": {
+			"error-code": "23EJ",
+			"error-message": "An null valued exception was thrown while converting date {0}",
+			"error-source": "Date Converter",
+			"error-mitigation": null
+		},
+		"D23W": {
+			"error-code": "D23W",
+			"error-message": "An null valued exception was thrown while converting date {0}",
+			"error-source": "Date Converter",
+			"error-mitigation": null
 		}
 	}
 }

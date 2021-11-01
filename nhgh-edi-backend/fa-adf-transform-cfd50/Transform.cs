@@ -68,7 +68,7 @@ namespace fa_adf_transform_cfd50
                 List<dynamic> metaFridgeLogFiles = await Cfd50DataProcessorService.DownloadsAndDeserializesMetaFridgeLogBlobs(metaFridgeLogBlobs, inputContainer, inputBlobPath, log);
 
                 log.LogInformation($"- [transform-cdf50->run]: Map {logType} log objects to csv records");
-                List<EmsCfd50CsvRecordDto> metaFridgeCsvRows = DataModelMappingService.MapMetaFridgeLogs(metaFridgeLogFiles);
+                List<Cfd50CsvRecordDto> metaFridgeCsvRows = DataModelMappingService.MapMetaFridgeLogs(metaFridgeLogFiles);
 
                 log.LogInformation($"- [transform-cdf50->run]: Write {logType} csv records to azure blob storage");
                 string csvOutputBlobName = await Cfd50DataProcessorService.WriteMetaFridgeLogRecordsToCsvBlob(ouputContainer, payload, metaFridgeCsvRows, log);

@@ -6,6 +6,9 @@ using lib_edi.Services.Errors;
 
 namespace lib_edi.Helpers
 {
+	/// <summary>
+	/// Helper class for converting date/time objects
+	/// </summary>
 	public class DateConverter
 	{
 		/// <summary>
@@ -18,14 +21,20 @@ namespace lib_edi.Helpers
 		/// <example>
 		/// ISO 8601 compliant date/time string in format "yyyyMMddTHHmmssZ": 20211018T164303Z
 		/// </example>
-		public static DateTime ConvertIso8601CompliantString(string s)
+		public static DateTime? ConvertIso8601CompliantString(string s)
 		{
 			try
 			{
 				string format = "yyyyMMddTHHmmssZ"; //20211018T164303Z
 				var cultureInfo = new CultureInfo("en-US");
-				DateTime reportAbsoluteDateTime = DateTime.ParseExact(s, format, cultureInfo);
+				DateTime? reportAbsoluteDateTime = DateTime.ParseExact(s, format, cultureInfo);
 				return reportAbsoluteDateTime;
+			}
+			catch (ArgumentNullException ane)
+			{
+				s ??= "''";
+				string customErrorMessage = EdiErrorsService.BuildExceptionMessageString(ane, "D23W", EdiErrorsService.BuildErrorVariableArrayList(s));
+				throw new Exception(customErrorMessage);
 			}
 			catch (Exception e)
 			{
@@ -55,13 +64,18 @@ namespace lib_edi.Helpers
 				DateTime reportAbsoluteDateTime = DateTime.ParseExact(s, format, cultureInfo);
 				return reportAbsoluteDateTime;
 			}
+			catch (ArgumentNullException ane)
+			{
+				s ??= "''";
+				string customErrorMessage = EdiErrorsService.BuildExceptionMessageString(ane, "23EJ", EdiErrorsService.BuildErrorVariableArrayList(s));
+				throw new Exception(customErrorMessage);
+			}
 			catch (Exception e)
 			{
 				s ??= "''";
 				string customErrorMessage = EdiErrorsService.BuildExceptionMessageString(e, "7ZE5", EdiErrorsService.BuildErrorVariableArrayList(s));
 				throw new Exception(customErrorMessage);
 			}
-
 		}
 
 		/// <summary>
