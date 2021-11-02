@@ -91,7 +91,7 @@ namespace fa_adf_transform_usbdg
                 List<dynamic> validatedUsbdgLogFiles = await UsbdgDataProcessorService.ValidateUsbdgLogBlobs(emsConfgContainer, usbdgLogFiles, log);
 
                 log.LogInformation($"- Map {logType} log objects to csv records");
-                List<EmsUsbdgSimCsvRecordDto> usbdbLogCsvRows = DataModelMappingService.MapUsbdgLogs(usbdgLogFiles, emsLogMetadata);
+                List<UsbdgSimCsvRecordDto> usbdbLogCsvRows = DataModelMappingService.MapUsbdgLogs(usbdgLogFiles, emsLogMetadata);
 
                 log.LogInformation($"- Transform {logType} csv records");
 
@@ -99,7 +99,7 @@ namespace fa_adf_transform_usbdg
                 usbdbLogCsvRows = UsbdgDataProcessorService.ConvertRelativeTimeToTotalSecondsForUsbdgLogRecords(usbdbLogCsvRows);
 
                 log.LogInformation($"  - Sort csv records using relative time total seconds");
-                List<EmsUsbdgSimCsvRecordDto> sortedUsbdbLogCsvRows = usbdbLogCsvRows.OrderBy(i => (i._RELT_SECS)).ToList();
+                List<UsbdgSimCsvRecordDto> sortedUsbdbLogCsvRows = usbdbLogCsvRows.OrderBy(i => (i._RELT_SECS)).ToList();
 
                 log.LogInformation($"  - Convert relative time (e.g., 'P9DT59M53S') to total seconds (report only)");
                 int DurationSecs = UsbdgDataProcessorService.ConvertRelativeTimeStringToTotalSeconds(emsLogMetadata); // convert timespan to seconds

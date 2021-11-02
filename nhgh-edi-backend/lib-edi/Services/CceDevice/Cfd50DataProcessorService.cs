@@ -80,7 +80,7 @@ namespace lib_edi.Services.Loggers
 		/// <returns>
 		/// Blob name of MetaFridge csv formatted log file; Exception (Q25U) otherwise
 		/// </returns>
-		public static async Task<string> WriteMetaFridgeLogRecordsToCsvBlob(CloudBlobContainer cloudBlobContainer, TransformHttpRequestMessageBodyDto requestBody, List<EmsCfd50CsvRecordDto> metaFridgeRecords, ILogger log)
+		public static async Task<string> WriteMetaFridgeLogRecordsToCsvBlob(CloudBlobContainer cloudBlobContainer, TransformHttpRequestMessageBodyDto requestBody, List<Cfd50CsvRecordDto> metaFridgeRecords, ILogger log)
 		{
 			string blobName = "";
 

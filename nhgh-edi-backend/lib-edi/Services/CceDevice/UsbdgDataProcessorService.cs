@@ -171,9 +171,9 @@ namespace lib_edi.Services.Loggers
 		/// <returns>
 		/// List of denormalized USBDG records (with the calculated duration seconds); Exception (M34T) otherwise
 		/// </returns>
-		public static List<EmsUsbdgSimCsvRecordDto> ConvertRelativeTimeToTotalSecondsForUsbdgLogRecords(List<EmsUsbdgSimCsvRecordDto> records)
+		public static List<UsbdgSimCsvRecordDto> ConvertRelativeTimeToTotalSecondsForUsbdgLogRecords(List<UsbdgSimCsvRecordDto> records)
 		{
-			foreach (EmsUsbdgSimCsvRecordDto record in records)
+			foreach (UsbdgSimCsvRecordDto record in records)
 			{
 				try
 				{
@@ -198,14 +198,13 @@ namespace lib_edi.Services.Loggers
 		/// <returns>
 		/// Absolute timestamp (DateTime) of a USBDG record; Exception (4Q5D) otherwise
 		/// </returns>
-		//public static List<EmsCsvRecordDto> CalculateAbsoluteTimeForUsbdgRecords(List<EmsCsvRecordDto> records, int reportDurationSeconds, string reportAbsoluteTimestamp)
-		public static List<EmsUsbdgSimCsvRecordDto> CalculateAbsoluteTimeForUsbdgRecords(List<EmsUsbdgSimCsvRecordDto> records, int reportDurationSeconds, dynamic reportAbsoluteTimestamp)
+		public static List<UsbdgSimCsvRecordDto> CalculateAbsoluteTimeForUsbdgRecords(List<UsbdgSimCsvRecordDto> records, int reportDurationSeconds, dynamic reportAbsoluteTimestamp)
 		{
-			string absoluteTime = ObjectManager.GetPropValue(reportAbsoluteTimestamp, "ABST");
+			string absoluteTime = ObjectManager.GetJObjectPropertyValueAsString(reportAbsoluteTimestamp, "ABST");
 
-			foreach (EmsUsbdgSimCsvRecordDto record in records)
+			foreach (UsbdgSimCsvRecordDto record in records)
 			{
-				DateTime dt = CalculateAbsoluteTimeForUsbdgRecord(absoluteTime, reportDurationSeconds, record.RELT, record.Source);
+				DateTime? dt = CalculateAbsoluteTimeForUsbdgRecord(absoluteTime, reportDurationSeconds, record.RELT, record.Source);
 				record._ABST = dt;
 			}
 			return records;
@@ -224,7 +223,7 @@ namespace lib_edi.Services.Loggers
 
 			try
 			{
-				relativeTime = ObjectManager.GetPropValue(metadata, "RELT");
+				relativeTime = ObjectManager.GetJObjectPropertyValueAsString(metadata, "RELT");
 				TimeSpan ts = XmlConvert.ToTimeSpan(relativeTime); // parse iso 8601 duration string to timespan
 				return Convert.ToInt32(ts.TotalSeconds);
 			}
@@ -275,26 +274,33 @@ namespace lib_edi.Services.Loggers
 		}
 
 		/// <summary>
-		/// Gets the absolute timestamp of a USBDG record using the report absolute timestamp and record relative time
+		/// Gets the absolute timestamp of a record using the report absolute timestamp and record relative time
 		/// </summary>
-		/// <param name="reportAbsoluteTime">USBDG log report absolute timestamp</param>
-		/// <param name="reportDurationSeconds">USBDG log report duration seconds</param>
-		/// <param name="recordRelativeTime">USBDG log report record relative time (e.g., P8DT30S)</param>
+		/// <param name="reportAbsoluteTime">Log report absolute timestamp</param>
+		/// <param name="reportDurationSeconds">Log report duration seconds</param>
+		/// <param name="recordRelativeTime">Log report record relative time (e.g., P8DT30S)</param>
 		/// <returns>
 		/// Absolute timestamp (DateTime) of a USBDG record; Exception (4Q5D) otherwise
 		/// </returns>
-		private static DateTime CalculateAbsoluteTimeForUsbdgRecord(string reportAbsoluteTime, int reportDurationSeconds, string recordRelativeTime, string sourceLogFile)
+		private static DateTime? CalculateAbsoluteTimeForUsbdgRecord(string reportAbsoluteTime, int reportDurationSeconds, string recordRelativeTime, string sourceLogFile)
 		{
 			try
 			{
 				int recordDurationSeconds = ConvertRelativeTimeStringToTotalSeconds(recordRelativeTime);
 				int elapsedSeconds = reportDurationSeconds - recordDurationSeconds; // How far away time wise is this record compared to the absolute time
 				
-				DateTime reportAbsoluteDateTime = DateConverter.ConvertIso8601CompliantString(reportAbsoluteTime);
+				DateTime? reportAbsoluteDateTime = DateConverter.ConvertIso8601CompliantString(reportAbsoluteTime);
 
 				TimeSpan ts = TimeSpan.FromSeconds(elapsedSeconds);
-				DateTime UtcTime = reportAbsoluteDateTime.Subtract(ts);
-				return UtcTime;
+				if (reportAbsoluteDateTime != null)
+				{
+					DateTime reportAbsDateTime = (DateTime)reportAbsoluteDateTime;
+					DateTime UtcTime = reportAbsDateTime.Subtract(ts);
+					return UtcTime;
+				} else
+				{
+					return null;
+				}
 			}
 			catch (Exception e)
 			{
@@ -338,7 +344,7 @@ namespace lib_edi.Services.Loggers
 		/// <returns>
 		/// Blob name of USBDG csv formatted log file; Exception (Q25U)
 		/// </returns>
-		public static async Task<string> WriteUsbdgLogRecordsToCsvBlob(CloudBlobContainer cloudBlobContainer, TransformHttpRequestMessageBodyDto requestBody, List<EmsUsbdgSimCsvRecordDto> usbdgRecords, ILogger log)
+		public static async Task<string> WriteUsbdgLogRecordsToCsvBlob(CloudBlobContainer cloudBlobContainer, TransformHttpRequestMessageBodyDto requestBody, List<UsbdgSimCsvRecordDto> usbdgRecords, ILogger log)
 		{
 			string blobName = "";
 			if (requestBody != null)

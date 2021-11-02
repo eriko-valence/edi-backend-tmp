@@ -5,7 +5,7 @@ using System.Text;
 
 namespace lib_edi.Models.Dto.CceDevice.Csv
 {
-	public class EmsUsbdgSimCsvRecordDto
+	public class UsbdgSimCsvRecordDto
 	{
 		#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
 		public DateTime ABST { get; set; }
@@ -70,7 +70,7 @@ namespace lib_edi.Models.Dto.CceDevice.Csv
 		public int _RELT_SECS { get; set; } // relative time (duration) in seconds (set by azure function)
 											//public int emd_relt { get; set; }
 											//public DateTime emd_abs { get; set; }
-		public DateTime _ABST { get; set; }
+		public DateTime? _ABST { get; set; }
 		[Ignore]
 		public string _SOURCE { get; set; }
 		public string Source { get; set; }
