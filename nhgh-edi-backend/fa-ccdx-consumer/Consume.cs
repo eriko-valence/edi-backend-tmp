@@ -28,8 +28,8 @@ namespace fa_ccdx_consumer
     /// </remarks>
     public class Consume
     {
-        const string Broker = "pkc-41973.westus2.azure.confluent.cloud:9092";
-        const string Topic = "dx.destination.example";
+        //const string Broker = "pkc-41973.westus2.azure.confluent.cloud:9092";
+        //const string Topic = "dx.destination.edidata";
 
         /// <summary>
         /// Kafka triggered azure function that consumes messages from a cold chain data interchange (CCDX) Kafka topic and loads them into 
@@ -59,8 +59,8 @@ namespace fa_ccdx_consumer
         /// </remarks>
         [FunctionName("ccdx-consumer")]
         public static async Task Run(
-            [KafkaTrigger(Broker,
-                          Topic,
+            [KafkaTrigger("%KAFKA_BROKER%",
+                          "%KAFKA_TOPIC%",
                           Username = "KAFKA_TRIGGER_SASL_USERNAME",
                           Password = "KAFKA_TRIGGER_SASL_PASSWORD",
                           Protocol = BrokerProtocol.SaslSsl,
@@ -83,16 +83,17 @@ namespace fa_ccdx_consumer
                         headers.Add(header.Key, GetHeaderValueAsString(header));
                     }
 
-                    log.LogInformation($"- [ccdx-consumer->run]: Evaluating event content type: {headers["ce_type"]}");
+                    log.LogInformation($"- [ccdx-consumer->run]: Evaluating event with content type: {headers["ce_type"]}");
                     string ccdxHttpHeaderCETypeUsbdg = Environment.GetEnvironmentVariable("CCDX_PUBLISHER_HEADER_CE_TYPE_USBDG");
-
-                    if (ccdxHttpHeaderCETypeUsbdg == null)
+                    string ccdxHttpHeaderCETypeCfd50 = Environment.GetEnvironmentVariable("CCDX_PUBLISHER_HEADER_CE_TYPE_CFD50");
+                    /*
+                    if (ccdxHttpHeaderCETypeUsbdg == null || ccdxHttpHeaderCETypeCfd50 == null)
                     {
                         string errorCode = "JC16";
                         string errorMessage = EdiErrorsService.BuildExceptionMessageString(null, errorCode, EdiErrorsService.BuildErrorVariableArrayList());
                         log.LogError($"- [ccdx-consumer->run]: {errorMessage}");
-                    } 
-                    else if (CcdxService.ValidateCeTypeHeader(headers["ce_type"]))
+                    } */
+                     if (CcdxService.ValidateCeTypeHeader(headers["ce_type"]))
 					{
                         string blobName = "";
                         string blobContainerName = "";
