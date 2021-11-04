@@ -457,7 +457,7 @@ namespace lib_edi.Services.Loggers
 				}
 				else
 				{
-					string validationResultString = BuildJsonValidationErrorString(errors);
+					string validationResultString = EdiErrorsService.BuildJsonValidationErrorString(errors);
 					log.LogError($"    - Validated: No - {validationResultString}");
 					string customErrorMessage = EdiErrorsService.BuildExceptionMessageString(null, "R85Y", EdiErrorsService.BuildErrorVariableArrayList(emsLog._SOURCE, validationResultString));
 					throw new Exception(customErrorMessage);
@@ -465,34 +465,6 @@ namespace lib_edi.Services.Loggers
 			}
 
 			return validatedEmsLogs;
-		}
-
-		/// <summary>
-		/// Builds a json validation error string from NJsonSchema.Validation.ValidationError
-		/// </summary>
-		/// <param name="errors">Collection of NJsonSchema.Validation.ValidationError objects</param>
-		/// <returns>
-		/// String results pulled from the first NJsonSchema.Validation.ValidationError in the collection
-		/// </returns>
-		private static string BuildJsonValidationErrorString(ICollection<ValidationError> errors)
-		{
-			string result = "";
-
-			if (errors != null)
-			{
-				if (errors.Count > 0)
-				{
-					List<ValidationError> e = errors.ToList();
-					ValidationError ve = e[0];
-
-					if (ve != null)
-					{
-						result = ve.ToString();
-					}
-				}
-			}
-
-			return result;
 		}
 
 		/// <summary>

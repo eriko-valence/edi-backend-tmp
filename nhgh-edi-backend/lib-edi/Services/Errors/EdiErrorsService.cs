@@ -1,9 +1,11 @@
 ﻿using lib_edi.Models.Domain.Errors;
 using Newtonsoft.Json;
+using NJsonSchema.Validation;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Text;
 
@@ -203,6 +205,34 @@ namespace lib_edi.Services.Errors
 				e1 = e1.InnerException;
 			}
 			return exceptionMessage;
+		}
+
+		/// <summary>
+		/// Builds a json validation error string from NJsonSchema.Validation.ValidationError
+		/// </summary>
+		/// <param name="errors">Collection of NJsonSchema.Validation.ValidationError objects</param>
+		/// <returns>
+		/// String results pulled from the first NJsonSchema.Validation.ValidationError in the collection
+		/// </returns>
+		public static string BuildJsonValidationErrorString(ICollection<ValidationError> errors)
+		{
+			string result = "";
+
+			if (errors != null)
+			{
+				if (errors.Count > 0)
+				{
+					List<ValidationError> e = errors.ToList();
+					ValidationError ve = e[0];
+
+					if (ve != null)
+					{
+						result = ve.ToString();
+					}
+				}
+			}
+
+			return result;
 		}
 	}
 }
