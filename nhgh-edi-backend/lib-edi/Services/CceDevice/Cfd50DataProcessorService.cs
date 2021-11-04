@@ -61,7 +61,7 @@ namespace lib_edi.Services.Loggers
 
 			foreach (CloudBlockBlob logBlob in logDirectoryBlobs)
 			{
-				if (logBlob.Name.Contains("CFD50"))
+				if (logBlob.Name.ToUpper().Contains("CFD50"))
 				{
 					metaFridgeLogBlobs.Add(logBlob);
 				}
