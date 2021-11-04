@@ -32,7 +32,7 @@ namespace lib_edi.Services.Loggers
             try
             {
 
-                List<Cfd50CsvRecordDto> usbdbCsvRecords = new List<Cfd50CsvRecordDto>();
+                List<Cfd50CsvRecordDto> cfd50CsvRecords = new List<Cfd50CsvRecordDto>();
 
                 /* ######################################################################
                  * # Cast dynamic data file objects to JSON
@@ -93,17 +93,17 @@ namespace lib_edi.Services.Loggers
                                     ObjectManager.SetObjectValue(ref emsCsvRecord, prop.Name, prop.Value);
                                 }
                             }
-                            usbdbCsvRecords.Add(emsCsvRecord);
+                            cfd50CsvRecords.Add(emsCsvRecord);
                         }
                     }
                 }
 
-                if (usbdbCsvRecords.Count == 0)
+                if (cfd50CsvRecords.Count == 0)
 				{
                     throw new Exception(EdiErrorsService.BuildExceptionMessageString(null, "B98R", null));
                 }
 
-                return usbdbCsvRecords;
+                return cfd50CsvRecords;
             }
             catch (Exception e)
             {

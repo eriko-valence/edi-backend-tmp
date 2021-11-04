@@ -68,18 +68,6 @@
                             },
                             {
                                 "source": {
-                                    "name": "APQS",
-                                    "type": "String",
-                                    "physicalType": "String"
-                                },
-                                "sink": {
-                                    "name": "APQS",
-                                    "type": "String",
-                                    "physicalType": "varchar"
-                                }
-                            },
-                            {
-                                "source": {
                                     "name": "ASER",
                                     "type": "String",
                                     "physicalType": "String"
@@ -92,26 +80,62 @@
                             },
                             {
                                 "source": {
-                                    "name": "AID",
+                                    "name": "ADOP",
                                     "type": "String",
                                     "physicalType": "String"
                                 },
                                 "sink": {
-                                    "name": "AID",
+                                    "name": "ADOP",
                                     "type": "String",
                                     "physicalType": "varchar"
                                 }
                             },
                             {
                                 "source": {
-                                    "name": "ADAT",
+                                    "name": "APQS",
                                     "type": "String",
                                     "physicalType": "String"
                                 },
                                 "sink": {
-                                    "name": "ADAT",
-                                    "type": "DateTime",
-                                    "physicalType": "date"
+                                    "name": "APQS",
+                                    "type": "String",
+                                    "physicalType": "varchar"
+                                }
+                            },
+                            {
+                                "source": {
+                                    "name": "RNAM",
+                                    "type": "String",
+                                    "physicalType": "String"
+                                },
+                                "sink": {
+                                    "name": "RNAM",
+                                    "type": "String",
+                                    "physicalType": "varchar"
+                                }
+                            },
+                            {
+                                "source": {
+                                    "name": "DNAM",
+                                    "type": "String",
+                                    "physicalType": "String"
+                                },
+                                "sink": {
+                                    "name": "DNAM",
+                                    "type": "String",
+                                    "physicalType": "varchar"
+                                }
+                            },
+                            {
+                                "source": {
+                                    "name": "FNAM",
+                                    "type": "String",
+                                    "physicalType": "String"
+                                },
+                                "sink": {
+                                    "name": "FNAM",
+                                    "type": "String",
+                                    "physicalType": "varchar"
                                 }
                             },
                             {
@@ -122,18 +146,6 @@
                                 },
                                 "sink": {
                                     "name": "CID",
-                                    "type": "String",
-                                    "physicalType": "varchar"
-                                }
-                            },
-                            {
-                                "source": {
-                                    "name": "FID",
-                                    "type": "String",
-                                    "physicalType": "String"
-                                },
-                                "sink": {
-                                    "name": "FID",
                                     "type": "String",
                                     "physicalType": "varchar"
                                 }
@@ -163,7 +175,7 @@
                                     "type": "Decimal",
                                     "physicalType": "decimal",
                                     "scale": 5,
-                                    "precision": 7
+                                    "precision": 8
                                 }
                             },
                             {
@@ -175,61 +187,7 @@
                                 "sink": {
                                     "name": "ABST",
                                     "type": "DateTime",
-                                    "physicalType": "date"
-                                }
-                            },
-                            {
-                                "source": {
-                                    "name": "TAMB",
-                                    "type": "String",
-                                    "physicalType": "String"
-                                },
-                                "sink": {
-                                    "name": "TAMB",
-                                    "type": "Decimal",
-                                    "physicalType": "decimal",
-                                    "scale": 1,
-                                    "precision": 3
-                                }
-                            },
-                            {
-                                "source": {
-                                    "name": "TFRZ",
-                                    "type": "String",
-                                    "physicalType": "String"
-                                },
-                                "sink": {
-                                    "name": "TFRZ",
-                                    "type": "Decimal",
-                                    "physicalType": "decimal",
-                                    "scale": 1,
-                                    "precision": 3
-                                }
-                            },
-                            {
-                                "source": {
-                                    "name": "TVC",
-                                    "type": "String",
-                                    "physicalType": "String"
-                                },
-                                "sink": {
-                                    "name": "TVC",
-                                    "type": "Decimal",
-                                    "physicalType": "decimal",
-                                    "scale": 1,
-                                    "precision": 3
-                                }
-                            },
-                            {
-                                "source": {
-                                    "name": "CMPR",
-                                    "type": "String",
-                                    "physicalType": "String"
-                                },
-                                "sink": {
-                                    "name": "CMPR",
-                                    "type": "Byte",
-                                    "physicalType": "tinyint"
+                                    "physicalType": "datetime"
                                 }
                             },
                             {
@@ -246,12 +204,12 @@
                             },
                             {
                                 "source": {
-                                    "name": "EVDC",
+                                    "name": "HAMB",
                                     "type": "String",
                                     "physicalType": "String"
                                 },
                                 "sink": {
-                                    "name": "EVDC",
+                                    "name": "HAMB",
                                     "type": "Decimal",
                                     "physicalType": "decimal",
                                     "scale": 1,
@@ -260,40 +218,58 @@
                             },
                             {
                                 "source": {
-                                    "name": "CDRW",
+                                    "name": "TAMB",
                                     "type": "String",
                                     "physicalType": "String"
                                 },
                                 "sink": {
-                                    "name": "CDRW",
-                                    "type": "Byte",
-                                    "physicalType": "tinyint"
-                                }
-                            },
-                            {
-                                "source": {
-                                    "name": "DOOR",
-                                    "type": "String",
-                                    "physicalType": "String"
-                                },
-                                "sink": {
-                                    "name": "DOOR",
-                                    "type": "Byte",
-                                    "physicalType": "tinyint"
-                                }
-                            },
-                            {
-                                "source": {
-                                    "name": "HOLD",
-                                    "type": "String",
-                                    "physicalType": "String"
-                                },
-                                "sink": {
-                                    "name": "HOLD",
+                                    "name": "TAMB",
                                     "type": "Decimal",
                                     "physicalType": "decimal",
                                     "scale": 1,
-                                    "precision": 4
+                                    "precision": 3
+                                }
+                            },
+                            {
+                                "source": {
+                                    "name": "ACCD",
+                                    "type": "String",
+                                    "physicalType": "String"
+                                },
+                                "sink": {
+                                    "name": "ACCD",
+                                    "type": "Decimal",
+                                    "physicalType": "decimal",
+                                    "scale": 1,
+                                    "precision": 3
+                                }
+                            },
+                            {
+                                "source": {
+                                    "name": "TCON",
+                                    "type": "String",
+                                    "physicalType": "String"
+                                },
+                                "sink": {
+                                    "name": "TCON",
+                                    "type": "Decimal",
+                                    "physicalType": "decimal",
+                                    "scale": 1,
+                                    "precision": 3
+                                }
+                            },
+                            {
+                                "source": {
+                                    "name": "TVC",
+                                    "type": "String",
+                                    "physicalType": "String"
+                                },
+                                "sink": {
+                                    "name": "TVC",
+                                    "type": "Decimal",
+                                    "physicalType": "decimal",
+                                    "scale": 1,
+                                    "precision": 3
                                 }
                             },
                             {
@@ -312,40 +288,28 @@
                             },
                             {
                                 "source": {
-                                    "name": "TCON",
+                                    "name": "HOLD",
                                     "type": "String",
                                     "physicalType": "String"
                                 },
                                 "sink": {
-                                    "name": "TCON",
+                                    "name": "HOLD",
                                     "type": "Decimal",
                                     "physicalType": "decimal",
                                     "scale": 1,
-                                    "precision": 3
+                                    "precision": 4
                                 }
                             },
                             {
                                 "source": {
-                                    "name": "CMPS",
+                                    "name": "DORV",
                                     "type": "String",
                                     "physicalType": "String"
                                 },
                                 "sink": {
-                                    "name": "CMPS",
-                                    "type": "Int16",
-                                    "physicalType": "smallint"
-                                }
-                            },
-                            {
-                                "source": {
-                                    "name": "CSOF",
-                                    "type": "String",
-                                    "physicalType": "String"
-                                },
-                                "sink": {
-                                    "name": "CSOF",
-                                    "type": "String",
-                                    "physicalType": "varchar"
+                                    "name": "DORV",
+                                    "type": "Byte",
+                                    "physicalType": "tinyint"
                                 }
                             },
                             {
@@ -400,7 +364,7 @@
             "name": "Load"
         },
         "annotations": [],
-        "lastPublishTime": "2021-10-14T17:42:20Z"
+        "lastPublishTime": "2021-10-26T19:51:10Z"
     },
     "type": "Microsoft.DataFactory/factories/pipelines"
 }
