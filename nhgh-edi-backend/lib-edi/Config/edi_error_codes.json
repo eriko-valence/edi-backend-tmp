@@ -204,6 +204,18 @@
 			"error-source": "EMS USBDG Log Processing Service",
 			"error-mitigation": null
 		},
+		"P2G3": {
+			"error-code": "P2G3",
+			"error-message": "An exception was thrown while validating the CFD50 log json structure",
+			"error-source": "EMS CFD50 Log Processing Service",
+			"error-mitigation": null
+		},
+		"TV79": {
+			"error-code": "TV79",
+			"error-message": "CFD50 log {0} failed json schema validation for the following reason: {1}",
+			"error-source": "EMS CFD50 Log Processing Service",
+			"error-mitigation": null
+		},
 		"P76H": {
 			"error-code": "P76H",
 			"error-message": "USBDG log report blob not downloaded at {0}",

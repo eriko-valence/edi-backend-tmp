@@ -1,4 +1,5 @@
 ﻿using CsvHelper;
+using lib_edi.Helpers;
 using lib_edi.Models.Dto.CceDevice.Csv;
 using lib_edi.Models.Dto.Http;
 using lib_edi.Models.Dto.Loggers;
@@ -7,6 +8,9 @@ using lib_edi.Services.Errors;
 using Microsoft.Azure.Storage.Blob;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using NJsonSchema;
+using NJsonSchema.Validation;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -33,7 +37,9 @@ namespace lib_edi.Services.Loggers
 		{
 			try
 			{
-				return JsonConvert.DeserializeObject<dynamic>(blobText);
+				dynamic obj = JsonConvert.DeserializeObject<dynamic>(blobText);
+				obj._SOURCE = blobName;
+				return obj;
 			}
 			catch (Exception e)
 			{
@@ -55,7 +61,7 @@ namespace lib_edi.Services.Loggers
 
 			foreach (CloudBlockBlob logBlob in logDirectoryBlobs)
 			{
-				if (logBlob.Name.Contains("CFD50"))
+				if (logBlob.Name.ToUpper().Contains("CFD50"))
 				{
 					metaFridgeLogBlobs.Add(logBlob);
 				}
@@ -129,6 +135,85 @@ namespace lib_edi.Services.Loggers
 			}
 
 			return metaFridgeLogFiles;
+		}
+
+		/// <summary>
+		/// Validates 
+		/// </summary>
+		/// <param name="emsLogs">A list of downloaded CFD50 log objects</param>
+		/// <param name="cloudBlobContainer">A container in the Microsoft Azure Blob service</param>
+		/// <param name="log">Azure function logger object</param>
+		/// <returns>
+		/// A list of validated CFD50 log objects; Exception thrown if at least one report fails validation (R85Y) or if the json definition file failed to be retrieved 
+		/// </returns>
+		public static async Task<List<dynamic>> ValidateCfd50LogBlobs(CloudBlobContainer cloudBlobContainer, List<dynamic> emsLogs, ILogger log)
+		{
+			List<dynamic> validatedEmsLogs = new List<dynamic>();
+
+			string cfd50ConfigBlobName;
+			string cfd50ConfigBlobJson;
+			JsonSchema emsLogJsonSchema;
+
+			try
+			{
+				cfd50ConfigBlobName = Environment.GetEnvironmentVariable("CFD50_LOG_JSON_SCHEMA_DEFINITION_FILE_NAME");
+				cfd50ConfigBlobJson = await AzureStorageBlobService.DownloadBlobTextAsync(cloudBlobContainer, cfd50ConfigBlobName);
+				emsLogJsonSchema = await JsonSchema.FromJsonAsync(cfd50ConfigBlobJson);
+			}
+			catch (Exception e)
+			{
+				log.LogError($"    - Validated: No");
+				string customErrorMessage = EdiErrorsService.BuildExceptionMessageString(e, "P2G3", null);
+				throw new Exception(customErrorMessage);
+			}
+
+			foreach (dynamic emsLog in emsLogs)
+			{
+				string emsLogText = SerializeCfd50LogText(emsLog);
+
+				ICollection<ValidationError> errors = emsLogJsonSchema.Validate(emsLogText);
+				if (errors.Count == 0)
+				{
+					log.LogInformation($"    - Validated: Yes");
+					validatedEmsLogs.Add(emsLog);
+				}
+				else
+				{
+					string validationResultString = EdiErrorsService.BuildJsonValidationErrorString(errors);
+					log.LogError($"    - Validated: No - {validationResultString}");
+					string source = ObjectManager.GetJObjectPropertyValueAsString(emsLog, "_SOURCE");
+					string customErrorMessage = EdiErrorsService.BuildExceptionMessageString(null, "TV79", EdiErrorsService.BuildErrorVariableArrayList(source, validationResultString));
+					throw new Exception(customErrorMessage);
+				}
+			}
+
+			return validatedEmsLogs;
+		}
+
+		/// <summary>
+		/// Serializes USBDG log
+		/// </summary>
+		/// <param name="emsLog">EMS log object </param>
+		/// <returns>
+		/// Serialized USBDG log text; Exception (48TV) otherwise
+		/// </returns>
+		private static string SerializeCfd50LogText(dynamic emsLog)
+		{
+			try
+			{
+				var settings = new JsonSerializerSettings
+				{
+					NullValueHandling = NullValueHandling.Ignore,
+					MissingMemberHandling = MissingMemberHandling.Ignore
+				};
+
+				return JsonConvert.SerializeObject(emsLog, settings);
+			}
+			catch (Exception e)
+			{
+				string customErrorMessage = EdiErrorsService.BuildExceptionMessageString(e, "48TV", null);
+				throw new Exception(customErrorMessage);
+			}
 		}
 	}
 }

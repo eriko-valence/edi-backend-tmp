@@ -67,6 +67,9 @@ namespace fa_adf_transform_cfd50
                 log.LogInformation("- [transform-cdf50->run]: Download metafridge log blobs");
                 List<dynamic> metaFridgeLogFiles = await Cfd50DataProcessorService.DownloadsAndDeserializesMetaFridgeLogBlobs(metaFridgeLogBlobs, inputContainer, inputBlobPath, log);
 
+                log.LogInformation($"- Validate {logType} log blobs");
+                List<dynamic> validatedUsbdgLogFiles = await Cfd50DataProcessorService.ValidateCfd50LogBlobs(emsConfgContainer, metaFridgeLogFiles, log);
+
                 log.LogInformation($"- [transform-cdf50->run]: Map {logType} log objects to csv records");
                 List<Cfd50CsvRecordDto> metaFridgeCsvRows = DataModelMappingService.MapMetaFridgeLogs(metaFridgeLogFiles);
 

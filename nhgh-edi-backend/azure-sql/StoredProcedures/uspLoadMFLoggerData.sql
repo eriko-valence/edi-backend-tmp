@@ -5,32 +5,30 @@ BEGIN
 	USING @mf_logger_data AS tvp
 	ON mld.[ABST] = tvp.[ABST] AND mld.[ASER] = tvp.[ASER]
 	WHEN NOT MATCHED THEN 
-	INSERT ([AMFR],[AMOD],[APQS],[ASER],[AID],[ADAT],[CID],[FID],[LAT],[LNG],[ABST],[TAMB],[TFRZ],[TVC],[CMPR],[SVA],[EVDC],[CDRW],[DOOR],[HOLD],[BEMD],[TCON],[CMPS],[CSOF],[ALRM],[DATEADDED]) 
+	INSERT ([AMFR],[AMOD],[ASER],[ADOP],[APQS],[RNAM],[DNAM],[FNAM],[CID],[LAT],[LNG],[ABST],[SVA],[HAMB],[TAMB],[ACCD],[TCON],[TVC],[BEMD],[HOLD],[DORV],[ALRM],[DATEADDED]) 
 	VALUES(
 tvp.[AMFR],
 tvp.[AMOD],
-tvp.[APQS],
 tvp.[ASER],
-tvp.[AID],
-tvp.[ADAT],
+tvp.[ADOP],
+tvp.[APQS],
+tvp.[RNAM],
+tvp.[DNAM],
+tvp.[FNAM],
 tvp.[CID],
-tvp.[FID],
 tvp.[LAT],
 tvp.[LNG],
+
 tvp.[ABST],
-tvp.[TAMB],
-tvp.[TFRZ],
-tvp.[TVC],
-tvp.[CMPR],
 tvp.[SVA],
-tvp.[EVDC],
-tvp.[CDRW],
-tvp.[DOOR],
-tvp.[HOLD],
-tvp.[BEMD],
+tvp.[HAMB],
+tvp.[TAMB],
+tvp.[ACCD],
 tvp.[TCON],
-tvp.[CMPS],
-tvp.[CSOF],
+tvp.[TVC],
+tvp.[BEMD],
+tvp.[HOLD],
+tvp.[DORV],
 tvp.[ALRM],
 GETDATE());
 END
