@@ -281,6 +281,24 @@ namespace lib_edi.Services.Ccdx
 		}
 
 		/// <summary>
+		/// Checks if a cce telemetry file path extension is supported
+		/// </summary>
+		/// <param name="blobName">ccdx ce-subject header value</param>
+		/// <returns>
+		/// true if supported; false if not
+		/// </returns>
+		public static bool IsPathExtensionSupported(string blobName)
+		{
+			bool result = false;
+			string fileExtension = Path.GetExtension(blobName);
+			if (Path.GetExtension(blobName) == ".zip")
+			{
+				result = true;
+			}
+			return result;
+		}
+
+		/// <summary>
 		/// Extracts guid from a string formatted blob path
 		/// </summary>
 		/// <param name="path">Blob path in string format</param>
@@ -472,6 +490,23 @@ namespace lib_edi.Services.Ccdx
 			pipelineEvent.StageName = PipelineStageEnum.Name.CCDX_CONSUMER;
 			pipelineEvent.PipelineFailureType = PipelineFailureTypeEnum.Name.VALIDATION;
 			pipelineEvent.PipelineFailureReason = PipelineFailureReasonEnum.Name.MISSING_CE_SUBJECT_HEADER;
+			pipelineEvent.ReportFileName = reportFileName;
+			Dictionary<string, string> customProps = AzureAppInsightsService.BuildCustomPropertiesObject(pipelineEvent);
+			AzureAppInsightsService.LogEntry(PipelineStageEnum.Name.CCDX_CONSUMER, customProps, log);
+		}
+
+		/// <summary>
+		/// Sends CCDX Consumer unsupported attachment extension event to App Insight
+		/// </summary>
+		/// <param name="reportFileName">Name of Cold chain telemetry file pulled from CCDX Kafka topic</param>
+		/// <param name="log">Microsoft extension logger</param>
+		public static void LogCcdxConsumerUnsupportedAttachmentExtensionEventToAppInsights(string reportFileName, ILogger log)
+		{
+			PipelineEvent pipelineEvent = new PipelineEvent();
+			pipelineEvent.EventName = PipelineEventEnum.Name.FAILED;
+			pipelineEvent.StageName = PipelineStageEnum.Name.CCDX_CONSUMER;
+			pipelineEvent.PipelineFailureType = PipelineFailureTypeEnum.Name.VALIDATION;
+			pipelineEvent.PipelineFailureReason = PipelineFailureReasonEnum.Name.UNSUPPORTED_EXTENSION;
 			pipelineEvent.ReportFileName = reportFileName;
 			Dictionary<string, string> customProps = AzureAppInsightsService.BuildCustomPropertiesObject(pipelineEvent);
 			AzureAppInsightsService.LogEntry(PipelineStageEnum.Name.CCDX_CONSUMER, customProps, log);

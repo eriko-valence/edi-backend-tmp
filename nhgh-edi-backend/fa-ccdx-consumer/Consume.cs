@@ -87,8 +87,6 @@ namespace fa_ccdx_consumer
                     }
                     log.LogInformation($"- [ccdx-consumer->run]: Is this a supported cold chain telemetry message? {headers["ce_type"]}");
 
-
-                    
                     /* Only process messages that are known to this consumer */
                     if (CcdxService.ValidateCeTypeHeader(headers["ce_type"]))
 					{
@@ -102,26 +100,33 @@ namespace fa_ccdx_consumer
                         log.LogInformation($"- [ccdx-consumer->run]: Does this supported cold chain telemetry message have an attached file?");
                         if (headers.ContainsKey("ce_subject"))
                         {
-                            log.LogInformation($"- [ccdx-consumer->run]: Confirmed. Attached cce telemetry file found. Proceed with processing.");
                             reportFileName = Path.GetFileName(GetKeyValueString(headers, "ce_subject"));
-                            blobContainerName = Environment.GetEnvironmentVariable("CCDX_AZURE_STORAGE_BLOB_CONTAINER_NAME");
-                            string storageAccountConnectionString = Environment.GetEnvironmentVariable("CCDX_AZURE_STORAGE_ACCOUNT_CONNECTION_STRING");
-                            CcdxService.LogCcdxConsumerStartedEventToAppInsights(reportFileName, log);
-                            log.LogInformation($"- [ccdx-consumer->run]: Build the azure storage blob path to be used for uploading the cce telemetry file");
-                            blobName = CcdxService.BuildRawCcdxConsumerBlobPath(GetKeyValueString(headers, "ce_subject"), GetKeyValueString(headers, "ce_type"));
-                            log.LogInformation($"- [ccdx-consumer->run]: Preparing to upload blob {blobName} to container {blobContainerName}: ");
-                            log.LogInformation($"- [ccdx-consumer->run]:   ce_id: {GetKeyValueString(headers, "ce_id")} ");
-                            log.LogInformation($"- [ccdx-consumer->run]:   ce_type: {GetKeyValueString(headers, "ce_type")} ");
-                            log.LogInformation($"- [ccdx-consumer->run]:   ce_time: {GetKeyValueString(headers, "ce_time")} ");
-                            log.LogInformation($"- [ccdx-consumer->run]:   ce_subject: {GetKeyValueString(headers, "ce_subject")} ");
-                            await AzureStorageBlobService.UploadBlobToContainerUsingSdk(eventData.Value, storageAccountConnectionString, blobContainerName, blobName);
-                            log.LogInformation($"- [ccdx-consumer->run]: Uploading blob {blobName} to container {blobContainerName}");
-                            CcdxService.LogCcdxConsumerSuccessEventToAppInsights(reportFileName, log);
-                            log.LogInformation($"- [ccdx-consumer->run]: Done");
+                            if (CcdxService.IsPathExtensionSupported(blobName))
+							{
+                                log.LogInformation($"- [ccdx-consumer->run]: Confirmed. Attached cce telemetry file found. Proceed with processing.");
+                                blobContainerName = Environment.GetEnvironmentVariable("CCDX_AZURE_STORAGE_BLOB_CONTAINER_NAME");
+                                string storageAccountConnectionString = Environment.GetEnvironmentVariable("CCDX_AZURE_STORAGE_ACCOUNT_CONNECTION_STRING");
+                                CcdxService.LogCcdxConsumerStartedEventToAppInsights(reportFileName, log);
+                                log.LogInformation($"- [ccdx-consumer->run]: Build the azure storage blob path to be used for uploading the cce telemetry file");
+                                blobName = CcdxService.BuildRawCcdxConsumerBlobPath(GetKeyValueString(headers, "ce_subject"), GetKeyValueString(headers, "ce_type"));
+                                log.LogInformation($"- [ccdx-consumer->run]: Preparing to upload blob {blobName} to container {blobContainerName}: ");
+                                log.LogInformation($"- [ccdx-consumer->run]:   ce_id: {GetKeyValueString(headers, "ce_id")} ");
+                                log.LogInformation($"- [ccdx-consumer->run]:   ce_type: {GetKeyValueString(headers, "ce_type")} ");
+                                log.LogInformation($"- [ccdx-consumer->run]:   ce_time: {GetKeyValueString(headers, "ce_time")} ");
+                                log.LogInformation($"- [ccdx-consumer->run]:   ce_subject: {GetKeyValueString(headers, "ce_subject")} ");
+                                await AzureStorageBlobService.UploadBlobToContainerUsingSdk(eventData.Value, storageAccountConnectionString, blobContainerName, blobName);
+                                log.LogInformation($"- [ccdx-consumer->run]: Uploading blob {blobName} to container {blobContainerName}");
+                                CcdxService.LogCcdxConsumerSuccessEventToAppInsights(reportFileName, log);
+                                log.LogInformation($"- [ccdx-consumer->run]: Done");
+                            } else
+							{
+                                log.LogError($"- [ccdx-consumer->run]: Failed to upload blob {blobName} to container {blobContainerName} due an unsupported attachment extension");
+                                CcdxService.LogCcdxConsumerUnsupportedAttachmentExtensionEventToAppInsights(reportFileName, log);
+                            }
                         }
                         else
                         {
-                            log.LogInformation($"- [ccdx-consumer->run]: Failed to upload blob {blobName} to container {blobContainerName} due to missing the ce-subject heaer");
+                            log.LogError($"- [ccdx-consumer->run]: Failed to upload blob {blobName} to container {blobContainerName} due to missing the ce-subject header");
                             CcdxService.LogCcdxConsumerMissingSubjectHeaderEventToAppInsights(reportFileName, log);
                         }
                     }
