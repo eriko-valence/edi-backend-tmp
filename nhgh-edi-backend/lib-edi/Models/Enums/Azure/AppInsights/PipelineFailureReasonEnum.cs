@@ -13,7 +13,8 @@ namespace lib_edi.Models.Enums.Azure.AppInsights
 			UNKNOWN_EXCEPTION,
 			UNSUPPORTED_DATA_LOGGER,
 			MISSING_CE_SUBJECT_HEADER,
-			HTTP_STATUS_CODE_ERROR
+			HTTP_STATUS_CODE_ERROR,
+			UNSUPPORTED_EXTENSION
 #pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 		}
 	}
