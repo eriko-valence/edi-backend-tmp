@@ -1,4 +1,5 @@
 ﻿using CsvHelper;
+using lib_edi.Helpers;
 using lib_edi.Models.Dto.CceDevice.Csv;
 using lib_edi.Models.Dto.Http;
 using lib_edi.Models.Dto.Loggers;
@@ -36,7 +37,9 @@ namespace lib_edi.Services.Loggers
 		{
 			try
 			{
-				return JsonConvert.DeserializeObject<dynamic>(blobText);
+				dynamic obj = JsonConvert.DeserializeObject<dynamic>(blobText);
+				obj._SOURCE = blobName;
+				return obj;
 			}
 			catch (Exception e)
 			{
@@ -160,7 +163,7 @@ namespace lib_edi.Services.Loggers
 			catch (Exception e)
 			{
 				log.LogError($"    - Validated: No");
-				string customErrorMessage = EdiErrorsService.BuildExceptionMessageString(e, "YYYY", null);
+				string customErrorMessage = EdiErrorsService.BuildExceptionMessageString(e, "P2G3", null);
 				throw new Exception(customErrorMessage);
 			}
 
@@ -178,7 +181,8 @@ namespace lib_edi.Services.Loggers
 				{
 					string validationResultString = EdiErrorsService.BuildJsonValidationErrorString(errors);
 					log.LogError($"    - Validated: No - {validationResultString}");
-					string customErrorMessage = EdiErrorsService.BuildExceptionMessageString(null, "ZZZZ", EdiErrorsService.BuildErrorVariableArrayList(emsLog._SOURCE, validationResultString));
+					string source = ObjectManager.GetJObjectPropertyValueAsString(emsLog, "_SOURCE");
+					string customErrorMessage = EdiErrorsService.BuildExceptionMessageString(null, "TV79", EdiErrorsService.BuildErrorVariableArrayList(source, validationResultString));
 					throw new Exception(customErrorMessage);
 				}
 			}
