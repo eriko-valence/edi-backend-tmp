@@ -70,52 +70,52 @@ namespace fa_ccdx_consumer
                           ] KafkaEventData<string,byte[]>[] events, ILogger log)
         {
             string reportFileName = null;
-            PipelineEvent pipelineEvent;
+            //PipelineEvent pipelineEvent;
 
             try
             {
                 log.LogInformation($"- [ccdx-consumer->run]: Received {events.Length} telemetry file(s) from cold chain data interchange (CCDX) Kafka topic");
+                /* Validate the 'ce-type' env variables exist - they are needed for determing if the event message gets processed */
+                CcdxService.ValidateCcdxConsumerCeTypeEnvVariables(log);
                 foreach (KafkaEventData<string, byte[]> eventData in events)
                 {
+                    /* Pull headers from incoming event message */
                     Dictionary<string, string> headers = new Dictionary<string, string>();
                     foreach (var header in eventData.Headers)
                     {
                         headers.Add(header.Key, GetHeaderValueAsString(header));
                     }
+                    log.LogInformation($"- [ccdx-consumer->run]: Is this a supported cold chain telemetry message? {headers["ce_type"]}");
 
-                    log.LogInformation($"- [ccdx-consumer->run]: Evaluating event with content type: {headers["ce_type"]}");
-                    string ccdxHttpHeaderCETypeUsbdg = Environment.GetEnvironmentVariable("CCDX_PUBLISHER_HEADER_CE_TYPE_USBDG");
-                    string ccdxHttpHeaderCETypeCfd50 = Environment.GetEnvironmentVariable("CCDX_PUBLISHER_HEADER_CE_TYPE_CFD50");
-                    /*
-                    if (ccdxHttpHeaderCETypeUsbdg == null || ccdxHttpHeaderCETypeCfd50 == null)
-                    {
-                        string errorCode = "JC16";
-                        string errorMessage = EdiErrorsService.BuildExceptionMessageString(null, errorCode, EdiErrorsService.BuildErrorVariableArrayList());
-                        log.LogError($"- [ccdx-consumer->run]: {errorMessage}");
-                    } */
-                     if (CcdxService.ValidateCeTypeHeader(headers["ce_type"]))
+
+                    
+                    /* Only process messages that are known to this consumer */
+                    if (CcdxService.ValidateCeTypeHeader(headers["ce_type"]))
 					{
-                        string blobName = "";
+                        log.LogInformation($"- [ccdx-consumer->run]: Confirmed. Content is cold chain telemetry. Proceed with processing.");
+
+                        log.LogInformation($"- [ccdx-consumer->run]: Building raw ccdx raw consumer blob path.");
+                        string blobName = CcdxService.BuildRawCcdxConsumerBlobPath(GetKeyValueString(headers, "ce_subject"), GetKeyValueString(headers, "ce_type"));
+
                         string blobContainerName = "";
-                        log.LogInformation($"- [ccdx-consumer->run]: Confirmed. Content is cold chain telemetry file. Proceed with processing.");
-                        Dictionary<string, string> customProps = null;
+                        //Dictionary<string, string> customProps = null;
+                        log.LogInformation($"- [ccdx-consumer->run]: Does this supported cold chain telemetry message have an attached file?");
                         if (headers.ContainsKey("ce_subject"))
                         {
-                            log.LogInformation($"- [ccdx-consumer->run]: Initializing variables");
+                            log.LogInformation($"- [ccdx-consumer->run]: Confirmed. Attached cce telemetry file found. Proceed with processing.");
                             reportFileName = Path.GetFileName(GetKeyValueString(headers, "ce_subject"));
-                           
-                            blobName = CcdxService.BuildRawCcdxConsumerBlobPath(GetKeyValueString(headers, "ce_subject"));
-
                             blobContainerName = Environment.GetEnvironmentVariable("CCDX_AZURE_STORAGE_BLOB_CONTAINER_NAME");
                             string storageAccountConnectionString = Environment.GetEnvironmentVariable("CCDX_AZURE_STORAGE_ACCOUNT_CONNECTION_STRING");
                             CcdxService.LogCcdxConsumerStartedEventToAppInsights(reportFileName, log);
+                            log.LogInformation($"- [ccdx-consumer->run]: Build the azure storage blob path to be used for uploading the cce telemetry file");
+                            blobName = CcdxService.BuildRawCcdxConsumerBlobPath(GetKeyValueString(headers, "ce_subject"), GetKeyValueString(headers, "ce_type"));
                             log.LogInformation($"- [ccdx-consumer->run]: Preparing to upload blob {blobName} to container {blobContainerName}: ");
                             log.LogInformation($"- [ccdx-consumer->run]:   ce_id: {GetKeyValueString(headers, "ce_id")} ");
                             log.LogInformation($"- [ccdx-consumer->run]:   ce_type: {GetKeyValueString(headers, "ce_type")} ");
                             log.LogInformation($"- [ccdx-consumer->run]:   ce_time: {GetKeyValueString(headers, "ce_time")} ");
                             log.LogInformation($"- [ccdx-consumer->run]:   ce_subject: {GetKeyValueString(headers, "ce_subject")} ");
                             await AzureStorageBlobService.UploadBlobToContainerUsingSdk(eventData.Value, storageAccountConnectionString, blobContainerName, blobName);
-                            log.LogInformation($"- [ccdx-consumer->run]: Uploaded blob {blobName} to container {blobContainerName}");
+                            log.LogInformation($"- [ccdx-consumer->run]: Uploading blob {blobName} to container {blobContainerName}");
                             CcdxService.LogCcdxConsumerSuccessEventToAppInsights(reportFileName, log);
                             log.LogInformation($"- [ccdx-consumer->run]: Done");
                         }

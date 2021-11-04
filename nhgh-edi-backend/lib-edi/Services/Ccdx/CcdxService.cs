@@ -138,10 +138,10 @@ namespace lib_edi.Services.Ccdx
 
 			if (path != null)
 			{
-				string[] words = path.Split('/');
-				if (words.Length > 1)
+				string[] parts = path.Split('/');
+				if (parts.Length > 0)
 				{
-					string folderName = words[0];
+					string folderName = parts[0];
 					ceType = string.Format(ceTypeTemplate, folderName);
 				}
 			}
@@ -149,9 +149,32 @@ namespace lib_edi.Services.Ccdx
 		}
 
 		/// <summary>
+		/// Extracts data logger type (device type) from ce-type header
+		/// </summary>
+		/// <param name="ceTypeHeader">CCDX header 'ce-type'</param>
+		/// <example>
+		/// ce-type header value: "org.nhgh.cfd50.report.prod"
+		/// </example>
+		public static string GetDeviceTypeFromCETypeHeader(string ceTypeHeader)
+		{
+			string deviceType = null;
+
+			if (ceTypeHeader != null)
+			{
+				string[] ceTypeHeaderParts = ceTypeHeader.Split('.');
+				if (ceTypeHeaderParts.Length > 2)
+				{
+					deviceType = ceTypeHeaderParts[2];
+				}
+			}
+
+			return deviceType;
+		}
+
+		/// <summary>
 		/// Builds EDI (EMS Data Integration) ADF (Azure Data Factory) curated blob path a using staged input blob path
 		/// </summary>
-		/// <param name="path">Blob path in string format</param>
+		/// <param name="blobPath">Blob path in string format</param>
 		/// <example>
 		/// ADF uncompresses a telemetry report file at 11:59:59 PM on 2021-10-04 to the staged input blob container:
 		///   Staged input blob path: "usbdg/2021-10-04/23/0161a794-173a-4843-879b-189ee4c625aa/"
@@ -159,27 +182,46 @@ namespace lib_edi.Services.Ccdx
 		/// to the curated blob container at 12:00:01 AM on 2021-10-05: 
 		///   Curated output blob path: "usbdg/2021-10-05/00/0161a794-173a-4843-879b-189ee4c625aa/"
 		/// </example>
-		public static string BuildCuratedCcdxConsumerBlobPath(string path)
+		public static string BuildCuratedCcdxConsumerBlobPath(string blobPath)
 		{
-			string loggerType = CcdxService.GetDataLoggerTypeFromBlobPath(path);
-			string dateFolder = DateTime.UtcNow.ToString("yyyy-MM-dd/HH");
-			string guidFolder = CcdxService.GetGuidFromBlobPath(path);
-			return $"{loggerType}/{dateFolder}/{guidFolder}/out.csv";
+			string curatedBlobPath = null;
+
+			if (blobPath != null)
+			{
+				string loggerType = CcdxService.GetDataLoggerTypeFromBlobPath(blobPath);
+				if (loggerType != null)
+				{
+					string dateFolder = DateTime.UtcNow.ToString("yyyy-MM-dd/HH");
+					string guidFolder = CcdxService.GetGuidFromBlobPath(blobPath);
+					curatedBlobPath = $"{loggerType}/{dateFolder}/{guidFolder}/out.csv";
+				}
+			}
+
+			return curatedBlobPath;
 		}
 
 		/// <summary>
-		/// Extracts data logger type from a string formatted blob path
+		/// Extracts data logger type (device type) from the blob path
 		/// </summary>
-		/// <param name="path">Blob path in string format</param>
-		public static string GetDataLoggerTypeFromBlobPath(string path)
+		/// <param name="blobPath">Blob path in string format</param>
+		/// <example>
+		/// blob path = "usbdg/2021-10-04/11/0161a794-173a-4843-879b-189ee4c625aa/"
+		/// </example>
+		/// <remarks>
+		/// Blob path can come from the following sources:
+		///  - http request json payload body (transform function)
+		///  - blob name from the blob creation event trigger (provider function)
+		///  - ccdx ce_subject header (consumer function)
+		/// </remarks>
+		public static string GetDataLoggerTypeFromBlobPath(string blobPath)
 		{
 			string loggerType = null;
-			if (path != null)
+			if (blobPath != null && blobPath != "")
 			{
-				string[] words = path.Split('/');
-				if (words.Length > 1)
+				string[] parts = blobPath.Split('/');
+				if (parts.Length > 1)
 				{
-					loggerType = words[0];
+					loggerType = parts[0];
 				}
 			}
 			return loggerType;
@@ -203,13 +245,39 @@ namespace lib_edi.Services.Ccdx
 		/// - "The DEVICE_TYPE folder is derived using the ce-subject value added/returned by CCDX which contains 
 		/// the original file path from the file sent by the provider."
 		/// </remarks>
-		public static string BuildRawCcdxConsumerBlobPath(string blobPath)
+		public static string BuildRawCcdxConsumerBlobPath(string ceSubject, string ceType)
 		{
-			string reportFileName = Path.GetFileName(blobPath);
+			string deviceType = null;
+			string blobPath = null;
 
-			string dateFolder = DateTime.UtcNow.ToString("yyyy-MM-dd");
-			string loggerType = CcdxService.GetDataLoggerTypeFromBlobPath(blobPath);
-			return $"{loggerType}/{dateFolder}/{reportFileName}";
+			deviceType = GetDeviceType(ceSubject, ceType);
+			if (deviceType != null)
+			{
+				string reportFileName = Path.GetFileName(ceSubject);
+				Path.GetFileName(ceSubject);
+				string dateFolder = DateTime.UtcNow.ToString("yyyy-MM-dd");
+				blobPath = $"{deviceType}/{dateFolder}/{reportFileName}";
+			}
+			return blobPath;
+		}
+
+		/// <summary>
+		/// Gets the device id from the ccdx ce-type or ce-subject headers
+		/// </summary>
+		/// <param name="ceSubject">ccdx ce-subject header value</param>
+		/// <param name="ceType">ccdx ce-type header value</param>
+		/// <example>
+		/// ce-subject = "usbdg/2021-10-04/11/0161a794-173a-4843-879b-189ee4c625aa/"
+		/// ce-type = "org.nhgh.cfd50.report.prod"
+		/// </example>
+		public static string GetDeviceType(string ceSubject, string ceType)
+		{
+			string deviceType = GetDeviceTypeFromCETypeHeader(ceType);
+			if (deviceType == null)
+			{
+				deviceType = GetDataLoggerTypeFromBlobPath(ceSubject);
+			}
+			return deviceType;
 		}
 
 		/// <summary>
@@ -556,6 +624,24 @@ namespace lib_edi.Services.Ccdx
 			AzureAppInsightsService.LogEntry(PipelineStageEnum.Name.ADF_TRANSFORM, customProps, log);
 		}
 
+		public static void ValidateCcdxConsumerCeTypeEnvVariables(ILogger log)
+		{
+			string envVarCeTypeUsbdgDataDim = "CCDX_PUBLISHER_HEADER_CE_TYPE_USBDG";
+			string envVarCeTypeCfd50 = "CCDX_PUBLISHER_HEADER_CE_TYPE_CFD50";
+			string errorCode = "JC16";
 
+			if (Environment.GetEnvironmentVariable(envVarCeTypeUsbdgDataDim) == null)
+			{
+				string errorMessage = EdiErrorsService.BuildExceptionMessageString(null, errorCode, EdiErrorsService.BuildErrorVariableArrayList(envVarCeTypeUsbdgDataDim));
+				log.LogError($"- [ccdx-consumer->run]: {errorMessage}");
+				throw new Exception(errorMessage);
+			}
+			else if (Environment.GetEnvironmentVariable(envVarCeTypeCfd50) == null)
+			{
+				string errorMessage = EdiErrorsService.BuildExceptionMessageString(null, errorCode, EdiErrorsService.BuildErrorVariableArrayList(envVarCeTypeCfd50));
+				log.LogError($"- [ccdx-consumer->run]: {errorMessage}");
+				throw new Exception(errorMessage);
+			}
+		}
 	}
 }
