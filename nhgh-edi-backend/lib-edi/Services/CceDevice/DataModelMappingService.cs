@@ -66,7 +66,7 @@ namespace lib_edi.Services.Loggers
                             //Add metadata to each collected event record
                             foreach (PropertyInfo prop in csvEmsMetadata.GetType().GetProperties())
                             {
-                                if (prop.Name == "ADAT")
+                                if (prop.Name == "ADOP")
                                 {
                                     var adatValue = prop.GetValue(csvEmsMetadata, null);
                                     if (adatValue != null)

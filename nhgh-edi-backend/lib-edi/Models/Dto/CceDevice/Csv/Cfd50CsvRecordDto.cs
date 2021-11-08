@@ -12,7 +12,7 @@ namespace lib_edi.Models.Dto.CceDevice.Csv
 		public string AMFR { get; set; }
 		public string AMOD { get; set; }
 		public string ASER { get; set; }
-		public string ADOP { get; set; }
+		public DateTime? ADOP { get; set; }
 		public double APQS { get; set; }
 		public string RNAM { get; set; }
 		public string DNAM { get; set; }
@@ -23,7 +23,7 @@ namespace lib_edi.Models.Dto.CceDevice.Csv
 
 
 		// Log Record
-		public DateTime ABST { get; set; }
+		public DateTime? ABST { get; set; }
 		public int SVA { get; set; }
 		public double HAMB { get; set; }
 		public double TAMB { get; set; }
