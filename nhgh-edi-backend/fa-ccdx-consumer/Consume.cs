@@ -28,6 +28,11 @@ namespace fa_ccdx_consumer
     /// </remarks>
     public class Consume
     {
+        // DEV
+        const string Broker = "pkc-41973.westus2.azure.confluent.cloud:9092";
+        const string Topic = "dx.destination.example";
+
+        // PROD
         //const string Broker = "pkc-41973.westus2.azure.confluent.cloud:9092";
         //const string Topic = "dx.destination.edidata";
 
@@ -59,8 +64,8 @@ namespace fa_ccdx_consumer
         /// </remarks>
         [FunctionName("ccdx-consumer")]
         public static async Task Run(
-            [KafkaTrigger("%KAFKA_BROKER%",
-                          "%KAFKA_TOPIC%",
+            [KafkaTrigger(Broker,
+                          Topic,
                           Username = "KAFKA_TRIGGER_SASL_USERNAME",
                           Password = "KAFKA_TRIGGER_SASL_PASSWORD",
                           Protocol = BrokerProtocol.SaslSsl,
