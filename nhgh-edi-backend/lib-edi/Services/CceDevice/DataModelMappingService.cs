@@ -186,24 +186,29 @@ namespace lib_edi.Services.Loggers
                 /* ######################################################################
                  * # Merge EMD and logger metadata
                  * ###################################################################### */
-                UsbdgSimMetadata csvEmsMetadata = new UsbdgSimMetadata();
+                UsbdgSimEmdMetadata usbdgSimEmdMetadata = new UsbdgSimEmdMetadata();
+
+                // Get the EMD metadata fields
                 foreach (KeyValuePair<string, JToken> x in JObjMetadataFile)
                 {
                     if (x.Key == "ABST")
 					{
                         DateTime? emdAbsoluteTime = DateConverter.ConvertIso8601CompliantString(x.Value.ToString());
-                        ObjectManager.SetObjectValue(ref csvEmsMetadata, x.Key, emdAbsoluteTime);
-                    } else
+                        ObjectManager.SetObjectValue(ref usbdgSimEmdMetadata, x.Key, emdAbsoluteTime);
+                    } 
+                    else
 					{
-                        ObjectManager.SetObjectValue(ref csvEmsMetadata, x.Key, x.Value);
+                        ObjectManager.SetObjectValue(ref usbdgSimEmdMetadata, x.Key, x.Value);
                     }   
                 }
+
+                // Get the logger header fields
                 foreach (KeyValuePair<string, JToken> x in JObjLoggerDataFile)
                 {
                     // Filter out records array
                     if (x.Value.Type != JTokenType.Array)
                     {
-                        ObjectManager.SetObjectValue(ref csvEmsMetadata, x.Key, x.Value);
+                        ObjectManager.SetObjectValue(ref usbdgSimEmdMetadata, x.Key, x.Value);
                     }
                 }
 
@@ -217,11 +222,11 @@ namespace lib_edi.Services.Loggers
                         //Iterate each logger collection event
                         foreach (JObject z in x.Value.Children<JObject>())
                         {
-                            UsbdgSimCsvRecordDto emsCsvRecord = new UsbdgSimCsvRecordDto();
+                            UsbdgSimCsvRecordDto csvUsbdgSimRecordDto = new UsbdgSimCsvRecordDto();
                             //Add metadata to each collected event record
-                            foreach (PropertyInfo prop in csvEmsMetadata.GetType().GetProperties())
+                            foreach (PropertyInfo prop in usbdgSimEmdMetadata.GetType().GetProperties())
                             {
-                                ObjectManager.SetObjectValue(ref emsCsvRecord, prop.Name, prop.GetValue(csvEmsMetadata, null));
+                                ObjectManager.SetObjectValue(ref csvUsbdgSimRecordDto, prop.Name, prop.GetValue(usbdgSimEmdMetadata, null));
                             }
                             //Add collected event data to record
                             foreach (JProperty prop in z.Properties())
@@ -229,15 +234,15 @@ namespace lib_edi.Services.Loggers
                                 if (prop.Name == "ABST")
 								{
                                     DateTime? emdAbsoluteTime = DateConverter.ConvertIso8601CompliantString(prop.Value.ToString());
-                                    ObjectManager.SetObjectValue(ref emsCsvRecord, prop.Name, emdAbsoluteTime);
+                                    ObjectManager.SetObjectValue(ref csvUsbdgSimRecordDto, prop.Name, emdAbsoluteTime);
 
                                 } else
 								{
-                                    ObjectManager.SetObjectValue(ref emsCsvRecord, prop.Name, prop.Value);
+                                    ObjectManager.SetObjectValue(ref csvUsbdgSimRecordDto, prop.Name, prop.Value);
                                 }
                                 
                             }
-                            usbdbCsvRecords.Add(emsCsvRecord);
+                            usbdbCsvRecords.Add(csvUsbdgSimRecordDto);
                         }
                     }
                 }
@@ -262,6 +267,11 @@ namespace lib_edi.Services.Loggers
         {
             return (bitValue == "1");
         }
+
+        private static string BuildEmdKeyName(string s)
+		{
+            return $"EMD_{s}";
+		}
 
     }
 }

@@ -49,7 +49,7 @@ namespace lib_edi.Helpers
         /// <param name="usbdgSimMetadata"> The UsbdgSimMetadata object whose property value will be set</param>
         /// <param name="propertyName">The property name of the UsbdgSimMetadata object that will be set with the JToken value</param>
         /// <param name="token">The new JToken property value</param>
-        public static void SetObjectValue(ref UsbdgSimMetadata usbdgSimMetadata, string propertyName, JToken token)
+        public static void SetObjectValue(ref UsbdgSimEmdMetadata usbdgSimMetadata, string propertyName, JToken token)
         {
             try
 			{
