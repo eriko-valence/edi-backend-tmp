@@ -70,67 +70,76 @@ namespace fa_ccdx_provider
                 log.LogInformation($"- [ccdx-provider->run]: Validate incoming blob originated from supported data logger");
                 if (CcdxService.ValidateLoggerType(loggerType))
                 {
-                    log.LogInformation($"- [ccdx-provider->run]: Confirmed. Blob originated from supported data logger '{loggerType}'");
-                    var sr = new StreamReader(ccBlobInput);
-                    var body = await sr.ReadToEndAsync();
-                    
-                    string storageConnectionStringConfig = Environment.GetEnvironmentVariable("AZURE_STORAGE_INPUT_CONNECTION_STRING");
-                    
-                    string blobContainerNameConfig = Environment.GetEnvironmentVariable("AZURE_STORAGE_BLOB_CONTAINER_NAME_CONFIG");
-                    string fileCcdxPublisherSampleHeaderValues = Environment.GetEnvironmentVariable("CCDX_PUBLISHER_HEADER_SAMPLE_VALUES_FILENAME");
-
-                    log.LogInformation($"- [ccdx-provider->run]: Retrieve sample ccdx provider metadata headers from blob storage");
-                    string blobText = await AzureStorageBlobService.DownloadBlobTextAsync(storageConnectionStringConfig, blobContainerNameConfig, fileCcdxPublisherSampleHeaderValues);
-                    CcdxProviderSampleHeadersDto sampleHeaders = JsonConvert.DeserializeObject<CcdxProviderSampleHeadersDto>(blobText);
-
-                    log.LogInformation($"- [ccdx-provider->run]: Prepare ccdx provider http request with multipart content");
-                    string ccdxHttpEndpoint = Environment.GetEnvironmentVariable("CCDX_HTTP_MULTIPART_FORM_DATA_FILE_ENDPOINT");
-                    MultipartFormDataContent multipartFormDataByteArrayContent = HttpService.BuildMultipartFormDataByteArrayContent(ccBlobInput, "file", ccBlobInputName);
-                    HttpRequestMessage requestMessage = CcdxService.BuildCcdxHttpMultipartFormDataRequestMessage(HttpMethod.Post, ccdxHttpEndpoint, multipartFormDataByteArrayContent, sampleHeaders, ccBlobInputName, log);
-
-                    log.LogInformation($"- [ccdx-provider->run]: Request header metadata: ");
-                    log.LogInformation($"- [ccdx-provider->run]:   ce-id: {HttpService.GetHeaderStringValue(requestMessage, "ce-id")}");
-                    log.LogInformation($"- [ccdx-provider->run]:   ce-type: {HttpService.GetHeaderStringValue(requestMessage, "ce-type")}");
-                    log.LogInformation($"- [ccdx-provider->run]:   ce-time: {HttpService.GetHeaderStringValue(requestMessage, "ce-time")}");
-
-                    // Send the http request
-                    log.LogInformation($"- [ccdx-provider->run]: Send the http request to {ccdxHttpEndpoint}");
-                    HttpStatusCode httpStatusCode = await HttpService.SendHttpRequestMessage(requestMessage);
-
-                    if (httpStatusCode == HttpStatusCode.OK)
+                    log.LogInformation($"- [ccdx-provider->run]: Validate incoming blob file extension");
+                    if (CcdxService.IsPathExtensionSupported(ccBlobInputName))
                     {
-                        // USBDG-357
-                        // Message got put on a highly druable topic. A 200 indicates successful entry into the data interchange. 
-                        // However, the consumer downstream might not be able to handle a message of that size. 
-                        // Consumer would own decision to reconfigure consumer to handle larger payload or jost not accept larger payloads.
-                        log.LogInformation($"- [ccdx-provider->run]: Entry into the data interchange was successful");
-                        log.LogInformation($"- [ccdx-provider->run]: Track ccdx provider success event (app insights)");
-                        CcdxService.LogCcdxProviderSuccessEventToAppInsights(reportFileName, log);
-                        log.LogInformation($"- [ccdx-provider->run]: Done");
+                        log.LogInformation($"- [ccdx-provider->run]: Confirmed. Blob originated from supported data logger '{loggerType}'");
+                        var sr = new StreamReader(ccBlobInput);
+                        var body = await sr.ReadToEndAsync();
+
+                        string storageConnectionStringConfig = Environment.GetEnvironmentVariable("AZURE_STORAGE_INPUT_CONNECTION_STRING");
+
+                        string blobContainerNameConfig = Environment.GetEnvironmentVariable("AZURE_STORAGE_BLOB_CONTAINER_NAME_CONFIG");
+                        string fileCcdxPublisherSampleHeaderValues = Environment.GetEnvironmentVariable("CCDX_PUBLISHER_HEADER_SAMPLE_VALUES_FILENAME");
+
+                        log.LogInformation($"- [ccdx-provider->run]: Retrieve sample ccdx provider metadata headers from blob storage");
+                        string blobText = await AzureStorageBlobService.DownloadBlobTextAsync(storageConnectionStringConfig, blobContainerNameConfig, fileCcdxPublisherSampleHeaderValues);
+                        CcdxProviderSampleHeadersDto sampleHeaders = JsonConvert.DeserializeObject<CcdxProviderSampleHeadersDto>(blobText);
+
+                        log.LogInformation($"- [ccdx-provider->run]: Prepare ccdx provider http request with multipart content");
+                        string ccdxHttpEndpoint = Environment.GetEnvironmentVariable("CCDX_HTTP_MULTIPART_FORM_DATA_FILE_ENDPOINT");
+                        MultipartFormDataContent multipartFormDataByteArrayContent = HttpService.BuildMultipartFormDataByteArrayContent(ccBlobInput, "file", ccBlobInputName);
+                        HttpRequestMessage requestMessage = CcdxService.BuildCcdxHttpMultipartFormDataRequestMessage(HttpMethod.Post, ccdxHttpEndpoint, multipartFormDataByteArrayContent, sampleHeaders, ccBlobInputName, log);
+
+                        log.LogInformation($"- [ccdx-provider->run]: Request header metadata: ");
+                        log.LogInformation($"- [ccdx-provider->run]:   ce-id: {HttpService.GetHeaderStringValue(requestMessage, "ce-id")}");
+                        log.LogInformation($"- [ccdx-provider->run]:   ce-type: {HttpService.GetHeaderStringValue(requestMessage, "ce-type")}");
+                        log.LogInformation($"- [ccdx-provider->run]:   ce-time: {HttpService.GetHeaderStringValue(requestMessage, "ce-time")}");
+
+                        // Send the http request
+                        log.LogInformation($"- [ccdx-provider->run]: Send the http request to {ccdxHttpEndpoint}");
+                        HttpStatusCode httpStatusCode = await HttpService.SendHttpRequestMessage(requestMessage);
+
+                        if (httpStatusCode == HttpStatusCode.OK)
+                        {
+                            // USBDG-357
+                            // Message got put on a highly druable topic. A 200 indicates successful entry into the data interchange. 
+                            // However, the consumer downstream might not be able to handle a message of that size. 
+                            // Consumer would own decision to reconfigure consumer to handle larger payload or jost not accept larger payloads.
+                            log.LogInformation($"- [ccdx-provider->run]: Entry into the data interchange was successful");
+                            log.LogInformation($"- [ccdx-provider->run]: Track ccdx provider success event (app insights)");
+                            CcdxService.LogCcdxProviderSuccessEventToAppInsights(reportFileName, log);
+                            log.LogInformation($"- [ccdx-provider->run]: Done");
+                        }
+                        else
+                        {
+                            string errorCode = "2XYK";
+                            log.LogError($"- [ccdx-provider->run]: Received http error {httpStatusCode} while uploading {reportFileName} to the interchange");
+                            log.LogInformation($"- [ccdx-provider->run]: Track ccdx provider failed event (app insights)");
+                            CcdxService.LogCcdxProviderFailedEventToAppInsights(reportFileName, log);
+                            log.LogInformation($"- [ccdx-provider->run]: Log error message");
+                            string errorString = EdiErrorsService.BuildExceptionMessageString(null, errorCode, EdiErrorsService.BuildErrorVariableArrayList(httpStatusCode.ToString(), ccBlobInputName, ccdxHttpEndpoint));
+                            log.LogError($" - [ccdx-provider->run]: Message: {errorString}");
+                            string blobContainerName = Environment.GetEnvironmentVariable("AZURE_STORAGE_BLOB_CONTAINER_NAME_HOLDING");
+                            string storageAccountConnectionString = Environment.GetEnvironmentVariable("AZURE_STORAGE_INPUT_CONNECTION_STRING");
+                            //Scope of holding container: To be used only for situations with CCDX transmission.
+                            log.LogInformation($"- [ccdx-provider->run]: Move failed telemetry file {reportFileName} to holding container {blobContainerName} for further investigation");
+                            byte[] bytes = StreamService.ReadToEnd(ccBlobInput);
+
+                            // EDI architecture: "Container where files are placed when there is a problem sending to CCDX via the provider. Examples 
+                            // includes files that are too large (>5MB), or when the backend has a problem such as Kafka brokers unavailable. This 
+                            // condition is typically indicated by a 5xx HTTP response from the CCDX POST by the provider. The purpose of this container 
+                            // is to allow for further analysis and troubleshooting. No retry logic is currently implemented for files in this container, 
+                            // but may be added in the future."
+
+                            await AzureStorageBlobService.UploadBlobToContainerUsingSdk(bytes, storageAccountConnectionString, blobContainerName, reportFileName);
+                            log.LogInformation($"- [ccdx-provider->run]: Confirmed. Telemetry file {reportFileName} moved to container {blobContainerName}");
+                        }
                     }
                     else
                     {
-                        string errorCode = "2XYK";
-                        log.LogError($"- [ccdx-provider->run]: Received http error {httpStatusCode} while uploading {reportFileName} to the interchange");
-                        log.LogInformation($"- [ccdx-provider->run]: Track ccdx provider failed event (app insights)");
-                        CcdxService.LogCcdxProviderFailedEventToAppInsights(reportFileName, log);
-                        log.LogInformation($"- [ccdx-provider->run]: Log error message");
-                        string errorString = EdiErrorsService.BuildExceptionMessageString(null, errorCode, EdiErrorsService.BuildErrorVariableArrayList(httpStatusCode.ToString(), ccBlobInputName, ccdxHttpEndpoint));
-                        log.LogError($" - [ccdx-provider->run]: Message: {errorString}");
-                        string blobContainerName = Environment.GetEnvironmentVariable("AZURE_STORAGE_BLOB_CONTAINER_NAME_HOLDING");
-                        string storageAccountConnectionString = Environment.GetEnvironmentVariable("AZURE_STORAGE_INPUT_CONNECTION_STRING");
-                        //Scope of holding container: To be used only for situations with CCDX transmission.
-                        log.LogInformation($"- [ccdx-provider->run]: Move failed telemetry file {reportFileName} to holding container {blobContainerName} for further investigation");
-                        byte[] bytes = StreamService.ReadToEnd(ccBlobInput);
-
-                        // EDI architecture: "Container where files are placed when there is a problem sending to CCDX via the provider. Examples 
-                        // includes files that are too large (>5MB), or when the backend has a problem such as Kafka brokers unavailable. This 
-                        // condition is typically indicated by a 5xx HTTP response from the CCDX POST by the provider. The purpose of this container 
-                        // is to allow for further analysis and troubleshooting. No retry logic is currently implemented for files in this container, 
-                        // but may be added in the future."
-
-                        await AzureStorageBlobService.UploadBlobToContainerUsingSdk(bytes, storageAccountConnectionString, blobContainerName, reportFileName);
-                        log.LogInformation($"- [ccdx-provider->run]: Confirmed. Telemetry file {reportFileName} moved to container {blobContainerName}");
+                        log.LogError($"- [ccdx-consumer->run]: Failed to upload blob {ccBlobInputName} to container {inputContainerName} due an unsupported attachment extension");
+                        CcdxService.LogCcdxProviderUnsupportedAttachmentExtensionEventToAppInsights(reportFileName, log);
                     }
                 }
                 else
@@ -141,7 +150,7 @@ namespace fa_ccdx_provider
                 }
                 log.LogInformation($"- [ccdx-provider->run]: Deleting telemetry file {ccBlobInputName}");
                 await AzureStorageBlobService.DeleteBlob(storageConnectionString, inputContainerName, ccBlobInputName);
-                log.LogInformation($"- [ccdx-provider->run]: SUCCESS");
+                log.LogInformation($"- [ccdx-provider->run]: DONE");
             }
             catch (Exception e)
             {
