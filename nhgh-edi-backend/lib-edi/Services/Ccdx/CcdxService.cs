@@ -513,6 +513,23 @@ namespace lib_edi.Services.Ccdx
 		}
 
 		/// <summary>
+		/// Sends CCDX Provider unsupported attachment extension event to App Insight
+		/// </summary>
+		/// <param name="reportFileName">Name of Cold chain telemetry file pulled from CCDX Kafka topic</param>
+		/// <param name="log">Microsoft extension logger</param>
+		public static void LogCcdxProviderUnsupportedAttachmentExtensionEventToAppInsights(string reportFileName, ILogger log)
+		{
+			PipelineEvent pipelineEvent = new PipelineEvent();
+			pipelineEvent.EventName = PipelineEventEnum.Name.FAILED;
+			pipelineEvent.StageName = PipelineStageEnum.Name.CCDX_PROVIDER;
+			pipelineEvent.PipelineFailureType = PipelineFailureTypeEnum.Name.VALIDATION;
+			pipelineEvent.PipelineFailureReason = PipelineFailureReasonEnum.Name.UNSUPPORTED_EXTENSION;
+			pipelineEvent.ReportFileName = reportFileName;
+			Dictionary<string, string> customProps = AzureAppInsightsService.BuildCustomPropertiesObject(pipelineEvent);
+			AzureAppInsightsService.LogEntry(PipelineStageEnum.Name.CCDX_PROVIDER, customProps, log);
+		}
+
+		/// <summary>
 		/// Sends CCDX Consumer error event to App Insight
 		/// </summary>
 		/// <param name="reportFileName">Name of Cold chain telemetry file pulled from CCDX Kafka topic</param>
