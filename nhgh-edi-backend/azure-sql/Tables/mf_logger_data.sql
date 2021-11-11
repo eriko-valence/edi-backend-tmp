@@ -2,7 +2,7 @@ CREATE TABLE [ems_data].[mf_logger_data](
 	[AMFR] [varchar](100) NULL,
 	[AMOD] [varchar](100) NULL,
 	[ASER] [varchar](50) NOT NULL,
-	[ADOP] [varchar](100) NULL,
+	[ADOP] [date] NULL,
 	[APQS] [varchar](100) NULL,
 	[RNAM] [varchar](100) NULL,
 	[DNAM] [varchar](100) NULL,
@@ -10,7 +10,6 @@ CREATE TABLE [ems_data].[mf_logger_data](
 	[CID] [varchar](10) NULL,
 	[LAT] [numeric](7, 5) NULL,
 	[LNG] [numeric](8, 5) NULL,
-
 	[ABST] [datetime] NOT NULL,
 	[SVA] [smallint] NULL,
 	[HAMB] [numeric](3, 1) NULL,
