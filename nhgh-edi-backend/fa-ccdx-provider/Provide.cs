@@ -109,7 +109,9 @@ namespace fa_ccdx_provider
                             log.LogInformation($"- [ccdx-provider->run]: Entry into the data interchange was successful");
                             log.LogInformation($"- [ccdx-provider->run]: Track ccdx provider success event (app insights)");
                             CcdxService.LogCcdxProviderSuccessEventToAppInsights(reportFileName, log);
-                            log.LogInformation($"- [ccdx-provider->run]: Done");
+                            log.LogInformation($"- [ccdx-provider->run]: Cleaning up .... deleting telemetry file {ccBlobInputName}");
+                            await AzureStorageBlobService.DeleteBlob(storageConnectionString, inputContainerName, ccBlobInputName);
+                            log.LogInformation($"- [ccdx-provider->run]: DONE");
                         }
                         else
                         {
@@ -148,9 +150,7 @@ namespace fa_ccdx_provider
                     log.LogInformation($"- [ccdx-provider->run]: Track ccdx provider unsupported logger event (app insights)");
                     CcdxService.LogCcdxProviderUnsupportedLoggerEventToAppInsights(reportFileName, log);
                 }
-                log.LogInformation($"- [ccdx-provider->run]: Deleting telemetry file {ccBlobInputName}");
-                await AzureStorageBlobService.DeleteBlob(storageConnectionString, inputContainerName, ccBlobInputName);
-                log.LogInformation($"- [ccdx-provider->run]: DONE");
+
             }
             catch (Exception e)
             {
