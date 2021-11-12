@@ -1,0 +1,137 @@
+{
+    "name": "ds_sql_cfd50",
+    "properties": {
+        "linkedServiceName": {
+            "referenceName": "ls_sql_cfd50",
+            "type": "LinkedServiceReference"
+        },
+        "folder": {
+            "name": "Curated"
+        },
+        "annotations": [],
+        "type": "AzureSqlTable",
+        "schema": [
+            {
+                "name": "AMFR",
+                "type": "varchar"
+            },
+            {
+                "name": "AMOD",
+                "type": "varchar"
+            },
+            {
+                "name": "ASER",
+                "type": "varchar"
+            },
+            {
+                "name": "ADOP",
+                "type": "date"
+            },
+            {
+                "name": "APQS",
+                "type": "varchar"
+            },
+            {
+                "name": "RNAM",
+                "type": "varchar"
+            },
+            {
+                "name": "DNAM",
+                "type": "varchar"
+            },
+            {
+                "name": "FNAM",
+                "type": "varchar"
+            },
+            {
+                "name": "CID",
+                "type": "varchar"
+            },
+            {
+                "name": "LAT",
+                "type": "decimal",
+                "precision": 7,
+                "scale": 5
+            },
+            {
+                "name": "LNG",
+                "type": "decimal",
+                "precision": 8,
+                "scale": 5
+            },
+            {
+                "name": "ABST",
+                "type": "datetime",
+                "precision": 23,
+                "scale": 3
+            },
+            {
+                "name": "SVA",
+                "type": "smallint",
+                "precision": 5
+            },
+            {
+                "name": "HAMB",
+                "type": "decimal",
+                "precision": 3,
+                "scale": 1
+            },
+            {
+                "name": "TAMB",
+                "type": "decimal",
+                "precision": 3,
+                "scale": 1
+            },
+            {
+                "name": "ACCD",
+                "type": "decimal",
+                "precision": 3,
+                "scale": 1
+            },
+            {
+                "name": "TCON",
+                "type": "decimal",
+                "precision": 3,
+                "scale": 1
+            },
+            {
+                "name": "TVC",
+                "type": "decimal",
+                "precision": 3,
+                "scale": 1
+            },
+            {
+                "name": "BEMD",
+                "type": "decimal",
+                "precision": 5,
+                "scale": 1
+            },
+            {
+                "name": "HOLD",
+                "type": "decimal",
+                "precision": 4,
+                "scale": 1
+            },
+            {
+                "name": "DORV",
+                "type": "tinyint",
+                "precision": 3
+            },
+            {
+                "name": "ALRM",
+                "type": "varchar"
+            },
+            {
+                "name": "DATEADDED",
+                "type": "datetime",
+                "precision": 23,
+                "scale": 3
+            }
+        ],
+        "typeProperties": {
+            "schema": "ems_data",
+            "table": "mf_logger_data"
+        }
+    },
+    "type": "Microsoft.DataFactory/factories/datasets"
+}

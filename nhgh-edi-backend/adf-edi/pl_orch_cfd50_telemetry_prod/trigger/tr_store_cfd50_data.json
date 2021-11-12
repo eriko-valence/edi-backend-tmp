@@ -1,0 +1,34 @@
+{
+    "name": "tr_store_cfd50_data",
+    "properties": {
+        "annotations": [],
+        "runtimeState": "Started",
+        "pipelines": [
+            {
+                "pipelineReference": {
+                    "referenceName": "pl_orch_cfd50_telemetry",
+                    "type": "PipelineReference"
+                },
+                "parameters": {
+                    "PL_P_PARAM_FILE_NAME": "@triggerBody().fileName",
+                    "PL_P_PARAM_FOLDER_NAME": "@triggerBody().folderPath",
+                    "PL_P_PARAM_LOG_DIR_GUID": "@concat(split(triggerBody().folderPath,'/')[1],'/',formatDateTime(trigger().startTime, 'yyyy-MM-dd'),'/', formatDateTime(trigger().startTime, 'HH'), '/', guid(),'/')",
+                    "PL_P_PARAM_TRIGGER_TIME": "@trigger().startTime",
+                    "PL_P_PARAM_FULL_FILE_NAME": "@concat(split(triggerBody().folderPath,'/')[1],'/',formatDateTime(trigger().startTime, 'yyyy-MM-dd'),'/', formatDateTime(trigger().startTime, 'HH'), '/', guid(),'/', triggerBody().fileName)",
+                    "PL_P_DEVICE_TYPE": "@split(triggerBody().folderPath,'/')[1]",
+                    "PL_P_TRIGGER_BLOB_NAME": "@concat(split(triggerBody().folderPath,'/')[1],'/',split(triggerBody().folderPath,'/')[2],'/',triggerBody().fileName)"
+                }
+            }
+        ],
+        "type": "BlobEventsTrigger",
+        "typeProperties": {
+            "blobPathBeginsWith": "/raw-ccdx-consumer/blobs/cfd50",
+            "blobPathEndsWith": ".zip",
+            "ignoreEmptyBlobs": true,
+            "scope": "/subscriptions/794099f6-88fd-45fe-bd8e-b65bb24cff8e/resourceGroups/rg-edi-prod/providers/Microsoft.Storage/storageAccounts/adlsediprod",
+            "events": [
+                "Microsoft.Storage.BlobCreated"
+            ]
+        }
+    }
+}

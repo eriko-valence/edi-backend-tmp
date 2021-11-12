@@ -1,0 +1,118 @@
+{
+    "name": "ds_adls_stage_cfd50",
+    "properties": {
+        "linkedServiceName": {
+            "referenceName": "ls_adls_adlsediprod",
+            "type": "LinkedServiceReference"
+        },
+        "parameters": {
+            "PL_P_PARAM_LOG_DIR_GUID": {
+                "type": "string"
+            }
+        },
+        "folder": {
+            "name": "Stage"
+        },
+        "annotations": [],
+        "type": "Json",
+        "typeProperties": {
+            "location": {
+                "type": "AzureBlobFSLocation",
+                "folderPath": {
+                    "value": "@dataset().PL_P_PARAM_LOG_DIR_GUID",
+                    "type": "Expression"
+                },
+                "fileSystem": "staged-input"
+            }
+        },
+        "schema": {
+            "type": "object",
+            "properties": {
+                "AMFR": {
+                    "type": "string"
+                },
+                "AMOD": {
+                    "type": "string"
+                },
+                "APQS": {
+                    "type": "string"
+                },
+                "ASER": {
+                    "type": "string"
+                },
+                "AID": {
+                    "type": "string"
+                },
+                "ADAT": {
+                    "type": "string"
+                },
+                "CID": {
+                    "type": "string"
+                },
+                "FID": {
+                    "type": "string"
+                },
+                "LAT": {
+                    "type": "string"
+                },
+                "LNG": {
+                    "type": "string"
+                },
+                "records": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "ABST": {
+                                "type": "string"
+                            },
+                            "TAMB": {
+                                "type": "number"
+                            },
+                            "TFRZ": {
+                                "type": "integer"
+                            },
+                            "TVC": {
+                                "type": "number"
+                            },
+                            "CMPR": {
+                                "type": "integer"
+                            },
+                            "SVA": {
+                                "type": "integer"
+                            },
+                            "EVDC": {
+                                "type": "integer"
+                            },
+                            "CDRW": {
+                                "type": "integer"
+                            },
+                            "DOOR": {
+                                "type": "integer"
+                            },
+                            "HOLD": {
+                                "type": "integer"
+                            },
+                            "BEMD": {
+                                "type": "integer"
+                            },
+                            "TCON": {
+                                "type": "integer"
+                            },
+                            "CMPS": {
+                                "type": "integer"
+                            },
+                            "CSOF": {
+                                "type": "string"
+                            },
+                            "ALRM": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "type": "Microsoft.DataFactory/factories/datasets"
+}

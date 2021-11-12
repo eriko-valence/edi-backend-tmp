@@ -1,0 +1,22 @@
+{
+    "now": "2021-11-12T23:17:09.126Z",
+    "perfNow": 872331.7000000477,
+    "diagnosticCorrelation": "992de296-f1eb-417b-ae2b-5f86baaa7175",
+    "source": "DownloadSupportFiles",
+    "environment": {
+        "productName": "adf",
+        "buildVersion": "1.0.20211109.1",
+        "environmentType": 3,
+        "resourceName": "adf-edi-prod",
+        "resourceRegion": "westus2",
+        "resourceGroup": "rg-edi-prod",
+        "subscriptionId": "794099f6-88fd-45fe-bd8e-b65bb24cff8e",
+        "sessionId": "WsMkv",
+        "operationId": "o4jmw",
+        "gitType": "live"
+    },
+    "additionalInfo": {
+        "selectedResource": "pl_orch_cfd50_telemetry",
+        "selectedResourceType": "pipeline"
+    }
+}
