@@ -1,0 +1,155 @@
+{
+    "name": "pl_orch_cfd50_telemetry",
+    "properties": {
+        "activities": [
+            {
+                "name": "Extract",
+                "type": "ExecutePipeline",
+                "dependsOn": [],
+                "userProperties": [],
+                "typeProperties": {
+                    "pipeline": {
+                        "referenceName": "pl_extract_cfd50_telemetry",
+                        "type": "PipelineReference"
+                    },
+                    "waitOnCompletion": true,
+                    "parameters": {
+                        "PL_P_PARAM_FILE_NAME": {
+                            "value": "@pipeline().parameters.PL_P_PARAM_FILE_NAME",
+                            "type": "Expression"
+                        },
+                        "PL_P_PARAM_FOLDER_NAME": {
+                            "value": "@pipeline().parameters.PL_P_PARAM_FOLDER_NAME",
+                            "type": "Expression"
+                        },
+                        "PL_P_PARAM_TRIGGER_TIME": {
+                            "value": "@pipeline().parameters.PL_P_PARAM_TRIGGER_TIME",
+                            "type": "Expression"
+                        },
+                        "PL_P_PARAM_LOG_DIR_GUID": {
+                            "value": "@pipeline().parameters.PL_P_PARAM_LOG_DIR_GUID",
+                            "type": "Expression"
+                        },
+                        "PL_P_PARAM_FULL_FILE_NAME": {
+                            "value": "@pipeline().parameters.PL_P_PARAM_FULL_FILE_NAME",
+                            "type": "Expression"
+                        },
+                        "PL_P_TRIGGER_BLOB_NAME": {
+                            "value": "@pipeline().parameters.PL_P_TRIGGER_BLOB_NAME",
+                            "type": "Expression"
+                        }
+                    }
+                }
+            },
+            {
+                "name": "Transform",
+                "type": "ExecutePipeline",
+                "dependsOn": [
+                    {
+                        "activity": "Extract",
+                        "dependencyConditions": [
+                            "Succeeded"
+                        ]
+                    }
+                ],
+                "userProperties": [],
+                "typeProperties": {
+                    "pipeline": {
+                        "referenceName": "pl_transform_cfd50_telemetry",
+                        "type": "PipelineReference"
+                    },
+                    "waitOnCompletion": true,
+                    "parameters": {
+                        "PL_P_PARAM_TRIGGER_TIME": {
+                            "value": "@pipeline().parameters.PL_P_PARAM_TRIGGER_TIME",
+                            "type": "Expression"
+                        },
+                        "PL_P_PARAM_FOLDER_NAME": {
+                            "value": "@pipeline().parameters.PL_P_PARAM_FOLDER_NAME",
+                            "type": "Expression"
+                        },
+                        "PL_P_PARAM_FILE_NAME": {
+                            "value": "@pipeline().parameters.PL_P_PARAM_FILE_NAME",
+                            "type": "Expression"
+                        },
+                        "PL_P_PARAM_LOG_DIR_GUID": {
+                            "value": "@pipeline().parameters.PL_P_PARAM_LOG_DIR_GUID",
+                            "type": "Expression"
+                        },
+                        "PL_C_PARAM_REQ_JSON": {
+                            "value": "@CONCAT('{\"path\":\"', pipeline().parameters.PL_P_PARAM_LOG_DIR_GUID,'\",\"fileName\":\"',pipeline().parameters.PL_P_PARAM_FILE_NAME,'\"}')",
+                            "type": "Expression"
+                        }
+                    }
+                }
+            },
+            {
+                "name": "Load",
+                "type": "ExecutePipeline",
+                "dependsOn": [
+                    {
+                        "activity": "Transform",
+                        "dependencyConditions": [
+                            "Succeeded"
+                        ]
+                    }
+                ],
+                "userProperties": [],
+                "typeProperties": {
+                    "pipeline": {
+                        "referenceName": "pl_load_cfd50_telemetry",
+                        "type": "PipelineReference"
+                    },
+                    "waitOnCompletion": true,
+                    "parameters": {
+                        "PL_P_PARAM_TRIGGER_TIME": {
+                            "value": "@pipeline().parameters.PL_P_PARAM_TRIGGER_TIME",
+                            "type": "Expression"
+                        },
+                        "PL_P_PARAM_FOLDER_NAME": {
+                            "value": "@pipeline().parameters.PL_P_PARAM_FOLDER_NAME",
+                            "type": "Expression"
+                        },
+                        "PL_P_PARAM_FILE_NAME": {
+                            "value": "@pipeline().parameters.PL_P_PARAM_FILE_NAME",
+                            "type": "Expression"
+                        },
+                        "PL_P_PARAM_LOG_DIR_GUID": {
+                            "value": "@pipeline().parameters.PL_P_PARAM_LOG_DIR_GUID",
+                            "type": "Expression"
+                        }
+                    }
+                }
+            }
+        ],
+        "parameters": {
+            "PL_P_PARAM_FILE_NAME": {
+                "type": "string"
+            },
+            "PL_P_PARAM_FOLDER_NAME": {
+                "type": "string"
+            },
+            "PL_P_PARAM_LOG_DIR_GUID": {
+                "type": "string"
+            },
+            "PL_P_PARAM_TRIGGER_TIME": {
+                "type": "string"
+            },
+            "PL_P_PARAM_FULL_FILE_NAME": {
+                "type": "string"
+            },
+            "PL_P_DEVICE_TYPE": {
+                "type": "string"
+            },
+            "PL_P_TRIGGER_BLOB_NAME": {
+                "type": "string"
+            }
+        },
+        "folder": {
+            "name": "Orchestration"
+        },
+        "annotations": [],
+        "lastPublishTime": "2021-11-12T23:01:33Z"
+    },
+    "type": "Microsoft.DataFactory/factories/pipelines"
+}
