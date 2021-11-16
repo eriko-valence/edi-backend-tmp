@@ -61,10 +61,13 @@ namespace lib_edi.Services.Loggers
 
 			foreach (CloudBlockBlob logBlob in logDirectoryBlobs)
 			{
+				metaFridgeLogBlobs.Add(logBlob);
+				/* NHGH-1788 No longer a requirement to validate CFD50 log files using the file name
 				if (logBlob.Name.ToUpper().Contains("CFD50"))
 				{
 					metaFridgeLogBlobs.Add(logBlob);
 				}
+				*/
 			}
 
 			if (metaFridgeLogBlobs.Count == 0)
