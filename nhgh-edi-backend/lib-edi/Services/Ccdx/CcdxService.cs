@@ -291,7 +291,7 @@ namespace lib_edi.Services.Ccdx
 		{
 			bool result = false;
 			string fileExtension = Path.GetExtension(blobName);
-			if (Path.GetExtension(blobName) == ".zip")
+			if (Path.GetExtension(blobName) == ".gz")
 			{
 				result = true;
 			}

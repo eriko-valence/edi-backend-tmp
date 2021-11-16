@@ -20,19 +20,10 @@
                         "storeSettings": {
                             "type": "AzureBlobFSReadSettings",
                             "recursive": true,
-                            "wildcardFolderPath": "*",
-                            "wildcardFileName": {
-                                "value": "@pipeline().parameters.PL_P_PARAM_FILE_NAME",
-                                "type": "Expression"
-                            },
                             "enablePartitionDiscovery": false
                         },
                         "formatSettings": {
-                            "type": "JsonReadSettings",
-                            "compressionProperties": {
-                                "type": "ZipDeflateReadSettings",
-                                "preserveZipFileNameAsFolder": false
-                            }
+                            "type": "JsonReadSettings"
                         }
                     },
                     "sink": {
@@ -49,7 +40,17 @@
                 "inputs": [
                     {
                         "referenceName": "ds_adls_raw_cfd50",
-                        "type": "DatasetReference"
+                        "type": "DatasetReference",
+                        "parameters": {
+                            "PL_P_TRIGGER_FOLDER_NAME": {
+                                "value": "@pipeline().parameters.PL_P_TRIGGER_FOLDER_NAME",
+                                "type": "Expression"
+                            },
+                            "PL_P_PARAM_FILE_NAME": {
+                                "value": "@pipeline().parameters.PL_P_PARAM_FILE_NAME",
+                                "type": "Expression"
+                            }
+                        }
                     }
                 ],
                 "outputs": [
@@ -64,42 +65,6 @@
                         }
                     }
                 ]
-            },
-            {
-                "name": "Delete",
-                "type": "Delete",
-                "dependsOn": [
-                    {
-                        "activity": "Extract",
-                        "dependencyConditions": [
-                            "Succeeded"
-                        ]
-                    }
-                ],
-                "policy": {
-                    "timeout": "7.00:00:00",
-                    "retry": 0,
-                    "retryIntervalInSeconds": 30,
-                    "secureOutput": false,
-                    "secureInput": false
-                },
-                "userProperties": [],
-                "typeProperties": {
-                    "dataset": {
-                        "referenceName": "ds_adls_raw_cfd50",
-                        "type": "DatasetReference"
-                    },
-                    "enableLogging": false,
-                    "storeSettings": {
-                        "type": "AzureBlobFSReadSettings",
-                        "recursive": true,
-                        "wildcardFileName": {
-                            "value": "@{pipeline().parameters.PL_P_TRIGGER_BLOB_NAME}",
-                            "type": "Expression"
-                        },
-                        "enablePartitionDiscovery": false
-                    }
-                }
             }
         ],
         "parameters": {
@@ -120,13 +85,16 @@
             },
             "PL_P_TRIGGER_BLOB_NAME": {
                 "type": "string"
+            },
+            "PL_P_TRIGGER_FOLDER_NAME": {
+                "type": "string"
             }
         },
         "folder": {
             "name": "Extract"
         },
         "annotations": [],
-        "lastPublishTime": "2021-10-25T18:08:26Z"
+        "lastPublishTime": "2021-11-12T23:04:35Z"
     },
     "type": "Microsoft.DataFactory/factories/pipelines"
 }
