@@ -37,6 +37,10 @@
                         "PL_P_TRIGGER_BLOB_NAME": {
                             "value": "@pipeline().parameters.PL_P_TRIGGER_BLOB_NAME",
                             "type": "Expression"
+                        },
+                        "PL_P_TRIGGER_FOLDER_NAME": {
+                            "value": "@pipeline().parameters.PL_P_TRIGGER_FOLDER_NAME",
+                            "type": "Expression"
                         }
                     }
                 }
@@ -142,6 +146,9 @@
                 "type": "string"
             },
             "PL_P_TRIGGER_BLOB_NAME": {
+                "type": "string"
+            },
+            "PL_P_TRIGGER_FOLDER_NAME": {
                 "type": "string"
             }
         },

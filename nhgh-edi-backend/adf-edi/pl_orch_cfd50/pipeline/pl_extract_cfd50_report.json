@@ -20,22 +20,10 @@
                         "storeSettings": {
                             "type": "AzureBlobFSReadSettings",
                             "recursive": true,
-                            "wildcardFolderPath": {
-                                "value": "*",
-                                "type": "Expression"
-                            },
-                            "wildcardFileName": {
-                                "value": "@pipeline().parameters.PL_P_PARAM_FILE_NAME",
-                                "type": "Expression"
-                            },
                             "enablePartitionDiscovery": false
                         },
                         "formatSettings": {
-                            "type": "JsonReadSettings",
-                            "compressionProperties": {
-                                "type": "ZipDeflateReadSettings",
-                                "preserveZipFileNameAsFolder": false
-                            }
+                            "type": "JsonReadSettings"
                         }
                     },
                     "sink": {
@@ -52,7 +40,17 @@
                 "inputs": [
                     {
                         "referenceName": "ds_adls_raw_cfd50",
-                        "type": "DatasetReference"
+                        "type": "DatasetReference",
+                        "parameters": {
+                            "PL_P_TRIGGER_FOLDER_NAME": {
+                                "value": "@pipeline().parameters.PL_P_TRIGGER_FOLDER_NAME",
+                                "type": "Expression"
+                            },
+                            "PL_P_PARAM_FILE_NAME": {
+                                "value": "@pipeline().parameters.PL_P_PARAM_FILE_NAME",
+                                "type": "Expression"
+                            }
+                        }
                     }
                 ],
                 "outputs": [
@@ -90,7 +88,17 @@
                 "typeProperties": {
                     "dataset": {
                         "referenceName": "ds_adls_raw_cfd50",
-                        "type": "DatasetReference"
+                        "type": "DatasetReference",
+                        "parameters": {
+                            "PL_P_TRIGGER_FOLDER_NAME": {
+                                "value": "@pipeline().parameters.PL_P_TRIGGER_FOLDER_NAME",
+                                "type": "Expression"
+                            },
+                            "PL_P_PARAM_FILE_NAME": {
+                                "value": "@pipeline().parameters.PL_P_PARAM_FILE_NAME",
+                                "type": "Expression"
+                            }
+                        }
                     },
                     "enableLogging": false,
                     "storeSettings": {
@@ -122,6 +130,9 @@
                 "type": "string"
             },
             "PL_P_TRIGGER_BLOB_NAME": {
+                "type": "string"
+            },
+            "PL_P_TRIGGER_FOLDER_NAME": {
                 "type": "string"
             }
         },
