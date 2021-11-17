@@ -5,6 +5,14 @@
             "referenceName": "ls_adls_adlsedidev",
             "type": "LinkedServiceReference"
         },
+        "parameters": {
+            "PL_P_TRIGGER_FOLDER_NAME": {
+                "type": "string"
+            },
+            "PL_P_PARAM_FILE_NAME": {
+                "type": "string"
+            }
+        },
         "folder": {
             "name": "Raw"
         },
@@ -13,10 +21,18 @@
         "typeProperties": {
             "location": {
                 "type": "AzureBlobFSLocation",
+                "fileName": {
+                    "value": "@dataset().PL_P_PARAM_FILE_NAME",
+                    "type": "Expression"
+                },
+                "folderPath": {
+                    "value": "@dataset().PL_P_TRIGGER_FOLDER_NAME",
+                    "type": "Expression"
+                },
                 "fileSystem": "raw-ccdx-consumer"
             },
             "compression": {
-                "type": "ZipDeflate",
+                "type": "gzip",
                 "level": "Optimal"
             }
         },

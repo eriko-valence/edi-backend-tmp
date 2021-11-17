@@ -1,7 +1,7 @@
 {
-    "now": "2021-11-12T23:17:09.126Z",
-    "perfNow": 872331.7000000477,
-    "diagnosticCorrelation": "992de296-f1eb-417b-ae2b-5f86baaa7175",
+    "now": "2021-11-16T22:19:00.812Z",
+    "perfNow": 18238503.899999857,
+    "diagnosticCorrelation": "5c745199-73a8-4ab3-8b92-80b91b3c9558",
     "source": "DownloadSupportFiles",
     "environment": {
         "productName": "adf",
@@ -11,8 +11,8 @@
         "resourceRegion": "westus2",
         "resourceGroup": "rg-edi-prod",
         "subscriptionId": "794099f6-88fd-45fe-bd8e-b65bb24cff8e",
-        "sessionId": "WsMkv",
-        "operationId": "o4jmw",
+        "sessionId": "TSEV0",
+        "operationId": "Jwi/U",
         "gitType": "live"
     },
     "additionalInfo": {

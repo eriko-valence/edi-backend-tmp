@@ -364,7 +364,7 @@
             "name": "Load"
         },
         "annotations": [],
-        "lastPublishTime": "2021-10-26T19:51:10Z"
+        "lastPublishTime": "2021-11-04T17:56:05Z"
     },
     "type": "Microsoft.DataFactory/factories/pipelines"
 }

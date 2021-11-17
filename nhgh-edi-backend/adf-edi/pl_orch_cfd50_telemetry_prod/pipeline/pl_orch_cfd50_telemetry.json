@@ -37,6 +37,10 @@
                         "PL_P_TRIGGER_BLOB_NAME": {
                             "value": "@pipeline().parameters.PL_P_TRIGGER_BLOB_NAME",
                             "type": "Expression"
+                        },
+                        "PL_P_TRIGGER_FOLDER_NAME": {
+                            "value": "@pipeline().parameters.PL_P_TRIGGER_FOLDER_NAME",
+                            "type": "Expression"
                         }
                     }
                 }
@@ -143,13 +147,16 @@
             },
             "PL_P_TRIGGER_BLOB_NAME": {
                 "type": "string"
+            },
+            "PL_P_TRIGGER_FOLDER_NAME": {
+                "type": "string"
             }
         },
         "folder": {
             "name": "Orchestration"
         },
         "annotations": [],
-        "lastPublishTime": "2021-11-12T23:01:33Z"
+        "lastPublishTime": "2021-11-12T23:04:36Z"
     },
     "type": "Microsoft.DataFactory/factories/pipelines"
 }

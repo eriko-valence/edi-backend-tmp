@@ -16,14 +16,15 @@
                     "PL_P_PARAM_TRIGGER_TIME": "@trigger().startTime",
                     "PL_P_PARAM_FULL_FILE_NAME": "@concat(split(triggerBody().folderPath,'/')[1],'/',formatDateTime(trigger().startTime, 'yyyy-MM-dd'),'/', formatDateTime(trigger().startTime, 'HH'), '/', guid(),'/', triggerBody().fileName)",
                     "PL_P_DEVICE_TYPE": "@split(triggerBody().folderPath,'/')[1]",
-                    "PL_P_TRIGGER_BLOB_NAME": "@concat(split(triggerBody().folderPath,'/')[1],'/',split(triggerBody().folderPath,'/')[2],'/',triggerBody().fileName)"
+                    "PL_P_TRIGGER_BLOB_NAME": "@concat(split(triggerBody().folderPath,'/')[1],'/',split(triggerBody().folderPath,'/')[2],'/',triggerBody().fileName)",
+                    "PL_P_TRIGGER_FOLDER_NAME": "@concat(split(triggerBody().folderPath,'/')[1],'/',split(triggerBody().folderPath,'/')[2],'/')"
                 }
             }
         ],
         "type": "BlobEventsTrigger",
         "typeProperties": {
             "blobPathBeginsWith": "/raw-ccdx-consumer/blobs/cfd50",
-            "blobPathEndsWith": ".zip",
+            "blobPathEndsWith": ".gz",
             "ignoreEmptyBlobs": true,
             "scope": "/subscriptions/2972ffd4-e5b4-4b98-87b9-360c084c2959/resourceGroups/rg-edi-dev/providers/Microsoft.Storage/storageAccounts/adlsedidev",
             "events": [
