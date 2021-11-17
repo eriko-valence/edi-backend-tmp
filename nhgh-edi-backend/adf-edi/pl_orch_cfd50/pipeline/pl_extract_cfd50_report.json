@@ -65,52 +65,6 @@
                         }
                     }
                 ]
-            },
-            {
-                "name": "Delete",
-                "type": "Delete",
-                "dependsOn": [
-                    {
-                        "activity": "Extract",
-                        "dependencyConditions": [
-                            "Succeeded"
-                        ]
-                    }
-                ],
-                "policy": {
-                    "timeout": "7.00:00:00",
-                    "retry": 0,
-                    "retryIntervalInSeconds": 30,
-                    "secureOutput": false,
-                    "secureInput": false
-                },
-                "userProperties": [],
-                "typeProperties": {
-                    "dataset": {
-                        "referenceName": "ds_adls_raw_cfd50",
-                        "type": "DatasetReference",
-                        "parameters": {
-                            "PL_P_TRIGGER_FOLDER_NAME": {
-                                "value": "@pipeline().parameters.PL_P_TRIGGER_FOLDER_NAME",
-                                "type": "Expression"
-                            },
-                            "PL_P_PARAM_FILE_NAME": {
-                                "value": "@pipeline().parameters.PL_P_PARAM_FILE_NAME",
-                                "type": "Expression"
-                            }
-                        }
-                    },
-                    "enableLogging": false,
-                    "storeSettings": {
-                        "type": "AzureBlobFSReadSettings",
-                        "recursive": true,
-                        "wildcardFileName": {
-                            "value": "@{pipeline().parameters.PL_P_TRIGGER_BLOB_NAME}",
-                            "type": "Expression"
-                        },
-                        "enablePartitionDiscovery": false
-                    }
-                }
             }
         ],
         "parameters": {
