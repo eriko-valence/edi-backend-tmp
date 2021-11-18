@@ -66,32 +66,12 @@ namespace lib_edi.Services.Loggers
                             //Add metadata to each collected event record
                             foreach (PropertyInfo prop in csvEmsMetadata.GetType().GetProperties())
                             {
-                                if (prop.Name == "ADOP")
-                                {
-                                    var adatValue = prop.GetValue(csvEmsMetadata, null);
-                                    if (adatValue != null)
-                                    {
-                                        DateTime adatDate = DateConverter.ConvertDateWithDashesString(adatValue.ToString());
-                                        ObjectManager.SetObjectValue(ref emsCsvRecord, prop.Name, adatDate);
-                                    }
-                                }
-                                else
-                                {
-                                    ObjectManager.SetObjectValue(ref emsCsvRecord, prop.Name, prop.GetValue(csvEmsMetadata, null));
-                                }
+                                ObjectManager.SetObjectValue(ref emsCsvRecord, prop.Name, prop.GetValue(csvEmsMetadata, null));                                
                             }
                             //Add collected event data to record
                             foreach (JProperty prop in z.Properties())
                             {
-                                if (prop.Name == "ABST")
-                                {
-                                    DateTime? emdAbsoluteTime = DateConverter.ConvertIso8601CompliantString(prop.Value.ToString());
-                                    ObjectManager.SetObjectValue(ref emsCsvRecord, prop.Name, emdAbsoluteTime);
-                                }
-                                else
-                                {
-                                    ObjectManager.SetObjectValue(ref emsCsvRecord, prop.Name, prop.Value);
-                                }
+                                ObjectManager.SetObjectValue(ref emsCsvRecord, prop.Name, prop.Value);
                             }
                             cfd50CsvRecords.Add(emsCsvRecord);
                         }

@@ -1,6 +1,8 @@
 ﻿using CsvHelper.Configuration.Attributes;
+using lib_edi.Helpers;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Text;
 
 namespace lib_edi.Models.Dto.CceDevice.Csv
@@ -16,8 +18,20 @@ namespace lib_edi.Models.Dto.CceDevice.Csv
 		public string AMOD { get; set; }
 		[Name("ASER")]
 		public string ASER { get; set; }
+		[Ignore]
+		public DateTime? _ADOP { get; set; }
 		[Name("ADOP")]
-		public DateTime? ADOP { get; set; }
+		public string ADOP
+		{
+			get {
+				return DateConverter.ConverToDateString(_ADOP);
+			}
+
+			set
+			{
+				_ADOP = DateConverter.ParseDateTimeString(value);
+			}
+		}
 		[Name("APQS")]
 		public double APQS { get; set; }
 		[Name("RNAM")]
@@ -32,11 +46,23 @@ namespace lib_edi.Models.Dto.CceDevice.Csv
 		public double LAT { get; set; }
 		[Name("LNG")]
 		public double LNG { get; set; }
-
+		[Ignore]
+		DateTime? _ABST { get; set; }
 
 		// Log Record
 		[Name("ABST")]
-		public DateTime? ABST { get; set; }
+		public string ABST
+		{
+			get
+			{
+				return DateConverter.ConverToDateTimeString(_ABST);
+			}
+
+			set
+			{
+				_ABST = DateConverter.ParseDateTimeString(value);
+			}
+		}
 		[Name("SVA")]
 		public int SVA { get; set; }
 		[Name("HAMB")]
