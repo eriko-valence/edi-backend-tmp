@@ -83,6 +83,10 @@ namespace lib_edi.Models.Dto.CceDevice.Csv
 		public int DORV { get; set; }
 		[Name("ALRM")]
 		public string ALRM { get; set; }
+		[Name("EMSV")]
+		public string EMSV { get; set; }
+		[Name("EERR")]
+		public string EERR { get; set; }
 
 #pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 	}

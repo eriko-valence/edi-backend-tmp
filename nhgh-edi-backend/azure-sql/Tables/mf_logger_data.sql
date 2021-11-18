@@ -21,6 +21,8 @@ CREATE TABLE [ems_data].[mf_logger_data](
 	[HOLD] [numeric](4, 1) NULL,
 	[DORV] [tinyint] NULL,
 	[ALRM] [varchar](10) NULL,
+	[EMSV] [varchar](100) NULL,
+	[EERR] [varchar](100) NULL,
 	[DATEADDED] [datetime] NOT NULL
 ) ON [PRIMARY]
 GO

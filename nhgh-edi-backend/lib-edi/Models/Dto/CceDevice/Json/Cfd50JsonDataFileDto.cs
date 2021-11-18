@@ -37,6 +37,8 @@ namespace lib_edi.Models.Dto.Loggers
 		public string HOLD { get; set; }
 		public string DORV { get; set; }
 		public string ALRM { get; set; }
+		public string EMSV { get; set; }
+		public string EERR { get; set; }
 #pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 	}
 }
