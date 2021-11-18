@@ -46,22 +46,24 @@ namespace lib_edi.Helpers
 		}
 
 		/// <summary>
-		/// Converts a date string with dashes
+		/// Converts a date or date/time string to DateTime object
 		/// </summary>
-		/// <param name="s">date/time string in format "yyyy-MM-dd" </param>
+		/// <param name="s">date/time string </param>
 		/// <returns>
 		/// A DateTime object representing the ISO 8601 compliant date/time string
 		/// </returns>
 		/// <example>
-		/// date string with dashes in format "yyyy-MM-dd": 2019-04-19
+		/// date string with dashes: "yyyy-MM-dd": 2019-04-19
+		/// date string without dashes: "yyyyMMdd": 20190419
 		/// </example>
-		public static DateTime ConvertDateWithDashesString(string s)
+		public static DateTime ParseDateTimeString(string s)
 		{
 			try
 			{
-				string format = "yyyy-MM-dd";
+				string[] formats = { "yyyy-MM-dd","yyyyMMdd", "yyyyMMddTHHmmssZ" };
+				//string format = "yyyy-MM-dd";
 				var cultureInfo = new CultureInfo("en-US");
-				DateTime reportAbsoluteDateTime = DateTime.ParseExact(s, format, cultureInfo);
+				DateTime reportAbsoluteDateTime = DateTime.ParseExact(s, formats, cultureInfo);
 				return reportAbsoluteDateTime;
 			}
 			catch (ArgumentNullException ane)
@@ -98,6 +100,44 @@ namespace lib_edi.Helpers
 				{
 					return null;
 				}
+			}
+			else
+			{
+				return null;
+			}
+		}
+
+		/// <summary>
+		/// Converts a date and time object to a ISO 8601 compliant date string representation
+		/// </summary>
+		/// <param name="s">Date and time object </param>
+		/// <returns>
+		/// An ISO 8601 compliant date string
+		/// </returns>
+		public static string ConverToDateString(DateTime? dt)
+		{
+			if (dt != null)
+			{
+				return ((DateTime)dt).ToString("yyyy-MM-dd");
+			}
+			else
+			{
+				return null;
+			}
+		}
+
+		/// <summary>
+		/// Converts a date and time object to a ISO 8601 compliant date time string representation
+		/// </summary>
+		/// <param name="s">Date and time object </param>
+		/// <returns>
+		/// An ISO 8601 compliant date/time string
+		/// </returns>
+		public static string ConverToDateTimeString(DateTime? dt)
+		{
+			if (dt != null)
+			{
+				return ((DateTime)dt).ToString("yyyy-MM-ddTHH:mm:ssZ");
 			}
 			else
 			{
