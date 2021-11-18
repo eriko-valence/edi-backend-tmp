@@ -20,6 +20,8 @@ CREATE TYPE [ems_data].[mf_logger_data_type] AS TABLE(
 	[BEMD] [numeric](5, 1) NULL,
 	[HOLD] [numeric](4, 1) NULL,
 	[DORV] [tinyint] NULL,
-	[ALRM] [varchar](10) NULL
+	[ALRM] [varchar](10) NULL,
+	[EMSV] [varchar](100) NULL,
+	[EERR] [varchar](100) NULL
 )
 GO
