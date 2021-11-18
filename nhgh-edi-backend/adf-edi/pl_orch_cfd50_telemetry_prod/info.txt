@@ -1,0 +1,6 @@
+selected resource name:		pl_orch_cfd50_telemetry
+selected resource type:		pipeline
+factory name:			adf-edi-prod
+factory location:		westus2
+subscription id:		794099f6-88fd-45fe-bd8e-b65bb24cff8e
+time of download (UTC):		Thu, 18 Nov 2021 18:52:10 GMT

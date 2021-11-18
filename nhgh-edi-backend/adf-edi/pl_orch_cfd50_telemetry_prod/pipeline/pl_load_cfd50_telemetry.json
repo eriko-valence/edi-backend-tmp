@@ -323,6 +323,30 @@
                                     "type": "String",
                                     "physicalType": "varchar"
                                 }
+                            },
+                            {
+                                "source": {
+                                    "name": "EMSV",
+                                    "type": "String",
+                                    "physicalType": "String"
+                                },
+                                "sink": {
+                                    "name": "EMSV",
+                                    "type": "String",
+                                    "physicalType": "varchar"
+                                }
+                            },
+                            {
+                                "source": {
+                                    "name": "EERR",
+                                    "type": "String",
+                                    "physicalType": "String"
+                                },
+                                "sink": {
+                                    "name": "EERR",
+                                    "type": "String",
+                                    "physicalType": "varchar"
+                                }
                             }
                         ],
                         "typeConversion": true,
