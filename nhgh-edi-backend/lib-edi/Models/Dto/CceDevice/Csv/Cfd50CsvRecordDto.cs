@@ -29,7 +29,7 @@ namespace lib_edi.Models.Dto.CceDevice.Csv
 
 			set
 			{
-				_ADOP = DateConverter.ParseDateString(value);
+				_ADOP = DateConverter.ParseDateTimeString(value);
 			}
 		}
 		[Name("APQS")]
@@ -60,7 +60,7 @@ namespace lib_edi.Models.Dto.CceDevice.Csv
 
 			set
 			{
-				_ABST = DateConverter.ParseDateString(value);
+				_ABST = DateConverter.ParseDateTimeString(value);
 			}
 		}
 		[Name("SVA")]
