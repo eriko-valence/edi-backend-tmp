@@ -86,8 +86,8 @@
                                 },
                                 "sink": {
                                     "name": "ADOP",
-                                    "type": "String",
-                                    "physicalType": "varchar"
+                                    "type": "DateTime",
+                                    "physicalType": "date"
                                 }
                             },
                             {
@@ -320,6 +320,30 @@
                                 },
                                 "sink": {
                                     "name": "ALRM",
+                                    "type": "String",
+                                    "physicalType": "varchar"
+                                }
+                            },
+                            {
+                                "source": {
+                                    "name": "EMSV",
+                                    "type": "String",
+                                    "physicalType": "String"
+                                },
+                                "sink": {
+                                    "name": "EMSV",
+                                    "type": "String",
+                                    "physicalType": "varchar"
+                                }
+                            },
+                            {
+                                "source": {
+                                    "name": "EERR",
+                                    "type": "String",
+                                    "physicalType": "String"
+                                },
+                                "sink": {
+                                    "name": "EERR",
                                     "type": "String",
                                     "physicalType": "varchar"
                                 }
