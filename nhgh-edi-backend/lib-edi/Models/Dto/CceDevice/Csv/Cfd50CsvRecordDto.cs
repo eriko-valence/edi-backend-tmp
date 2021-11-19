@@ -3,6 +3,7 @@ using lib_edi.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Numerics;
 using System.Text;
 
 namespace lib_edi.Models.Dto.CceDevice.Csv
@@ -17,7 +18,20 @@ namespace lib_edi.Models.Dto.CceDevice.Csv
 		[Name("AMOD")]
 		public string AMOD { get; set; }
 		[Name("ASER")]
-		public string ASER { get; set; }
+		public BigInteger _ASER { get; set; }
+		[Name("ASER_HEX")]
+		public string ASER
+		{
+			get
+			{
+				return IntegerConverter.ConvertToHexadecimal(_ASER);
+			}
+
+			set
+			{
+				_ASER = IntegerConverter.ConvertToBigInteger(value);
+			}
+		}
 		[Ignore]
 		public DateTime? _ADOP { get; set; }
 		[Name("ADOP")]
