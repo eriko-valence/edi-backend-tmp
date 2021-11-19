@@ -359,6 +359,84 @@
                                     "type": "String",
                                     "physicalType": "varchar"
                                 }
+                            },
+                            {
+                                "source": {
+                                    "name": "CMPR",
+                                    "type": "String",
+                                    "physicalType": "String"
+                                },
+                                "sink": {
+                                    "name": "CMPR",
+                                    "type": "Byte",
+                                    "physicalType": "tinyint"
+                                }
+                            },
+                            {
+                                "source": {
+                                    "name": "ACSV",
+                                    "type": "String",
+                                    "physicalType": "String"
+                                },
+                                "sink": {
+                                    "name": "ACSV",
+                                    "type": "Decimal",
+                                    "physicalType": "decimal",
+                                    "scale": 1,
+                                    "precision": 4
+                                }
+                            },
+                            {
+                                "source": {
+                                    "name": "AID",
+                                    "type": "String",
+                                    "physicalType": "String"
+                                },
+                                "sink": {
+                                    "name": "AID",
+                                    "type": "String",
+                                    "physicalType": "varchar"
+                                }
+                            },
+                            {
+                                "source": {
+                                    "name": "CMPS",
+                                    "type": "String",
+                                    "physicalType": "String"
+                                },
+                                "sink": {
+                                    "name": "CMPS",
+                                    "type": "Byte",
+                                    "physicalType": "tinyint"
+                                }
+                            },
+                            {
+                                "source": {
+                                    "name": "DCCD",
+                                    "type": "String",
+                                    "physicalType": "String"
+                                },
+                                "sink": {
+                                    "name": "DCCD",
+                                    "type": "Decimal",
+                                    "physicalType": "decimal",
+                                    "scale": 1,
+                                    "precision": 3
+                                }
+                            },
+                            {
+                                "source": {
+                                    "name": "DCSV",
+                                    "type": "String",
+                                    "physicalType": "String"
+                                },
+                                "sink": {
+                                    "name": "DCSV",
+                                    "type": "Decimal",
+                                    "physicalType": "decimal",
+                                    "scale": 1,
+                                    "precision": 4
+                                }
                             }
                         ],
                         "typeConversion": true,
@@ -400,7 +478,7 @@
             "name": "Load"
         },
         "annotations": [],
-        "lastPublishTime": "2021-11-19T00:32:01Z"
+        "lastPublishTime": "2021-11-19T19:09:54Z"
     },
     "type": "Microsoft.DataFactory/factories/pipelines"
 }

@@ -94,7 +94,7 @@
             "name": "Extract"
         },
         "annotations": [],
-        "lastPublishTime": "2021-10-25T16:30:59Z"
+        "lastPublishTime": "2021-11-17T00:07:38Z"
     },
     "type": "Microsoft.DataFactory/factories/pipelines"
 }

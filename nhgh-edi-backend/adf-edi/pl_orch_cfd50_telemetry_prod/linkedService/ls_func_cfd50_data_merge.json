@@ -7,7 +7,7 @@
         "typeProperties": {
             "functionAppUrl": "https://fa-adf-transform-cfd50-prod.azurewebsites.net",
             "authentication": "Anonymous",
-            "encryptedCredential": "ew0KICAiVmVyc2lvbiI6ICIyMDE3LTExLTMwIiwNCiAgIlByb3RlY3Rpb25Nb2RlIjogIktleSIsDQogICJTZWNyZXRDb250ZW50VHlwZSI6ICJQbGFpbnRleHQiLA0KICAiQ3JlZGVudGlhbElkIjogIkFERi1FREktUFJPRF84ZDJlMGVmOS03M2Q1LTQ0NmUtOWU5Ny1iOTRhZjBiZjBmMzAiDQp9"
+            "encryptedCredential": "ew0KICAiVmVyc2lvbiI6ICIyMDE3LTExLTMwIiwNCiAgIlByb3RlY3Rpb25Nb2RlIjogIktleSIsDQogICJTZWNyZXRDb250ZW50VHlwZSI6ICJQbGFpbnRleHQiLA0KICAiQ3JlZGVudGlhbElkIjogIkRBVEFGQUNUT1JZQDk5RUVGOEFDLTg4MTYtNDFENS04MDE3LUQyOEM5OTI1NjFBMF85NWU4MzI5My02YzBjLTRlODMtYTQ1My01MGViOTA5NmY5YTkiDQp9"
         }
     }
 }
