@@ -1,7 +1,8 @@
 CREATE TYPE [ems_data].[mf_logger_data_type] AS TABLE(
 	[AMFR] [varchar](100) NULL,
 	[AMOD] [varchar](100) NULL,
-	[ASER] [varchar](50) NOT NULL,
+	[ASER] [bigint] NOT NULL,
+	[ASER_HEX] [varchar](100) NOT NULL,
 	[ADOP] [date] NULL,
 	[APQS] [varchar](100) NULL,
 	[RNAM] [varchar](100) NULL,

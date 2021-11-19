@@ -5,11 +5,12 @@ BEGIN
 	USING @mf_logger_data AS tvp
 	ON mld.[ABST] = tvp.[ABST] AND mld.[ASER] = tvp.[ASER]
 	WHEN NOT MATCHED THEN 
-	INSERT ([AMFR],[AMOD],[ASER],[ADOP],[APQS],[RNAM],[DNAM],[FNAM],[CID],[LAT],[LNG],[ABST],[SVA],[HAMB],[TAMB],[ACCD],[TCON],[TVC],[BEMD],[HOLD],[DORV],[ALRM],[EMSV],[EERR],[DATEADDED]) 
+	INSERT ([AMFR],[AMOD],[ASER],[ASER_HEX],[ADOP],[APQS],[RNAM],[DNAM],[FNAM],[CID],[LAT],[LNG],[ABST],[SVA],[HAMB],[TAMB],[ACCD],[TCON],[TVC],[BEMD],[HOLD],[DORV],[ALRM],[EMSV],[EERR],[DATEADDED]) 
 	VALUES(
 tvp.[AMFR],
 tvp.[AMOD],
 tvp.[ASER],
+tvp.[ASER_HEX],
 tvp.[ADOP],
 tvp.[APQS],
 tvp.[RNAM],
