@@ -1,7 +1,7 @@
 {
-    "now": "2021-11-18T18:21:42.242Z",
-    "perfNow": 692478.100000143,
-    "diagnosticCorrelation": "0a13f994-0094-4f2c-b5f2-624c795d31ac",
+    "now": "2021-11-19T00:55:41.649Z",
+    "perfNow": 25670.700000047684,
+    "diagnosticCorrelation": "96f7abf6-86eb-418e-a099-33cf0c788b19",
     "source": "DownloadSupportFiles",
     "environment": {
         "productName": "adf",
@@ -11,8 +11,8 @@
         "resourceRegion": "westus2",
         "resourceGroup": "rg-edi-dev",
         "subscriptionId": "2972ffd4-e5b4-4b98-87b9-360c084c2959",
-        "sessionId": "2dn6N",
-        "operationId": "JHPw2",
+        "sessionId": "D13zg",
+        "operationId": "34K1u",
         "gitType": "live"
     },
     "additionalInfo": {

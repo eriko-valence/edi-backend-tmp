@@ -74,6 +74,18 @@
                                 },
                                 "sink": {
                                     "name": "ASER",
+                                    "type": "Int64",
+                                    "physicalType": "bigint"
+                                }
+                            },
+                            {
+                                "source": {
+                                    "name": "ASER_HEX",
+                                    "type": "String",
+                                    "physicalType": "String"
+                                },
+                                "sink": {
+                                    "name": "ASER_HEX",
                                     "type": "String",
                                     "physicalType": "varchar"
                                 }
@@ -388,7 +400,7 @@
             "name": "Load"
         },
         "annotations": [],
-        "lastPublishTime": "2021-11-04T17:56:05Z"
+        "lastPublishTime": "2021-11-19T00:32:01Z"
     },
     "type": "Microsoft.DataFactory/factories/pipelines"
 }

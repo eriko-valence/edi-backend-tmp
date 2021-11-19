@@ -323,6 +323,18 @@
 			"error-message": "An null valued exception was thrown while converting date {0}",
 			"error-source": "Date Converter",
 			"error-mitigation": null
+		},
+		"T216": {
+			"error-code": "T216",
+			"error-message": "An exception was thrown while converting hex {0} to bigint",
+			"error-source": "Integer Converter",
+			"error-mitigation": null
+		},
+		"G375": {
+			"error-code": "G375",
+			"error-message": "An null valued exception was thrown while converting hex {0} to bigint",
+			"error-source": "Integer Converter",
+			"error-mitigation": null
 		}
 	}
 }
