@@ -47,7 +47,7 @@ namespace lib_edi.Models.Dto.CceDevice.Csv
 			}
 		}
 		[Name("APQS")]
-		public double APQS { get; set; }
+		public double? APQS { get; set; }
 		[Name("RNAM")]
 		public string RNAM { get; set; }
 		[Name("DNAM")]
@@ -57,9 +57,9 @@ namespace lib_edi.Models.Dto.CceDevice.Csv
 		[Name("CID")]
 		public string CID { get; set; }
 		[Name("LAT")]
-		public double LAT { get; set; }
+		public double? LAT { get; set; }
 		[Name("LNG")]
-		public double LNG { get; set; }
+		public double? LNG { get; set; }
 		[Ignore]
 		DateTime? _ABST { get; set; }
 
@@ -78,29 +78,41 @@ namespace lib_edi.Models.Dto.CceDevice.Csv
 			}
 		}
 		[Name("SVA")]
-		public int SVA { get; set; }
+		public int? SVA { get; set; }
 		[Name("HAMB")]
-		public double HAMB { get; set; }
+		public double? HAMB { get; set; }
 		[Name("TAMB")]
-		public double TAMB { get; set; }
+		public double? TAMB { get; set; }
 		[Name("ACCD")]
-		public double ACCD { get; set; }
+		public double? ACCD { get; set; }
 		[Name("TCON")]
-		public double TCON { get; set; }
+		public double? TCON { get; set; }
 		[Name("TVC")]
-		public double TVC { get; set; }
+		public double? TVC { get; set; }
 		[Name("BEMD")]
-		public double BEMD { get; set; }
+		public double? BEMD { get; set; }
 		[Name("HOLD")]
-		public double HOLD { get; set; }
+		public double? HOLD { get; set; }
 		[Name("DORV")]
-		public int DORV { get; set; }
+		public int? DORV { get; set; }
 		[Name("ALRM")]
 		public string ALRM { get; set; }
 		[Name("EMSV")]
 		public string EMSV { get; set; }
 		[Name("EERR")]
 		public string EERR { get; set; }
+		[Name("CMPR")]
+		public int? CMPR { get; set; }
+		[Name("ACSV")]
+		public double? ACSV { get; set; }
+		[Name("AID")]
+		public string AID { get; set; }
+		[Name("CMPS")]
+		public int? CMPS { get; set; }
+		[Name("DCCD")]
+		public double? DCCD { get; set; }
+		[Name("DCSV")]
+		public double? DCSV { get; set; }
 
 #pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 	}

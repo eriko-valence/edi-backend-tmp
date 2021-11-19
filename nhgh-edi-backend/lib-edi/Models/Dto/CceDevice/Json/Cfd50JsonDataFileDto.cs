@@ -39,6 +39,12 @@ namespace lib_edi.Models.Dto.Loggers
 		public string ALRM { get; set; }
 		public string EMSV { get; set; }
 		public string EERR { get; set; }
+		public string CMPR { get; set; }
+		public string ACSV { get; set; }
+		public string AID { get; set; }
+		public string CMPS { get; set; }
+		public string DCCD { get; set; }
+		public string DCSV { get; set; }
 #pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 	}
 }

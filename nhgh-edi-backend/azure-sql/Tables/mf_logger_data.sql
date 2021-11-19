@@ -24,6 +24,12 @@ CREATE TABLE [ems_data].[mf_logger_data](
 	[ALRM] [varchar](10) NULL,
 	[EMSV] [varchar](100) NULL,
 	[EERR] [varchar](100) NULL,
+	[CMPR] [tinyint] NULL,
+	[ACSV] [numeric](4, 1) NULL,
+	[AID] [varchar](50) NULL,
+	[CMPS] [tinyint] NULL,
+	[DCCD] [numeric](3, 1) NULL,
+	[DCSV] [numeric](4, 1) NULL,
 	[DATEADDED] [datetime] NOT NULL
 ) ON [PRIMARY]
 GO

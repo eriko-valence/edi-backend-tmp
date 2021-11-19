@@ -1,5 +1,5 @@
 {
-    "name": "pl_extract_cfd50_report",
+    "name": "pl_extract_cfd50_telemetry",
     "properties": {
         "activities": [
             {
@@ -94,7 +94,7 @@
             "name": "Extract"
         },
         "annotations": [],
-        "lastPublishTime": "2021-10-25T16:30:59Z"
+        "lastPublishTime": "2021-11-16T21:48:59Z"
     },
     "type": "Microsoft.DataFactory/factories/pipelines"
 }
