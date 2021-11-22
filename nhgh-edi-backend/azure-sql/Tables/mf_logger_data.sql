@@ -20,7 +20,7 @@ CREATE TABLE [ems_data].[mf_logger_data](
 	[TVC] [numeric](3, 1) NULL,
 	[BEMD] [numeric](5, 1) NULL,
 	[HOLD] [numeric](4, 1) NULL,
-	[DORV] [tinyint] NULL,
+	[DORV] [smallint] NULL,
 	[ALRM] [varchar](10) NULL,
 	[EMSV] [varchar](100) NULL,
 	[EERR] [varchar](100) NULL,
