@@ -16,8 +16,8 @@ namespace lib_edi.Models.Dto.Loggers
 		public string DNAM { get; set; }
 		public string FNAM { get; set; }
 		public string CID { get; set; }
-		public string LAT { get; set; }
-		public string LNG { get; set; }
+		public double? LAT { get; set; }
+		public double? LNG { get; set; }
 
 		public IList<Cfd50JsonDataFileRecordDto> records { get; set; }
 #pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
@@ -27,24 +27,24 @@ namespace lib_edi.Models.Dto.Loggers
 	{
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
 		public string ABST { get; set; }
-		public string SVA { get; set; }
-		public string HAMB { get; set; }
-		public string TAMB { get; set; }
-		public string ACCD { get; set; }
-		public string TCON { get; set; }
-		public string TVC { get; set; }
-		public string BEMD { get; set; }
-		public string HOLD { get; set; }
-		public string DORV { get; set; }
+		public double? SVA { get; set; }
+		public double? HAMB { get; set; }
+		public double? TAMB { get; set; }
+		public double? ACCD { get; set; }
+		public double? TCON { get; set; }
+		public double? TVC { get; set; }
+		public double? BEMD { get; set; }
+		public double? HOLD { get; set; }
+		public double? DORV { get; set; }
 		public string ALRM { get; set; }
 		public string EMSV { get; set; }
 		public string EERR { get; set; }
-		public string CMPR { get; set; }
-		public string ACSV { get; set; }
+		public double? CMPR { get; set; }
+		public double? ACSV { get; set; }
 		public string AID { get; set; }
-		public string CMPS { get; set; }
-		public string DCCD { get; set; }
-		public string DCSV { get; set; }
+		public double? CMPS { get; set; }
+		public double? DCCD { get; set; }
+		public double? DCSV { get; set; }
 #pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 	}
 }

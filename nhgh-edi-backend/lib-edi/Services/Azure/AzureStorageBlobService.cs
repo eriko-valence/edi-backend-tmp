@@ -189,6 +189,7 @@ namespace lib_edi.Services.Azure
 				BlobClient blobClient = containerClient.GetBlobClient(fileName);
 				using Stream stream = new MemoryStream(requestPayload);
 				await blobClient.UploadAsync(stream, true);
+				Console.WriteLine("debug");
 			}
 			catch (Exception e)
 			{
