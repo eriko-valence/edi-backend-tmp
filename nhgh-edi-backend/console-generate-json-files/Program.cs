@@ -19,15 +19,16 @@ namespace console_generate_json_files
 		static async Task MainAsync()
 		{
 			//define test cases
-			BuildTestCaseSingleRecordDoubleValueExpandoObject("AR00", "SVA_VALUE_TOO_BIG", "TC00436F0900005E", "RECORD", "SVA", 999999999.9999);
-			//BuildTestCaseSingleRecordDoubleValue("AR01", "SVA_VALUE_NULL", "TC00436F0900005E", "RECORD", "SVA", null);
-			//BuildTestCaseSingleRecordDoubleValue("AR02", "SVA_VALUE_TOO_BIG", "TC00436F0900005E", "RECORD", "SVA", 999999999.9999);
+			await BuildTestCaseSingleRecordExpandoObject("AR00", "SVA_VALUE_TOO_BIG", "TC00436F0900005E", "RECORD", "SVA", 999999999.9999);
+			await BuildTestCaseSingleRecordExpandoObject("AR00", "SVA_VALUE_WRONG_FORMAT", "TC00436F0900005E", "RECORD", "SVA", "INVALID");
+			//await BuildTestCaseSingleRecordDoubleValueExpandoObject("AR01", "SVA_PROPERTY_MISSING", "TC00436F0900005E", "RECORD", "SVA", null);
+			//await BuildTestCaseSingleRecordDoubleValueExpandoObject("AR02", "SVA_VALUE_TOO_BIG", "TC00436F0900005E", "RECORD", "SVA", 999999999.9999);
 			//BuildTestCaseSingleRecordDoubleValue("AR03", "SVA_VALUE_NULL", "TC00436F0900005E", "RECORD", "SVA", null);
 			//BuildTestCaseSingleRecordStringValue("AR04", "ABST_INVALID_TIME", "TC00436F0900005E", "RECORD", "ABST", "2019-444-17");
 			//BuildTestCaseSingleRecordStringValue("AR05", "ABST_VALUE_NULL", "TC00436F0900005E", "RECORD", "ABST", null);
 
 			//await BuildTestCaseHeaderStringValue("AH00", "ASER_VALUE_MISSING", "TC00436F0900005E", "ASER", null);
-			await BuildTestCaseHeaderStringValueExpandoObject("AH00", "ASER_VALUE_MISSING", "TC00436F0900005E", "ASER", null);
+			//await BuildTestCaseHeaderStringValueExpandoObject("AH00", "ASER_PROPERTY_MISSING", "TC00436F0900005E", "ASER", null);
 			
 
 			Console.WriteLine("debug");
@@ -46,12 +47,13 @@ namespace console_generate_json_files
 			WriteTestCaseDataFileToDisk(testFile, testCaseFileName);
 			Console.WriteLine("done");
 		}
-		static void BuildTestCaseSingleRecordExpandoObject(string testCaseNumber, string testCaseSummary, string serialNumber, dynamic record)
+		static async Task BuildTestCaseSingleRecordExpandoObject(string testCaseNumber, string testCaseSummary, string serialNumber, dynamic record)
 		{
 			string testCaseFileName = GenerateFileName(serialNumber, testCaseNumber, testCaseSummary);
 			dynamic testFile = new ExpandoObject();
 			PopulatTestBaseDataOneRecordExpandoObject(ref testFile, record);
-			WriteTestCaseDataFileToDiskExpandoObject(testFile, testCaseFileName);
+			//WriteTestCaseDataFileToDiskExpandoObject(testFile, testCaseFileName);
+			await CompressAndSaveFileToDiskExpandoObject(testFile, testCaseFileName);
 			Console.WriteLine("done");
 		}
 
@@ -62,11 +64,18 @@ namespace console_generate_json_files
 			BuildTestCaseSingleRecord(testCaseNumber, testCaseSummary, serialNumber, record01);
 		}
 
-		static void BuildTestCaseSingleRecordDoubleValueExpandoObject(string testCaseNumber, string testCaseSummary, string serialNumber, string objectLevel, string propertyName, double? propertyValue)
+		static async Task BuildTestCaseSingleRecordDoubleValueExpandoObject(string testCaseNumber, string testCaseSummary, string serialNumber, string objectLevel, string propertyName, dynamic propertyValue)
 		{
 			dynamic record01 = PopulateTestBaseRecordDataExpandoObject();
 			SetObjectValueExpandoObject(ref record01, propertyName, propertyValue);
-			BuildTestCaseSingleRecordExpandoObject(testCaseNumber, testCaseSummary, serialNumber, record01);
+			await BuildTestCaseSingleRecordExpandoObject(testCaseNumber, testCaseSummary, serialNumber, record01);
+		}
+
+		static async Task BuildTestCaseSingleRecordExpandoObject(string testCaseNumber, string testCaseSummary, string serialNumber, string objectLevel, string propertyName, dynamic propertyValue)
+		{
+			dynamic record01 = PopulateTestBaseRecordDataExpandoObject();
+			SetObjectValueExpandoObject(ref record01, propertyName, propertyValue);
+			await BuildTestCaseSingleRecordExpandoObject(testCaseNumber, testCaseSummary, serialNumber, record01);
 		}
 
 
@@ -202,7 +211,7 @@ namespace console_generate_json_files
 		{
 			//example: 2800436F0900003D_report_20211115T122901Z_MISSING_ABST
 			string testDate = DateTime.UtcNow.ToString("yyyyMMddTHHmmssZ");
-			return $"{testCaseNumber}_{serialNumber}_{testDate}_{testCaseSummary}.json";
+			return $"{testCaseNumber}_{serialNumber}_{testDate}_{testCaseSummary}.json.gz";
 		}
 
 		static void WriteTestCaseDataFileToDisk(Cfd50JsonDataFileDto testFile, string fileName)
@@ -233,7 +242,7 @@ namespace console_generate_json_files
 
 		static async Task CompressAndSaveFileToDisk(Cfd50JsonDataFileDto testFile, string fileName)
 		{
-			fileName = "test20211124-A.json.gz";
+			//fileName = "test20211124-A.json.gz";
 
 			JsonSerializer serializer = new JsonSerializer();
 			serializer.Converters.Add(new JavaScriptDateTimeConverter());
@@ -265,7 +274,7 @@ namespace console_generate_json_files
 
 		static async Task CompressAndSaveFileToDiskExpandoObject(dynamic testFile, string fileName)
 		{
-			fileName = "test20211129-1123.json.gz";
+			//fileName = "test20211129-1123.json.gz";
 
 			JsonSerializer serializer = new JsonSerializer();
 			serializer.Converters.Add(new JavaScriptDateTimeConverter());
@@ -317,17 +326,18 @@ namespace console_generate_json_files
 			}
 		}
 
-		public static void SetObjectValueExpandoObject(ref dynamic cfd50DataRecord, string propertyName, double? token)
+		public static void SetObjectValueExpandoObject(ref dynamic cfd50DataRecord, string propertyName, dynamic token)
 		{
 			try
 			{
-				if (propertyName != null)
+				var records = (IDictionary<string, object>)cfd50DataRecord;
+				if (token == null)
 				{
-					PropertyInfo propertyInfo = cfd50DataRecord.GetType().GetProperty(propertyName);
-					if (propertyInfo != null)
-					{
-						propertyInfo.SetValue(cfd50DataRecord, token);
-					}
+					records.Remove(propertyName);
+				}
+				else
+				{
+					records[propertyName] = token;
 				}
 			}
 			catch (Exception e)
@@ -341,14 +351,15 @@ namespace console_generate_json_files
 		{
 			try
 			{
-				if (propertyName != null)
+				var records = (IDictionary<string, object>)cfd50DataRecord;
+				if (token == null)
 				{
-					PropertyInfo propertyInfo = cfd50DataRecord.GetType().GetProperty(propertyName);
-					if (propertyInfo != null)
-					{
-						propertyInfo.SetValue(cfd50DataRecord, token);
-					}
+					records.Remove(propertyName);
+				} else
+				{
+					records[propertyName] = token;
 				}
+				Console.WriteLine("debug");
 			}
 			catch (Exception e)
 			{
