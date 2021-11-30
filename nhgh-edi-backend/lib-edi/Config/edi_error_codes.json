@@ -326,14 +326,20 @@
 		},
 		"T216": {
 			"error-code": "T216",
-			"error-message": "An exception was thrown while converting hex {0} to bigint",
+			"error-message": "An exception was thrown while converting hex '{0}' to bigint",
 			"error-source": "Integer Converter",
 			"error-mitigation": null
 		},
 		"G375": {
 			"error-code": "G375",
-			"error-message": "An null valued exception was thrown while converting hex {0} to bigint",
+			"error-message": "An null valued exception was thrown while converting hex '{0}' to bigint",
 			"error-source": "Integer Converter",
+			"error-mitigation": null
+		},
+		"3C68": {
+			"error-code": "3C68",
+			"error-message": "An exception was thrown while setting property 'ASER'",
+			"error-source": "CFD-50 CSV Record DTO",
 			"error-mitigation": null
 		}
 	}
