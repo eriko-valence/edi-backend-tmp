@@ -22,6 +22,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Functions", "Functions", "{
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Libraries", "Libraries", "{64CD169C-2DC2-4467-A6D7-6C485F4B5F8F}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Testing", "Testing", "{2F62B687-9F8C-4D48-8B7C-DD610E5459EE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "console-generate-json-files", "console-generate-json-files\console-generate-json-files.csproj", "{261BD4FE-D94F-4481-8D56-FFAD06E1E9ED}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -52,6 +56,10 @@ Global
 		{62AFAA9A-FC21-4AB6-AEAF-ECD79BBB4B57}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{62AFAA9A-FC21-4AB6-AEAF-ECD79BBB4B57}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{62AFAA9A-FC21-4AB6-AEAF-ECD79BBB4B57}.Release|Any CPU.Build.0 = Release|Any CPU
+		{261BD4FE-D94F-4481-8D56-FFAD06E1E9ED}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{261BD4FE-D94F-4481-8D56-FFAD06E1E9ED}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{261BD4FE-D94F-4481-8D56-FFAD06E1E9ED}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{261BD4FE-D94F-4481-8D56-FFAD06E1E9ED}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -63,6 +71,7 @@ Global
 		{5C34B1BD-BF57-4ABF-AE22-474EF1FC6576} = {9349330D-2771-4357-9C93-C161C31DC480}
 		{23501119-A0EE-4766-91C5-4D8F26DF41DD} = {64CD169C-2DC2-4467-A6D7-6C485F4B5F8F}
 		{62AFAA9A-FC21-4AB6-AEAF-ECD79BBB4B57} = {9349330D-2771-4357-9C93-C161C31DC480}
+		{261BD4FE-D94F-4481-8D56-FFAD06E1E9ED} = {2F62B687-9F8C-4D48-8B7C-DD610E5459EE}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {48FE592C-9504-419F-8FC2-6D997B1FCAAA}

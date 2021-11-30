@@ -60,7 +60,7 @@ namespace lib_edi.Helpers
 		{
 			try
 			{
-				string[] formats = { "yyyy-MM-dd","yyyyMMdd", "yyyyMMddTHHmmssZ" };
+				string[] formats = { "yyyy-MM-dd","yyyyMMdd", "yyyyMMddTHHmmssZ", "yyyyMMddTHHmmssZ" };
 				//string format = "yyyy-MM-dd";
 				var cultureInfo = new CultureInfo("en-US");
 				DateTime reportAbsoluteDateTime = DateTime.ParseExact(s, formats, cultureInfo);
@@ -143,6 +143,19 @@ namespace lib_edi.Helpers
 			{
 				return null;
 			}
+		}
+
+		/// <summary>
+		/// Converts a date and time object to a ISO 8601 compliant date time string representation
+		/// </summary>
+		/// <param name="s">Date and time object </param>
+		/// <returns>
+		/// An ISO 8601 compliant date/time string
+		/// </returns>
+		public static string ConvertToUtcDateTimeNowString(string format)
+		{
+			//string format = "yyyyMMddTHHmmssZ"; //20211018T164303Z
+			return DateTime.UtcNow.ToString(format);
 		}
 
 		/// <summary>
