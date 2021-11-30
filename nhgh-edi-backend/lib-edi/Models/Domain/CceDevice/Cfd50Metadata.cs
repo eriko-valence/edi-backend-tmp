@@ -10,7 +10,7 @@ namespace lib_edi.Models.Domain.CceDevice
 		public string AMOD { get; set; }
 		public string ASER { get; set; }
 		public string ADOP { get; set; }
-		public double APQS { get; set; }
+		public string APQS { get; set; }
 		public string RNAM { get; set; }
 		public string DNAM { get; set; }
 		public string FNAM { get; set; }
