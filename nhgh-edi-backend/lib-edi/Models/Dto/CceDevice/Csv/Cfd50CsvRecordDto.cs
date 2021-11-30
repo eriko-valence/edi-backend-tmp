@@ -1,5 +1,6 @@
 ﻿using CsvHelper.Configuration.Attributes;
 using lib_edi.Helpers;
+using lib_edi.Services.Errors;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -29,7 +30,15 @@ namespace lib_edi.Models.Dto.CceDevice.Csv
 
 			set
 			{
-				_ASER = IntegerConverter.ConvertToBigInteger(value);
+				try
+				{
+					_ASER = IntegerConverter.ConvertToBigInteger(value);
+				} catch (Exception e)
+				{
+					string customErrorMessage = EdiErrorsService.BuildExceptionMessageString(e, "3C68", EdiErrorsService.BuildErrorVariableArrayList("ASER"));
+					throw new Exception(customErrorMessage);
+				}
+				
 			}
 		}
 		[Ignore]
