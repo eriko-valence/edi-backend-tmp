@@ -20,16 +20,16 @@ namespace console_generate_json_files
 		static async Task MainAsync()
 		{
 			//define test cases
-			await BuildTestCaseSingleRecordDynamic("AR00", "SVA_VALUE_TOO_BIG", "TC00436F0900", "RECORD", "SVA", 999999999.9999);
-			await BuildTestCaseSingleRecordDynamic("AR01", "SVA_VALUE_WRONG_FORMAT", "TC00436F0900", "RECORD", "SVA", "INVALID");
-			await BuildTestCaseSingleRecordDynamic("AR02", "SVA_PROPERTY_MISSING", "TC00436F0900", "RECORD", "SVA", null);
-			await BuildTestCaseSingleRecordDynamic("AR03", "ABST_VALUE_WRONG_FORMAT", "TC00436F0900", "RECORD", "ABST", "2019-444-17");
-			await BuildTestCaseSingleRecordDynamic("AR04", "ABST_PROPERTY_MISSING", "TC00436F0900", "RECORD", "ABST", null);
+			await BuildTestCaseSingleRecordDynamic("0001", "SVA_VALUE_TOO_BIG", "280037290A00", "RECORD", "SVA", 999999999.9999);
+			await BuildTestCaseSingleRecordDynamic("0002", "SVA_VALUE_WRONG_FORMAT", "280037290A00", "RECORD", "SVA", "INVALID");
+			await BuildTestCaseSingleRecordDynamic("0003", "SVA_PROPERTY_MISSING", "280037290A00", "RECORD", "SVA", null);
+			await BuildTestCaseSingleRecordDynamic("0004", "ABST_VALUE_WRONG_FORMAT", "280037290A00", "RECORD", "ABST", "2019-444-17");
+			await BuildTestCaseSingleRecordDynamic("0005", "ABST_PROPERTY_MISSING", "280037290A00", "RECORD", "ABST", null);
 
-			await BuildTestCaseHeaderDynamic("AH00", "ASER_VALUE_WRONG_FORMAT", "TC00436F0900", "ASER", "#$@#^!'_-");
-			await BuildTestCaseHeaderDynamic("AH01", "ASER_PROPERTY_MISSING", "TC00436F0900", "ASER", null);
-			await BuildTestCaseHeaderDynamic("AH02", "ADOP_VALUE_WRONG_FORMAT", "TC00436F0900", "ADOP", 9999999999999);
-			await BuildTestCaseHeaderDynamic("AH03", "ADOP_PROPERTY_MISSING", "TC00436F0900", "ADOP", null);
+			await BuildTestCaseHeaderDynamic("0006", "ASER_VALUE_WRONG_FORMAT", "280037290A00", "ASER", "#$@#^!'_-");
+			await BuildTestCaseHeaderDynamic("0007", "ASER_PROPERTY_MISSING", "280037290A00", "ASER", null);
+			await BuildTestCaseHeaderDynamic("0008", "ADOP_VALUE_WRONG_FORMAT", "280037290A00", "ADOP", 9999999999999);
+			await BuildTestCaseHeaderDynamic("0009", "ADOP_PROPERTY_MISSING", "280037290A00", "ADOP", null);
 
 			Console.WriteLine("debug");
 		}
