@@ -56,7 +56,7 @@ namespace lib_edi.Models.Dto.CceDevice.Csv
 			}
 		}
 		[Name("APQS")]
-		public double? APQS { get; set; }
+		public string APQS { get; set; }
 		[Name("RNAM")]
 		public string RNAM { get; set; }
 		[Name("DNAM")]
