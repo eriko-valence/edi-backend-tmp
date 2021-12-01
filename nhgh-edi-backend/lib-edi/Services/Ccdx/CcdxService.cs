@@ -695,5 +695,33 @@ namespace lib_edi.Services.Ccdx
 				throw new Exception(errorMessage);
 			}
 		}
+
+		/// <summary>
+		/// Builds a MetaFridge curated blob name using the path from the transformation Azure function request body payload
+		/// </summary>
+		/// <param name="requestBodyPath">Path from transformation Azure function request body payload</param>
+		/// <example>
+		/// requestBodyPath = "cfd50/2021-11-30/21/ae03a1b3-5698-417b-8b4a-905cee1015a9/";
+		/// </example>
+		public static string BuildCuratedCfd50BlobName(string requestBodyPath)
+		{
+			string curatedBlobName = null;
+
+			DateTime dt = DateTime.UtcNow;
+
+			string dateFolder = dt.ToString("yyyy-MM-dd");
+			string hourFolder = dt.ToString("HH");
+
+			if (requestBodyPath != null)
+			{
+				string[] words = requestBodyPath.Split('/');
+				if (words.Length > 4)
+				{
+					curatedBlobName = $"{words[0]}/{dateFolder}/{hourFolder}/{words[3]}/mf_out.csv";
+				}
+			}
+			return curatedBlobName;
+
+		}
 	}
 }
