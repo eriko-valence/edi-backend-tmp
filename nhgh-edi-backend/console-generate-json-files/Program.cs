@@ -1,7 +1,9 @@
 ﻿using lib_edi.Helpers;
 using lib_edi.Models.Dto.Loggers;
+using lib_edi.Models.Testing;
 using lib_edi.Services.Azure;
 using Microsoft.Azure.Storage.Blob;
+using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using System;
@@ -17,21 +19,46 @@ namespace console_generate_json_files
 {
 	class Program
 	{
+		static string storageAccountConnectionString = null;
+
 		static async Task MainAsync()
 		{
-			//define test cases
-			await BuildTestCaseSingleRecordDynamic("0001", "SVA_VALUE_TOO_BIG", "280037290A00", "RECORD", "SVA", 999999999.9999);
-			await BuildTestCaseSingleRecordDynamic("0002", "SVA_VALUE_WRONG_FORMAT", "280037290A00", "RECORD", "SVA", "INVALID");
-			await BuildTestCaseSingleRecordDynamic("0003", "SVA_PROPERTY_MISSING", "280037290A00", "RECORD", "SVA", null);
-			await BuildTestCaseSingleRecordDynamic("0004", "ABST_VALUE_WRONG_FORMAT", "280037290A00", "RECORD", "ABST", "2019-444-17");
-			await BuildTestCaseSingleRecordDynamic("0005", "ABST_PROPERTY_MISSING", "280037290A00", "RECORD", "ABST", null);
 
-			await BuildTestCaseHeaderDynamic("0006", "ASER_VALUE_WRONG_FORMAT", "280037290A00", "ASER", "#$@#^!'_-");
-			await BuildTestCaseHeaderDynamic("0007", "ASER_PROPERTY_MISSING", "280037290A00", "ASER", null);
-			await BuildTestCaseHeaderDynamic("0008", "ADOP_VALUE_WRONG_FORMAT", "280037290A00", "ADOP", 9999999999999);
-			await BuildTestCaseHeaderDynamic("0009", "ADOP_PROPERTY_MISSING", "280037290A00", "ADOP", null);
+			var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+			var builder = new ConfigurationBuilder()
+				.AddJsonFile($"appsettings.json", true, true)
+				.AddJsonFile($"appsettings.{env}.json", true, true)
+				.AddEnvironmentVariables();
 
-			Console.WriteLine("debug");
+			var config = builder.Build();
+
+			storageAccountConnectionString = config["ConnectionString"];
+
+			//yyyy-MM-dd, yyyy-MM-dd
+			//expected: fail
+			await BuildTestCaseSingleRecordDynamic("0001", "RECORD_VALUE_TOO_BIG_SVA", "280037290A00", "SVA", 999999999.9999);
+			await BuildTestCaseSingleRecordDynamic("0002", "RECORD_VALUE_WRONG_FORMAT_SVA", "280037290A00", "SVA", "INVALID");
+			await BuildTestCaseSingleRecordDynamic("0003", "RECORD_VALUE_INVALID_MONTH_ABST", "280037290A00", "ABST", "20218801T175954Z");
+			await BuildTestCaseSingleRecordDynamic("0004", "RECORD_VALUE_INVALID_YEAR_ABST", "280037290A00", "ABST", "00001201T175954Z");
+			await BuildTestCaseSingleRecordDynamic("0005", "RECORD_VALUE_DATE_ONLY_SLASHES_ABST", "280037290A00", "ABST", "2021/12/01");
+			await BuildTestCaseSingleRecordDynamic("0006", "RECORD_VALUE_DATE_US_STD_ABST", "280037290A00", "ABST", "10/12/2021");
+			await BuildTestCaseSingleRecordDynamic("0007", "RECORD_VALUE_LOCAL_TIME_ABST", "280037290A00", "ABST", "20211201T175434");
+			
+			await BuildTestCaseSingleRecordDynamic("0008", "RECORD_VALUE_UNSUPPORTED_FORMAT_ABST", "280037290A00", "ABST", "2021-12-01T17:30:25Z");
+			await BuildTestCaseSingleRecordDynamic("0009", "RECORD_PROPERTY_MISSING_ABST", "280037290A00", "ABST", null);
+			await BuildTestCaseHeaderDynamic("0010", "HEADER_VALUE_WRONG_FORMAT_ASER", "280037290A00", "ASER", "#$@#^!'_-");
+			await BuildTestCaseHeaderDynamic("0011", "HEADER_PROPERTY_MISSING_ASER", "280037290A00", "ASER", null);
+			await BuildTestCaseHeaderDynamic("0012", "HEADER_VALUE_WRONG_FORMAT_ADOP", "280037290A00", "ADOP", 9999999999999);
+			await BuildTestCaseHeaderDynamic("0013", "HEADER_VALUE_TOO_BIG_LAT", "280037290A00", "LAT", 4000.545675);
+
+			//expected: success
+			await BuildTestCaseSingleRecordDynamic("0014", "RECORD_PROPERTY_MISSING_SVA", "280037290A00", "SVA", null);
+			
+			await BuildTestCaseSingleRecordDynamic("0016", "RECORD_VALUE_FUTURE_DATE_ABST", "280037290A00", "ABST", "20381201T175954Z");
+			await BuildTestCaseSingleRecordDynamic("0017", "RECORD_VALUE_DATE_ONLY_ABST", "280037290A00", "ABST", "20211201");
+			await BuildTestCaseSingleRecordDynamic("0018", "RECORD_VALUE_DATE_ONLY_DASHES_ABST", "280037290A00", "ABST", "2021-12-01");
+
+			Console.WriteLine("done");
 		}
 
 		static void Main(string[] args)
@@ -45,75 +72,32 @@ namespace console_generate_json_files
 			Cfd50JsonDataFileDto testFile = new Cfd50JsonDataFileDto();
 			PopulatTestBaseDataOneRecord(ref testFile, record);
 			WriteTestCaseDataFileToDisk(testFile, testCaseFileName);
-			Console.WriteLine("done");
-		}
-		static async Task BuildTestCaseSingleRecordDynamic(string testCaseNumber, string testCaseSummary, string serialNumber, string reportGenerationEventTime, dynamic record)
-		{
-			string testCaseFileName = GenerateFileName(serialNumber, testCaseNumber, testCaseSummary, reportGenerationEventTime);
-			dynamic testFile = new ExpandoObject();
-
-			PopulateTestBaseHeaderDataDynamic(ref testFile, serialNumber);
-			testFile.records = new List<dynamic>();
-			testFile.records.Add(record);
-
-			//PopulatTestBaseDataOneRecordDynamic(ref testFile, record, serialNumber);
-			//WriteTestCaseDataFileToDiskDynamic(testFile, testCaseFileName);
-			await CompressAndSaveFileToDiskDynamic(testFile, testCaseFileName);
-			Console.WriteLine("done");
 		}
 
-		static void BuildTestCaseSingleRecordDoubleValue(string testCaseNumber, string testCaseSummary, string serialNumber, string reportGenerationEventTime, string objectLevel, string propertyName, double? propertyValue)
-		{
-			Cfd50JsonDataFileRecordDto record01 = PopulateTestBaseRecordData();
-			SetObjectValue(ref record01, propertyName, propertyValue);
-			BuildTestCaseSingleRecord(testCaseNumber, testCaseSummary, serialNumber, reportGenerationEventTime, record01);
-		}
-
-		static async Task BuildTestCaseSingleRecordDoubleValueDynamic(string testCaseNumber, string testCaseSummary, string serialNumber, string reportGenerationEventTime, string objectLevel, string propertyName, dynamic propertyValue)
-		{
-			dynamic record01 = PopulateTestBaseRecordDataDynamic();
-			SetObjectValueDynamic(ref record01, propertyName, propertyValue);
-			await BuildTestCaseSingleRecordDynamic(testCaseNumber, testCaseSummary, serialNumber, reportGenerationEventTime, record01);
-		}
-
-		static async Task BuildTestCaseSingleRecordDynamic(string testCaseNumber, string testCaseSummary, string serialNumber, string objectLevel, string propertyName, dynamic propertyValue)
+		static async Task BuildTestCaseSingleRecordDynamic(string testCaseNumber, string testCaseSummary, string serialNumber, string propertyName, dynamic propertyValue)
 		{
 			Thread.Sleep(2000);
 			serialNumber = serialNumber + testCaseNumber;
 			string reportGenerationEventTime = DateConverter.ConvertToUtcDateTimeNowString("yyyyMMddTHHmmssZ");
 			dynamic record01 = PopulateTestBaseRecordDataDynamic();
 			SetObjectValueDynamic(ref record01, propertyName, propertyValue);
-			//await BuildTestCaseSingleRecordDynamic(testCaseNumber, testCaseSummary, serialNumber, reportGenerationEventTime, record01);
 			string testCaseFileName = GenerateFileName(serialNumber, testCaseNumber, testCaseSummary, reportGenerationEventTime);
 			dynamic testFile = new ExpandoObject();
-
 			PopulateTestBaseHeaderDataDynamic(ref testFile, serialNumber);
 			testFile.records = new List<dynamic>();
 			testFile.records.Add(record01);
-
-			//PopulatTestBaseDataOneRecordDynamic(ref testFile, record, serialNumber);
-			//WriteTestCaseDataFileToDiskDynamic(testFile, testCaseFileName);
 			await CompressAndSaveFileToDiskDynamic(testFile, testCaseFileName);
-			Console.WriteLine("done");
-		}
-
-
-
-		static void BuildTestCaseSingleRecordStringValue(string testCaseNumber, string testCaseSummary, string serialNumber, string eventTime, string  objectLevel, string propertyName, string propertyValue)
-		{
-			Cfd50JsonDataFileRecordDto record01 = PopulateTestBaseRecordData();
-			SetObjectValue(ref record01, propertyName, propertyValue);
-			BuildTestCaseSingleRecord(testCaseNumber, testCaseSummary, serialNumber, eventTime, record01);
 		}
 
 		static async Task BuildTestCaseHeaderDynamic(string testCaseNumber, string testCaseSummary, string serialNumber, string propertyName, dynamic propertyValue)
 		{
 			Thread.Sleep(2000);
 			string reportGenerationEventTime = DateConverter.ConvertToUtcDateTimeNowString("yyyyMMddTHHmmssZ");
-			string testCaseFileName = GenerateFileName(serialNumber + testCaseNumber, testCaseNumber, testCaseSummary, reportGenerationEventTime);
+			string sn = $"{serialNumber}{testCaseNumber}";
+			string testCaseFileName = GenerateFileName(sn, testCaseNumber, testCaseSummary, reportGenerationEventTime);
 			
 			dynamic testFile = new ExpandoObject();
-			PopulateTestBaseHeaderDataDynamic(ref testFile, serialNumber);
+			PopulateTestBaseHeaderDataDynamic(ref testFile, sn);
 			SetObjectValueDynamic(ref testFile, propertyName, propertyValue);
 			testFile.records = new List<dynamic>();
 			testFile.records.Add(PopulateTestBaseRecordDataDynamic());
@@ -122,19 +106,7 @@ namespace console_generate_json_files
 			Console.WriteLine("debug");
 		}
 
-		static async Task BuildTestCaseHeaderStringValue(string testCaseNumber, string testCaseSummary, string serialNumber, string propertyName, string propertyValue)
-		{
-			string eventTime = DateConverter.ConvertToUtcDateTimeNowString("yyyyMMddTHHmmssZ");
-			string testCaseFileName = GenerateFileName(serialNumber, testCaseNumber, testCaseSummary, eventTime);
-			Cfd50JsonDataFileDto testFile = new Cfd50JsonDataFileDto();
-			PopulateTestBaseHeaderData(ref testFile);
-			SetObjectValue(ref testFile, propertyName, propertyValue);
-			testFile.records = new List<Cfd50JsonDataFileRecordDto>();
-			testFile.records.Add(PopulateTestBaseRecordData());
-			//WriteTestCaseDataFileToDisk(testFile, testCaseFileName);
-			await CompressAndSaveFileToDisk(testFile, testCaseFileName);
-			Console.WriteLine("debug");
-		}
+
 
 		static void PopulateTestBaseHeaderData(ref Cfd50JsonDataFileDto testFile)
 		{
@@ -223,12 +195,7 @@ namespace console_generate_json_files
 			testFile.records.Add(testRecord);
 		}
 
-		static void PopulatTestBaseDataOneRecordDynamic(ref dynamic testFile, dynamic testRecord, string serialNumber)
-		{
-			PopulateTestBaseHeaderDataDynamic(ref testFile, serialNumber);
-			testFile.records = new List<dynamic>();
-			testFile.records.Add(testRecord);
-		}
+
 
 		static string GenerateFileName(string serialNumber, string testCaseNumber, string testCaseSummary, string eventTime)
 		{
@@ -250,22 +217,10 @@ namespace console_generate_json_files
 			}
 		}
 
-		static void WriteTestCaseDataFileToDiskDynamic(dynamic testFile, string fileName)
-		{
-			JsonSerializer serializer = new JsonSerializer();
-			serializer.Converters.Add(new JavaScriptDateTimeConverter());
-			serializer.NullValueHandling = NullValueHandling.Ignore;
 
-			using (StreamWriter sw = new StreamWriter($"C:\\_tmp\\cfd50_test_files\\{fileName}"))
-			using (JsonWriter writer = new JsonTextWriter(sw))
-			{
-				serializer.Serialize(writer, testFile);
-			}
-		}
 
 		static async Task CompressAndSaveFileToDisk(Cfd50JsonDataFileDto testFile, string fileName)
 		{
-			//fileName = "test20211124-A.json.gz";
 
 			JsonSerializer serializer = new JsonSerializer();
 			serializer.Converters.Add(new JavaScriptDateTimeConverter());
@@ -276,29 +231,13 @@ namespace console_generate_json_files
 				NullValueHandling = NullValueHandling.Ignore
 			};
 
-
 			string jsonString = JsonConvert.SerializeObject(testFile, Formatting.Indented, jsonSerializerSettings);
-
 			byte[] compressedBytesJsonAdvanced = FileHelper.Compress(jsonString);
-			string storageAccountConnectionString = "DefaultEndpointsProtocol=https;AccountName=adlsedidevlocal;AccountKey=UoY1VX03ic/FjPzBQIHqpzPY2kcHP7QYUmQpozsbW4UTzZFYXs/5+oKBu7zIDFgU9XgSqD8DCC7QHcnpzHah2w==;BlobEndpoint=https://adlsedidevlocal.blob.core.windows.net/;QueueEndpoint=https://adlsedidevlocal.queue.core.windows.net/;TableEndpoint=https://adlsedidevlocal.table.core.windows.net/;FileEndpoint=https://adlsedidevlocal.file.core.windows.net/;";
-
-			await AzureStorageBlobService.UploadBlobToContainerUsingSdk(compressedBytesJsonAdvanced, storageAccountConnectionString, "test-case-files", fileName);
-
-			Console.WriteLine("debug");
-			/*
-			using (StreamWriter sw = new StreamWriter($"C:\\_tmp\\cfd50_test_files\\{fileName}"))
-			using (JsonWriter writer = new JsonTextWriter(sw))
-			{
-				serializer.Serialize(writer, compressedBytesJsonAdvanced);
-			}
-			*/
-
+			await AzureStorageBlobService.UploadBlobToContainerUsingSdk(compressedBytesJsonAdvanced, storageAccountConnectionString, "raw-ccdx-provider", fileName);
 		}
 
 		static async Task CompressAndSaveFileToDiskDynamic(dynamic testFile, string fileName)
 		{
-			//fileName = "test20211129-1123.json.gz";
-
 			JsonSerializer serializer = new JsonSerializer();
 			serializer.Converters.Add(new JavaScriptDateTimeConverter());
 			serializer.NullValueHandling = NullValueHandling.Ignore;
@@ -308,26 +247,16 @@ namespace console_generate_json_files
 				NullValueHandling = NullValueHandling.Ignore
 			};
 
+			DateTime dt = DateTime.UtcNow;
+			string dateFolder = dt.ToString("yyyy-MM-dd");
+			string hourFolder = dt.ToString("HH");
+
+			string blobName = $"cfd50/{dateFolder}/{hourFolder}/{fileName}";
 
 			string jsonString = JsonConvert.SerializeObject(testFile, Formatting.Indented, jsonSerializerSettings);
-
 			byte[] compressedBytesJsonAdvanced = FileHelper.Compress(jsonString);
-			string storageAccountConnectionString = "DefaultEndpointsProtocol=https;AccountName=adlsedidevlocal;AccountKey=UoY1VX03ic/FjPzBQIHqpzPY2kcHP7QYUmQpozsbW4UTzZFYXs/5+oKBu7zIDFgU9XgSqD8DCC7QHcnpzHah2w==;BlobEndpoint=https://adlsedidevlocal.blob.core.windows.net/;QueueEndpoint=https://adlsedidevlocal.queue.core.windows.net/;TableEndpoint=https://adlsedidevlocal.table.core.windows.net/;FileEndpoint=https://adlsedidevlocal.file.core.windows.net/;";
-
-			await AzureStorageBlobService.UploadBlobToContainerUsingSdk(compressedBytesJsonAdvanced, storageAccountConnectionString, "test-case-files", fileName);
-
-			Console.WriteLine("debug");
-			/*
-			using (StreamWriter sw = new StreamWriter($"C:\\_tmp\\cfd50_test_files\\{fileName}"))
-			using (JsonWriter writer = new JsonTextWriter(sw))
-			{
-				serializer.Serialize(writer, compressedBytesJsonAdvanced);
-			}
-			*/
-
+			await AzureStorageBlobService.UploadBlobToContainerUsingSdk(compressedBytesJsonAdvanced, storageAccountConnectionString, "raw-ccdx-provider", blobName);
 		}
-
-
 
 		public static void SetObjectValue(ref Cfd50JsonDataFileRecordDto cfd50DataRecord, string propertyName, double? token)
 		{
@@ -342,10 +271,9 @@ namespace console_generate_json_files
 					}
 				}
 			}
-			catch (Exception e)
+			catch (Exception)
 			{
-				//Ignore any exceptions as we do not want processing to stop due to a nonexistent property
-				Console.WriteLine("debug");
+				Console.WriteLine("exception");
 			}
 		}
 
@@ -363,10 +291,9 @@ namespace console_generate_json_files
 					records[propertyName] = token;
 				}
 			}
-			catch (Exception e)
+			catch (Exception)
 			{
-				//Ignore any exceptions as we do not want processing to stop due to a nonexistent property
-				Console.WriteLine("debug");
+				Console.WriteLine("exception");
 			}
 		}
 
@@ -382,12 +309,10 @@ namespace console_generate_json_files
 				{
 					records[propertyName] = token;
 				}
-				Console.WriteLine("debug");
 			}
-			catch (Exception e)
+			catch (Exception)
 			{
-				//Ignore any exceptions as we do not want processing to stop due to a nonexistent property
-				Console.WriteLine("debug");
+				Console.WriteLine("exception");
 			}
 		}
 
@@ -404,14 +329,11 @@ namespace console_generate_json_files
 					}
 				}
 			}
-			catch (Exception e)
+			catch (Exception)
 			{
-				//Ignore any exceptions as we do not want processing to stop due to a nonexistent property
-				Console.WriteLine("debug");
+				Console.WriteLine("exception");
 			}
 		}
-
-		
 
 		public static void SetObjectValue(ref Cfd50JsonDataFileRecordDto cfd50DataRecord, string propertyName, string token)
 		{
@@ -426,23 +348,79 @@ namespace console_generate_json_files
 					}
 				}
 			}
-			catch (Exception e)
+			catch (Exception)
 			{
-				//Ignore any exceptions as we do not want processing to stop due to a nonexistent property
-				Console.WriteLine("debug");
+				Console.WriteLine("exception");
 			}
 		}
-	}
 
-	class TestCase
-	{
-		public TestCase(string number, string summary, string description)
+		static async Task BuildTestCaseSingleRecordDynamic2(string testCaseNumber, string testCaseSummary, string serialNumber, string reportGenerationEventTime, dynamic record)
 		{
-			Number = number;
+			string testCaseFileName = GenerateFileName(serialNumber, testCaseNumber, testCaseSummary, reportGenerationEventTime);
+			dynamic testFile = new ExpandoObject();
+
+			PopulateTestBaseHeaderDataDynamic(ref testFile, serialNumber);
+			testFile.records = new List<dynamic>();
+			testFile.records.Add(record);
+
+			await CompressAndSaveFileToDiskDynamic(testFile, testCaseFileName);
+			Console.WriteLine("done");
 		}
-		string Number { get; set; }
-		string Summary { get; set; }
-		string Description { get; set; }
+
+		static void WriteTestCaseDataFileToDiskDynamic(dynamic testFile, string fileName)
+		{
+			JsonSerializer serializer = new JsonSerializer();
+			serializer.Converters.Add(new JavaScriptDateTimeConverter());
+			serializer.NullValueHandling = NullValueHandling.Ignore;
+
+			using (StreamWriter sw = new StreamWriter($"C:\\_tmp\\cfd50_test_files\\{fileName}"))
+			using (JsonWriter writer = new JsonTextWriter(sw))
+			{
+				serializer.Serialize(writer, testFile);
+			}
+		}
+
+		static void PopulatTestBaseDataOneRecordDynamic(ref dynamic testFile, dynamic testRecord, string serialNumber)
+		{
+			PopulateTestBaseHeaderDataDynamic(ref testFile, serialNumber);
+			testFile.records = new List<dynamic>();
+			testFile.records.Add(testRecord);
+		}
+
+		static async Task BuildTestCaseHeaderStringValue(string testCaseNumber, string testCaseSummary, string serialNumber, string propertyName, string propertyValue)
+		{
+			string eventTime = DateConverter.ConvertToUtcDateTimeNowString("yyyyMMddTHHmmssZ");
+			string testCaseFileName = GenerateFileName(serialNumber, testCaseNumber, testCaseSummary, eventTime);
+			Cfd50JsonDataFileDto testFile = new Cfd50JsonDataFileDto();
+			PopulateTestBaseHeaderData(ref testFile);
+			SetObjectValue(ref testFile, propertyName, propertyValue);
+			testFile.records = new List<Cfd50JsonDataFileRecordDto>();
+			testFile.records.Add(PopulateTestBaseRecordData());
+			//WriteTestCaseDataFileToDisk(testFile, testCaseFileName);
+			await CompressAndSaveFileToDisk(testFile, testCaseFileName);
+			Console.WriteLine("debug");
+		}
+
+		static void BuildTestCaseSingleRecordStringValue(string testCaseNumber, string testCaseSummary, string serialNumber, string eventTime, string objectLevel, string propertyName, string propertyValue)
+		{
+			Cfd50JsonDataFileRecordDto record01 = PopulateTestBaseRecordData();
+			SetObjectValue(ref record01, propertyName, propertyValue);
+			BuildTestCaseSingleRecord(testCaseNumber, testCaseSummary, serialNumber, eventTime, record01);
+		}
+
+		static void BuildTestCaseSingleRecordDoubleValue(string testCaseNumber, string testCaseSummary, string serialNumber, string reportGenerationEventTime, string objectLevel, string propertyName, double? propertyValue)
+		{
+			Cfd50JsonDataFileRecordDto record01 = PopulateTestBaseRecordData();
+			SetObjectValue(ref record01, propertyName, propertyValue);
+			BuildTestCaseSingleRecord(testCaseNumber, testCaseSummary, serialNumber, reportGenerationEventTime, record01);
+		}
+
+		static async Task BuildTestCaseSingleRecordDoubleValueDynamic(string testCaseNumber, string testCaseSummary, string serialNumber, string reportGenerationEventTime, string objectLevel, string propertyName, dynamic propertyValue)
+		{
+			dynamic record01 = PopulateTestBaseRecordDataDynamic();
+			SetObjectValueDynamic(ref record01, propertyName, propertyValue);
+			await BuildTestCaseSingleRecordDynamic(testCaseNumber, testCaseSummary, serialNumber, reportGenerationEventTime, record01);
+		}
 	}
 
 }

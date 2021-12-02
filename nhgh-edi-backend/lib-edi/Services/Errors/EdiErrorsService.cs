@@ -108,18 +108,30 @@ namespace lib_edi.Services.Errors
 
 		public static string AppendAllExceptionMessages(Exception e)
 		{
-			string appendedMessages = BuildExceptionString(e);
-			while (e.InnerException != null)
+			if (e != null)
 			{
-				e = e.InnerException;
-				appendedMessages += BuildExceptionString(e);
+				string appendedMessages = BuildExceptionString(e);
+				while (e.InnerException != null)
+				{
+					e = e.InnerException;
+					appendedMessages += BuildExceptionString(e);
+				}
+				return appendedMessages;
+			} else
+			{
+				return "";
 			}
-			return appendedMessages;
 		}
 
 		public static string BuildExceptionString(Exception e)
 		{
-			return $"Message: {e.Message}, Class: {e.GetType()}, HResult: {e.HResult}, Source: {e.Source}";
+			if (e != null)
+			{
+				return $"Message: {e.Message}, Class: {e.GetType()}, HResult: {e.HResult}, Source: {e.Source}";
+			} else
+			{
+				return null;
+			}
 		}
 
 
@@ -137,8 +149,6 @@ namespace lib_edi.Services.Errors
 		{
 			EmsError emsError = EdiErrorsService.GetError(customErrorCode);
 			string customErrorMessage = BuildCustomErrorMessage(emsError, errorVariables);
-
-			string errMsg = AppendAllExceptionMessages(e);
 
 			string message = null;
 			if (e != null && customErrorMessage != null && customErrorCode != null)

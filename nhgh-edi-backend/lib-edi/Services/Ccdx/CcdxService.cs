@@ -717,7 +717,7 @@ namespace lib_edi.Services.Ccdx
 				string[] words = requestBodyPath.Split('/');
 				if (words.Length > 4)
 				{
-					curatedBlobName = $"{words[0]}/{dateFolder}/{hourFolder}/{words[3]}/mf_out.csv";
+					curatedBlobName = $"{words[0]}/{dateFolder}/{hourFolder}/{words[3]}/out_mf.csv";
 				}
 			}
 			return curatedBlobName;

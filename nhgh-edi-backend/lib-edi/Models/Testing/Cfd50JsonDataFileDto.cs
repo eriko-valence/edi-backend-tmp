@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace lib_edi.Models.Dto.Loggers
+namespace lib_edi.Models.Testing
 {
 	public class Cfd50JsonDataFileDto
 	{
