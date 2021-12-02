@@ -106,6 +106,36 @@ namespace lib_edi.Services.Errors
 			return listErrorVariables;
 		}
 
+		public static string AppendAllExceptionMessages(Exception e)
+		{
+			if (e != null)
+			{
+				string appendedMessages = BuildExceptionString(e);
+				while (e.InnerException != null)
+				{
+					e = e.InnerException;
+					appendedMessages += BuildExceptionString(e);
+				}
+				return appendedMessages;
+			} else
+			{
+				return "";
+			}
+		}
+
+		public static string BuildExceptionString(Exception e)
+		{
+			if (e != null)
+			{
+				return $"Message: {e.Message}, Class: {e.GetType()}, HResult: {e.HResult}, Source: {e.Source}";
+			} else
+			{
+				return null;
+			}
+		}
+
+
+
 		/// <summary>
 		/// Builds a custom exception message string with the provided exception object and custom error information
 		/// </summary>
@@ -123,7 +153,7 @@ namespace lib_edi.Services.Errors
 			string message = null;
 			if (e != null && customErrorMessage != null && customErrorCode != null)
 			{
-				message = $"{customErrorCode}: {customErrorMessage}. Exception: {e.Message} Class: {e.GetType()}. HResult: {e.HResult}. Source: {e.Source}";
+				message = $"{customErrorCode}: {customErrorMessage}. {AppendAllExceptionMessages(e)}";
 			}
 			else if (customErrorMessage != null && customErrorCode != null)
 			{

@@ -4,6 +4,7 @@ using lib_edi.Models.Dto.CceDevice.Csv;
 using lib_edi.Models.Dto.Http;
 using lib_edi.Models.Dto.Loggers;
 using lib_edi.Services.Azure;
+using lib_edi.Services.Ccdx;
 using lib_edi.Services.Errors;
 using Microsoft.Azure.Storage.Blob;
 using Microsoft.Extensions.Logging;
@@ -95,7 +96,7 @@ namespace lib_edi.Services.Loggers
 
 			try
 			{
-				blobName = $"{requestBody.Path}out_mf.csv";
+				blobName = CcdxService.BuildCuratedCfd50BlobName(requestBody.Path);
 				log.LogInformation($"  - Blob: {blobName}");
 				CloudBlockBlob outBlob = cloudBlobContainer.GetBlockBlobReference(blobName);
 				using var writer = await outBlob.OpenWriteAsync();

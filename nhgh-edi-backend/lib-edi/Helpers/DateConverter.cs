@@ -60,7 +60,7 @@ namespace lib_edi.Helpers
 		{
 			try
 			{
-				string[] formats = { "yyyy-MM-dd","yyyyMMdd", "yyyyMMddTHHmmssZ", "yyyyMMddTHHmmssZ" };
+				string[] formats = { "yyyy-MM-dd","yyyyMMdd", "yyyyMMddTHHmmssZ" };
 				//string format = "yyyy-MM-dd";
 				var cultureInfo = new CultureInfo("en-US");
 				DateTime reportAbsoluteDateTime = DateTime.ParseExact(s, formats, cultureInfo);

@@ -64,9 +64,9 @@ namespace lib_edi.Helpers
                         }
                     }
                 }
-            } catch (Exception)
+            } catch (Exception e)
 			{
-                //Ignore any exceptions as we do not want processing to stop due to a nonexistent property
+                throw e;
             }
         }
 
@@ -92,9 +92,9 @@ namespace lib_edi.Helpers
                     }
                 }
             }
-            catch (Exception)
+            catch (Exception e)
             {
-                //Ignore any exceptions as we do not want processing to stop due to a nonexistent property
+                throw e;
             }
         }
 
@@ -120,9 +120,9 @@ namespace lib_edi.Helpers
                     }
                 }
             }
-            catch (Exception)
+            catch (Exception e)
             {
-                //Ignore any exceptions as we do not want processing to stop due to a nonexistent property
+                throw e;
             }
         }
 
@@ -147,10 +147,10 @@ namespace lib_edi.Helpers
                         }
                     }
                 }
-            } catch (Exception)
+            } catch (Exception e)
 			{
-                //Ignore any exceptions as we do not want processing to stop due to a nonexistent property
-			}
+                throw e;
+            }
         }
 
         /// <summary>
@@ -174,9 +174,9 @@ namespace lib_edi.Helpers
                         }
                     }
                 }
-            } catch (Exception)
+            } catch (Exception e)
 			{
-                //Ignore any exceptions as we do not want processing to stop due to a nonexistent property
+                throw e;
             }
         }
 
@@ -202,9 +202,9 @@ namespace lib_edi.Helpers
                     }
                 }
             }
-            catch (Exception)
+            catch (Exception e)
             {
-                //Ignore any exceptions as we do not want processing to stop due to a nonexistent property
+                throw e;
             }
         }
     }
