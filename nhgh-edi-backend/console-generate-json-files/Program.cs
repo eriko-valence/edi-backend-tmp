@@ -34,7 +34,6 @@ namespace console_generate_json_files
 
 			storageAccountConnectionString = config["ConnectionString"];
 
-			//yyyy-MM-dd, yyyy-MM-dd
 			//expected: fail
 			await BuildTestCaseSingleRecordDynamic("0001", "RECORD_VALUE_TOO_BIG_SVA", "280037290A00", "SVA", 999999999.9999);
 			await BuildTestCaseSingleRecordDynamic("0002", "RECORD_VALUE_WRONG_FORMAT_SVA", "280037290A00", "SVA", "INVALID");
@@ -43,7 +42,7 @@ namespace console_generate_json_files
 			await BuildTestCaseSingleRecordDynamic("0005", "RECORD_VALUE_DATE_ONLY_SLASHES_ABST", "280037290A00", "ABST", "2021/12/01");
 			await BuildTestCaseSingleRecordDynamic("0006", "RECORD_VALUE_DATE_US_STD_ABST", "280037290A00", "ABST", "10/12/2021");
 			await BuildTestCaseSingleRecordDynamic("0007", "RECORD_VALUE_LOCAL_TIME_ABST", "280037290A00", "ABST", "20211201T175434");
-			
+
 			await BuildTestCaseSingleRecordDynamic("0008", "RECORD_VALUE_UNSUPPORTED_FORMAT_ABST", "280037290A00", "ABST", "2021-12-01T17:30:25Z");
 			await BuildTestCaseSingleRecordDynamic("0009", "RECORD_PROPERTY_MISSING_ABST", "280037290A00", "ABST", null);
 			await BuildTestCaseHeaderDynamic("0010", "HEADER_VALUE_WRONG_FORMAT_ASER", "280037290A00", "ASER", "#$@#^!'_-");
@@ -53,11 +52,11 @@ namespace console_generate_json_files
 
 			//expected: success
 			await BuildTestCaseSingleRecordDynamic("0014", "RECORD_PROPERTY_MISSING_SVA", "280037290A00", "SVA", null);
-			
+			await BuildTestCaseHeaderDynamic("0015", "HEADER_PROPERTY_MISSING_ADOP", "280037290A00", "ADOP", null);
 			await BuildTestCaseSingleRecordDynamic("0016", "RECORD_VALUE_FUTURE_DATE_ABST", "280037290A00", "ABST", "20381201T175954Z");
 			await BuildTestCaseSingleRecordDynamic("0017", "RECORD_VALUE_DATE_ONLY_ABST", "280037290A00", "ABST", "20211201");
 			await BuildTestCaseSingleRecordDynamic("0018", "RECORD_VALUE_DATE_ONLY_DASHES_ABST", "280037290A00", "ABST", "2021-12-01");
-
+			
 			Console.WriteLine("done");
 		}
 
@@ -76,7 +75,7 @@ namespace console_generate_json_files
 
 		static async Task BuildTestCaseSingleRecordDynamic(string testCaseNumber, string testCaseSummary, string serialNumber, string propertyName, dynamic propertyValue)
 		{
-			Thread.Sleep(2000);
+			Thread.Sleep(5000);
 			serialNumber = serialNumber + testCaseNumber;
 			string reportGenerationEventTime = DateConverter.ConvertToUtcDateTimeNowString("yyyyMMddTHHmmssZ");
 			dynamic record01 = PopulateTestBaseRecordDataDynamic();
@@ -91,7 +90,7 @@ namespace console_generate_json_files
 
 		static async Task BuildTestCaseHeaderDynamic(string testCaseNumber, string testCaseSummary, string serialNumber, string propertyName, dynamic propertyValue)
 		{
-			Thread.Sleep(2000);
+			Thread.Sleep(5000);
 			string reportGenerationEventTime = DateConverter.ConvertToUtcDateTimeNowString("yyyyMMddTHHmmssZ");
 			string sn = $"{serialNumber}{testCaseNumber}";
 			string testCaseFileName = GenerateFileName(sn, testCaseNumber, testCaseSummary, reportGenerationEventTime);
