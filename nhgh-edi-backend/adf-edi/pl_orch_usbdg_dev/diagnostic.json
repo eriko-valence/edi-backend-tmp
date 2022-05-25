@@ -1,0 +1,22 @@
+{
+    "now": "2022-05-25T17:41:43.061Z",
+    "perfNow": 5405506.100000024,
+    "diagnosticCorrelation": "f335c3d0-1acc-438a-901f-6c05f6b2cab9",
+    "source": "DownloadSupportFiles",
+    "environment": {
+        "productName": "adf",
+        "buildVersion": "1.0.051922.3",
+        "environmentType": 3,
+        "resourceName": "adf-edi-develop",
+        "resourceRegion": "westus2",
+        "resourceGroup": "rg-edi-dev",
+        "subscriptionId": "2972ffd4-e5b4-4b98-87b9-360c084c2959",
+        "sessionId": "A4pxB",
+        "operationId": "Pqnnr",
+        "gitType": "live"
+    },
+    "additionalInfo": {
+        "selectedResource": "pl_orch_usbdg_report",
+        "selectedResourceType": "pipeline"
+    }
+}
