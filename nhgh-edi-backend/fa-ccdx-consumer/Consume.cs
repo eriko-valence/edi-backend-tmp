@@ -106,6 +106,9 @@ namespace fa_ccdx_consumer
                         if (headers.ContainsKey("ce_subject"))
                         {
                             reportFileName = Path.GetFileName(GetKeyValueString(headers, "ce_subject"));
+                            log.LogInformation($"- [ccdx-consumer->run]: Validate incoming blob file extension");
+                            string fileExtension = Path.GetExtension(blobName);
+                            log.LogInformation($"- [ccdx-consumer->run]: File extension: {fileExtension}");
                             if (CcdxService.IsPathExtensionSupported(blobName))
 							{
                                 log.LogInformation($"- [ccdx-consumer->run]: Confirmed. Attached cce telemetry file found. Proceed with processing.");

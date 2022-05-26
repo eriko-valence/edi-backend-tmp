@@ -71,6 +71,8 @@ namespace fa_ccdx_provider
                 if (CcdxService.ValidateLoggerType(loggerType))
                 {
                     log.LogInformation($"- [ccdx-provider->run]: Validate incoming blob file extension");
+                    string fileExtension = Path.GetExtension(ccBlobInputName);
+                    log.LogInformation($"- [ccdx-provider->run]: File extension: {fileExtension}");
                     if (CcdxService.IsPathExtensionSupported(ccBlobInputName))
                     {
                         log.LogInformation($"- [ccdx-provider->run]: Confirmed. Blob originated from supported data logger '{loggerType}'");
