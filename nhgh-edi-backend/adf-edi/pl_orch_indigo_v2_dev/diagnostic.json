@@ -1,0 +1,22 @@
+{
+    "now": "2022-05-26T16:11:41.983Z",
+    "perfNow": 638534.2999999523,
+    "diagnosticCorrelation": "b219503f-3102-4628-bef4-7a18e7a1425f",
+    "source": "DownloadSupportFiles",
+    "environment": {
+        "productName": "adf",
+        "buildVersion": "1.0.051922.3",
+        "environmentType": 3,
+        "resourceName": "adf-edi-develop",
+        "resourceRegion": "westus2",
+        "resourceGroup": "rg-edi-dev",
+        "subscriptionId": "2972ffd4-e5b4-4b98-87b9-360c084c2959",
+        "sessionId": "G3ajR",
+        "operationId": "ysl6O",
+        "gitType": "live"
+    },
+    "additionalInfo": {
+        "selectedResource": "pl_orch_indigo_v2_report",
+        "selectedResourceType": "pipeline"
+    }
+}
