@@ -19,6 +19,7 @@ using System.Linq;
 using Microsoft.Azure.Storage.Blob;
 using lib_edi.Models.Dto.Http;
 using lib_edi.Services.Azure;
+using lib_edi.Services.CceDevice;
 //using Microsoft.Azure.Storage.Blob; // Microsoft.Azure.WebJobs.Extensions.Storage
 
 namespace fa_adf_transform_indigo_v2
@@ -33,11 +34,13 @@ namespace fa_adf_transform_indigo_v2
             [Blob("%AZURE_STORAGE_BLOB_CONTAINER_NAME_EMS_CONFIG%", FileAccess.ReadWrite, Connection = "AZURE_STORAGE_INPUT_CONNECTION_STRING")] CloudBlobContainer emsConfgContainer,
             ILogger log)
         {
-            string logType = "usbdg";
+            string logType = "indigo-v2"; // TODO - add as an application setting
             TransformHttpRequestMessageBodyDto payload = null;
 
             try
             {
+                string logJsonSchemaFileName = Environment.GetEnvironmentVariable("EMS_LOG_JSON_SCHEMA_DEFINITION_FILE_NAME");
+
                 log.LogInformation($"- Deserialize {logType} log transformation http request body");
                 payload = await HttpService.DeserializeHttpRequestBody(req);
 
@@ -54,24 +57,24 @@ namespace fa_adf_transform_indigo_v2
                 IEnumerable<IListBlobItem> logDirectoryBlobs = AzureStorageBlobService.ListBlobsInDirectory(inputContainer, payload.Path, inputBlobPath);
 
                 log.LogInformation($"- Filter for {logType} log blobs");
-                List<CloudBlockBlob> usbdgLogBlobs = UsbdgDataProcessorService.FindUsbdgLogBlobs(logDirectoryBlobs, inputBlobPath);
+                List<CloudBlockBlob> usbdgLogBlobs = IndigoDataProcessorService.FindLogBlobs(logDirectoryBlobs, inputBlobPath);
                 log.LogInformation($"- Filter for {logType} log report blobs");
-                List<CloudBlockBlob> usbdgLogReportBlobs = UsbdgDataProcessorService.FindUsbdgLogReportBlobs(logDirectoryBlobs, inputBlobPath);
+                CloudBlockBlob usbdgReportMetadataBlob = UsbdgDataProcessorService.FindReportMetadataBlob(logDirectoryBlobs, inputBlobPath);
 
                 log.LogInformation($"- Download {logType} log blobs");
-                List<dynamic> usbdgLogFiles = await UsbdgDataProcessorService.DownloadUsbdgLogBlobs(usbdgLogBlobs, inputContainer, inputBlobPath, log);
+                List<dynamic> indigoLogFiles = await IndigoDataProcessorService.DownloadAndDeserializeJsonBlobs(usbdgLogBlobs, inputContainer, inputBlobPath, log);
                 log.LogInformation($"- Download {logType} log report blobs");
-                dynamic emsLogMetadata = await UsbdgDataProcessorService.DownloadUsbdgLogReportBlobs(usbdgLogReportBlobs, inputContainer, inputBlobPath, log);
+                dynamic usbdgReportMetadata = await UsbdgDataProcessorService.DownloadAndDeserializeJsonBlob(usbdgReportMetadataBlob, inputContainer, inputBlobPath, log);
 
                 log.LogInformation($"- Retrieving time values from EMD metadata");
-                string emdRelativeTime = ObjectManager.GetJObjectPropertyValueAsString(emsLogMetadata, "RELT");
-                string emdAbsoluteTime = ObjectManager.GetJObjectPropertyValueAsString(emsLogMetadata, "ABST");
+                string emdRelativeTime = ObjectManager.GetJObjectPropertyValueAsString(usbdgReportMetadata, "RELT");
+                string emdAbsoluteTime = ObjectManager.GetJObjectPropertyValueAsString(usbdgReportMetadata, "ABST");
 
                 log.LogInformation($"- Validate {logType} log blobs");
-                List<dynamic> validatedUsbdgLogFiles = await UsbdgDataProcessorService.ValidateUsbdgLogBlobs(emsConfgContainer, usbdgLogFiles, log);
+                List<dynamic> validatedUsbdgLogFiles = await IndigoDataProcessorService.ValidateLogJsonObjects(emsConfgContainer, indigoLogFiles, logJsonSchemaFileName, log);
 
                 log.LogInformation($"- Map {logType} log objects to csv records");
-                List<UsbdgSimCsvRecordDto> usbdbLogCsvRows = DataModelMappingService.MapUsbdgLogs(usbdgLogFiles, emsLogMetadata);
+                List<UsbdgSimCsvRecordDto> usbdbLogCsvRows = DataModelMappingService.MapUsbdgLogs(indigoLogFiles, usbdgReportMetadata);
 
                 log.LogInformation($"- Transform {logType} csv records");
 

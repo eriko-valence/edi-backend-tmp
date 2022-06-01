@@ -21,13 +21,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
+using lib_edi.Services.CceDevice;
 
 namespace lib_edi.Services.Loggers
 {
 	/// <summary>
 	/// A class that provides methods processing USBDG log files
 	/// </summary>
-	public class UsbdgDataProcessorService
+	public class UsbdgDataProcessorService : DataProcessorService
 	{
 		public static object UsbdgLogProcessorService { get; private set; }
 
@@ -134,15 +135,15 @@ namespace lib_edi.Services.Loggers
 		}
 
 		/// <summary>
-		/// Returns a list of only USBDB log report blobs
+		/// Returns a list of only USBDG metadata report blobs
 		/// </summary>
 		/// <param name="logDirectoryBlobs">Full list of blobs </param>
 		/// <returns>
-		/// List containing only USBDG log report blobs; Exception (RV62) otherwise
+		/// List containing only USBDG metadata report blobs; Exception (RV62) otherwise
 		/// </returns>
-		public static List<CloudBlockBlob> FindUsbdgLogReportBlobs(IEnumerable<IListBlobItem> logDirectoryBlobs, string blobPath)
+		public static CloudBlockBlob FindReportMetadataBlob(IEnumerable<IListBlobItem> logDirectoryBlobs, string blobPath)
 		{
-			List<CloudBlockBlob> usbdgLogReportBlobs = new List<CloudBlockBlob>();
+			List<CloudBlockBlob> usbdgLogReportBlobs = new();
 
 			if (logDirectoryBlobs != null)
 			{
@@ -161,7 +162,7 @@ namespace lib_edi.Services.Loggers
 				throw new Exception(customErrorMessage);
 			}
 
-			return usbdgLogReportBlobs;
+			return usbdgLogReportBlobs.First();
 		}
 
 		/// <summary>
@@ -479,6 +480,7 @@ namespace lib_edi.Services.Loggers
 		public static async Task<dynamic> DownloadUsbdgLogReportBlobs(List<CloudBlockBlob> blobs, CloudBlobContainer cloudBlobContainer, string blobPath, ILogger log)
 		{
 			dynamic emsLogMetadata = null;
+
 			foreach (CloudBlockBlob reportBlob in blobs)
 			{
 				log.LogInformation($"  - Blob: {cloudBlobContainer.Name}/{reportBlob.Name}");

@@ -22,6 +22,7 @@ using lib_edi.Exceptions;
 using lib_edi.Services.System;
 using Newtonsoft.Json.Linq;
 using lib_edi.Helpers;
+using lib_edi.Services.CceDevice;
 
 namespace fa_adf_transform_usbdg
 {
@@ -76,10 +77,10 @@ namespace fa_adf_transform_usbdg
                 log.LogInformation($"- Filter for {logType} log blobs");
                 List<CloudBlockBlob> usbdgLogBlobs = UsbdgDataProcessorService.FindUsbdgLogBlobs(logDirectoryBlobs, inputBlobPath);
                 log.LogInformation($"- Filter for {logType} log report blobs");
-                List<CloudBlockBlob> usbdgLogReportBlobs = UsbdgDataProcessorService.FindUsbdgLogReportBlobs(logDirectoryBlobs, inputBlobPath);
+                List<CloudBlockBlob> usbdgLogReportBlobs = UsbdgDataProcessorService.FindReportMetadataBlobs(logDirectoryBlobs, inputBlobPath);
 
                 log.LogInformation($"- Download {logType} log blobs");
-                List<dynamic> usbdgLogFiles = await UsbdgDataProcessorService.DownloadUsbdgLogBlobs(usbdgLogBlobs, inputContainer, inputBlobPath, log);
+                List<dynamic> usbdgLogFiles = await UsbdgDataProcessorService.DownloadAndDeserializeJsonBlobs(usbdgLogBlobs, inputContainer, inputBlobPath, log);
                 log.LogInformation($"- Download {logType} log report blobs");
                 dynamic emsLogMetadata = await UsbdgDataProcessorService.DownloadUsbdgLogReportBlobs(usbdgLogReportBlobs, inputContainer, inputBlobPath, log);
 
