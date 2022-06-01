@@ -20,6 +20,7 @@ using Microsoft.Azure.Storage.Blob;
 using lib_edi.Models.Dto.Http;
 using lib_edi.Services.Azure;
 using lib_edi.Services.CceDevice;
+using Newtonsoft.Json.Linq;
 //using Microsoft.Azure.Storage.Blob; // Microsoft.Azure.WebJobs.Extensions.Storage
 
 namespace fa_adf_transform_indigo_v2
@@ -57,53 +58,53 @@ namespace fa_adf_transform_indigo_v2
                 IEnumerable<IListBlobItem> logDirectoryBlobs = AzureStorageBlobService.ListBlobsInDirectory(inputContainer, payload.Path, inputBlobPath);
 
                 log.LogInformation($"- Filter for {logType} log blobs");
-                List<CloudBlockBlob> usbdgLogBlobs = IndigoDataProcessorService.FindLogBlobs(logDirectoryBlobs, inputBlobPath);
+                List<CloudBlockBlob> usbdgLogBlobs = IndigoDataTransformService.FindLogBlobs(logDirectoryBlobs, inputBlobPath);
                 log.LogInformation($"- Filter for {logType} log report blobs");
                 CloudBlockBlob usbdgReportMetadataBlob = UsbdgDataProcessorService.FindReportMetadataBlob(logDirectoryBlobs, inputBlobPath);
 
                 log.LogInformation($"- Download {logType} log blobs");
-                List<dynamic> indigoLogFiles = await IndigoDataProcessorService.DownloadAndDeserializeJsonBlobs(usbdgLogBlobs, inputContainer, inputBlobPath, log);
+                List<JObject> indigoLogFiles = await DataTransformService.DownloadAndDeserializeJsonBlobs(usbdgLogBlobs, inputContainer, inputBlobPath, log);
                 log.LogInformation($"- Download {logType} log report blobs");
-                dynamic usbdgReportMetadata = await UsbdgDataProcessorService.DownloadAndDeserializeJsonBlob(usbdgReportMetadataBlob, inputContainer, inputBlobPath, log);
+                dynamic usbdgReportMetadata = await DataTransformService.DownloadAndDeserializeJsonBlob(usbdgReportMetadataBlob, inputContainer, inputBlobPath, log);
 
                 log.LogInformation($"- Retrieving time values from EMD metadata");
-                string emdRelativeTime = ObjectManager.GetJObjectPropertyValueAsString(usbdgReportMetadata, "RELT");
-                string emdAbsoluteTime = ObjectManager.GetJObjectPropertyValueAsString(usbdgReportMetadata, "ABST");
+                string emdRelativeTime = DataTransformService.GetJObjectPropertyValueAsString(usbdgReportMetadata, "RELT");
+                string emdAbsoluteTime = DataTransformService.GetJObjectPropertyValueAsString(usbdgReportMetadata, "ABST");
 
                 log.LogInformation($"- Validate {logType} log blobs");
-                List<dynamic> validatedUsbdgLogFiles = await IndigoDataProcessorService.ValidateLogJsonObjects(emsConfgContainer, indigoLogFiles, logJsonSchemaFileName, log);
+                List<dynamic> validatedUsbdgLogFiles = await DataTransformService.ValidateLogJsonObjects(emsConfgContainer, indigoLogFiles, logJsonSchemaFileName, log);
 
                 log.LogInformation($"- Map {logType} log objects to csv records");
-                List<UsbdgSimCsvRecordDto> usbdbLogCsvRows = DataModelMappingService.MapUsbdgLogs(indigoLogFiles, usbdgReportMetadata);
+                List<UsbdgSimCsvRecordDto> usbdbLogCsvRows = IndigoDataTransformService.MapSourceLogsToSinkColumnNames(indigoLogFiles, usbdgReportMetadata);
 
                 log.LogInformation($"- Transform {logType} csv records");
 
                 log.LogInformation($"  - Convert relative time to total seconds (all records)");
-                usbdbLogCsvRows = UsbdgDataProcessorService.ConvertRelativeTimeToTotalSecondsForUsbdgLogRecords(usbdbLogCsvRows);
+                usbdbLogCsvRows = IndigoDataTransformService.ConvertRelativeTimeToTotalSecondsForUsbdgLogRecords(usbdbLogCsvRows);
 
                 log.LogInformation($"  - Sort csv records using relative time total seconds");
                 List<UsbdgSimCsvRecordDto> sortedUsbdbLogCsvRows = usbdbLogCsvRows.OrderBy(i => (i._RELT_SECS)).ToList();
 
                 log.LogInformation($"  - Convert relative time (e.g., 'P9DT59M53S') to total seconds (report only)");
-                int DurationSecs = UsbdgDataProcessorService.ConvertRelativeTimeStringToTotalSeconds(emsLogMetadata); // convert timespan to seconds
+                int DurationSecs = IndigoDataTransformService.ConvertRelativeTimeStringToTotalSeconds(usbdgReportMetadata); // convert timespan to seconds
 
                 log.LogInformation($"  - Calculate absolute time for each record using record relative time (e.g., 781193) and report absolute time ('2021-06-20T23:00:02Z')");
-                sortedUsbdbLogCsvRows = UsbdgDataProcessorService.CalculateAbsoluteTimeForUsbdgRecords(sortedUsbdbLogCsvRows, DurationSecs, emsLogMetadata);
+                sortedUsbdbLogCsvRows = IndigoDataTransformService.CalculateAbsoluteTimeForUsbdgRecords(sortedUsbdbLogCsvRows, DurationSecs, usbdgReportMetadataBlob);
 
                 log.LogInformation($"  - Cloud upload times: ");
                 log.LogInformation($"    - EMD (source: cellular) : {DateConverter.ConvertIso8601CompliantString(emdAbsoluteTime)} (UTC)");
                 log.LogInformation($"    - Logger (source: real time clock) : {emdRelativeTime ?? ""} (Relative Time)");
-                log.LogInformation($"    - Logger (source: real time clock) : {UsbdgDataProcessorService.ConvertRelativeTimeStringToTotalSeconds(emdRelativeTime)} (Duration in Seconds)");
+                log.LogInformation($"    - Logger (source: real time clock) : {IndigoDataTransformService.ConvertRelativeTimeStringToTotalSeconds(emdRelativeTime)} (Duration in Seconds)");
                 log.LogInformation($"  - Absolute time calculation results (first two records): ");
                 if (usbdbLogCsvRows.Count > 1)
                 {
-                    log.LogInformation($"    - record[0].ElapsedSecs (Elapsed secs from activation time): {UsbdgDataProcessorService.CalculateElapsedSecondsFromLoggerActivationRelativeTime(emdRelativeTime, usbdbLogCsvRows[0].RELT)}");
+                    log.LogInformation($"    - record[0].ElapsedSecs (Elapsed secs from activation time): {IndigoDataTransformService.CalculateElapsedSecondsFromLoggerActivationRelativeTime(emdRelativeTime, usbdbLogCsvRows[0].RELT)}");
                     log.LogInformation($"    - record[0].ABST (EMD cloud upload absolute time): {usbdbLogCsvRows[0].ABST}");
                     log.LogInformation($"    - record[0].RELT (Logger cloud upload relative time): {usbdbLogCsvRows[0].RELT}");
                     log.LogInformation($"    - record[0]._RELT_SECS (Logger cloud upload relative time seconds): {usbdbLogCsvRows[0]._RELT_SECS}");
                     log.LogInformation($"    - record[0]._ABST (calculated absolute time): {usbdbLogCsvRows[0]._ABST}");
                     log.LogInformation($" ");
-                    log.LogInformation($"    - record[1].ElapsedSecs (Elapsed secs from activation time): {UsbdgDataProcessorService.CalculateElapsedSecondsFromLoggerActivationRelativeTime(emdRelativeTime, usbdbLogCsvRows[1].RELT)}");
+                    log.LogInformation($"    - record[1].ElapsedSecs (Elapsed secs from activation time): {IndigoDataTransformService.CalculateElapsedSecondsFromLoggerActivationRelativeTime(emdRelativeTime, usbdbLogCsvRows[1].RELT)}");
                     log.LogInformation($"    - record[1].ABST (EMD cloud upload absolute time): {usbdbLogCsvRows[1].ABST}");
                     log.LogInformation($"    - record[1].RELT (Logger cloud upload relative time): {usbdbLogCsvRows[1].RELT}");
                     log.LogInformation($"    - record[1]._RELT_SECS (Logger cloud upload relative time seconds): {usbdbLogCsvRows[1]._RELT_SECS}");
@@ -111,14 +112,14 @@ namespace fa_adf_transform_indigo_v2
                 }
 
                 log.LogInformation($"- Write {logType} csv records to azure blob storage");
-                string csvOutputBlobName = await UsbdgDataProcessorService.WriteUsbdgLogRecordsToCsvBlob(ouputContainer, payload, sortedUsbdbLogCsvRows, log);
+                string csvOutputBlobName = await IndigoDataTransformService.WriteUsbdgLogRecordsToCsvBlob(ouputContainer, payload, sortedUsbdbLogCsvRows, log);
 
                 log.LogInformation(" - Serialize http response body");
-                string responseBody = HttpService.SerializeHttpResponseBody(csvOutputBlobName);
+                string responseBody = DataTransformService.SerializeHttpResponseBody(csvOutputBlobName);
 
                 log.LogInformation(" - Send http response message");
                 log.LogInformation("- Log successfully completed event to app insights");
-                CcdxService.LogEmsTransformSucceededEventToAppInsights(payload.FileName, log);
+                AzureAppInsightsService.LogEmsTransformSucceededEventToAppInsights(payload.FileName, log);
                 log.LogInformation(" - SUCCESS");
 
                 return new OkObjectResult(responseBody);

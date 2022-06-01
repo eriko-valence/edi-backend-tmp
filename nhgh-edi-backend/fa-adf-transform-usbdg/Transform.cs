@@ -77,7 +77,7 @@ namespace fa_adf_transform_usbdg
                 log.LogInformation($"- Filter for {logType} log blobs");
                 List<CloudBlockBlob> usbdgLogBlobs = UsbdgDataProcessorService.FindUsbdgLogBlobs(logDirectoryBlobs, inputBlobPath);
                 log.LogInformation($"- Filter for {logType} log report blobs");
-                List<CloudBlockBlob> usbdgLogReportBlobs = UsbdgDataProcessorService.FindReportMetadataBlobs(logDirectoryBlobs, inputBlobPath);
+                CloudBlockBlob usbdgLogReportBlobs = UsbdgDataProcessorService.FindReportMetadataBlob(logDirectoryBlobs, inputBlobPath);
 
                 log.LogInformation($"- Download {logType} log blobs");
                 List<dynamic> usbdgLogFiles = await UsbdgDataProcessorService.DownloadAndDeserializeJsonBlobs(usbdgLogBlobs, inputContainer, inputBlobPath, log);

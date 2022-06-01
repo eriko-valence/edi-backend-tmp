@@ -28,7 +28,7 @@ namespace lib_edi.Services.Loggers
 	/// <summary>
 	/// A class that provides methods processing USBDG log files
 	/// </summary>
-	public class UsbdgDataProcessorService : DataProcessorService
+	public class UsbdgDataProcessorService : DataTransformService
 	{
 		public static object UsbdgLogProcessorService { get; private set; }
 
