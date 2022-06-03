@@ -24,14 +24,19 @@ namespace lib_edi.Services.Azure
 	public class AzureStorageBlobService
 	{
 		/// <summary>
-		/// Returns a list of azure storage blobs found in the provided virtual directory
+		/// Returns a list of azure storage blobs 
 		/// </summary>
 		/// <param name="cloudBlobContainer">A container in the Microsoft Azure Blob service</param>
 		/// <param name="directoryPath">Azure blob storage virtual directory</param>
+		/// <param name="fullBlobPath">Azure blob storage virtual directory</param>
 		/// <returns>
 		/// An enumerable collection of objects that implement IListBlobItem if successful; Exception (K3E5) otherwise
 		/// </returns>
-		public static List<CloudBlockBlob> ListBlobsInDirectory(CloudBlobContainer cloudBlobContainer, string directoryPath, string fullBlobPath)
+		/// <example>
+		/// directoryPath = "usbdg/2021-11-10/22/e190f06b-8de8-494e-8fbc-20599f14a9b7/"
+		/// fullBlobPath = ""
+		/// </example>
+		public static List<CloudBlockBlob> GetListOfBlobsInDirectory(CloudBlobContainer cloudBlobContainer, string directoryPath, string fullBlobPath)
 		{
 			List<CloudBlockBlob> listCloudBlockBlob = new List<CloudBlockBlob>();
 			try

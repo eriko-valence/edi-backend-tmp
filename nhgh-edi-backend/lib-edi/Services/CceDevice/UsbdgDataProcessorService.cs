@@ -141,7 +141,7 @@ namespace lib_edi.Services.Loggers
 		/// <returns>
 		/// List containing only USBDG metadata report blobs; Exception (RV62) otherwise
 		/// </returns>
-		public static CloudBlockBlob FindReportMetadataBlob(IEnumerable<IListBlobItem> logDirectoryBlobs, string blobPath)
+		public static CloudBlockBlob GetReportMetadataBlob(IEnumerable<IListBlobItem> logDirectoryBlobs, string blobPath)
 		{
 			List<CloudBlockBlob> usbdgLogReportBlobs = new();
 

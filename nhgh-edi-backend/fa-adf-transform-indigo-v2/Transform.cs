@@ -55,12 +55,12 @@ namespace fa_adf_transform_indigo_v2
                 log.LogInformation($"- Building input blob path: {inputBlobPath}");
 
                 log.LogInformation($"- List blobs in azure blob storage location {inputBlobPath}");
-                IEnumerable<IListBlobItem> logDirectoryBlobs = AzureStorageBlobService.ListBlobsInDirectory(inputContainer, payload.Path, inputBlobPath);
+                IEnumerable<IListBlobItem> logDirectoryBlobs = AzureStorageBlobService.GetListOfBlobsInDirectory(inputContainer, payload.Path, inputBlobPath);
 
                 log.LogInformation($"- Filter for {logType} log blobs");
-                List<CloudBlockBlob> usbdgLogBlobs = IndigoDataTransformService.FindLogBlobs(logDirectoryBlobs, inputBlobPath);
+                List<CloudBlockBlob> usbdgLogBlobs = IndigoDataTransformService.GetLogBlobs(logDirectoryBlobs, inputBlobPath);
                 log.LogInformation($"- Filter for {logType} log report blobs");
-                CloudBlockBlob usbdgReportMetadataBlob = UsbdgDataProcessorService.FindReportMetadataBlob(logDirectoryBlobs, inputBlobPath);
+                CloudBlockBlob usbdgReportMetadataBlob = UsbdgDataProcessorService.GetReportMetadataBlob(logDirectoryBlobs, inputBlobPath);
 
                 log.LogInformation($"- Download {logType} log blobs");
                 List<JObject> indigoLogFiles = await DataTransformService.DownloadAndDeserializeJsonBlobs(usbdgLogBlobs, inputContainer, inputBlobPath, log);

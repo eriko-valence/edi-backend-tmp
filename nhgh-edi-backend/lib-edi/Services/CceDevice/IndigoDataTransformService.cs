@@ -28,14 +28,14 @@ namespace lib_edi.Services.CceDevice
     {
 
 		/// <summary>
-		/// Returns a list of only Indigo V2 log blobs
+		/// Returns a list of Indigo V2 log blobs from a collection of blobs
 		/// </summary>
 		/// <param name="logDirectoryBlobs">Full list of blobs </param>
 		/// <param name="blobPath">blob storage path</param>
 		/// <returns>
 		/// List containing only Indigo V2 log blobs; Exception (L91T)
 		/// </returns>
-		public static List<CloudBlockBlob> FindLogBlobs(IEnumerable<IListBlobItem> logDirectoryBlobs, string blobPath)
+		public static List<CloudBlockBlob> GetLogBlobs(IEnumerable<IListBlobItem> logDirectoryBlobs, string blobPath)
 		{
 			List<CloudBlockBlob> listBlobs = new();
 
