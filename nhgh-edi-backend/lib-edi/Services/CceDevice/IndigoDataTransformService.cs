@@ -68,7 +68,7 @@ namespace lib_edi.Services.CceDevice
 		/// <returns>
 		/// A consolidated list of csv USBDG MetaFridge log file records  if successful; Exception (D39Y) if any failures occur 
 		/// </returns>
-		public static List<UsbdgSimCsvRecordDto> MapSourceLogsToSinkColumnNames(List<JObject> sourceLogs, JObject sourceUsbdgMetadata)
+		public static List<UsbdgSimCsvRecordDto> MapSourceLogsToSinkColumnNames(List<dynamic> sourceLogs, dynamic sourceUsbdgMetadata)
 		{
 
 
@@ -92,7 +92,7 @@ namespace lib_edi.Services.CceDevice
         /// <returns>
         /// A list of CSV compatible EMD + logger data records, if successful; Exception (D39Y) if any failures occur 
         /// </returns>
-        public static List<UsbdgSimCsvRecordDto> MapSourceLogToSinkColumnNames(JObject sourceLog, JObject sourceUsbdgMetadata)
+        public static List<UsbdgSimCsvRecordDto> MapSourceLogToSinkColumnNames(dynamic sourceLog, dynamic sourceUsbdgMetadata)
         {
             try
             {
@@ -336,7 +336,7 @@ namespace lib_edi.Services.CceDevice
             foreach (UsbdgSimCsvRecordDto record in records)
             {
                 DateTime? dt = CalculateAbsoluteTimeForUsbdgRecord(absoluteTime, reportDurationSeconds, record.RELT, record.Source);
-                record._ABST = dt;
+                record.ABST_CALC = dt;
             }
             return records;
         }
@@ -479,7 +479,5 @@ namespace lib_edi.Services.CceDevice
             }
             return blobName;
         }
-
-
     }
 }

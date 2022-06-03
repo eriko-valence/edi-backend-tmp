@@ -30,7 +30,7 @@ namespace lib_edi.Services.CceDevice
 		/// <returns>
 		/// A list of deserialized CCE device logs in JObject format that have been downloaded from Azure blob storage; Exception (C26Z) if no blobs found
 		/// </returns>
-		public static async Task<List<JObject>> DownloadAndDeserializeJsonBlobs(List<CloudBlockBlob> blobs, CloudBlobContainer cloudBlobContainer, string blobPath, ILogger log)
+		public static async Task<List<dynamic>> DownloadAndDeserializeJsonBlobs(List<CloudBlockBlob> blobs, CloudBlobContainer cloudBlobContainer, string blobPath, ILogger log)
 		{
 
 			List<dynamic> listLogs = new();
@@ -49,7 +49,8 @@ namespace lib_edi.Services.CceDevice
 				string customErrorMessage = EdiErrorsService.BuildExceptionMessageString(null, "C26Z", EdiErrorsService.BuildErrorVariableArrayList(blobPath));
 				throw new Exception(customErrorMessage);
 			}
-			return (List<JObject>)listLogs.Cast<JObject>();
+			//return (List<dynamic>)listLogs.Cast<JObject>();
+			return listLogs;
 		}
 
 		/// <summary>
@@ -134,7 +135,7 @@ namespace lib_edi.Services.CceDevice
 		/// <returns>
 		/// A list validated CCE device log JSON objects; Exception thrown if at least one report fails validation (R85Y) or if the json definition file failed to be retrieved 
 		/// </returns>
-		public static async Task<List<dynamic>> ValidateLogJsonObjects(CloudBlobContainer cloudBlobContainer, List<JObject> emsLogs, string jsonSchemaBlobName, ILogger log)
+		public static async Task<List<dynamic>> ValidateLogJsonObjects(CloudBlobContainer cloudBlobContainer, List<dynamic> emsLogs, string jsonSchemaBlobName, ILogger log)
 		{
 			List<dynamic> validatedJsonObjects = new();
 

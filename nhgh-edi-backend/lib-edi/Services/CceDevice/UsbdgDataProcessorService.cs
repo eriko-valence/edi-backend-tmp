@@ -206,7 +206,7 @@ namespace lib_edi.Services.Loggers
 			foreach (UsbdgSimCsvRecordDto record in records)
 			{
 				DateTime? dt = CalculateAbsoluteTimeForUsbdgRecord(absoluteTime, reportDurationSeconds, record.RELT, record.Source);
-				record._ABST = dt;
+				record.ABST_CALC = dt;
 			}
 			return records;
 		}
@@ -495,6 +495,27 @@ namespace lib_edi.Services.Loggers
 			}
 
 			return emsLogMetadata;
+		}
+
+		public static dynamic GetUsbdgMetadataRecordsElement(dynamic metadata)
+		{
+			dynamic recordsElement = null;
+
+			if (metadata != null)
+			{
+				if (metadata.records != null)
+				{
+					if (metadata.records.Type == JTokenType.Array)
+                    {
+						if (metadata.records.Count > 0)
+						{
+							recordsElement = metadata.records[0];
+						}
+					}
+				}
+			}
+
+			return recordsElement;
 		}
 
 

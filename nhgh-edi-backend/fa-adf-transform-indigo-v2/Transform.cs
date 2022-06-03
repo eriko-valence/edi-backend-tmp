@@ -63,13 +63,15 @@ namespace fa_adf_transform_indigo_v2
                 CloudBlockBlob usbdgReportMetadataBlob = UsbdgDataProcessorService.GetReportMetadataBlob(logDirectoryBlobs, inputBlobPath);
 
                 log.LogInformation($"- Download {logType} log blobs");
-                List<JObject> indigoLogFiles = await DataTransformService.DownloadAndDeserializeJsonBlobs(usbdgLogBlobs, inputContainer, inputBlobPath, log);
+                List<dynamic> indigoLogFiles = await DataTransformService.DownloadAndDeserializeJsonBlobs(usbdgLogBlobs, inputContainer, inputBlobPath, log);
                 log.LogInformation($"- Download {logType} log report blobs");
                 dynamic usbdgReportMetadata = await DataTransformService.DownloadAndDeserializeJsonBlob(usbdgReportMetadataBlob, inputContainer, inputBlobPath, log);
 
+                dynamic usbdgRecords = UsbdgDataProcessorService.GetUsbdgMetadataRecordsElement(usbdgReportMetadata);
+
                 log.LogInformation($"- Retrieving time values from EMD metadata");
-                string emdRelativeTime = DataTransformService.GetJObjectPropertyValueAsString(usbdgReportMetadata, "RELT");
-                string emdAbsoluteTime = DataTransformService.GetJObjectPropertyValueAsString(usbdgReportMetadata, "ABST");
+                string emdRelativeTime = DataTransformService.GetJObjectPropertyValueAsString(usbdgRecords, "RELT");
+                string emdAbsoluteTime = DataTransformService.GetJObjectPropertyValueAsString(usbdgRecords, "ABST");
 
                 log.LogInformation($"- Validate {logType} log blobs");
                 List<dynamic> validatedUsbdgLogFiles = await DataTransformService.ValidateLogJsonObjects(emsConfgContainer, indigoLogFiles, logJsonSchemaFileName, log);
@@ -102,13 +104,13 @@ namespace fa_adf_transform_indigo_v2
                     log.LogInformation($"    - record[0].ABST (EMD cloud upload absolute time): {usbdbLogCsvRows[0].ABST}");
                     log.LogInformation($"    - record[0].RELT (Logger cloud upload relative time): {usbdbLogCsvRows[0].RELT}");
                     log.LogInformation($"    - record[0]._RELT_SECS (Logger cloud upload relative time seconds): {usbdbLogCsvRows[0]._RELT_SECS}");
-                    log.LogInformation($"    - record[0]._ABST (calculated absolute time): {usbdbLogCsvRows[0]._ABST}");
+                    log.LogInformation($"    - record[0]._ABST (calculated absolute time): {usbdbLogCsvRows[0].ABST_CALC}");
                     log.LogInformation($" ");
                     log.LogInformation($"    - record[1].ElapsedSecs (Elapsed secs from activation time): {IndigoDataTransformService.CalculateElapsedSecondsFromLoggerActivationRelativeTime(emdRelativeTime, usbdbLogCsvRows[1].RELT)}");
                     log.LogInformation($"    - record[1].ABST (EMD cloud upload absolute time): {usbdbLogCsvRows[1].ABST}");
                     log.LogInformation($"    - record[1].RELT (Logger cloud upload relative time): {usbdbLogCsvRows[1].RELT}");
                     log.LogInformation($"    - record[1]._RELT_SECS (Logger cloud upload relative time seconds): {usbdbLogCsvRows[1]._RELT_SECS}");
-                    log.LogInformation($"    - record[1]._ABST (calculated absolute time): {usbdbLogCsvRows[1]._ABST}");
+                    log.LogInformation($"    - record[1]._ABST (calculated absolute time): {usbdbLogCsvRows[1].ABST_CALC}");
                 }
 
                 log.LogInformation($"- Write {logType} csv records to azure blob storage");
