@@ -21,6 +21,7 @@ using lib_edi.Services.Ccdx;
 using System.IO;
 using System.Globalization;
 using CsvHelper;
+using lib_edi.Models.Loggers.Csv;
 
 namespace lib_edi.Services.CceDevice
 {
@@ -58,7 +59,7 @@ namespace lib_edi.Services.CceDevice
 		}
 
 		/// <summary>
-		/// Maps raw USBDG log files to denormalized, csv compatible format
+		/// Maps raw USBDG log file properties to csv columns
 		/// </summary>
 		/// <remarks>
 		/// This function iterates a list of USBDG log files to map these records. Records
@@ -68,7 +69,8 @@ namespace lib_edi.Services.CceDevice
 		/// <returns>
 		/// A consolidated list of csv USBDG MetaFridge log file records  if successful; Exception (D39Y) if any failures occur 
 		/// </returns>
-		public static List<UsbdgSimCsvRecordDto> MapSourceLogsToSinkColumnNames(List<dynamic> sourceLogs, dynamic sourceUsbdgMetadata)
+		/*
+        public static List<UsbdgSimCsvRecordDto> MapSourceLogsToSinkColumnNames(List<dynamic> sourceLogs, dynamic sourceUsbdgMetadata)
 		{
 
 
@@ -80,6 +82,22 @@ namespace lib_edi.Services.CceDevice
 
 			return sinkData;
 		}
+        */
+
+        public static List<IndigoV2EventRecord> MapSourceToSinkEventColumns(List<dynamic> sourceLogs, dynamic sourceUsbdgMetadata)
+        {
+
+
+            List<IndigoV2EventRecord> sinkData = new List<IndigoV2EventRecord>();
+            foreach (dynamic sourceLog in sourceLogs)
+            {
+                sinkData.AddRange(MapSourceToSinkEventColumns(sourceLog, sourceUsbdgMetadata));
+            }
+
+            return sinkData;
+        }
+
+        
 
         /// <summary>
         /// Maps raw EMD and logger files to CSV compatible format
@@ -92,11 +110,16 @@ namespace lib_edi.Services.CceDevice
         /// <returns>
         /// A list of CSV compatible EMD + logger data records, if successful; Exception (D39Y) if any failures occur 
         /// </returns>
-        public static List<UsbdgSimCsvRecordDto> MapSourceLogToSinkColumnNames(dynamic sourceLog, dynamic sourceUsbdgMetadata)
+        public static List<IndigoV2EventRecord> MapSourceToSinkEventColumns(dynamic sourceLog, dynamic sourceUsbdgMetadata)
         {
+            string propName = null;
+            string propValue = null;
+            string sourceFile = null;
+
             try
             {
-                List<UsbdgSimCsvRecordDto> sinkData = new List<UsbdgSimCsvRecordDto>();
+
+                List<IndigoV2EventRecord> sinkData = new List<IndigoV2EventRecord>();
 
                 /* ######################################################################
                  * # Cast dynamic data file objects to JSON
@@ -104,11 +127,18 @@ namespace lib_edi.Services.CceDevice
                 JObject JObjLoggerDataFile = (JObject)sourceLog;
                 JObject JObjMetadataFile = (JObject)sourceUsbdgMetadata;
 
+                if (JObjLoggerDataFile != null)
+                {
+                    sourceFile = ObjectManager.GetJObjectPropertyValueAsString(JObjLoggerDataFile, "_SOURCE");
+                }
+                
+
                 /* ######################################################################
                  * # Merge EMD and logger metadata
                  * ###################################################################### */
                 UsbdgSimEmdMetadata usbdgSimEmdMetadata = new UsbdgSimEmdMetadata();
 
+                /*
                 // Get the EMD metadata fields
                 foreach (KeyValuePair<string, JToken> x in JObjMetadataFile)
                 {
@@ -132,6 +162,7 @@ namespace lib_edi.Services.CceDevice
                         ObjectManager.SetObjectValue(ref usbdgSimEmdMetadata, x.Key, x.Value);
                     }
                 }
+                */
 
                 /* ######################################################################
                  * # Format logger collection events for serialization to CSV 
@@ -143,15 +174,17 @@ namespace lib_edi.Services.CceDevice
                         //Iterate each logger collection event
                         foreach (JObject z in x.Value.Children<JObject>())
                         {
-                            UsbdgSimCsvRecordDto csvUsbdgSimRecordDto = new UsbdgSimCsvRecordDto();
+                            IndigoV2EventRecord csvUsbdgSimRecordDto = new();
                             //Add metadata to each collected event record
-                            foreach (PropertyInfo prop in usbdgSimEmdMetadata.GetType().GetProperties())
-                            {
-                                ObjectManager.SetObjectValue(ref csvUsbdgSimRecordDto, prop.Name, prop.GetValue(usbdgSimEmdMetadata, null));
-                            }
+                            //foreach (PropertyInfo prop in usbdgSimEmdMetadata.GetType().GetProperties())
+                           // {
+                            //    ObjectManager.SetObjectValue(ref csvUsbdgSimRecordDto, prop.Name, prop.GetValue(usbdgSimEmdMetadata, null));
+                           // }
                             //Add collected event data to record
                             foreach (JProperty prop in z.Properties())
                             {
+                                propName = prop.Name;
+                                propValue = (string)prop.Value;
                                 if (prop.Name == "ABST")
                                 {
                                     DateTime? emdAbsoluteTime = DateConverter.ConvertIso8601CompliantString(prop.Value.ToString());
@@ -172,7 +205,7 @@ namespace lib_edi.Services.CceDevice
             }
             catch (Exception e)
             {
-                throw new Exception(EdiErrorsService.BuildExceptionMessageString(e, "D39Y", null));
+                throw new Exception(EdiErrorsService.BuildExceptionMessageString(e, "D39Y", EdiErrorsService.BuildErrorVariableArrayList(propName, propValue, sourceFile)));
             }
 
         }

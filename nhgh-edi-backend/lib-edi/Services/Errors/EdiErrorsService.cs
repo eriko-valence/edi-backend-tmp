@@ -182,7 +182,9 @@ namespace lib_edi.Services.Errors
 					{
 						if (errorVariables.Count == 1)
 						{
+							string abc = (string)errorVariables[0];
 							customErrorMessage = string.Format(emsError.Message, errorVariables[0]);
+							Console.WriteLine("debug");
 						}
 						else if (errorVariables.Count == 2)
 						{
