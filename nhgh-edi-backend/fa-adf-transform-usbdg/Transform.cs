@@ -72,17 +72,18 @@ namespace fa_adf_transform_usbdg
                 log.LogInformation($"- Building input blob path: {inputBlobPath}");
 
                 log.LogInformation($"- List blobs in azure blob storage location {inputBlobPath}");
-                IEnumerable<IListBlobItem> logDirectoryBlobs = AzureStorageBlobService.ListBlobsInDirectory(inputContainer, payload.Path, inputBlobPath);
+                IEnumerable<IListBlobItem> logDirectoryBlobs = AzureStorageBlobService.GetListOfBlobsInDirectory(inputContainer, payload.Path, inputBlobPath);
 
                 log.LogInformation($"- Filter for {logType} log blobs");
                 List<CloudBlockBlob> usbdgLogBlobs = UsbdgDataProcessorService.FindUsbdgLogBlobs(logDirectoryBlobs, inputBlobPath);
                 log.LogInformation($"- Filter for {logType} log report blobs");
-                CloudBlockBlob usbdgLogReportBlobs = UsbdgDataProcessorService.FindReportMetadataBlob(logDirectoryBlobs, inputBlobPath);
+                CloudBlockBlob usbdgLogReportBlobs = UsbdgDataProcessorService.GetReportMetadataBlob(logDirectoryBlobs, inputBlobPath);
 
                 log.LogInformation($"- Download {logType} log blobs");
                 List<dynamic> usbdgLogFiles = await UsbdgDataProcessorService.DownloadAndDeserializeJsonBlobs(usbdgLogBlobs, inputContainer, inputBlobPath, log);
                 log.LogInformation($"- Download {logType} log report blobs");
-                dynamic emsLogMetadata = await UsbdgDataProcessorService.DownloadUsbdgLogReportBlobs(usbdgLogReportBlobs, inputContainer, inputBlobPath, log);
+                //dynamic emsLogMetadata = await UsbdgDataProcessorService.DownloadUsbdgLogReportBlobs(usbdgLogReportBlobs, inputContainer, inputBlobPath, log);
+                dynamic emsLogMetadata = null;
 
                 log.LogInformation($"- Retrieving time values from EMD metadata");
                 string emdRelativeTime = ObjectManager.GetJObjectPropertyValueAsString(emsLogMetadata,"RELT");

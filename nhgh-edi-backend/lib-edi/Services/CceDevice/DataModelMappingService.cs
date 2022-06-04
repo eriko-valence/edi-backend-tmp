@@ -131,10 +131,12 @@ namespace lib_edi.Services.Loggers
 
 
             List<UsbdgSimCsvRecordDto> usbdbLogCsvRows = new List<UsbdgSimCsvRecordDto>();
+            /*
             foreach (dynamic usbdbLog in usbdgLogFiles)
             {
                 usbdbLogCsvRows.AddRange(MapUsbdgLogFileRecords(usbdbLog, reportFile));
             }
+            */
 
             return usbdbLogCsvRows;
         }
@@ -174,11 +176,11 @@ namespace lib_edi.Services.Loggers
                     if (x.Key == "ABST")
 					{
                         DateTime? emdAbsoluteTime = DateConverter.ConvertIso8601CompliantString(x.Value.ToString());
-                        ObjectManager.SetObjectValue(ref usbdgSimEmdMetadata, x.Key, emdAbsoluteTime);
+                        //ObjectManager.SetObjectValue(ref usbdgSimEmdMetadata, x.Key, emdAbsoluteTime);
                     } 
                     else
 					{
-                        ObjectManager.SetObjectValue(ref usbdgSimEmdMetadata, x.Key, x.Value);
+                        //ObjectManager.SetObjectValue(ref usbdgSimEmdMetadata, x.Key, x.Value);
                     }   
                 }
 
@@ -188,7 +190,7 @@ namespace lib_edi.Services.Loggers
                     // Filter out records array
                     if (x.Value.Type != JTokenType.Array)
                     {
-                        ObjectManager.SetObjectValue(ref usbdgSimEmdMetadata, x.Key, x.Value);
+                        //ObjectManager.SetObjectValue(ref usbdgSimEmdMetadata, x.Key, x.Value);
                     }
                 }
 

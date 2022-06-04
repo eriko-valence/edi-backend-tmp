@@ -77,7 +77,8 @@ namespace fa_adf_transform_indigo_v2
                 List<dynamic> validatedUsbdgLogFiles = await DataTransformService.ValidateLogJsonObjects(emsConfgContainer, indigoLogFiles, logJsonSchemaFileName, log);
 
                 log.LogInformation($"- Map {logType} log objects to csv records");
-                List<UsbdgSimCsvRecordDto> usbdbLogCsvRows = IndigoDataTransformService.MapSourceLogsToSinkColumnNames(indigoLogFiles, usbdgReportMetadata);
+                //List<UsbdgSimCsvRecordDto> usbdbLogCsvRows = IndigoDataTransformService.MapSourceLogsToSinkColumnNames(indigoLogFiles, usbdgReportMetadata);
+                List<UsbdgSimCsvRecordDto> usbdbLogCsvRows = IndigoDataTransformService.MapSourceToSinkEventColumns(indigoLogFiles, usbdgReportMetadata);
 
                 log.LogInformation($"- Transform {logType} csv records");
 
@@ -129,7 +130,7 @@ namespace fa_adf_transform_indigo_v2
             catch (Exception e)
             {
                 string errorCode = "E2N8";
-                string errorMessage = EdiErrorsService.BuildExceptionMessageString(e, errorCode, EdiErrorsService.BuildErrorVariableArrayList());
+                string errorMessage = EdiErrorsService.BuildExceptionMessageString(e, errorCode, EdiErrorsService.BuildErrorVariableArrayList(payload.FileName));
                 string exceptionInnerMessage = EdiErrorsService.GetInnerException(e);
 
                 CcdxService.LogEmsTransformErrorEventToAppInsights(payload?.FileName, log, e, errorCode);
