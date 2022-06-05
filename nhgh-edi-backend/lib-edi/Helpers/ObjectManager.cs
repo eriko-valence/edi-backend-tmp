@@ -48,10 +48,10 @@ namespace lib_edi.Helpers
         /// <summary>
         /// Sets the property value of a specified object with a JToken value
         /// </summary>
-        /// <param name="usbdgSimMetadata"> The UsbdgSimMetadata object whose property value will be set</param>
+        /// <param name="eventRecord"> The UsbdgSimMetadata object whose property value will be set</param>
         /// <param name="propertyName">The property name of the UsbdgSimMetadata object that will be set with the JToken value</param>
         /// <param name="token">The new JToken property value</param>
-        public static void SetObjectValue(ref IndigoV2EventRecord usbdgSimMetadata, string propertyName, JToken token)
+        public static void SetObjectValue(ref IndigoV2EventRecord eventRecord, string propertyName, JToken token)
         {
             try
 			{
@@ -59,10 +59,10 @@ namespace lib_edi.Helpers
 				{
                     if (propertyName != null)
 					{
-                        PropertyInfo propertyInfo = usbdgSimMetadata.GetType().GetProperty(propertyName);
+                        PropertyInfo propertyInfo = eventRecord.GetType().GetProperty(propertyName);
                         if (propertyInfo != null)
                         {
-                            propertyInfo.SetValue(usbdgSimMetadata, Convert.ChangeType(token, propertyInfo.PropertyType), null);
+                            propertyInfo.SetValue(eventRecord, Convert.ChangeType(token, propertyInfo.PropertyType), null);
                         }
                     }
                 }

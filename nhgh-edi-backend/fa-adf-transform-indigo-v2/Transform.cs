@@ -21,6 +21,7 @@ using lib_edi.Models.Dto.Http;
 using lib_edi.Services.Azure;
 using lib_edi.Services.CceDevice;
 using Newtonsoft.Json.Linq;
+using lib_edi.Models.Loggers.Csv;
 //using Microsoft.Azure.Storage.Blob; // Microsoft.Azure.WebJobs.Extensions.Storage
 
 namespace fa_adf_transform_indigo_v2
@@ -77,8 +78,7 @@ namespace fa_adf_transform_indigo_v2
                 List<dynamic> validatedUsbdgLogFiles = await DataTransformService.ValidateLogJsonObjects(emsConfgContainer, indigoLogFiles, logJsonSchemaFileName, log);
 
                 log.LogInformation($"- Map {logType} log objects to csv records");
-                //List<UsbdgSimCsvRecordDto> usbdbLogCsvRows = IndigoDataTransformService.MapSourceLogsToSinkColumnNames(indigoLogFiles, usbdgReportMetadata);
-                List<UsbdgSimCsvRecordDto> usbdbLogCsvRows = IndigoDataTransformService.MapSourceToSinkEventColumns(indigoLogFiles, usbdgReportMetadata);
+                List<IndigoV2EventRecord> usbdbLogCsvRows = IndigoDataTransformService.MapSourceToSinkEvents(indigoLogFiles);
 
                 log.LogInformation($"- Transform {logType} csv records");
 
@@ -86,7 +86,7 @@ namespace fa_adf_transform_indigo_v2
                 usbdbLogCsvRows = IndigoDataTransformService.ConvertRelativeTimeToTotalSecondsForUsbdgLogRecords(usbdbLogCsvRows);
 
                 log.LogInformation($"  - Sort csv records using relative time total seconds");
-                List<UsbdgSimCsvRecordDto> sortedUsbdbLogCsvRows = usbdbLogCsvRows.OrderBy(i => (i._RELT_SECS)).ToList();
+                List<IndigoV2EventRecord> sortedUsbdbLogCsvRows = usbdbLogCsvRows.OrderBy(i => (i._RELT_SECS)).ToList();
 
                 log.LogInformation($"  - Convert relative time (e.g., 'P9DT59M53S') to total seconds (report only)");
                 int DurationSecs = IndigoDataTransformService.ConvertRelativeTimeStringToTotalSeconds(usbdgReportMetadata); // convert timespan to seconds
@@ -102,13 +102,13 @@ namespace fa_adf_transform_indigo_v2
                 if (usbdbLogCsvRows.Count > 1)
                 {
                     log.LogInformation($"    - record[0].ElapsedSecs (Elapsed secs from activation time): {IndigoDataTransformService.CalculateElapsedSecondsFromLoggerActivationRelativeTime(emdRelativeTime, usbdbLogCsvRows[0].RELT)}");
-                    log.LogInformation($"    - record[0].ABST (EMD cloud upload absolute time): {usbdbLogCsvRows[0].ABST}");
+                    //log.LogInformation($"    - record[0].ABST (EMD cloud upload absolute time): {usbdbLogCsvRows[0].ABST}");
                     log.LogInformation($"    - record[0].RELT (Logger cloud upload relative time): {usbdbLogCsvRows[0].RELT}");
                     log.LogInformation($"    - record[0]._RELT_SECS (Logger cloud upload relative time seconds): {usbdbLogCsvRows[0]._RELT_SECS}");
                     log.LogInformation($"    - record[0]._ABST (calculated absolute time): {usbdbLogCsvRows[0].ABST_CALC}");
                     log.LogInformation($" ");
                     log.LogInformation($"    - record[1].ElapsedSecs (Elapsed secs from activation time): {IndigoDataTransformService.CalculateElapsedSecondsFromLoggerActivationRelativeTime(emdRelativeTime, usbdbLogCsvRows[1].RELT)}");
-                    log.LogInformation($"    - record[1].ABST (EMD cloud upload absolute time): {usbdbLogCsvRows[1].ABST}");
+                    //log.LogInformation($"    - record[1].ABST (EMD cloud upload absolute time): {usbdbLogCsvRows[1].ABST}");
                     log.LogInformation($"    - record[1].RELT (Logger cloud upload relative time): {usbdbLogCsvRows[1].RELT}");
                     log.LogInformation($"    - record[1]._RELT_SECS (Logger cloud upload relative time seconds): {usbdbLogCsvRows[1]._RELT_SECS}");
                     log.LogInformation($"    - record[1]._ABST (calculated absolute time): {usbdbLogCsvRows[1].ABST_CALC}");

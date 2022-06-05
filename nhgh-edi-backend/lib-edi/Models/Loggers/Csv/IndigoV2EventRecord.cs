@@ -80,5 +80,8 @@ namespace lib_edi.Models.Loggers.Csv
 		public int _RELT_SECS { get; set; } // relative time (duration) in seconds (set by azure function)
 											//public int emd_relt { get; set; }
 											//public DateTime emd_abs { get; set; }
-    }
+
+		[Ignore]
+		public string Source { get; set; }
+	}
 }

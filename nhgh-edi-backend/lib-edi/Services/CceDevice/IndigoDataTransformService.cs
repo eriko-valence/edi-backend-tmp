@@ -84,14 +84,14 @@ namespace lib_edi.Services.CceDevice
 		}
         */
 
-        public static List<IndigoV2EventRecord> MapSourceToSinkEventColumns(List<dynamic> sourceLogs, dynamic sourceUsbdgMetadata)
+        public static List<IndigoV2EventRecord> MapSourceToSinkEvents(List<dynamic> sourceLogs)
         {
 
 
             List<IndigoV2EventRecord> sinkData = new List<IndigoV2EventRecord>();
             foreach (dynamic sourceLog in sourceLogs)
             {
-                sinkData.AddRange(MapSourceToSinkEventColumns(sourceLog, sourceUsbdgMetadata));
+                sinkData.AddRange(MapSourceToSinkEventColumns(sourceLog));
             }
 
             return sinkData;
@@ -110,7 +110,7 @@ namespace lib_edi.Services.CceDevice
         /// <returns>
         /// A list of CSV compatible EMD + logger data records, if successful; Exception (D39Y) if any failures occur 
         /// </returns>
-        public static List<IndigoV2EventRecord> MapSourceToSinkEventColumns(dynamic sourceLog, dynamic sourceUsbdgMetadata)
+        private static List<IndigoV2EventRecord> MapSourceToSinkEventColumns(dynamic sourceLog)
         {
             string propName = null;
             string propValue = null;
@@ -118,69 +118,18 @@ namespace lib_edi.Services.CceDevice
 
             try
             {
+                List<IndigoV2EventRecord> sinkEventRecords = new();
 
-                List<IndigoV2EventRecord> sinkData = new List<IndigoV2EventRecord>();
-
-                /* ######################################################################
-                 * # Cast dynamic data file objects to JSON
-                 * ###################################################################### */
-                JObject JObjLoggerDataFile = (JObject)sourceLog;
-                JObject JObjMetadataFile = (JObject)sourceUsbdgMetadata;
-
-                if (JObjLoggerDataFile != null)
-                {
-                    sourceFile = ObjectManager.GetJObjectPropertyValueAsString(JObjLoggerDataFile, "_SOURCE");
-                }
+                JObject sourceLogJObject = (JObject)sourceLog;
+                sourceFile = GetSourceFile(sourceLogJObject);
                 
-
-                /* ######################################################################
-                 * # Merge EMD and logger metadata
-                 * ###################################################################### */
-                UsbdgSimEmdMetadata usbdgSimEmdMetadata = new UsbdgSimEmdMetadata();
-
-                /*
-                // Get the EMD metadata fields
-                foreach (KeyValuePair<string, JToken> x in JObjMetadataFile)
-                {
-                    if (x.Key == "ABST")
-                    {
-                        DateTime? emdAbsoluteTime = DateConverter.ConvertIso8601CompliantString(x.Value.ToString());
-                        ObjectManager.SetObjectValue(ref usbdgSimEmdMetadata, x.Key, emdAbsoluteTime);
-                    }
-                    else
-                    {
-                        ObjectManager.SetObjectValue(ref usbdgSimEmdMetadata, x.Key, x.Value);
-                    }
-                }
-
-                // Get the logger header fields
-                foreach (KeyValuePair<string, JToken> x in JObjLoggerDataFile)
-                {
-                    // Filter out records array
-                    if (x.Value.Type != JTokenType.Array)
-                    {
-                        ObjectManager.SetObjectValue(ref usbdgSimEmdMetadata, x.Key, x.Value);
-                    }
-                }
-                */
-
-                /* ######################################################################
-                 * # Format logger collection events for serialization to CSV 
-                 * ###################################################################### */
-                foreach (KeyValuePair<string, JToken> x in JObjLoggerDataFile)
+                foreach (KeyValuePair<string, JToken> x in sourceLogJObject)
                 {
                     if (x.Value.Type == JTokenType.Array)
                     {
-                        //Iterate each logger collection event
                         foreach (JObject z in x.Value.Children<JObject>())
                         {
-                            IndigoV2EventRecord csvUsbdgSimRecordDto = new();
-                            //Add metadata to each collected event record
-                            //foreach (PropertyInfo prop in usbdgSimEmdMetadata.GetType().GetProperties())
-                           // {
-                            //    ObjectManager.SetObjectValue(ref csvUsbdgSimRecordDto, prop.Name, prop.GetValue(usbdgSimEmdMetadata, null));
-                           // }
-                            //Add collected event data to record
+                            IndigoV2EventRecord sinkRecord = new();
                             foreach (JProperty prop in z.Properties())
                             {
                                 propName = prop.Name;
@@ -188,26 +137,25 @@ namespace lib_edi.Services.CceDevice
                                 if (prop.Name == "ABST")
                                 {
                                     DateTime? emdAbsoluteTime = DateConverter.ConvertIso8601CompliantString(prop.Value.ToString());
-                                    ObjectManager.SetObjectValue(ref csvUsbdgSimRecordDto, prop.Name, emdAbsoluteTime);
+                                    ObjectManager.SetObjectValue(ref sinkRecord, prop.Name, emdAbsoluteTime);
 
                                 }
                                 else
                                 {
-                                    ObjectManager.SetObjectValue(ref csvUsbdgSimRecordDto, prop.Name, prop.Value);
+                                    ObjectManager.SetObjectValue(ref sinkRecord, prop.Name, prop.Value);
                                 }
 
                             }
-                            sinkData.Add(csvUsbdgSimRecordDto);
+                            sinkEventRecords.Add(sinkRecord);
                         }
                     }
                 }
-                return sinkData;
+                return sinkEventRecords;
             }
             catch (Exception e)
             {
                 throw new Exception(EdiErrorsService.BuildExceptionMessageString(e, "D39Y", EdiErrorsService.BuildErrorVariableArrayList(propName, propValue, sourceFile)));
             }
-
         }
 
         /// <summary>
@@ -301,9 +249,9 @@ namespace lib_edi.Services.CceDevice
         /// <returns>
         /// List of denormalized USBDG records (with the calculated duration seconds); Exception (M34T) otherwise
         /// </returns>
-        public static List<UsbdgSimCsvRecordDto> ConvertRelativeTimeToTotalSecondsForUsbdgLogRecords(List<UsbdgSimCsvRecordDto> records)
+        public static List<IndigoV2EventRecord> ConvertRelativeTimeToTotalSecondsForUsbdgLogRecords(List<IndigoV2EventRecord> records)
         {
-            foreach (UsbdgSimCsvRecordDto record in records)
+            foreach (IndigoV2EventRecord record in records)
             {
                 try
                 {
@@ -362,11 +310,11 @@ namespace lib_edi.Services.CceDevice
         /// <returns>
         /// Absolute timestamp (DateTime) of a USBDG record; Exception (4Q5D) otherwise
         /// </returns>
-        public static List<UsbdgSimCsvRecordDto> CalculateAbsoluteTimeForUsbdgRecords(List<UsbdgSimCsvRecordDto> records, int reportDurationSeconds, dynamic reportAbsoluteTimestamp)
+        public static List<IndigoV2EventRecord> CalculateAbsoluteTimeForUsbdgRecords(List<IndigoV2EventRecord> records, int reportDurationSeconds, dynamic reportAbsoluteTimestamp)
         {
             string absoluteTime = ObjectManager.GetJObjectPropertyValueAsString(reportAbsoluteTimestamp, "ABST");
 
-            foreach (UsbdgSimCsvRecordDto record in records)
+            foreach (IndigoV2EventRecord record in records)
             {
                 DateTime? dt = CalculateAbsoluteTimeForUsbdgRecord(absoluteTime, reportDurationSeconds, record.RELT, record.Source);
                 record.ABST_CALC = dt;
@@ -475,7 +423,7 @@ namespace lib_edi.Services.CceDevice
         /// <returns>
         /// Blob name of USBDG csv formatted log file; Exception (Q25U)
         /// </returns>
-        public static async Task<string> WriteUsbdgLogRecordsToCsvBlob(CloudBlobContainer cloudBlobContainer, TransformHttpRequestMessageBodyDto requestBody, List<UsbdgSimCsvRecordDto> usbdgRecords, ILogger log)
+        public static async Task<string> WriteUsbdgLogRecordsToCsvBlob(CloudBlobContainer cloudBlobContainer, TransformHttpRequestMessageBodyDto requestBody, List<IndigoV2EventRecord> usbdgRecords, ILogger log)
         {
             string blobName = "";
             if (requestBody != null)
@@ -511,6 +459,44 @@ namespace lib_edi.Services.CceDevice
                 }
             }
             return blobName;
+        }
+
+        /// <summary>
+        /// Sets the property value of a specified object with a JToken value
+        /// </summary>
+        /// <param name="eventRecord"> The UsbdgSimMetadata object whose property value will be set</param>
+        /// <param name="propertyName">The property name of the UsbdgSimMetadata object that will be set with the JToken value</param>
+        /// <param name="token">The new JToken property value</param>
+        public static void SetObjectValue(ref IndigoV2EventRecord eventRecord, string propertyName, JToken token)
+        {
+            try
+            {
+                if (token != null)
+                {
+                    if (propertyName != null)
+                    {
+                        PropertyInfo propertyInfo = eventRecord.GetType().GetProperty(propertyName);
+                        if (propertyInfo != null)
+                        {
+                            propertyInfo.SetValue(eventRecord, Convert.ChangeType(token, propertyInfo.PropertyType), null);
+                        }
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        private static string GetSourceFile(JObject jo)
+        {
+            string sourceFile = null;
+            if (jo != null)
+            {
+                sourceFile = ObjectManager.GetJObjectPropertyValueAsString(jo, "_SOURCE");
+            }
+            return sourceFile;
         }
     }
 }
