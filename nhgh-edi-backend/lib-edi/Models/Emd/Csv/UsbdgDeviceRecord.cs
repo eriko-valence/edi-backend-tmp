@@ -1,4 +1,5 @@
 ﻿using CsvHelper.Configuration.Attributes;
+using lib_edi.Models.Csv;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,8 +8,8 @@ using System.Threading.Tasks;
 
 namespace lib_edi.Models.Emd.Csv
 {
-    public class UsbdgDeviceRecord
-    {
+    public class UsbdgDeviceRecord : EdiSinkRecord
+	{
 		[Name("EDOP")]
 		public string EDOP { get; set; }
 

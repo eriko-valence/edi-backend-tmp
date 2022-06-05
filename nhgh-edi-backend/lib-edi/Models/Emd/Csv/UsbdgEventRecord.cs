@@ -1,4 +1,5 @@
 ﻿using CsvHelper.Configuration.Attributes;
+using lib_edi.Models.Csv;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace lib_edi.Models.Emd.Csv
 {
-    public class UsbdgEventRecord
+    public class UsbdgEventRecord : EdiSinkRecord
     {
         [Name("ABST")]
         public DateTime? ABST { get; set; }

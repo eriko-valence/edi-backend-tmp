@@ -22,6 +22,7 @@ using lib_edi.Services.Azure;
 using lib_edi.Services.CceDevice;
 using Newtonsoft.Json.Linq;
 using lib_edi.Models.Loggers.Csv;
+using lib_edi.Models.Csv;
 //using Microsoft.Azure.Storage.Blob; // Microsoft.Azure.WebJobs.Extensions.Storage
 
 namespace fa_adf_transform_indigo_v2
@@ -78,10 +79,11 @@ namespace fa_adf_transform_indigo_v2
                 List<dynamic> validatedUsbdgLogFiles = await DataTransformService.ValidateLogJsonObjects(emsConfgContainer, indigoLogFiles, logJsonSchemaFileName, log);
 
                 log.LogInformation($"- Map {logType} log objects to csv records");
-                List<IndigoV2EventRecord> usbdbLogCsvRows = IndigoDataTransformService.MapSourceToSinkEvents(indigoLogFiles);
+                List<EdiSinkRecord> usbdbLogCsvRows = IndigoDataTransformService.MapSourceToSinkEvents(indigoLogFiles);
 
                 log.LogInformation($"- Transform {logType} csv records");
-
+                string responseBody = null;
+                /*
                 log.LogInformation($"  - Convert relative time to total seconds (all records)");
                 usbdbLogCsvRows = IndigoDataTransformService.ConvertRelativeTimeToTotalSecondsForUsbdgLogRecords(usbdbLogCsvRows);
 
@@ -124,6 +126,7 @@ namespace fa_adf_transform_indigo_v2
                 log.LogInformation("- Log successfully completed event to app insights");
                 AzureAppInsightsService.LogEmsTransformSucceededEventToAppInsights(payload.FileName, log);
                 log.LogInformation(" - SUCCESS");
+                */
 
                 return new OkObjectResult(responseBody);
             }

@@ -59,7 +59,7 @@ namespace fa_adf_transform_cfd50
                 log.LogInformation($"- [transform-cdf50->run]: - Path: {inputBlobPath}");
 
                 log.LogInformation($"- [transform-cdf50->run]: List blobs in storage container {inputContainer.Name}/{payload.Path}");
-                IEnumerable<IListBlobItem> logDirectoryBlobs = AzureStorageBlobService.ListBlobsInDirectory(inputContainer, payload.Path, inputBlobPath);
+                IEnumerable<IListBlobItem> logDirectoryBlobs = AzureStorageBlobService.GetListOfBlobsInDirectory(inputContainer, payload.Path, inputBlobPath);
 
                 log.LogInformation($"- [transform-cdf50->run]: Filter for {logType} log blobs");
                 List<CloudBlockBlob> metaFridgeLogBlobs = Cfd50DataProcessorService.FindMetaFridgeLogBlobs(logDirectoryBlobs, inputBlobPath);

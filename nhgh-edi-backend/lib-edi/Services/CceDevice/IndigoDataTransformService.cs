@@ -22,6 +22,8 @@ using System.IO;
 using System.Globalization;
 using CsvHelper;
 using lib_edi.Models.Loggers.Csv;
+using lib_edi.Models.Csv;
+using lib_edi.Models.Emd.Csv;
 
 namespace lib_edi.Services.CceDevice
 {
@@ -58,46 +60,22 @@ namespace lib_edi.Services.CceDevice
 			return listBlobs;
 		}
 
-		/// <summary>
-		/// Maps raw USBDG log file properties to csv columns
-		/// </summary>
-		/// <remarks>
-		/// This function iterates a list of USBDG log files to map these records. Records
-		/// from all log files are consolidated into one list of denormalized records.
-		/// </remarks>
-		/// <param name="usbdgLogFiles">A list of deserilized USBDG json log file</param>
-		/// <returns>
-		/// A consolidated list of csv USBDG MetaFridge log file records  if successful; Exception (D39Y) if any failures occur 
-		/// </returns>
-		/*
-        public static List<UsbdgSimCsvRecordDto> MapSourceLogsToSinkColumnNames(List<dynamic> sourceLogs, dynamic sourceUsbdgMetadata)
-		{
-
-
-			List<UsbdgSimCsvRecordDto> sinkData = new List<UsbdgSimCsvRecordDto>();
-			foreach (dynamic sourceLog in sourceLogs)
-			{
-                sinkData.AddRange(MapSourceLogToSinkColumnNames(sourceLog, sourceUsbdgMetadata));
-			}
-
-			return sinkData;
-		}
-        */
-
-        public static List<IndigoV2EventRecord> MapSourceToSinkEvents(List<dynamic> sourceLogs)
+        public static List<EdiSinkRecord> MapSourceToSinkEvents(List<dynamic> sourceLogs)
         {
+            IndigoV2EventRecord testChild = new IndigoV2EventRecord();
+            EdiSinkRecord testParent = (EdiSinkRecord)testChild;
+            string sinkType = testParent.GetType().Name;
 
-
-            List<IndigoV2EventRecord> sinkData = new List<IndigoV2EventRecord>();
+            List<EdiSinkRecord> sinkRecords = new List<EdiSinkRecord>();
+            //List<EdiSinkRecord> parentList = sinkRecords.Cast<EdiSinkRecord>().ToList();
             foreach (dynamic sourceLog in sourceLogs)
             {
-                sinkData.AddRange(MapSourceToSinkEventColumns(sourceLog));
+                sinkRecords.AddRange(MapSourceToSinkEventColumns(sourceLog, sinkRecords));
             }
 
-            return sinkData;
+            return sinkRecords;
         }
 
-        
 
         /// <summary>
         /// Maps raw EMD and logger files to CSV compatible format
@@ -110,7 +88,7 @@ namespace lib_edi.Services.CceDevice
         /// <returns>
         /// A list of CSV compatible EMD + logger data records, if successful; Exception (D39Y) if any failures occur 
         /// </returns>
-        private static List<IndigoV2EventRecord> MapSourceToSinkEventColumns(dynamic sourceLog)
+        private static List<EdiSinkRecord> MapSourceToSinkEventColumns(dynamic sourceLog, List<EdiSinkRecord> sinkEventRecords)
         {
             string propName = null;
             string propValue = null;
@@ -118,37 +96,43 @@ namespace lib_edi.Services.CceDevice
 
             try
             {
-                List<IndigoV2EventRecord> sinkEventRecords = new();
-
                 JObject sourceLogJObject = (JObject)sourceLog;
                 sourceFile = GetSourceFile(sourceLogJObject);
+                EdiSinkRecord sink = new IndigoV2EventRecord(); // TODO - cast
                 
                 foreach (KeyValuePair<string, JToken> x in sourceLogJObject)
                 {
+                    // Iterate the records array
+
                     if (x.Value.Type == JTokenType.Array)
                     {
                         foreach (JObject z in x.Value.Children<JObject>())
                         {
-                            IndigoV2EventRecord sinkRecord = new();
+                            
                             foreach (JProperty prop in z.Properties())
                             {
                                 propName = prop.Name;
                                 propValue = (string)prop.Value;
+                                ObjectManager.SetObjectValue(ref sink, prop.Name, prop.Value);
+                                /*
                                 if (prop.Name == "ABST")
                                 {
                                     DateTime? emdAbsoluteTime = DateConverter.ConvertIso8601CompliantString(prop.Value.ToString());
-                                    ObjectManager.SetObjectValue(ref sinkRecord, prop.Name, emdAbsoluteTime);
-
+                                    ObjectManager.SetObjectValue(ref sink, prop.Name, emdAbsoluteTime);
                                 }
                                 else
                                 {
-                                    ObjectManager.SetObjectValue(ref sinkRecord, prop.Name, prop.Value);
+                                    ObjectManager.SetObjectValue(ref sink, prop.Name, prop.Value);
                                 }
-
+                                */
                             }
-                            sinkEventRecords.Add(sinkRecord);
+                            
                         }
+                    } else
+                    {
+                        ObjectManager.SetObjectValue(ref sink, x.Key, x.Value);
                     }
+                    sinkEventRecords.Add(sink);
                 }
                 return sinkEventRecords;
             }
