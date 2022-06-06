@@ -64,12 +64,7 @@ namespace lib_edi.Services.CceDevice
 
         public static List<EdiSinkRecord> MapSourceToSinkEvents(List<dynamic> sourceLogs)
         {
-            IndigoV2EventRecord testChild = new IndigoV2EventRecord();
-            EdiSinkRecord testParent = (EdiSinkRecord)testChild;
-            string sinkType = testParent.GetType().Name;
-
-            List<EdiSinkRecord> sinkRecords = new List<EdiSinkRecord>();
-            //List<EdiSinkRecord> parentList = sinkRecords.Cast<EdiSinkRecord>().ToList();
+            List<EdiSinkRecord> sinkRecords = new();
             foreach (dynamic sourceLog in sourceLogs)
             {
                 sinkRecords.AddRange(MapSourceToSinkEventColumns(sourceLog, sinkRecords));
@@ -100,61 +95,44 @@ namespace lib_edi.Services.CceDevice
             {
                 JObject sourceLogJObject = (JObject)sourceLog;
                 sourceFile = GetSourceFile(sourceLogJObject);
-                EdiSinkRecord sink = new IndigoV2EventRecord(); // TODO - cast
+                EdiSinkRecord sink = new IndigoV2EventRecord();
 
-
-                var header = new ExpandoObject() as IDictionary<string, Object>;
-                
-                foreach (KeyValuePair<string, JToken> x in sourceLogJObject)
+                // Grab the log header properties from the source log file
+                var logHeaderObject = new ExpandoObject() as IDictionary<string, Object>;
+                foreach (KeyValuePair<string, JToken> log1 in sourceLogJObject)
                 {
-                    // Filter out records array
-                    if (x.Value.Type != JTokenType.Array)
+                    if (log1.Value.Type != JTokenType.Array)
                     {
-                        //ObjectManager.SetObjectValue(ref csvEmsMetadata, x.Key, x.Value);
-                        Console.WriteLine("KeyX: " + x.Key + " ----> ValueX: " + x.Value );
-                        header.Add(x.Key, x.Value);
+                        logHeaderObject.Add(log1.Key, log1.Value);
                     }
                 }
 
-                foreach (KeyValuePair<string, JToken> x in sourceLogJObject)
+                // Map csv record objects from source log file
+                foreach (KeyValuePair<string, JToken> log2 in sourceLogJObject)
                 {
-
-                    //foreach (KeyValuePair<string, JToken> y in header)
-                    foreach (var y in header)
+                    // Load log header properties into csv record object
+                    foreach (var logHeader in logHeaderObject)
                     {
-                        Console.WriteLine("KeyY: " + y.Key + " ----> ValueY: " + y.Value);
-                        ObjectManager.SetObjectValue(ref sink, y.Key, y.Value);
+                        ObjectManager.SetObjectValue(ref sink, logHeader.Key, logHeader.Value);
                     }
 
-                        // Iterate the records array
-
-                    if (x.Value.Type == JTokenType.Array)
+                    // Load log record properties into csv record object
+                    if (log2.Value.Type == JTokenType.Array && log2.Key == "records")
                     {
-                        foreach (JObject z in x.Value.Children<JObject>())
+                        // Iterate each log record
+                        foreach (JObject z in log2.Value.Children<JObject>())
                         {
-                            
+                            // Load each log record property
                             foreach (JProperty prop in z.Properties())
                             {
                                 propName = prop.Name;
                                 propValue = (string)prop.Value;
                                 ObjectManager.SetObjectValue(ref sink, prop.Name, prop.Value);
-                                /*
-                                if (prop.Name == "ABST")
-                                {
-                                    DateTime? emdAbsoluteTime = DateConverter.ConvertIso8601CompliantString(prop.Value.ToString());
-                                    ObjectManager.SetObjectValue(ref sink, prop.Name, emdAbsoluteTime);
-                                }
-                                else
-                                {
-                                    ObjectManager.SetObjectValue(ref sink, prop.Name, prop.Value);
-                                }
-                                */
                             }
-                            
                         }
                     } else
                     {
-                        ObjectManager.SetObjectValue(ref sink, x.Key, x.Value);
+                        // ObjectManager.SetObjectValue(ref sink, log2.Key, log2.Value);
                     }
                     sinkEventRecords.Add(sink);
                 }
