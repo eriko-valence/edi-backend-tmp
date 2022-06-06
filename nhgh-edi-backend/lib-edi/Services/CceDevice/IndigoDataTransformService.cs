@@ -557,12 +557,19 @@ namespace lib_edi.Services.CceDevice
 
         private static string GetSourceFile(JObject jo)
         {
-            string sourceFile = "unknown";
+            string sourceFile = null;
             if (jo != null)
             {
                 sourceFile = ObjectManager.GetJObjectPropertyValueAsString(jo, "_SOURCE");
             }
-            return sourceFile;
+
+            if (sourceFile != null)
+            {
+                return sourceFile;
+            } else
+            {
+                return "unknown";
+            }
         }
     }
 }

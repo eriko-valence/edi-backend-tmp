@@ -65,9 +65,11 @@ namespace lib_edi.Services.CceDevice
 		/// </returns>
 		public static async Task<dynamic> DownloadAndDeserializeJsonBlob(CloudBlockBlob blob, CloudBlobContainer blobContainer, string blobPath, ILogger log)
 		{
-			log.LogInformation($"  - Blob: {blobContainer.Name}/{blob.Name}");
+			string emsBlobPath = $"{ blobContainer.Name}/{ blob.Name}";
+			log.LogInformation($"  - Blob: {emsBlobPath}");
 			string logBlobText = await AzureStorageBlobService.DownloadBlobTextAsync(blobContainer, blob.Name);
 			dynamic logBlobJson = DeserializeJsonText(blob.Name, logBlobText);
+			logBlobJson._SOURCE = emsBlobPath;
 
 			if (logBlobJson == null)
 			{
