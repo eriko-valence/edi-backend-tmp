@@ -87,7 +87,7 @@ namespace lib_edi.Services.CceDevice
         /// <returns>
         /// A list of CSV compatible EMD + logger data records, if successful; Exception (D39Y) if any failures occur 
         /// </returns>
-        public static List<EdiSinkRecord> MapIndigoV2Events(List<dynamic> sourceLogs)
+        public static List<IndigoV2EventRecord> MapIndigoV2Events(List<dynamic> sourceLogs)
         {
             string propName = null;
             string propValue = null;
@@ -95,7 +95,7 @@ namespace lib_edi.Services.CceDevice
 
             try
             {
-                List<EdiSinkRecord> sinkCsvEventRecords = new();
+                List<IndigoV2EventRecord> sinkCsvEventRecords = new();
 
                 foreach (dynamic sourceLog in sourceLogs)
                 {
@@ -117,18 +117,18 @@ namespace lib_edi.Services.CceDevice
                     // Map csv record objects from source log file
                     foreach (KeyValuePair<string, JToken> log2 in sourceLogJObject)
                     {
-                        // Load log header properties into csv record object
-                        foreach (var logHeader in logHeaderObject)
-                        {
-                            ObjectManager.SetObjectValue(ref sinkCsvEventRecord, logHeader.Key, logHeader.Value);
-                        }
-
                         // Load log record properties into csv record object
                         if (log2.Value.Type == JTokenType.Array && log2.Key == "records")
                         {
                             // Iterate each log record
                             foreach (JObject z in log2.Value.Children<JObject>())
                             {
+                                // Load log header properties into csv record object
+                                foreach (var logHeader in logHeaderObject)
+                                {
+                                    ObjectManager.SetObjectValue(ref sinkCsvEventRecord, logHeader.Key, logHeader.Value);
+                                }
+
                                 // Load each log record property
                                 foreach (JProperty prop in z.Properties())
                                 {
@@ -136,13 +136,15 @@ namespace lib_edi.Services.CceDevice
                                     propValue = (string)prop.Value;
                                     ObjectManager.SetObjectValue(ref sinkCsvEventRecord, prop.Name, prop.Value);
                                 }
+
+                                sinkCsvEventRecords.Add((IndigoV2EventRecord)sinkCsvEventRecord);
                             }
                         }
                         else
                         {
                             // ObjectManager.SetObjectValue(ref sink, log2.Key, log2.Value);
                         }
-                        sinkCsvEventRecords.Add(sinkCsvEventRecord);
+                        
                     }
                 }
                 return sinkCsvEventRecords;

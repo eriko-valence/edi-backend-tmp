@@ -83,7 +83,7 @@ namespace fa_adf_transform_indigo_v2
                 EdiJob ediJob = UsbdgDataProcessorService.PopulateEdiJobObject(usbdgReportMetadata, indigoLogFiles);
 
                 log.LogInformation($"- Map {logType} log objects to csv records");
-                List<EdiSinkRecord> usbdbLogCsvRows = IndigoDataTransformService.MapIndigoV2Events(indigoLogFiles);
+                List<IndigoV2EventRecord> usbdbLogCsvRows = IndigoDataTransformService.MapIndigoV2Events(indigoLogFiles);
 
                 List<EdiSinkRecord> indigoLocationCsvRows = IndigoDataTransformService.MapIndigoV2Locations(usbdgReportMetadata, ediJob);
 
@@ -92,11 +92,11 @@ namespace fa_adf_transform_indigo_v2
                 List<EdiSinkRecord> usbdgEventCsvRows = UsbdgDataProcessorService.MapUsbdgEvent(usbdgReportMetadata);
 
                 log.LogInformation($"- Transform {logType} csv records");
-                string responseBody = null;
-                /*
+                
                 log.LogInformation($"  - Convert relative time to total seconds (all records)");
                 usbdbLogCsvRows = IndigoDataTransformService.ConvertRelativeTimeToTotalSecondsForUsbdgLogRecords(usbdbLogCsvRows);
 
+                
                 log.LogInformation($"  - Sort csv records using relative time total seconds");
                 List<IndigoV2EventRecord> sortedUsbdbLogCsvRows = usbdbLogCsvRows.OrderBy(i => (i._RELT_SECS)).ToList();
 
@@ -136,7 +136,7 @@ namespace fa_adf_transform_indigo_v2
                 log.LogInformation("- Log successfully completed event to app insights");
                 AzureAppInsightsService.LogEmsTransformSucceededEventToAppInsights(payload.FileName, log);
                 log.LogInformation(" - SUCCESS");
-                */
+                
 
                 return new OkObjectResult(responseBody);
             }
