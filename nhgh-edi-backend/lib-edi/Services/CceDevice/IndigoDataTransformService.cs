@@ -24,6 +24,8 @@ using CsvHelper;
 using lib_edi.Models.Loggers.Csv;
 using lib_edi.Models.Csv;
 using lib_edi.Models.Emd.Csv;
+using System.Dynamic;
+using System.Collections;
 
 namespace lib_edi.Services.CceDevice
 {
@@ -99,10 +101,32 @@ namespace lib_edi.Services.CceDevice
                 JObject sourceLogJObject = (JObject)sourceLog;
                 sourceFile = GetSourceFile(sourceLogJObject);
                 EdiSinkRecord sink = new IndigoV2EventRecord(); // TODO - cast
+
+
+                var header = new ExpandoObject() as IDictionary<string, Object>;
                 
                 foreach (KeyValuePair<string, JToken> x in sourceLogJObject)
                 {
-                    // Iterate the records array
+                    // Filter out records array
+                    if (x.Value.Type != JTokenType.Array)
+                    {
+                        //ObjectManager.SetObjectValue(ref csvEmsMetadata, x.Key, x.Value);
+                        Console.WriteLine("KeyX: " + x.Key + " ----> ValueX: " + x.Value );
+                        header.Add(x.Key, x.Value);
+                    }
+                }
+
+                foreach (KeyValuePair<string, JToken> x in sourceLogJObject)
+                {
+
+                    //foreach (KeyValuePair<string, JToken> y in header)
+                    foreach (var y in header)
+                    {
+                        Console.WriteLine("KeyY: " + y.Key + " ----> ValueY: " + y.Value);
+                        ObjectManager.SetObjectValue(ref sink, y.Key, y.Value);
+                    }
+
+                        // Iterate the records array
 
                     if (x.Value.Type == JTokenType.Array)
                     {

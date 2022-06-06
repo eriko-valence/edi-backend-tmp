@@ -72,7 +72,7 @@ namespace lib_edi.Models.Loggers.Csv
 		[Name("TVC")]
 		public double TVC { get; set; }
 		[Name("ZCHRG")]
-		public double ZCHRG { get; set; }
+		public string ZCHRG { get; set; }
 		[Name("ZSTATE")]
 		public bool ZSTATE { get; set; }
 		[Name("ZVLVD")]
