@@ -193,8 +193,6 @@ namespace lib_edi.Services.CceDevice
                     // Load log record properties into csv record object
                     if (log2.Value.Type == JTokenType.Array && log2.Key == "zgps_data")
                     {
-
-
                         // Iterate each array
                         foreach (JObject z in log2.Value.Children<JObject>())
                         {
@@ -210,7 +208,6 @@ namespace lib_edi.Services.CceDevice
                             }
                             sinkCsvLocationsRecords.Add(sinkCsvLocationsRecord);
                         }
-                       
                     }
                     else
                     {
@@ -222,7 +219,7 @@ namespace lib_edi.Services.CceDevice
             }
             catch (Exception e)
             {
-                throw new Exception(EdiErrorsService.BuildExceptionMessageString(e, "D39Y", EdiErrorsService.BuildErrorVariableArrayList(propName, propValue, sourceFile)));
+                throw new Exception(EdiErrorsService.BuildExceptionMessageString(e, "MTJV", EdiErrorsService.BuildErrorVariableArrayList(propName, propValue, sourceFile)));
             }
         }
 
@@ -554,23 +551,6 @@ namespace lib_edi.Services.CceDevice
             catch (Exception)
             {
                 throw;
-            }
-        }
-
-        private static string GetSourceFile(JObject jo)
-        {
-            string sourceFile = null;
-            if (jo != null)
-            {
-                sourceFile = ObjectManager.GetJObjectPropertyValueAsString(jo, "_SOURCE");
-            }
-
-            if (sourceFile != null)
-            {
-                return sourceFile;
-            } else
-            {
-                return "unknown";
             }
         }
     }

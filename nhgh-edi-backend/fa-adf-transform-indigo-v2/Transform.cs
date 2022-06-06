@@ -87,6 +87,10 @@ namespace fa_adf_transform_indigo_v2
 
                 List<EdiSinkRecord> indigoLocationCsvRows = IndigoDataTransformService.MapIndigoV2Locations(usbdgReportMetadata, ediJob);
 
+                List<EdiSinkRecord> usbdgDeviceCsvRows = UsbdgDataProcessorService.MapUsbdgDevice(usbdgReportMetadata);
+
+                List<EdiSinkRecord> usbdgEventCsvRows = UsbdgDataProcessorService.MapUsbdgEvent(usbdgReportMetadata);
+
                 log.LogInformation($"- Transform {logType} csv records");
                 string responseBody = null;
                 /*

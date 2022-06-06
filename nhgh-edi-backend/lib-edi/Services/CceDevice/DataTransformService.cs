@@ -15,6 +15,7 @@ using System.Reflection;
 using lib_edi.Models.Dto.Http;
 using Microsoft.AspNetCore.Http;
 using System.IO;
+using lib_edi.Helpers;
 
 namespace lib_edi.Services.CceDevice
 {
@@ -235,5 +236,25 @@ namespace lib_edi.Services.CceDevice
 				throw new Exception(customError);
 			}
 		}
+
+		
+		public static string GetSourceFile(JObject jo)
+		{
+			string sourceFile = null;
+			if (jo != null)
+			{
+				sourceFile = ObjectManager.GetJObjectPropertyValueAsString(jo, "_SOURCE");
+			}
+
+			if (sourceFile != null)
+			{
+				return sourceFile;
+			}
+			else
+			{
+				return "unknown";
+			}
+		}
+		
 	}
 }

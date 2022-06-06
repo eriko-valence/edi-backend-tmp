@@ -24,6 +24,8 @@ using System.Xml;
 using lib_edi.Services.CceDevice;
 using lib_edi.Models.Edi;
 using System.Dynamic;
+using lib_edi.Models.Csv;
+using lib_edi.Models.Emd.Csv;
 
 namespace lib_edi.Services.Loggers
 {
@@ -555,6 +557,114 @@ namespace lib_edi.Services.Loggers
 			}
 
 
+		}
+
+		/// <summary>
+		/// Maps raw EMD and logger files to CSV compatible format
+		/// </summary>
+		/// <remarks>
+		/// This mapping denormalizes the logger data file into records ready for CSV serialization.
+		/// </remarks>
+		/// <param name="emdLogFile">A deserialized logger data file</param>
+		/// <param name="metadataFile">A deserialized EMD metadata file</param>
+		/// <returns>
+		/// A list of CSV compatible EMD + logger data records, if successful; Exception (D39Y) if any failures occur 
+		/// </returns>
+		public static List<EdiSinkRecord> MapUsbdgDevice(dynamic sourceUsbdgMetadata)
+		{
+			string propName = null;
+			string propValue = null;
+			string sourceFile = null;
+
+			try
+			{
+				List<EdiSinkRecord> sinkCsvLocationsRecords = new();
+				JObject sourceJObject = (JObject)sourceUsbdgMetadata;
+				sourceFile = DataTransformService.GetSourceFile(sourceJObject);
+
+				EdiSinkRecord sinkUsbdgDeviceRecord = new UsbdgDeviceRecord();
+
+				// Grab the log header properties from the source metadata file
+				var sourceHeaders = new ExpandoObject() as IDictionary<string, Object>;
+				foreach (KeyValuePair<string, JToken> log1 in sourceJObject)
+				{
+					if (log1.Value.Type != JTokenType.Array)
+					{
+						sourceHeaders.Add(log1.Key, log1.Value);
+						ObjectManager.SetObjectValue(ref sinkUsbdgDeviceRecord, log1.Key, log1.Value);
+					}
+				}
+				sinkCsvLocationsRecords.Add(sinkUsbdgDeviceRecord);
+				return sinkCsvLocationsRecords;
+			}
+			catch (Exception e)
+			{
+				throw new Exception(EdiErrorsService.BuildExceptionMessageString(e, "CPA8", EdiErrorsService.BuildErrorVariableArrayList(propName, propValue, sourceFile)));
+			}
+		}
+
+		/// <summary>
+		/// Maps raw EMD and logger files to CSV compatible format
+		/// </summary>
+		/// <remarks>
+		/// This mapping denormalizes the logger data file into records ready for CSV serialization.
+		/// </remarks>
+		/// <param name="emdLogFile">A deserialized logger data file</param>
+		/// <param name="metadataFile">A deserialized EMD metadata file</param>
+		/// <returns>
+		/// A list of CSV compatible EMD + logger data records, if successful; Exception (D39Y) if any failures occur 
+		/// </returns>
+		public static List<EdiSinkRecord> MapUsbdgEvent(dynamic sourceUsbdgMetadata)
+		{
+			string propName = null;
+			string propValue = null;
+			string sourceFile = null;
+
+			try
+			{
+				List<EdiSinkRecord> sinkCsvLocationsRecords = new();
+				JObject sourceJObject = (JObject)sourceUsbdgMetadata;
+				sourceFile = DataTransformService.GetSourceFile(sourceJObject);
+
+				EdiSinkRecord sinkUsbdgDeviceRecord = new UsbdgEventRecord();
+
+				// Grab the log header properties from the source metadata file
+				var sourceHeaders = new ExpandoObject() as IDictionary<string, Object>;
+				foreach (KeyValuePair<string, JToken> log1 in sourceJObject)
+				{
+					if (log1.Value.Type != JTokenType.Array)
+					{
+						sourceHeaders.Add(log1.Key, log1.Value);
+						ObjectManager.SetObjectValue(ref sinkUsbdgDeviceRecord, log1.Key, log1.Value);
+					}
+
+					// Load log record properties into csv record object
+					if (log1.Value.Type == JTokenType.Array && log1.Key == "records")
+					{
+						// Iterate each log record
+						foreach (JObject z in log1.Value.Children<JObject>())
+						{
+							// Load each log record property
+							foreach (JProperty prop in z.Properties())
+							{
+								propName = prop.Name;
+								propValue = (string)prop.Value;
+								ObjectManager.SetObjectValue(ref sinkUsbdgDeviceRecord, prop.Name, prop.Value);
+							}
+						}
+					}
+				}
+
+
+
+
+				sinkCsvLocationsRecords.Add(sinkUsbdgDeviceRecord);
+				return sinkCsvLocationsRecords;
+			}
+			catch (Exception e)
+			{
+				throw new Exception(EdiErrorsService.BuildExceptionMessageString(e, "DYUF", EdiErrorsService.BuildErrorVariableArrayList(propName, propValue, sourceFile)));
+			}
 		}
 
 		public static dynamic GetUsbdgMetadataRecordsElement(dynamic metadata)
