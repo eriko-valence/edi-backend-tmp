@@ -144,15 +144,15 @@ namespace fa_adf_transform_indigo_v2
                 {
                     string errStr = $"Bad request thrown while validating {logType} transformation request";
                     log.LogError($"- {errStr}");
-                    log.LogError($" - {e.Message}");
-                    return new BadRequestObjectResult(e.Message);
+                    log.LogError($" - {errorMessage}");
+                    return new BadRequestObjectResult(errorMessage);
                 }
                 else
                 {
                     string errStr = $"Global level exception thrown while processing {logType} logs";
                     log.LogError($"- {errStr}");
-                    log.LogError($" - {e.Message}");
-                    var result = new ObjectResult(new { statusCode = 500, currentDate = DateTime.Now, message = e.Message });
+                    log.LogError($" - {errorMessage}");
+                    var result = new ObjectResult(new { statusCode = 500, currentDate = DateTime.Now, message = errorMessage });
                     result.StatusCode = 500;
                     return result;
                 }

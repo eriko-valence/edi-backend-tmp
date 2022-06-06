@@ -173,30 +173,38 @@ namespace lib_edi.Services.Errors
 		public static string BuildCustomErrorMessage(EmsError emsError, ArrayList errorVariables)
 		{
 			string customErrorMessage = null;
+			string processingErrorMessage = "There was a problem looking up the EMS error code";
 
-			if (emsError != null)
-			{
-				if (errorVariables != null)
+			try
+            {
+				if (emsError != null)
 				{
-					if (errorVariables.Count > 0 && errorVariables.Count < 5)
+					if (errorVariables != null)
 					{
-						if (errorVariables.Count == 1)
+						if (errorVariables.Count > 0 && errorVariables.Count < 5)
 						{
-							string abc = (string)errorVariables[0];
-							customErrorMessage = string.Format(emsError.Message, errorVariables[0]);
-							Console.WriteLine("debug");
+							if (errorVariables.Count == 1)
+							{
+								string abc = (string)errorVariables[0];
+								customErrorMessage = string.Format(emsError.Message, errorVariables[0]);
+								Console.WriteLine("debug");
+							}
+							else if (errorVariables.Count == 2)
+							{
+								customErrorMessage = string.Format(emsError.Message, errorVariables[0], errorVariables[1]);
+							}
+							else if (errorVariables.Count == 3)
+							{
+								customErrorMessage = string.Format(emsError.Message, errorVariables[0], errorVariables[1], errorVariables[2]);
+							}
+							else if (errorVariables.Count == 4)
+							{
+								customErrorMessage = string.Format(emsError.Message, errorVariables[0], errorVariables[1], errorVariables[2], errorVariables[3]);
+							}
 						}
-						else if (errorVariables.Count == 2)
+						else
 						{
-							customErrorMessage = string.Format(emsError.Message, errorVariables[0], errorVariables[1]);
-						}
-						else if (errorVariables.Count == 3)
-						{
-							customErrorMessage = string.Format(emsError.Message, errorVariables[0], errorVariables[1], errorVariables[2]);
-						}
-						else if (errorVariables.Count == 4)
-						{
-							customErrorMessage = string.Format(emsError.Message, errorVariables[0], errorVariables[1], errorVariables[2], errorVariables[3]);
+							customErrorMessage = emsError.Message;
 						}
 					}
 					else
@@ -206,12 +214,11 @@ namespace lib_edi.Services.Errors
 				}
 				else
 				{
-					customErrorMessage = emsError.Message;
+					customErrorMessage = processingErrorMessage;
 				}
-			}
-			else
-			{
-				customErrorMessage = "There was a problem looking up the EMS error code";
+			} catch (Exception)
+            {
+				customErrorMessage = processingErrorMessage;
 			}
 
 			return customErrorMessage;

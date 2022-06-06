@@ -167,7 +167,7 @@ namespace lib_edi.Services.CceDevice
         {
             string propName = null;
             string propValue = null;
-            string sourceFile = "unknown";
+            string sourceFile = null;
 
             try
             {
@@ -568,7 +568,7 @@ namespace lib_edi.Services.CceDevice
                 return sourceFile;
             } else
             {
-                return "unknown";
+                return null; // unknown
             }
         }
     }
