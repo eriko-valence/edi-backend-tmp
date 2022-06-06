@@ -175,7 +175,7 @@ namespace lib_edi.Services.CceDevice
                 List<EdiSinkRecord> sinkCsvLocationsRecords = new();
                 JObject sourceJObject = (JObject)sourceUsbdgMetadata;
                 sourceFile = GetSourceFile(sourceJObject);
-                EdiSinkRecord sinkCsvLocationsRecord = new IndigoV2LocationRecord();
+                
 
                 // Grab the log header properties from the source metadata file
                 var sourceHeaders = new ExpandoObject() as IDictionary<string, Object>;
@@ -190,20 +190,17 @@ namespace lib_edi.Services.CceDevice
                 // Map csv record objects from source metadata file
                 foreach (KeyValuePair<string, JToken> log2 in sourceJObject)
                 {
-                    ObjectManager.SetObjectValue(ref sinkCsvLocationsRecord, "LSER", ediJob.LSER);
-
-                    // Load source metadata header properties into csv record object
-                    foreach (var logHeader in sourceHeaders)
-                    {
-                        ObjectManager.SetObjectValue(ref sinkCsvLocationsRecord, logHeader.Key, logHeader.Value);
-                    }
-
                     // Load log record properties into csv record object
-                    if (log2.Value.Type == JTokenType.Array && (log2.Key == "records" || log2.Key == "zgps_data"))
+                    if (log2.Value.Type == JTokenType.Array && log2.Key == "zgps_data")
                     {
-                        // Iterate each log record
+
+
+                        // Iterate each array
                         foreach (JObject z in log2.Value.Children<JObject>())
                         {
+                            EdiSinkRecord sinkCsvLocationsRecord = new IndigoV2LocationRecord();
+                            ObjectManager.SetObjectValue(ref sinkCsvLocationsRecord, "LSER", ediJob.LSER);
+
                             // Load each log record property
                             foreach (JProperty prop in z.Properties())
                             {
@@ -211,13 +208,15 @@ namespace lib_edi.Services.CceDevice
                                 propValue = (string)prop.Value;
                                 ObjectManager.SetObjectValue(ref sinkCsvLocationsRecord, prop.Name, prop.Value);
                             }
+                            sinkCsvLocationsRecords.Add(sinkCsvLocationsRecord);
                         }
+                       
                     }
                     else
                     {
                         // ObjectManager.SetObjectValue(ref sink, log2.Key, log2.Value);
                     }
-                    sinkCsvLocationsRecords.Add(sinkCsvLocationsRecord);
+                    
                 }
                 return sinkCsvLocationsRecords;
             }
