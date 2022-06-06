@@ -23,6 +23,7 @@ using lib_edi.Services.CceDevice;
 using Newtonsoft.Json.Linq;
 using lib_edi.Models.Loggers.Csv;
 using lib_edi.Models.Csv;
+using lib_edi.Models.Edi;
 //using Microsoft.Azure.Storage.Blob; // Microsoft.Azure.WebJobs.Extensions.Storage
 
 namespace fa_adf_transform_indigo_v2
@@ -78,10 +79,13 @@ namespace fa_adf_transform_indigo_v2
                 log.LogInformation($"- Validate {logType} log blobs");
                 List<dynamic> validatedUsbdgLogFiles = await DataTransformService.ValidateLogJsonObjects(emsConfgContainer, indigoLogFiles, logJsonSchemaFileName, log);
 
+                log.LogInformation($"- Start tracking EDI job status");
+                EdiJob ediJob = UsbdgDataProcessorService.PopulateEdiJobObject(usbdgReportMetadata, indigoLogFiles);
+
                 log.LogInformation($"- Map {logType} log objects to csv records");
                 List<EdiSinkRecord> usbdbLogCsvRows = IndigoDataTransformService.MapIndigoV2Events(indigoLogFiles);
 
-                List<EdiSinkRecord> indigoLocationCsvRows = IndigoDataTransformService.MapIndigoV2Locations(usbdgReportMetadata);
+                List<EdiSinkRecord> indigoLocationCsvRows = IndigoDataTransformService.MapIndigoV2Locations(usbdgReportMetadata, ediJob);
 
                 log.LogInformation($"- Transform {logType} csv records");
                 string responseBody = null;

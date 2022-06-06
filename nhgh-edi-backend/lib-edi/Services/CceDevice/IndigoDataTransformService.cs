@@ -26,6 +26,7 @@ using lib_edi.Models.Csv;
 using lib_edi.Models.Emd.Csv;
 using System.Dynamic;
 using System.Collections;
+using lib_edi.Models.Edi;
 
 namespace lib_edi.Services.CceDevice
 {
@@ -158,12 +159,12 @@ namespace lib_edi.Services.CceDevice
         /// <remarks>
         /// This mapping denormalizes the logger data file into records ready for CSV serialization.
         /// </remarks>
-        /// <param name="emdLogFile">A deserilized logger data file</param>
-        /// <param name="metadataFile">A deserilized EMD metadata file</param>
+        /// <param name="emdLogFile">A deserialized logger data file</param>
+        /// <param name="metadataFile">A deserialized EMD metadata file</param>
         /// <returns>
         /// A list of CSV compatible EMD + logger data records, if successful; Exception (D39Y) if any failures occur 
         /// </returns>
-        public static List<EdiSinkRecord> MapIndigoV2Locations(dynamic sourceUsbdgMetadata)
+        public static List<EdiSinkRecord> MapIndigoV2Locations(dynamic sourceUsbdgMetadata, EdiJob ediJob)
         {
             string propName = null;
             string propValue = null;
@@ -189,6 +190,8 @@ namespace lib_edi.Services.CceDevice
                 // Map csv record objects from source metadata file
                 foreach (KeyValuePair<string, JToken> log2 in sourceJObject)
                 {
+                    ObjectManager.SetObjectValue(ref sinkCsvLocationsRecord, "LSER", ediJob.LSER);
+
                     // Load source metadata header properties into csv record object
                     foreach (var logHeader in sourceHeaders)
                     {
@@ -568,7 +571,7 @@ namespace lib_edi.Services.CceDevice
                 return sourceFile;
             } else
             {
-                return null; // unknown
+                return "unknown";
             }
         }
     }
