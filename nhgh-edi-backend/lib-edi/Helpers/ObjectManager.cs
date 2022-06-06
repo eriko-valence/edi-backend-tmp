@@ -70,7 +70,7 @@ namespace lib_edi.Helpers
                         }
                     }
                 }
-            } catch (Exception)
+            } catch (Exception e)
 			{
                 throw;
             }

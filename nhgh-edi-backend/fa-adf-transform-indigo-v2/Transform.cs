@@ -79,7 +79,9 @@ namespace fa_adf_transform_indigo_v2
                 List<dynamic> validatedUsbdgLogFiles = await DataTransformService.ValidateLogJsonObjects(emsConfgContainer, indigoLogFiles, logJsonSchemaFileName, log);
 
                 log.LogInformation($"- Map {logType} log objects to csv records");
-                List<EdiSinkRecord> usbdbLogCsvRows = IndigoDataTransformService.MapSourceToSinkEvents(indigoLogFiles);
+                List<EdiSinkRecord> usbdbLogCsvRows = IndigoDataTransformService.MapIndigoV2Events(indigoLogFiles);
+
+                List<EdiSinkRecord> indigoLocationCsvRows = IndigoDataTransformService.MapIndigoV2Locations(usbdgReportMetadata);
 
                 log.LogInformation($"- Transform {logType} csv records");
                 string responseBody = null;

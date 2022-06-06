@@ -62,16 +62,17 @@ namespace lib_edi.Services.CceDevice
 			return listBlobs;
 		}
 
+        /*
         public static List<EdiSinkRecord> MapSourceToSinkEvents(List<dynamic> sourceLogs)
         {
-            List<EdiSinkRecord> sinkRecords = new();
             foreach (dynamic sourceLog in sourceLogs)
             {
-                sinkRecords.AddRange(MapSourceToSinkEventColumns(sourceLog, sinkRecords));
+                sinkRecords.AddRange(MapSourceToSinkEventColumns(sourceLog));
             }
 
             return sinkRecords;
         }
+        */
 
 
         /// <summary>
@@ -85,7 +86,7 @@ namespace lib_edi.Services.CceDevice
         /// <returns>
         /// A list of CSV compatible EMD + logger data records, if successful; Exception (D39Y) if any failures occur 
         /// </returns>
-        private static List<EdiSinkRecord> MapSourceToSinkEventColumns(dynamic sourceLog, List<EdiSinkRecord> sinkEventRecords)
+        public static List<EdiSinkRecord> MapIndigoV2Events(List<dynamic> sourceLogs)
         {
             string propName = null;
             string propValue = null;
@@ -93,31 +94,109 @@ namespace lib_edi.Services.CceDevice
 
             try
             {
-                JObject sourceLogJObject = (JObject)sourceLog;
-                sourceFile = GetSourceFile(sourceLogJObject);
-                EdiSinkRecord sink = new IndigoV2EventRecord();
+                List<EdiSinkRecord> sinkCsvEventRecords = new();
 
-                // Grab the log header properties from the source log file
-                var logHeaderObject = new ExpandoObject() as IDictionary<string, Object>;
-                foreach (KeyValuePair<string, JToken> log1 in sourceLogJObject)
+                foreach (dynamic sourceLog in sourceLogs)
+                {
+                    JObject sourceLogJObject = (JObject)sourceLog;
+                    sourceFile = GetSourceFile(sourceLogJObject);
+                    
+                    EdiSinkRecord sinkCsvEventRecord = new IndigoV2EventRecord();
+
+                    // Grab the log header properties from the source log file
+                    var logHeaderObject = new ExpandoObject() as IDictionary<string, Object>;
+                    foreach (KeyValuePair<string, JToken> log1 in sourceLogJObject)
+                    {
+                        if (log1.Value.Type != JTokenType.Array)
+                        {
+                            logHeaderObject.Add(log1.Key, log1.Value);
+                        }
+                    }
+
+                    // Map csv record objects from source log file
+                    foreach (KeyValuePair<string, JToken> log2 in sourceLogJObject)
+                    {
+                        // Load log header properties into csv record object
+                        foreach (var logHeader in logHeaderObject)
+                        {
+                            ObjectManager.SetObjectValue(ref sinkCsvEventRecord, logHeader.Key, logHeader.Value);
+                        }
+
+                        // Load log record properties into csv record object
+                        if (log2.Value.Type == JTokenType.Array && log2.Key == "records")
+                        {
+                            // Iterate each log record
+                            foreach (JObject z in log2.Value.Children<JObject>())
+                            {
+                                // Load each log record property
+                                foreach (JProperty prop in z.Properties())
+                                {
+                                    propName = prop.Name;
+                                    propValue = (string)prop.Value;
+                                    ObjectManager.SetObjectValue(ref sinkCsvEventRecord, prop.Name, prop.Value);
+                                }
+                            }
+                        }
+                        else
+                        {
+                            // ObjectManager.SetObjectValue(ref sink, log2.Key, log2.Value);
+                        }
+                        sinkCsvEventRecords.Add(sinkCsvEventRecord);
+                    }
+                }
+                return sinkCsvEventRecords;
+            }
+            catch (Exception e)
+            {
+                throw new Exception(EdiErrorsService.BuildExceptionMessageString(e, "D39Y", EdiErrorsService.BuildErrorVariableArrayList(propName, propValue, sourceFile)));
+            }
+        }
+
+        /// <summary>
+        /// Maps raw EMD and logger files to CSV compatible format
+        /// </summary>
+        /// <remarks>
+        /// This mapping denormalizes the logger data file into records ready for CSV serialization.
+        /// </remarks>
+        /// <param name="emdLogFile">A deserilized logger data file</param>
+        /// <param name="metadataFile">A deserilized EMD metadata file</param>
+        /// <returns>
+        /// A list of CSV compatible EMD + logger data records, if successful; Exception (D39Y) if any failures occur 
+        /// </returns>
+        public static List<EdiSinkRecord> MapIndigoV2Locations(dynamic sourceUsbdgMetadata)
+        {
+            string propName = null;
+            string propValue = null;
+            string sourceFile = "unknown";
+
+            try
+            {
+                List<EdiSinkRecord> sinkCsvLocationsRecords = new();
+                JObject sourceJObject = (JObject)sourceUsbdgMetadata;
+                sourceFile = GetSourceFile(sourceJObject);
+                EdiSinkRecord sinkCsvLocationsRecord = new IndigoV2LocationRecord();
+
+                // Grab the log header properties from the source metadata file
+                var sourceHeaders = new ExpandoObject() as IDictionary<string, Object>;
+                foreach (KeyValuePair<string, JToken> log1 in sourceJObject)
                 {
                     if (log1.Value.Type != JTokenType.Array)
                     {
-                        logHeaderObject.Add(log1.Key, log1.Value);
+                        sourceHeaders.Add(log1.Key, log1.Value);
                     }
                 }
 
-                // Map csv record objects from source log file
-                foreach (KeyValuePair<string, JToken> log2 in sourceLogJObject)
+                // Map csv record objects from source metadata file
+                foreach (KeyValuePair<string, JToken> log2 in sourceJObject)
                 {
-                    // Load log header properties into csv record object
-                    foreach (var logHeader in logHeaderObject)
+                    // Load source metadata header properties into csv record object
+                    foreach (var logHeader in sourceHeaders)
                     {
-                        ObjectManager.SetObjectValue(ref sink, logHeader.Key, logHeader.Value);
+                        ObjectManager.SetObjectValue(ref sinkCsvLocationsRecord, logHeader.Key, logHeader.Value);
                     }
 
                     // Load log record properties into csv record object
-                    if (log2.Value.Type == JTokenType.Array && log2.Key == "records")
+                    if (log2.Value.Type == JTokenType.Array && (log2.Key == "records" || log2.Key == "zgps_data"))
                     {
                         // Iterate each log record
                         foreach (JObject z in log2.Value.Children<JObject>())
@@ -127,16 +206,17 @@ namespace lib_edi.Services.CceDevice
                             {
                                 propName = prop.Name;
                                 propValue = (string)prop.Value;
-                                ObjectManager.SetObjectValue(ref sink, prop.Name, prop.Value);
+                                ObjectManager.SetObjectValue(ref sinkCsvLocationsRecord, prop.Name, prop.Value);
                             }
                         }
-                    } else
+                    }
+                    else
                     {
                         // ObjectManager.SetObjectValue(ref sink, log2.Key, log2.Value);
                     }
-                    sinkEventRecords.Add(sink);
+                    sinkCsvLocationsRecords.Add(sinkCsvLocationsRecord);
                 }
-                return sinkEventRecords;
+                return sinkCsvLocationsRecords;
             }
             catch (Exception e)
             {
@@ -477,7 +557,7 @@ namespace lib_edi.Services.CceDevice
 
         private static string GetSourceFile(JObject jo)
         {
-            string sourceFile = null;
+            string sourceFile = "unknown";
             if (jo != null)
             {
                 sourceFile = ObjectManager.GetJObjectPropertyValueAsString(jo, "_SOURCE");
