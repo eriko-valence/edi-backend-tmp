@@ -83,7 +83,7 @@ namespace fa_adf_transform_indigo_v2
                 EdiJob ediJob = UsbdgDataProcessorService.PopulateEdiJobObject(usbdgReportMetadata, indigoLogFiles);
 
                 log.LogInformation($"- Map {logType} log objects to csv records");
-                List<IndigoV2EventRecord> usbdbLogCsvRows = IndigoDataTransformService.MapIndigoV2Events(indigoLogFiles);
+                List<IndigoV2EventRecord> usbdbLogCsvRows = IndigoDataTransformService.MapIndigoV2Events(indigoLogFiles, ediJob);
 
                 List<EdiSinkRecord> indigoLocationCsvRows = IndigoDataTransformService.MapIndigoV2Locations(usbdgReportMetadata, ediJob);
 

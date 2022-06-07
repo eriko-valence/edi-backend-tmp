@@ -533,6 +533,20 @@ namespace lib_edi.Services.Loggers
 						{
 							logHeaderObject.Add(log1.Key, log1.Value);
 							ObjectManager.SetObjectValue(ref ediJob, log1.Key, log1.Value);
+						} if (log1.Value.Type == JTokenType.Array && log1.Key == "records")
+						{
+							foreach (JObject z in log1.Value.Children<JObject>())
+							{
+								// Load each log record property
+								foreach (JProperty prop in z.Properties())
+								{
+									propName = prop.Name;
+									propValue = (string)prop.Value;
+									ObjectManager.SetObjectValue(ref ediJob, prop.Name, prop.Value);
+								}
+
+								//sinkCsvEventRecords.Add((IndigoV2EventRecord)sinkCsvEventRecord);
+							}
 						}
 					}
 
@@ -591,7 +605,7 @@ namespace lib_edi.Services.Loggers
 					if (log1.Value.Type != JTokenType.Array)
 					{
 						sourceHeaders.Add(log1.Key, log1.Value);
-						ObjectManager.SetObjectValue(ref sinkUsbdgDeviceRecord, log1.Key, log1.Value);
+						ObjectManager.SetObjectValue(sinkUsbdgDeviceRecord, log1.Key, log1.Value);
 					}
 				}
 				sinkCsvLocationsRecords.Add(sinkUsbdgDeviceRecord);
@@ -635,7 +649,7 @@ namespace lib_edi.Services.Loggers
 					if (log1.Value.Type != JTokenType.Array)
 					{
 						sourceHeaders.Add(log1.Key, log1.Value);
-						ObjectManager.SetObjectValue(ref sinkUsbdgDeviceRecord, log1.Key, log1.Value);
+						ObjectManager.SetObjectValue(sinkUsbdgDeviceRecord, log1.Key, log1.Value);
 					}
 
 					// Load log record properties into csv record object
@@ -649,7 +663,7 @@ namespace lib_edi.Services.Loggers
 							{
 								propName = prop.Name;
 								propValue = (string)prop.Value;
-								ObjectManager.SetObjectValue(ref sinkUsbdgDeviceRecord, prop.Name, prop.Value);
+								ObjectManager.SetObjectValue(sinkUsbdgDeviceRecord, prop.Name, prop.Value);
 							}
 						}
 					}

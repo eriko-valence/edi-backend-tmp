@@ -87,7 +87,7 @@ namespace lib_edi.Services.CceDevice
         /// <returns>
         /// A list of CSV compatible EMD + logger data records, if successful; Exception (D39Y) if any failures occur 
         /// </returns>
-        public static List<IndigoV2EventRecord> MapIndigoV2Events(List<dynamic> sourceLogs)
+        public static List<IndigoV2EventRecord> MapIndigoV2Events(List<dynamic> sourceLogs, EdiJob ediJob)
         {
             string propName = null;
             string propValue = null;
@@ -102,7 +102,7 @@ namespace lib_edi.Services.CceDevice
                     JObject sourceLogJObject = (JObject)sourceLog;
                     sourceFile = GetSourceFile(sourceLogJObject);
                     
-                    EdiSinkRecord sinkCsvEventRecord = new IndigoV2EventRecord();
+                    
 
                     // Grab the log header properties from the source log file
                     var logHeaderObject = new ExpandoObject() as IDictionary<string, Object>;
@@ -120,21 +120,30 @@ namespace lib_edi.Services.CceDevice
                         // Load log record properties into csv record object
                         if (log2.Value.Type == JTokenType.Array && log2.Key == "records")
                         {
+                            
+
+                            //ObjectManager.SetObjectValue(ref sinkCsvEventRecord, "RELT", ediJob.RELT);
                             // Iterate each log record
                             foreach (JObject z in log2.Value.Children<JObject>())
                             {
+                                EdiSinkRecord sinkCsvEventRecord = new IndigoV2EventRecord();
+
                                 // Load log header properties into csv record object
                                 foreach (var logHeader in logHeaderObject)
                                 {
-                                    ObjectManager.SetObjectValue(ref sinkCsvEventRecord, logHeader.Key, logHeader.Value);
+                                    ObjectManager.SetObjectValue(sinkCsvEventRecord, logHeader.Key, logHeader.Value);
                                 }
 
                                 // Load each log record property
                                 foreach (JProperty prop in z.Properties())
                                 {
                                     propName = prop.Name;
+                                    if (propName == "RELT")
+                                    {
+                                        Console.WriteLine("debug");
+                                    }
                                     propValue = (string)prop.Value;
-                                    ObjectManager.SetObjectValue(ref sinkCsvEventRecord, prop.Name, prop.Value);
+                                    ObjectManager.SetObjectValue(sinkCsvEventRecord, prop.Name, prop.Value);
                                 }
 
                                 sinkCsvEventRecords.Add((IndigoV2EventRecord)sinkCsvEventRecord);
@@ -199,14 +208,14 @@ namespace lib_edi.Services.CceDevice
                         foreach (JObject z in log2.Value.Children<JObject>())
                         {
                             EdiSinkRecord sinkCsvLocationsRecord = new IndigoV2LocationRecord();
-                            ObjectManager.SetObjectValue(ref sinkCsvLocationsRecord, "LSER", ediJob.LSER);
+                            ObjectManager.SetObjectValue(sinkCsvLocationsRecord, "LSER", ediJob.LSER);
 
                             // Load each log record property
                             foreach (JProperty prop in z.Properties())
                             {
                                 propName = prop.Name;
                                 propValue = (string)prop.Value;
-                                ObjectManager.SetObjectValue(ref sinkCsvLocationsRecord, prop.Name, prop.Value);
+                                ObjectManager.SetObjectValue(sinkCsvLocationsRecord, prop.Name, prop.Value);
                             }
                             sinkCsvLocationsRecords.Add(sinkCsvLocationsRecord);
                         }
@@ -275,9 +284,9 @@ namespace lib_edi.Services.CceDevice
                     }
                 }
             }
-            catch (Exception e)
+            catch (Exception)
             {
-                throw e;
+                throw;
             }
         }
 
@@ -344,12 +353,18 @@ namespace lib_edi.Services.CceDevice
         public static int ConvertRelativeTimeStringToTotalSeconds(dynamic metadata)
         {
             string relativeTime = null;
+            int result = 0;
 
             try
             {
-                relativeTime = ObjectManager.GetJObjectPropertyValueAsString(metadata, "RELT");
+                JObject sourceJObject = (JObject)metadata;
+                Console.WriteLine("debug");
+                relativeTime = GetRelativeTimeFromMetadataRecordsObject(metadata);
+                //jTokenObject.GetValue(propertyName).Value<string>();
                 TimeSpan ts = XmlConvert.ToTimeSpan(relativeTime); // parse iso 8601 duration string to timespan
-                return Convert.ToInt32(ts.TotalSeconds);
+                result = Convert.ToInt32(ts.TotalSeconds);
+                return result;
+
             }
             catch (Exception e)
             {
@@ -366,6 +381,42 @@ namespace lib_edi.Services.CceDevice
 
 
             }
+        }
+
+        public static string GetRelativeTimeFromMetadataRecordsObject(dynamic metadata)
+        {
+
+            JObject sourceJObject = (JObject)metadata;
+
+            string result = null;
+
+            // Grab the log header properties from the source metadata file
+            var sourceHeaders = new ExpandoObject() as IDictionary<string, Object>;
+            foreach (KeyValuePair<string, JToken> source in sourceJObject)
+            {
+                if (source.Value.Type == JTokenType.Array && source.Key == "records")
+                {
+                    // Iterate each log record
+                    foreach (JObject z in source.Value.Children<JObject>())
+                    {
+                        // Load each log record property
+                        foreach (JProperty prop in z.Properties())
+                        {
+                            string propName = prop.Name;
+                            
+                            if (propName == "RELT")
+                            {
+                                result = (string)prop.Value;
+                            }
+                        }
+                    }
+                }
+
+
+            }
+
+            return result;
+
         }
 
         /// <summary>

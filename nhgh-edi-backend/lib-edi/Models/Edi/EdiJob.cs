@@ -10,6 +10,9 @@ namespace lib_edi.Models.Edi
     {
         public string ESER { get; set; }
         public string LSER { get; set; }
+        public string ABST { get; set; }
+        public string RELT { get; set; }
+        public string RTCW { get; set; }
         public string BlobContainerName { get; set; }
         public string BlobFilePackagePath { get; set; }
     }
