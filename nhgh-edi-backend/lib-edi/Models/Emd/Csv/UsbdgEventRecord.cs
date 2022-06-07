@@ -10,9 +10,9 @@ namespace lib_edi.Models.Emd.Csv
 {
     public class UsbdgEventRecord : EdiSinkRecord
     {
-        [Name("ABST")]
+        [Ignore]
         public string ABST { get; set; }
-        [Name("EDI_ABST_DATETIME")]
+        [Name("ABST")]
         public DateTime? EDI_ABST_DATETIME { get; set; }
         [Name("BEMD")]
         public double BEMD { get; set; }

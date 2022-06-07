@@ -12,10 +12,10 @@ namespace lib_edi.Models.Loggers.Csv
     {
         [Name("LSER")]
         public string LSER { get; set; }
-        [Name("zgps_abst_epoch")]
+        [Ignore]
         public string zgps_abst { get; set; }
 
-        [Name("zgps_abst_datetime")]
+        [Name("zgps_abst")]
         public DateTime? EDI_ZGPS_ABST_DATETIME { get; set; }
 
         [Name("zgps_ang")]

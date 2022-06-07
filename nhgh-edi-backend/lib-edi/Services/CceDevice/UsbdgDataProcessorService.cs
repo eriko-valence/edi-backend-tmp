@@ -362,7 +362,7 @@ namespace lib_edi.Services.Loggers
 						//string dateFolder = DateTime.UtcNow.ToString("yyyy-MM-dd/HH");
 						//string guidFolder = CcdxService.GetGuidFromBlobPath(requestBody.Path);
 
-						blobName = CcdxService.BuildCuratedCcdxConsumerBlobPath(requestBody.Path);
+						blobName = CcdxService.BuildCuratedCcdxConsumerBlobPath(requestBody.Path, "out.csv");
 
 						//blobName = $"{dateFolder}/{guidFolder}/out.csv";
 						log.LogInformation($"  - Blob: {blobName}");

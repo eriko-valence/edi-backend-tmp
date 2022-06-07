@@ -548,22 +548,45 @@ namespace lib_edi.Services.CceDevice
         /// <returns>
         /// Blob name of USBDG csv formatted log file; Exception (Q25U)
         /// </returns>
-        public static async Task<string> WriteUsbdgLogRecordsToCsvBlob(CloudBlobContainer cloudBlobContainer, TransformHttpRequestMessageBodyDto requestBody, List<IndigoV2EventRecord> usbdgRecords, ILogger log)
+        public static async Task<string> WriteUsbdgLogRecordsToCsvBlob(CloudBlobContainer cloudBlobContainer, TransformHttpRequestMessageBodyDto requestBody, List<EdiSinkRecord> usbdgRecords, ILogger log)
         {
             string blobName = "";
+
             if (requestBody != null)
             {
                 if (requestBody.Path != null)
                 {
                     try
                     {
-                        //string loggerType = CcdxService.GetDataLoggerTypeFromBlobPath(requestBody.Path);
-                        //string dateFolder = DateTime.UtcNow.ToString("yyyy-MM-dd/HH");
-                        //string guidFolder = CcdxService.GetGuidFromBlobPath(requestBody.Path);
-
-                        blobName = CcdxService.BuildCuratedCcdxConsumerBlobPath(requestBody.Path);
-
-                        //blobName = $"{dateFolder}/{guidFolder}/out.csv";
+                        log.LogInformation($"  - Determine object type using list of generic records");
+                        var firstRecord = usbdgRecords.FirstOrDefault();
+                        string recordType = firstRecord.GetType().Name;
+                        log.LogInformation($"    - Record type: {recordType}");
+                        if (recordType == "IndigoV2EventRecord")
+                        {
+                            log.LogInformation($"  - Is record type supported? Yes");
+                            blobName = CcdxService.BuildCuratedCcdxConsumerBlobPath(requestBody.Path, "indigo_v2/event.csv");
+                        }
+                        else if (recordType == "IndigoV2LocationRecord")
+                        {
+                            log.LogInformation($"  - Is record type supported? Yes");
+                            blobName = CcdxService.BuildCuratedCcdxConsumerBlobPath(requestBody.Path, "indigo_v2/location.csv");
+                        }
+                        else if (recordType == "UsbdgDeviceRecord")
+                        {
+                            log.LogInformation($"  - Is record type supported? Yes");
+                            blobName = CcdxService.BuildCuratedCcdxConsumerBlobPath(requestBody.Path, "usbdg/device.csv");
+                        } 
+                        else if (recordType == "UsbdgEventRecord")
+                        {
+                            log.LogInformation($"  - Is record type supported? Yes");
+                            blobName = CcdxService.BuildCuratedCcdxConsumerBlobPath(requestBody.Path, "usbdg/event.csv");
+                        }
+                        else
+                        {
+                            log.LogInformation($"  - Is record type supported? No");
+                            return blobName;
+                        }
                         log.LogInformation($"  - Blob: {blobName}");
                         log.LogInformation($"  - Get block blob reference");
                         CloudBlockBlob outBlob = cloudBlobContainer.GetBlockBlobReference(blobName);
@@ -573,8 +596,35 @@ namespace lib_edi.Services.CceDevice
                         using var streamWriter = new StreamWriter(writer);
                         log.LogInformation($"  - Initialize new instance of csv writer");
                         using var csvWriter = new CsvWriter(streamWriter, CultureInfo.InvariantCulture);
-                        log.LogInformation($"  - Write list of records to the CSV file");
-                        csvWriter.WriteRecords(usbdgRecords);
+                        log.LogInformation($"  - Pull child records from list");
+                        var serializedParent = JsonConvert.SerializeObject(usbdgRecords);
+                        if (recordType == "IndigoV2EventRecord")
+                        {
+                            List<IndigoV2EventRecord> records = JsonConvert.DeserializeObject<List<IndigoV2EventRecord>>(serializedParent);
+                            log.LogInformation($"  - Write list of indigo v2 event records to the CSV file");
+                            csvWriter.WriteRecords(records);
+                        }
+                        else if (recordType == "IndigoV2LocationRecord")
+                        {
+                            List<IndigoV2LocationRecord> records = JsonConvert.DeserializeObject<List<IndigoV2LocationRecord>>(serializedParent);
+                            log.LogInformation($"  - Write list of indigo v2 location records to the CSV file");
+                            csvWriter.WriteRecords(records);
+                        }
+                        else if (recordType == "UsbdgDeviceRecord")
+                        {
+                            List<UsbdgDeviceRecord> records = JsonConvert.DeserializeObject<List<UsbdgDeviceRecord>>(serializedParent);
+                            log.LogInformation($"  - Write list of usbdg device records to the CSV file");
+                            csvWriter.WriteRecords(records);
+                        } 
+                        else if (recordType == "UsbdgEventRecord")
+                        {
+                            List<UsbdgEventRecord> records = JsonConvert.DeserializeObject<List<UsbdgEventRecord>>(serializedParent);
+                            log.LogInformation($"  - Write list of usbdg event records to the CSV file");
+                            csvWriter.WriteRecords(records);
+                        } else
+                        {
+                            log.LogInformation($"  - Unsupported record type. Will not write list of records to CSV file.");
+                        }
                     }
                     catch (Exception e)
                     {
@@ -585,6 +635,8 @@ namespace lib_edi.Services.CceDevice
             }
             return blobName;
         }
+
+
 
         /// <summary>
         /// Sets the property value of a specified object with a JToken value
