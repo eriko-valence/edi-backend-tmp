@@ -104,7 +104,7 @@ namespace fa_adf_transform_indigo_v2
                 int DurationSecs = IndigoDataTransformService.ConvertRelativeTimeStringToTotalSeconds(usbdgReportMetadata); // convert timespan to seconds
 
                 log.LogInformation($"  - Calculate absolute time for each record using record relative time (e.g., 781193) and report absolute time ('2021-06-20T23:00:02Z')");
-                sortedUsbdbLogCsvRows = IndigoDataTransformService.CalculateAbsoluteTimeForUsbdgRecords(sortedUsbdbLogCsvRows, DurationSecs, usbdgReportMetadataBlob);
+                sortedUsbdbLogCsvRows = IndigoDataTransformService.CalculateAbsoluteTimeForUsbdgRecords(sortedUsbdbLogCsvRows, DurationSecs, usbdgReportMetadata);
 
                 log.LogInformation($"  - Cloud upload times: ");
                 log.LogInformation($"    - EMD (source: cellular) : {DateConverter.ConvertIso8601CompliantString(emdAbsoluteTime)} (UTC)");

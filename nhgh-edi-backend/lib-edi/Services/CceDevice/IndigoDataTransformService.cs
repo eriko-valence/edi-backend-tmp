@@ -359,7 +359,7 @@ namespace lib_edi.Services.CceDevice
             {
                 JObject sourceJObject = (JObject)metadata;
                 Console.WriteLine("debug");
-                relativeTime = GetRelativeTimeFromMetadataRecordsObject(metadata);
+                relativeTime = GetKeyValutFromMetadataRecordsObject("RELT", metadata);
                 //jTokenObject.GetValue(propertyName).Value<string>();
                 TimeSpan ts = XmlConvert.ToTimeSpan(relativeTime); // parse iso 8601 duration string to timespan
                 result = Convert.ToInt32(ts.TotalSeconds);
@@ -383,7 +383,7 @@ namespace lib_edi.Services.CceDevice
             }
         }
 
-        public static string GetRelativeTimeFromMetadataRecordsObject(dynamic metadata)
+        public static string GetKeyValutFromMetadataRecordsObject(string key, dynamic metadata)
         {
 
             JObject sourceJObject = (JObject)metadata;
@@ -404,7 +404,7 @@ namespace lib_edi.Services.CceDevice
                         {
                             string propName = prop.Name;
                             
-                            if (propName == "RELT")
+                            if (propName == key)
                             {
                                 result = (string)prop.Value;
                             }
@@ -428,9 +428,10 @@ namespace lib_edi.Services.CceDevice
         /// <returns>
         /// Absolute timestamp (DateTime) of a USBDG record; Exception (4Q5D) otherwise
         /// </returns>
-        public static List<IndigoV2EventRecord> CalculateAbsoluteTimeForUsbdgRecords(List<IndigoV2EventRecord> records, int reportDurationSeconds, dynamic reportAbsoluteTimestamp)
+        public static List<IndigoV2EventRecord> CalculateAbsoluteTimeForUsbdgRecords(List<IndigoV2EventRecord> records, int reportDurationSeconds, dynamic reportMetadata)
         {
-            string absoluteTime = ObjectManager.GetJObjectPropertyValueAsString(reportAbsoluteTimestamp, "ABST");
+            //string absoluteTime = ObjectManager.GetJObjectPropertyValueAsString(reportAbsoluteTimestamp, "ABST");
+            string absoluteTime = GetKeyValutFromMetadataRecordsObject("ABST", reportMetadata);
 
             foreach (IndigoV2EventRecord record in records)
             {
