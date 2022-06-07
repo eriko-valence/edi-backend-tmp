@@ -127,7 +127,8 @@ namespace lib_edi.Services.CceDevice
                             foreach (JObject z in log2.Value.Children<JObject>())
                             {
                                 EdiSinkRecord sinkCsvEventRecord = new IndigoV2EventRecord();
-                                ObjectManager.SetObjectValue(sinkCsvEventRecord, "ESER", ediJob.ESER);
+                                ObjectManager.SetObjectValue(sinkCsvEventRecord, "ESER", ediJob.UsbdgMetadata.ESER);
+                                ObjectManager.SetObjectValue(sinkCsvEventRecord, "ALRM", ediJob.UsbdgMetadata.ALRM);
 
                                 // Load log header properties into csv record object
                                 foreach (var logHeader in logHeaderObject)
@@ -209,7 +210,7 @@ namespace lib_edi.Services.CceDevice
                         foreach (JObject z in log2.Value.Children<JObject>())
                         {
                             EdiSinkRecord sinkCsvLocationsRecord = new IndigoV2LocationRecord();
-                            ObjectManager.SetObjectValue(sinkCsvLocationsRecord, "LSER", ediJob.LSER);
+                            ObjectManager.SetObjectValue(sinkCsvLocationsRecord, "LSER", ediJob.Logger.LSER);
 
                             // Load each log record property
                             foreach (JProperty prop in z.Properties())

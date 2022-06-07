@@ -532,22 +532,9 @@ namespace lib_edi.Services.Loggers
 						if (log1.Value.Type != JTokenType.Array)
 						{
 							logHeaderObject.Add(log1.Key, log1.Value);
-							ObjectManager.SetObjectValue(ref ediJob, log1.Key, log1.Value);
-						} if (log1.Value.Type == JTokenType.Array && log1.Key == "records")
-						{
-							foreach (JObject z in log1.Value.Children<JObject>())
-							{
-								// Load each log record property
-								foreach (JProperty prop in z.Properties())
-								{
-									propName = prop.Name;
-									propValue = (string)prop.Value;
-									ObjectManager.SetObjectValue(ref ediJob, prop.Name, prop.Value);
-								}
-
-								//sinkCsvEventRecords.Add((IndigoV2EventRecord)sinkCsvEventRecord);
-							}
-						}
+							ObjectManager.SetObjectValue(ediJob.Logger, log1.Key, log1.Value);
+						} 
+						
 					}
 
 				}
@@ -560,7 +547,23 @@ namespace lib_edi.Services.Loggers
 					if (log2.Value.Type != JTokenType.Array)
 					{
 						reportHeaderObject.Add(log2.Key, log2.Value);
-						ObjectManager.SetObjectValue(ref ediJob, log2.Key, log2.Value);
+						ObjectManager.SetObjectValue(ediJob.UsbdgMetadata, log2.Key, log2.Value);
+					}
+
+					if (log2.Value.Type == JTokenType.Array && log2.Key == "records")
+					{
+						foreach (JObject z in log2.Value.Children<JObject>())
+						{
+							// Load each log record property
+							foreach (JProperty prop in z.Properties())
+							{
+								propName = prop.Name;
+								propValue = (string)prop.Value;
+								ObjectManager.SetObjectValue(ediJob.UsbdgMetadata, prop.Name, prop.Value);
+							}
+
+							//sinkCsvEventRecords.Add((IndigoV2EventRecord)sinkCsvEventRecord);
+						}
 					}
 				}
 				return ediJob;
