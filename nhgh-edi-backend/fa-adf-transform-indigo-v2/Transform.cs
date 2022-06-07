@@ -82,14 +82,13 @@ namespace fa_adf_transform_indigo_v2
                 log.LogInformation($"- Start tracking EDI job status");
                 EdiJob ediJob = UsbdgDataProcessorService.PopulateEdiJobObject(usbdgReportMetadata, indigoLogFiles);
 
-                log.LogInformation($"- Map {logType} log objects to csv records");
+                log.LogInformation($"- Map {logType} objects to csv records");
                 List<IndigoV2EventRecord> usbdbLogCsvRows = IndigoDataTransformService.MapIndigoV2Events(indigoLogFiles, ediJob);
-
                 List<EdiSinkRecord> indigoLocationCsvRows = IndigoDataTransformService.MapIndigoV2Locations(usbdgReportMetadata, ediJob);
-
                 List<EdiSinkRecord> usbdgDeviceCsvRows = UsbdgDataProcessorService.MapUsbdgDevice(usbdgReportMetadata);
-
                 List<EdiSinkRecord> usbdgEventCsvRows = UsbdgDataProcessorService.MapUsbdgEvent(usbdgReportMetadata);
+
+
 
                 log.LogInformation($"- Transform {logType} csv records");
                 
@@ -117,16 +116,17 @@ namespace fa_adf_transform_indigo_v2
                     //log.LogInformation($"    - record[0].ABST (EMD cloud upload absolute time): {usbdbLogCsvRows[0].ABST}");
                     log.LogInformation($"    - record[0].RELT (Logger cloud upload relative time): {usbdbLogCsvRows[0].RELT}");
                     log.LogInformation($"    - record[0]._RELT_SECS (Logger cloud upload relative time seconds): {usbdbLogCsvRows[0]._RELT_SECS}");
-                    log.LogInformation($"    - record[0]._ABST (calculated absolute time): {usbdbLogCsvRows[0].ABST_CALC}");
+                    log.LogInformation($"    - record[0]._ABST (calculated absolute time): {usbdbLogCsvRows[0].EDI_RECORD_ABST_CALC}");
                     log.LogInformation($" ");
                     log.LogInformation($"    - record[1].ElapsedSecs (Elapsed secs from activation time): {IndigoDataTransformService.CalculateElapsedSecondsFromLoggerActivationRelativeTime(emdRelativeTime, usbdbLogCsvRows[1].RELT)}");
                     //log.LogInformation($"    - record[1].ABST (EMD cloud upload absolute time): {usbdbLogCsvRows[1].ABST}");
                     log.LogInformation($"    - record[1].RELT (Logger cloud upload relative time): {usbdbLogCsvRows[1].RELT}");
                     log.LogInformation($"    - record[1]._RELT_SECS (Logger cloud upload relative time seconds): {usbdbLogCsvRows[1]._RELT_SECS}");
-                    log.LogInformation($"    - record[1]._ABST (calculated absolute time): {usbdbLogCsvRows[1].ABST_CALC}");
+                    log.LogInformation($"    - record[1]._ABST (calculated absolute time): {usbdbLogCsvRows[1].EDI_RECORD_ABST_CALC}");
                 }
 
                 log.LogInformation($"- Write {logType} csv records to azure blob storage");
+                List<EdiSinkRecord> sortedUsbdbLogCsvRowsBase = sortedUsbdbLogCsvRows.Cast<EdiSinkRecord>().ToList();
                 string csvOutputBlobName = await IndigoDataTransformService.WriteUsbdgLogRecordsToCsvBlob(ouputContainer, payload, sortedUsbdbLogCsvRows, log);
 
                 log.LogInformation(" - Serialize http response body");

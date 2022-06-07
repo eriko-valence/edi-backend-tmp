@@ -331,11 +331,11 @@ namespace lib_edi.Services.Loggers
 				int elapsedSeconds = loggerActivationRelativeTimeSecs - recordRelativeTimeSecs; // How far away time wise is this record compared to the absolute time
 				return elapsedSeconds;
 			}
-			catch (Exception e)
+			catch (Exception)
 			{
 				//string customErrorMessage = EdiErrorsService.BuildExceptionMessageString(e, "4Q5D", EdiErrorsService.BuildErrorVariableArrayList(reportAbsoluteTime, recordRelativeTime, sourceLogFile));
 				//throw new Exception(customErrorMessage);
-				throw e;
+				throw;
 			}
 		}
 
@@ -664,6 +664,12 @@ namespace lib_edi.Services.Loggers
 								propName = prop.Name;
 								propValue = (string)prop.Value;
 								ObjectManager.SetObjectValue(sinkUsbdgDeviceRecord, prop.Name, prop.Value);
+								if (propName == "ABST")
+                                {
+									DateTime? emdAbsoluteTime = DateConverter.ConvertIso8601CompliantString(prop.Value.ToString());
+									((UsbdgEventRecord)sinkUsbdgDeviceRecord).EDI_ABST_DATETIME = emdAbsoluteTime;
+									Console.WriteLine("debug");
+								}
 							}
 						}
 					}

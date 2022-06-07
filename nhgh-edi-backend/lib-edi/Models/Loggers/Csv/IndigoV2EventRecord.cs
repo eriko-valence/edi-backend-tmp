@@ -11,7 +11,9 @@ namespace lib_edi.Models.Loggers.Csv
     public class IndigoV2EventRecord : EdiSinkRecord
     {
         [Name("ABST_CALC")]
-        public DateTime? ABST_CALC { get; set; }
+        public DateTime? EDI_RECORD_ABST_CALC { get; set; }
+		[Name("ABST_DATETIME")]
+		public DateTime? EDI_ABST_DATETIME { get; set; }
 
 		/*
 		 * APPLIANCE PROPERTIES

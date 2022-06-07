@@ -216,6 +216,12 @@ namespace lib_edi.Services.CceDevice
                                 propName = prop.Name;
                                 propValue = (string)prop.Value;
                                 ObjectManager.SetObjectValue(sinkCsvLocationsRecord, prop.Name, prop.Value);
+
+                                if (propName == "zgps_abst")
+                                {
+                                    long zgps_abst_long = long.Parse(propValue);
+                                    ((IndigoV2LocationRecord)sinkCsvLocationsRecord).EDI_ZGPS_ABST_DATETIME = DateConverter.FromUnixTimeSeconds(zgps_abst_long);
+                                }
                             }
                             sinkCsvLocationsRecords.Add(sinkCsvLocationsRecord);
                         }
@@ -256,7 +262,7 @@ namespace lib_edi.Services.CceDevice
                     }
                 }
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 throw;
             }
@@ -312,7 +318,7 @@ namespace lib_edi.Services.CceDevice
                     }
                 }
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 throw;
             }
@@ -436,7 +442,7 @@ namespace lib_edi.Services.CceDevice
             foreach (IndigoV2EventRecord record in records)
             {
                 DateTime? dt = CalculateAbsoluteTimeForUsbdgRecord(absoluteTime, reportDurationSeconds, record.RELT, record.Source);
-                record.ABST_CALC = dt;
+                record.EDI_RECORD_ABST_CALC = dt;
             }
             return records;
         }

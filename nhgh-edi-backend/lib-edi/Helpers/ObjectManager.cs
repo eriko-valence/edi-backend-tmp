@@ -71,12 +71,12 @@ namespace lib_edi.Helpers
                         }
                     }
                 }
-            } catch (Exception e)
+            } catch (Exception)
 			{
                 throw;
             }
         }
-
+        
         /// <summary>
         /// Sets the property value of a specified object with a JToken value
         /// </summary>
@@ -102,7 +102,7 @@ namespace lib_edi.Helpers
                     }
                 }
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 throw;
             }
@@ -130,9 +130,9 @@ namespace lib_edi.Helpers
                     }
                 }
             }
-            catch (Exception e)
+            catch (Exception)
             {
-                throw e;
+                throw;
             }
         }
 
@@ -158,9 +158,9 @@ namespace lib_edi.Helpers
                     }
                 }
             }
-            catch (Exception e)
+            catch (Exception)
             {
-                throw e;
+                throw;
             }
         }
 
@@ -185,9 +185,9 @@ namespace lib_edi.Helpers
                         }
                     }
                 }
-            } catch (Exception e)
+            } catch (Exception)
 			{
-                throw e;
+                throw;
             }
         }
 
@@ -212,9 +212,9 @@ namespace lib_edi.Helpers
                         }
                     }
                 }
-            } catch (Exception e)
+            } catch (Exception)
 			{
-                throw e;
+                throw;
             }
         }
 
@@ -240,9 +240,9 @@ namespace lib_edi.Helpers
                     }
                 }
             }
-            catch (Exception e)
+            catch (Exception)
             {
-                throw e;
+                throw;
             }
         }
     }

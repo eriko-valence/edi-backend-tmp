@@ -126,7 +126,7 @@ namespace lib_edi.Services.Azure
 			{
 				AppInsightsApiQueryAppErrorsSettings appInsightsSettings = GetAppInsightsApiQueryAppErrorsSettings();
 				AppInsightsCustomErrorsResponseDto appInsightsCustomErrorsResponseDto;
-				List<PipelineJobStatusEntry> listPipelineJobStatusEntry;
+				//List<PipelineJobStatusEntry> listPipelineJobStatusEntry;
 				Dictionary<string, PipelineJobStatus> listPipelineJobStatus;
 
 				if (appInsightsSettings != null)

@@ -12,6 +12,8 @@ namespace lib_edi.Models.Emd.Csv
     {
         [Name("ABST")]
         public string ABST { get; set; }
+        [Name("EDI_ABST_DATETIME")]
+        public DateTime? EDI_ABST_DATETIME { get; set; }
         [Name("BEMD")]
         public double BEMD { get; set; }
         [Name("EERR")]

@@ -193,7 +193,7 @@ namespace lib_edi.Services.Ccdx
 				{
 					string dateFolder = DateTime.UtcNow.ToString("yyyy-MM-dd/HH");
 					string guidFolder = CcdxService.GetGuidFromBlobPath(blobPath);
-					curatedBlobPath = $"{loggerType}/{dateFolder}/{guidFolder}/out.csv";
+					curatedBlobPath = $"{loggerType}/{dateFolder}/{guidFolder}/indigo-v2/event.csv";
 				}
 			}
 
