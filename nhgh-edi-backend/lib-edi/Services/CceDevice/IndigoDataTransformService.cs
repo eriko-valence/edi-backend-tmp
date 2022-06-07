@@ -127,6 +127,7 @@ namespace lib_edi.Services.CceDevice
                             foreach (JObject z in log2.Value.Children<JObject>())
                             {
                                 EdiSinkRecord sinkCsvEventRecord = new IndigoV2EventRecord();
+                                ObjectManager.SetObjectValue(sinkCsvEventRecord, "ESER", ediJob.ESER);
 
                                 // Load log header properties into csv record object
                                 foreach (var logHeader in logHeaderObject)
@@ -565,22 +566,22 @@ namespace lib_edi.Services.CceDevice
                         if (recordType == "IndigoV2EventRecord")
                         {
                             log.LogInformation($"  - Is record type supported? Yes");
-                            blobName = CcdxService.BuildCuratedCcdxConsumerBlobPath(requestBody.Path, "indigo_v2/event.csv");
+                            blobName = CcdxService.BuildCuratedCcdxConsumerBlobPath(requestBody.Path, "indigo_v2_event.csv");
                         }
                         else if (recordType == "IndigoV2LocationRecord")
                         {
                             log.LogInformation($"  - Is record type supported? Yes");
-                            blobName = CcdxService.BuildCuratedCcdxConsumerBlobPath(requestBody.Path, "indigo_v2/location.csv");
+                            blobName = CcdxService.BuildCuratedCcdxConsumerBlobPath(requestBody.Path, "indigo_v2_location.csv");
                         }
                         else if (recordType == "UsbdgDeviceRecord")
                         {
                             log.LogInformation($"  - Is record type supported? Yes");
-                            blobName = CcdxService.BuildCuratedCcdxConsumerBlobPath(requestBody.Path, "usbdg/device.csv");
+                            blobName = CcdxService.BuildCuratedCcdxConsumerBlobPath(requestBody.Path, "usbdg_device.csv");
                         } 
                         else if (recordType == "UsbdgEventRecord")
                         {
                             log.LogInformation($"  - Is record type supported? Yes");
-                            blobName = CcdxService.BuildCuratedCcdxConsumerBlobPath(requestBody.Path, "usbdg/event.csv");
+                            blobName = CcdxService.BuildCuratedCcdxConsumerBlobPath(requestBody.Path, "usbdg_event.csv");
                         }
                         else
                         {
