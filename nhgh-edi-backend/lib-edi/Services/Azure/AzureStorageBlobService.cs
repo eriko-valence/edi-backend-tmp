@@ -317,6 +317,33 @@ namespace lib_edi.Services.Azure
 		}
 
 		/// <summary>
+		/// Downloads and deserializes a single CCE device blob residing in Azure blob storage
+		/// </summary>
+		/// <param name="blob">A list of CCE device blobs</param>
+		/// <param name="blobContainer">Microsoft Azure Blob service container holding the logs</param>
+		/// <param name="blobPath">Path to log blobs</param>
+		/// <param name="log">Azure function logger object</param>
+		/// <returns>
+		/// A list of deserialized CCE device logsobjects that have been downloaded from Azure blob storage; Exception (C26Z) if no blobs found
+		/// </returns>
+		public static async Task<dynamic> DownloadAndDeserializeJsonBlob(CloudBlockBlob blob, CloudBlobContainer blobContainer, string blobPath, ILogger log)
+		{
+			string emsBlobPath = $"{ blobContainer.Name}/{ blob.Name}";
+			log.LogInformation($"  - Blob: {emsBlobPath}");
+			string logBlobText = await AzureStorageBlobService.DownloadBlobTextAsync(blobContainer, blob.Name);
+			dynamic logBlobJson = DeserializeJsonText(blob.Name, logBlobText);
+			logBlobJson._SOURCE = emsBlobPath;
+
+			if (logBlobJson == null)
+			{
+				string customErrorMessage = EdiErrorsService.BuildExceptionMessageString(null, "P76H", EdiErrorsService.BuildErrorVariableArrayList(blobPath));
+				throw new Exception(customErrorMessage);
+			}
+
+			return logBlobJson;
+		}
+
+		/// <summary>
 		/// Deserializes JSON string
 		/// </summary>
 		/// <param name="blobName">Blob name of JSON string </param>

@@ -1,5 +1,4 @@
-﻿using lib_edi.Services.Azure;
-using lib_edi.Services.Errors;
+﻿using lib_edi.Services.Errors;
 using Microsoft.Azure.Storage.Blob;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
@@ -7,10 +6,7 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using NJsonSchema;
-using NJsonSchema.Validation;
 using lib_edi.Helpers;
 using lib_edi.Models.Dto.CceDevice.Csv;
 using lib_edi.Models.Domain.CceDevice;
@@ -25,8 +21,6 @@ using lib_edi.Models.Loggers.Csv;
 using lib_edi.Models.Csv;
 using lib_edi.Models.Emd.Csv;
 using System.Dynamic;
-using System.Collections;
-using lib_edi.Models.Edi;
 
 namespace lib_edi.Services.CceDevice
 {
@@ -62,19 +56,6 @@ namespace lib_edi.Services.CceDevice
 			}
 			return listBlobs;
 		}
-
-        /*
-        public static List<EdiSinkRecord> MapSourceToSinkEvents(List<dynamic> sourceLogs)
-        {
-            foreach (dynamic sourceLog in sourceLogs)
-            {
-                sinkRecords.AddRange(MapSourceToSinkEventColumns(sourceLog));
-            }
-
-            return sinkRecords;
-        }
-        */
-
 
         /// <summary>
         /// Sets the property value of a specified object with a JToken value
@@ -188,7 +169,7 @@ namespace lib_edi.Services.CceDevice
         /// <summary>
         /// Converts relative time to total seconds
         /// </summary>
-        /// <param name="relativeTime">Relative time (e.g., P8DT30S)</param>
+        /// <param name="metadata">USBDG object holding relative time (e.g., P8DT30S)</param>
         /// <returns>
         /// Total seconds calculated from relative time; Exception (A89R) or (EZ56) otherwise
         /// </returns>
@@ -202,7 +183,6 @@ namespace lib_edi.Services.CceDevice
                 JObject sourceJObject = (JObject)metadata;
                 Console.WriteLine("debug");
                 relativeTime = GetKeyValutFromMetadataRecordsObject("RELT", metadata);
-                //jTokenObject.GetValue(propertyName).Value<string>();
                 TimeSpan ts = XmlConvert.ToTimeSpan(relativeTime); // parse iso 8601 duration string to timespan
                 result = Convert.ToInt32(ts.TotalSeconds);
                 return result;
@@ -220,20 +200,23 @@ namespace lib_edi.Services.CceDevice
                     string customErrorMessage = EdiErrorsService.BuildExceptionMessageString(e, "EZ56", null);
                     throw new Exception(customErrorMessage);
                 }
-
-
             }
         }
 
+        /// <summary>
+        /// Returns a key value from an array "records" in a JSON object 
+        /// </summary>
+        /// <param name="key">Name of property to find in array "records" of a JSON object</param>
+        /// <param name="metadata">JSON object to search</param>
+        /// <returns>
+        /// Key value found
+        /// </returns>
         public static string GetKeyValutFromMetadataRecordsObject(string key, dynamic metadata)
         {
-
             JObject sourceJObject = (JObject)metadata;
-
             string result = null;
 
             // Grab the log header properties from the source metadata file
-            var sourceHeaders = new ExpandoObject() as IDictionary<string, Object>;
             foreach (KeyValuePair<string, JToken> source in sourceJObject)
             {
                 if (source.Value.Type == JTokenType.Array && source.Key == "records")
@@ -253,26 +236,21 @@ namespace lib_edi.Services.CceDevice
                         }
                     }
                 }
-
-
             }
-
             return result;
-
         }
 
         /// <summary>
-        /// Gets the absolute timestamp of USBDG records using the report absolute timestamp and relative time of records
+        /// Calculates the absolute timestamp for each Indigo V2 records using the USBDG metadata absolute timestamp and relative time of records
         /// </summary>
         /// <param name="records">List of denormalized USBDG records </param>
-        /// <param name="reportDurationSeconds">USBDG log report duration seconds</param>
-        /// <param name="reportAbsoluteTimestamp">USBDG log report record relative time (e.g., P8DT30S)</param>
+        /// <param name="reportDurationSeconds">USBDG metadata duration seconds (converted from relative seconds)</param>
+        /// <param name="reportMetadata">USBDG metadata file json object</param>
         /// <returns>
-        /// Absolute timestamp (DateTime) of a USBDG record; Exception (4Q5D) otherwise
+        /// Absolute timestamp (DateTime) of a Indigo V2 record; Exception (4Q5D) otherwise
         /// </returns>
         public static List<IndigoV2EventRecord> CalculateAbsoluteTimeForUsbdgRecords(List<IndigoV2EventRecord> records, int reportDurationSeconds, dynamic reportMetadata)
         {
-            //string absoluteTime = ObjectManager.GetJObjectPropertyValueAsString(reportAbsoluteTimestamp, "ABST");
             string absoluteTime = GetKeyValutFromMetadataRecordsObject("ABST", reportMetadata);
 
             foreach (IndigoV2EventRecord record in records)
@@ -286,9 +264,9 @@ namespace lib_edi.Services.CceDevice
         /// <summary>
         /// Gets the absolute timestamp of a record using the report absolute timestamp and record relative time
         /// </summary>
-        /// <param name="reportAbsoluteTime">Log report absolute timestamp</param>
-        /// <param name="reportDurationSeconds">Log report duration seconds</param>
-        /// <param name="recordRelativeTime">Log report record relative time (e.g., P8DT30S)</param>
+        /// <param name="reportAbsoluteTime">Logger record absolute timestamp</param>
+        /// <param name="reportDurationSeconds">USBDG metadata duration seconds (converted from relative seconds)</param>
+        /// <param name="recordRelativeTime">Logger record relative time (e.g., P8DT30S)</param>
         /// <returns>
         /// Absolute timestamp (DateTime) of a USBDG record; Exception (4Q5D) otherwise
         /// </returns>

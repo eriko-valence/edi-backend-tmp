@@ -23,7 +23,7 @@ namespace lib_edi.Services.CceDevice
 		/// </summary>
 		/// <param name="emsLog">Name of JSON object </param>
 		/// <returns>
-		/// Text of serialized JSOn object; Exception (48TV) otherwise
+		/// Text of serialized JSON object; Exception (48TV) otherwise
 		/// </returns>
 		public static string SerializeJsonObject(dynamic emsLog)
 		{
@@ -51,19 +51,17 @@ namespace lib_edi.Services.CceDevice
 		/// <param name="cloudBlobContainer">A container in the Microsoft Azure Blob service</param>
 		/// <param name="log">Azure function logger object</param>
 		/// <returns>
-		/// A list validated CCE device log JSON objects; Exception thrown if at least one report fails validation (R85Y) or if the json definition file failed to be retrieved 
+		/// A list validated CCE device log JSON objects; Exception thrown if at least one report fails validation (R85Y) or if the json definition file failed to be retrieved (FY84)
 		/// </returns>
 		public static async Task<List<dynamic>> ValidateLogJsonObjects(CloudBlobContainer cloudBlobContainer, List<dynamic> emsLogs, string jsonSchemaBlobName, ILogger log)
 		{
 			List<dynamic> validatedJsonObjects = new();
 
-			//string configBlobName;
 			string configBlobJsonText;
 			JsonSchema configJsonSchema;
 
 			try
 			{
-				//jsonSchemaBlobName = Environment.GetEnvironmentVariable("EMS_LOG_JSON_SCHEMA_DEFINITION_FILE_NAME");
 				configBlobJsonText = await AzureStorageBlobService.DownloadBlobTextAsync(cloudBlobContainer, jsonSchemaBlobName);
 				configJsonSchema = await JsonSchema.FromJsonAsync(configBlobJsonText);
 			}
@@ -152,8 +150,14 @@ namespace lib_edi.Services.CceDevice
 			}
 		}
 
-
-		public static string GetSourceFile(JObject jo)
+		/// <summary>
+		/// Gets EMD source property from JSON object
+		/// </summary>
+		/// <param name="jo">JSON object</param>
+		/// <returns>
+		/// A string value of the EMD source property; "unknown" otherwise
+		/// </returns>
+		private static string GetSourceFile(JObject jo)
 		{
 			string sourceFile = null;
 			if (jo != null)
@@ -172,13 +176,13 @@ namespace lib_edi.Services.CceDevice
 		}
 
 		/// <summary>
-		/// Maps raw EMD and logger files to CSV compatible format
+		/// Populates an EDI job object from logger data and USBDG metadata files
 		/// </summary>
 		/// <remarks>
-		/// This mapping denormalizes the logger data file into records ready for CSV serialization.
+		/// This EDI object holds properties useful further downstream in the processing
 		/// </remarks>
-		/// <param name="emdLogFile">A deserialized logger data file</param>
-		/// <param name="metadataFile">A deserialized EMD metadata file</param>
+		/// <param name="sourceUsbdgMetadata">A deserialized USBDG metadata</param>
+		/// <param name="sourceLogs">A list of deserialized logger data files</param>
 		/// <returns>
 		/// A list of CSV compatible EMD + logger data records, if successful; Exception (D39Y) if any failures occur 
 		/// </returns>
@@ -204,12 +208,9 @@ namespace lib_edi.Services.CceDevice
 							logHeaderObject.Add(log1.Key, log1.Value);
 							ObjectManager.SetObjectValue(ediJob.Logger, log1.Key, log1.Value);
 						}
-
 					}
-
 				}
 
-				// 
 				JObject sourceUsbdgMetadataJObject = (JObject)sourceUsbdgMetadata;
 				var reportHeaderObject = new ExpandoObject() as IDictionary<string, Object>;
 				foreach (KeyValuePair<string, JToken> log2 in sourceUsbdgMetadataJObject)
@@ -231,8 +232,6 @@ namespace lib_edi.Services.CceDevice
 								propValue = (string)prop.Value;
 								ObjectManager.SetObjectValue(ediJob.UsbdgMetadata, prop.Name, prop.Value);
 							}
-
-							//sinkCsvEventRecords.Add((IndigoV2EventRecord)sinkCsvEventRecord);
 						}
 					}
 				}
@@ -242,9 +241,6 @@ namespace lib_edi.Services.CceDevice
 			{
 				throw new Exception(EdiErrorsService.BuildExceptionMessageString(e, "D39Y", EdiErrorsService.BuildErrorVariableArrayList(propName, propValue, sourceFile)));
 			}
-
-
 		}
-
 	}
 }
