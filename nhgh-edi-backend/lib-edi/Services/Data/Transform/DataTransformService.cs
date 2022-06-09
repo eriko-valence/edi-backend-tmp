@@ -16,6 +16,8 @@ using lib_edi.Models.Dto.Http;
 using Microsoft.AspNetCore.Http;
 using System.IO;
 using lib_edi.Helpers;
+using lib_edi.Models.Edi;
+using System.Dynamic;
 
 namespace lib_edi.Services.CceDevice
 {
@@ -237,7 +239,7 @@ namespace lib_edi.Services.CceDevice
 			}
 		}
 
-		
+
 		public static string GetSourceFile(JObject jo)
 		{
 			string sourceFile = null;
@@ -255,6 +257,81 @@ namespace lib_edi.Services.CceDevice
 				return "unknown";
 			}
 		}
-		
+
+		/// <summary>
+		/// Maps raw EMD and logger files to CSV compatible format
+		/// </summary>
+		/// <remarks>
+		/// This mapping denormalizes the logger data file into records ready for CSV serialization.
+		/// </remarks>
+		/// <param name="emdLogFile">A deserialized logger data file</param>
+		/// <param name="metadataFile">A deserialized EMD metadata file</param>
+		/// <returns>
+		/// A list of CSV compatible EMD + logger data records, if successful; Exception (D39Y) if any failures occur 
+		/// </returns>
+		public static EdiJob PopulateEdiJobObject(dynamic sourceUsbdgMetadata, List<dynamic> sourceLogs)
+		{
+			string propName = null;
+			string propValue = null;
+			string sourceFile = null;
+			EdiJob ediJob = new EdiJob();
+
+			try
+			{
+				foreach (dynamic sourceLog in sourceLogs)
+				{
+					JObject sourceLogJObject = (JObject)sourceLog;
+
+					// Grab the log header properties from the source log file
+					var logHeaderObject = new ExpandoObject() as IDictionary<string, Object>;
+					foreach (KeyValuePair<string, JToken> log1 in sourceLogJObject)
+					{
+						if (log1.Value.Type != JTokenType.Array)
+						{
+							logHeaderObject.Add(log1.Key, log1.Value);
+							ObjectManager.SetObjectValue(ediJob.Logger, log1.Key, log1.Value);
+						}
+
+					}
+
+				}
+
+				// 
+				JObject sourceUsbdgMetadataJObject = (JObject)sourceUsbdgMetadata;
+				var reportHeaderObject = new ExpandoObject() as IDictionary<string, Object>;
+				foreach (KeyValuePair<string, JToken> log2 in sourceUsbdgMetadataJObject)
+				{
+					if (log2.Value.Type != JTokenType.Array)
+					{
+						reportHeaderObject.Add(log2.Key, log2.Value);
+						ObjectManager.SetObjectValue(ediJob.UsbdgMetadata, log2.Key, log2.Value);
+					}
+
+					if (log2.Value.Type == JTokenType.Array && log2.Key == "records")
+					{
+						foreach (JObject z in log2.Value.Children<JObject>())
+						{
+							// Load each log record property
+							foreach (JProperty prop in z.Properties())
+							{
+								propName = prop.Name;
+								propValue = (string)prop.Value;
+								ObjectManager.SetObjectValue(ediJob.UsbdgMetadata, prop.Name, prop.Value);
+							}
+
+							//sinkCsvEventRecords.Add((IndigoV2EventRecord)sinkCsvEventRecord);
+						}
+					}
+				}
+				return ediJob;
+			}
+			catch (Exception e)
+			{
+				throw new Exception(EdiErrorsService.BuildExceptionMessageString(e, "D39Y", EdiErrorsService.BuildErrorVariableArrayList(propName, propValue, sourceFile)));
+			}
+
+
+		}
+
 	}
 }

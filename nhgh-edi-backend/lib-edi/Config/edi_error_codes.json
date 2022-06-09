@@ -8,7 +8,7 @@
 		},
 		"ND82": {
 			"error-code": "ND82",
-			"error-message": "An exception was thrown while processing USBDG log {0}",
+			"error-message": "An exception was thrown while processing log {0}",
 			"error-source": "CCDX Provider",
 			"error-mitigation": null
 		},
@@ -141,19 +141,19 @@
 		"582N": {
 			"error-code": "582N",
 			"error-message": "Unable to deserialize blob {0}",
-			"error-source": "EMS USBDG Log Processing Service",
-			"error-mitigation": null
-		},
-		"89EX": {
-			"error-code": "89EX",
-			"error-message": "Unable to deserialize blob {0}",
-			"error-source": "EMS USBDG Log Processing Service",
+			"error-source": "EMS Data Transform Service",
 			"error-mitigation": null
 		},
 		"48TV": {
 			"error-code": "48TV",
 			"error-message": "Unable to serialize ems log",
-			"error-source": "EMS USBDG Log Processing Service",
+			"error-source": "EMS Data Transform Service",
+			"error-mitigation": null
+		},
+		"EL33": {
+			"error-code": "EL33",
+			"error-message": "Unable to serialize ems log",
+			"error-source": "EMS CFD50 Transform Service",
 			"error-mitigation": null
 		},
 		"K72U": {
@@ -164,62 +164,68 @@
 		},
 		"L91T": {
 			"error-code": "L91T",
-			"error-message": "No USBDG log blobs found at {0}",
-			"error-source": "EMS USBDG Log Processing Service",
+			"error-message": "No Indigo V2 log blobs found at {0}",
+			"error-source": "EMS Indigo V2 Transform Service",
 			"error-mitigation": null
 		},
 		"RV62": {
 			"error-code": "RV62",
 			"error-message": "No USBDG log report blobs found at {0}",
-			"error-source": "EMS USBDG Log Processing Service",
+			"error-source": "EMS USBDG Transform Service",
 			"error-mitigation": null
 		},
 		"M34T": {
 			"error-code": "M34T",
-			"error-message": "Unable to convert relative time {0} from usbdg log. Source file: {1}.",
-			"error-source": "EMS USBDG Log Processing Service",
+			"error-message": "Unable to convert relative time {0} from the indigo v2 log. Source file: {1}.",
+			"error-source": "EMS Indigo V2 Transform Service",
 			"error-mitigation": null
 		},
 		"A89R": {
 			"error-code": "A89R",
 			"error-message": "Unable to convert relative time '{0}' to total seconds.",
-			"error-source": "EMS USBDG Log Processing Service",
+			"error-source": "EMS Indigo V2 Transform Service",
 			"error-mitigation": null
 		},
 		"EZ56": {
 			"error-code": "EZ56",
 			"error-message": "Unable to convert relative time to total seconds",
-			"error-source": "EMS USBDG Log Processing Service",
+			"error-source": "EMS Indigo V2 Transform Service",
 			"error-mitigation": null
 		},
 		"4Q5D": {
 			"error-code": "4Q5D",
-			"error-message": "Unable to calculate USBDG record absolute time using report absolute time {0} and record relative time {1}. Source file: {2}",
-			"error-source": "EMS USBDG Log Processing Service",
+			"error-message": "Unable to calculate Indigo V2 record absolute time using report absolute time {0} and record relative time {1}. Source file: {2}",
+			"error-source": "EMS Indigo V2 Transform Service",
 			"error-mitigation": null
 		},
 		"Q25U": {
 			"error-code": "Q25U",
-			"error-message": "Unable to write usbdg log {0} to azure storage blob container {1}",
-			"error-source": "EMS USBDG Log Processing Service",
+			"error-message": "Unable to write Indigo V2 log {0} to azure storage blob container {1}",
+			"error-source": "EMS Indigo V2 Transform Service",
+			"error-mitigation": null
+		},
+		"PH77": {
+			"error-code": "PH77",
+			"error-message": "Unable to write Indigo V2 log {0} to azure storage blob container {1}",
+			"error-source": "EMS CFD50 Transform Service",
 			"error-mitigation": null
 		},
 		"C26Z": {
 			"error-code": "C26Z",
-			"error-message": "No USBDG log blobs downloaded from {0}",
-			"error-source": "EMS USBDG Log Processing Service",
+			"error-message": "No blobs downloaded from {0}",
+			"error-source": "EMS Transform Service",
 			"error-mitigation": null
 		},
 		"FY84": {
 			"error-code": "FY84",
-			"error-message": "An exception was thrown while validating the USBDG log json structure",
-			"error-source": "EMS USBDG Log Processing Service",
+			"error-message": "An exception was thrown while validating the log json structure",
+			"error-source": "EMS Transform Service",
 			"error-mitigation": null
 		},
 		"R85Y": {
 			"error-code": "R85Y",
-			"error-message": "USBDG log {0} failed json schema validation for the following reason: {1}",
-			"error-source": "EMS USBDG Log Processing Service",
+			"error-message": "Log {0} failed json schema validation for the following reason: {1}",
+			"error-source": "EMS Transform Service",
 			"error-mitigation": null
 		},
 		"P2G3": {
@@ -236,8 +242,8 @@
 		},
 		"P76H": {
 			"error-code": "P76H",
-			"error-message": "USBDG log report blob not downloaded at {0}",
-			"error-source": "EMS USBDG Log Processing Service",
+			"error-message": "Blob not downloaded at {0}",
+			"error-source": "EMS Transform Service",
 			"error-mitigation": null
 		},
 		"M92H": {
@@ -302,7 +308,7 @@
 		},
 		"E2N8": {
 			"error-code": "E2N8",
-			"error-message": "An exception was thrown while applying time correction logic to usbdg report file {0}",
+			"error-message": "An exception was thrown while applying time correction logic to file {0}",
 			"error-source": "EMS Data Transformation",
 			"error-mitigation": null
 		},

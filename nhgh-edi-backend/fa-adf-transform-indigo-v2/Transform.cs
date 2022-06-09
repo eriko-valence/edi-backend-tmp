@@ -38,12 +38,12 @@ namespace fa_adf_transform_indigo_v2
             [Blob("%AZURE_STORAGE_BLOB_CONTAINER_NAME_EMS_CONFIG%", FileAccess.ReadWrite, Connection = "AZURE_STORAGE_INPUT_CONNECTION_STRING")] CloudBlobContainer emsConfgContainer,
             ILogger log)
         {
-            string logType = "indigo-v2"; // TODO - add as an application setting
+            string logType = Environment.GetEnvironmentVariable("EMS_LOGGER_TYPE");
             TransformHttpRequestMessageBodyDto payload = null;
 
             try
             {
-                string logJsonSchemaFileName = Environment.GetEnvironmentVariable("EMS_LOG_JSON_SCHEMA_DEFINITION_FILE_NAME");
+                string indigoV2LogJsonSchemaFileName = Environment.GetEnvironmentVariable("EMS_INDIGOV2_JSON_SCHEMA_FILENAME");
 
                 log.LogInformation($"- Deserialize {logType} log transformation http request body");
                 payload = await HttpService.DeserializeHttpRequestBody(req);
@@ -77,16 +77,16 @@ namespace fa_adf_transform_indigo_v2
                 string emdAbsoluteTime = DataTransformService.GetJObjectPropertyValueAsString(usbdgRecords, "ABST");
 
                 log.LogInformation($"- Validate {logType} log blobs");
-                List<dynamic> validatedUsbdgLogFiles = await DataTransformService.ValidateLogJsonObjects(emsConfgContainer, indigoLogFiles, logJsonSchemaFileName, log);
+                List<dynamic> validatedUsbdgLogFiles = await DataTransformService.ValidateLogJsonObjects(emsConfgContainer, indigoLogFiles, indigoV2LogJsonSchemaFileName, log);
 
                 log.LogInformation($"- Start tracking EDI job status");
                 EdiJob ediJob = UsbdgDataProcessorService.PopulateEdiJobObject(usbdgReportMetadata, indigoLogFiles);
 
                 log.LogInformation($"- Map {logType} objects to csv records");
-                List<IndigoV2EventRecord> usbdbLogCsvRows = IndigoDataTransformService.MapIndigoV2Events(indigoLogFiles, ediJob);
-                List<EdiSinkRecord> indigoLocationCsvRows = IndigoDataTransformService.MapIndigoV2Locations(usbdgReportMetadata, ediJob);
-                List<EdiSinkRecord> usbdgDeviceCsvRows = UsbdgDataProcessorService.MapUsbdgDevice(usbdgReportMetadata);
-                List<EdiSinkRecord> usbdgEventCsvRows = UsbdgDataProcessorService.MapUsbdgEvent(usbdgReportMetadata);
+                List<IndigoV2EventRecord> usbdbLogCsvRows = DataModelMappingService.MapIndigoV2Events(indigoLogFiles, ediJob);
+                List<EdiSinkRecord> indigoLocationCsvRows = DataModelMappingService.MapIndigoV2Locations(usbdgReportMetadata, ediJob);
+                List<EdiSinkRecord> usbdgDeviceCsvRows = DataModelMappingService.MapUsbdgDevice(usbdgReportMetadata);
+                List<EdiSinkRecord> usbdgEventCsvRows = DataModelMappingService.MapUsbdgEvent(usbdgReportMetadata);
 
 
 

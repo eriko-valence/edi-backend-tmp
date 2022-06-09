@@ -5,6 +5,7 @@ using lib_edi.Models.Dto.Http;
 using lib_edi.Models.Dto.Loggers;
 using lib_edi.Services.Azure;
 using lib_edi.Services.Ccdx;
+using lib_edi.Services.CceDevice;
 using lib_edi.Services.Errors;
 using Microsoft.Azure.Storage.Blob;
 using Microsoft.Extensions.Logging;
@@ -24,7 +25,7 @@ namespace lib_edi.Services.Loggers
 	/// <summary>
 	/// A class that provides methods processing MetaFridge log files
 	/// </summary>
-	public class Cfd50DataProcessorService
+	public class Cfd50DataProcessorService : DataTransformService
 	{
 		/// <summary>
 		/// Deserializes the downloaded MetaFridge log blob's text
@@ -88,7 +89,7 @@ namespace lib_edi.Services.Loggers
 		/// <param name="metaFridgeRecords">A list of denormalized Metafridge log records</param>
 		/// <param name="log">Azure function logger object</param>
 		/// <returns>
-		/// Blob name of MetaFridge csv formatted log file; Exception (Q25U) otherwise
+		/// Blob name of MetaFridge csv formatted log file; Exception (PH77) otherwise
 		/// </returns>
 		public static async Task<string> WriteMetaFridgeLogRecordsToCsvBlob(CloudBlobContainer cloudBlobContainer, TransformHttpRequestMessageBodyDto requestBody, List<Cfd50CsvRecordDto> metaFridgeRecords, ILogger log)
 		{
@@ -107,7 +108,7 @@ namespace lib_edi.Services.Loggers
 			}
 			catch (Exception e)
 			{
-				string customError = EdiErrorsService.BuildExceptionMessageString(e, "Q25U", EdiErrorsService.BuildErrorVariableArrayList(blobName, cloudBlobContainer.Name));
+				string customError = EdiErrorsService.BuildExceptionMessageString(e, "PH77", EdiErrorsService.BuildErrorVariableArrayList(blobName, cloudBlobContainer.Name));
 				throw new Exception(customError);
 			}
 
@@ -148,7 +149,7 @@ namespace lib_edi.Services.Loggers
 		/// <param name="cloudBlobContainer">A container in the Microsoft Azure Blob service</param>
 		/// <param name="log">Azure function logger object</param>
 		/// <returns>
-		/// A list of validated CFD50 log objects; Exception thrown if at least one report fails validation (R85Y) or if the json definition file failed to be retrieved 
+		/// A list of validated CFD50 log objects; Exception thrown if at least one report fails validation (TV79) or if the json definition file failed to be retrieved (P2G3)
 		/// </returns>
 		public static async Task<List<dynamic>> ValidateCfd50LogBlobs(CloudBlobContainer cloudBlobContainer, List<dynamic> emsLogs, ILogger log)
 		{
@@ -199,7 +200,7 @@ namespace lib_edi.Services.Loggers
 		/// </summary>
 		/// <param name="emsLog">EMS log object </param>
 		/// <returns>
-		/// Serialized USBDG log text; Exception (48TV) otherwise
+		/// Serialized USBDG log text; Exception (EL33) otherwise
 		/// </returns>
 		private static string SerializeCfd50LogText(dynamic emsLog)
 		{
@@ -215,7 +216,7 @@ namespace lib_edi.Services.Loggers
 			}
 			catch (Exception e)
 			{
-				string customErrorMessage = EdiErrorsService.BuildExceptionMessageString(e, "48TV", null);
+				string customErrorMessage = EdiErrorsService.BuildExceptionMessageString(e, "EL33", null);
 				throw new Exception(customErrorMessage);
 			}
 		}
