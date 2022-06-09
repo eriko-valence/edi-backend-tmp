@@ -6,25 +6,21 @@ using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 using lib_edi.Services.Errors;
 using lib_edi.Services.Ccdx;
 using lib_edi.Exceptions;
 using lib_edi.Services.System.Net;
 using lib_edi.Services.Loggers;
 using lib_edi.Helpers;
-using lib_edi.Models.Dto.CceDevice.Csv;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Azure.Storage.Blob;
 using lib_edi.Models.Dto.Http;
 using lib_edi.Services.Azure;
 using lib_edi.Services.CceDevice;
-using Newtonsoft.Json.Linq;
 using lib_edi.Models.Loggers.Csv;
 using lib_edi.Models.Csv;
 using lib_edi.Models.Edi;
-//using Microsoft.Azure.Storage.Blob; // Microsoft.Azure.WebJobs.Extensions.Storage
 
 namespace fa_adf_transform_indigo_v2
 {
@@ -88,14 +84,10 @@ namespace fa_adf_transform_indigo_v2
                 List<EdiSinkRecord> usbdgDeviceCsvRows = DataModelMappingService.MapUsbdgDevice(usbdgReportMetadata);
                 List<EdiSinkRecord> usbdgEventCsvRows = DataModelMappingService.MapUsbdgEvent(usbdgReportMetadata);
 
-
-
                 log.LogInformation($"- Transform {logType} csv records");
-                
                 log.LogInformation($"  - Convert relative time to total seconds (all records)");
                 usbdbLogCsvRows = IndigoDataTransformService.ConvertRelativeTimeToTotalSecondsForUsbdgLogRecords(usbdbLogCsvRows);
 
-                
                 log.LogInformation($"  - Sort csv records using relative time total seconds");
                 List<IndigoV2EventRecord> sortedUsbdbLogCsvRows = usbdbLogCsvRows.OrderBy(i => (i._RELT_SECS)).ToList();
 
@@ -113,13 +105,13 @@ namespace fa_adf_transform_indigo_v2
                 if (usbdbLogCsvRows.Count > 1)
                 {
                     log.LogInformation($"    - record[0].ElapsedSecs (Elapsed secs from activation time): {IndigoDataTransformService.CalculateElapsedSecondsFromLoggerActivationRelativeTime(emdRelativeTime, usbdbLogCsvRows[0].RELT)}");
-                    //log.LogInformation($"    - record[0].ABST (EMD cloud upload absolute time): {usbdbLogCsvRows[0].ABST}");
+                    log.LogInformation($"    - record[0].ABST (EMD cloud upload absolute time): {usbdbLogCsvRows[0].EDI_RECORD_ABST_CALC}");
                     log.LogInformation($"    - record[0].RELT (Logger cloud upload relative time): {usbdbLogCsvRows[0].RELT}");
                     log.LogInformation($"    - record[0]._RELT_SECS (Logger cloud upload relative time seconds): {usbdbLogCsvRows[0]._RELT_SECS}");
                     log.LogInformation($"    - record[0]._ABST (calculated absolute time): {usbdbLogCsvRows[0].EDI_RECORD_ABST_CALC}");
                     log.LogInformation($" ");
                     log.LogInformation($"    - record[1].ElapsedSecs (Elapsed secs from activation time): {IndigoDataTransformService.CalculateElapsedSecondsFromLoggerActivationRelativeTime(emdRelativeTime, usbdbLogCsvRows[1].RELT)}");
-                    //log.LogInformation($"    - record[1].ABST (EMD cloud upload absolute time): {usbdbLogCsvRows[1].ABST}");
+                    log.LogInformation($"    - record[1].ABST (EMD cloud upload absolute time): {usbdbLogCsvRows[1].EDI_RECORD_ABST_CALC}");
                     log.LogInformation($"    - record[1].RELT (Logger cloud upload relative time): {usbdbLogCsvRows[1].RELT}");
                     log.LogInformation($"    - record[1]._RELT_SECS (Logger cloud upload relative time seconds): {usbdbLogCsvRows[1]._RELT_SECS}");
                     log.LogInformation($"    - record[1]._ABST (calculated absolute time): {usbdbLogCsvRows[1].EDI_RECORD_ABST_CALC}");
@@ -140,7 +132,6 @@ namespace fa_adf_transform_indigo_v2
                 AzureAppInsightsService.LogEmsTransformSucceededEventToAppInsights(payload.FileName, log);
                 log.LogInformation(" - SUCCESS");
                 
-
                 return new OkObjectResult(responseBody);
             }
             catch (Exception e)
@@ -148,9 +139,7 @@ namespace fa_adf_transform_indigo_v2
                 string errorCode = "E2N8";
                 string errorMessage = EdiErrorsService.BuildExceptionMessageString(e, errorCode, EdiErrorsService.BuildErrorVariableArrayList(payload.FileName));
                 string exceptionInnerMessage = EdiErrorsService.GetInnerException(e);
-
                 CcdxService.LogEmsTransformErrorEventToAppInsights(payload?.FileName, log, e, errorCode);
-
                 if (e is BadRequestException)
                 {
                     string errStr = $"Bad request thrown while validating {logType} transformation request";
