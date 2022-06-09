@@ -23,7 +23,7 @@ namespace lib_edi.Services.Loggers
     public class DataModelMappingService
     {
         /// <summary>
-        /// Maps raw MetaFridge log file records to csv compatible format
+        /// Maps raw json MetaFridge log files to csv records
         /// </summary>
         /// <remarks>
         /// This mapping denormalizes the MetaFridge log file to get the records into a csv compatible format.
@@ -32,12 +32,12 @@ namespace lib_edi.Services.Loggers
         /// <returns>
 		/// A list of csv compatible MetaFridge log file records if successful; Exception (3B6U) if any there are any failures
 		/// </returns>
-        public static List<Cfd50CsvRecordDto> MapMetaFridgeLogFileRecords(dynamic metaFridgeLogFile)
+        private static List<Cfd50CsvRecordDto> MapMetaFridgeLogFileRecords(dynamic metaFridgeLogFile)
         {
             try
             {
 
-                List<Cfd50CsvRecordDto> cfd50CsvRecords = new List<Cfd50CsvRecordDto>();
+                List<Cfd50CsvRecordDto> cfd50CsvRecords = new();
 
                 /* ######################################################################
                  * # Cast dynamic data file objects to JSON
@@ -99,19 +99,18 @@ namespace lib_edi.Services.Loggers
         }
 
         /// <summary>
-        /// Maps raw Metafridge log files to csv compatible format
+        /// Maps raw json MetaFridge log files to csv records
         /// </summary>
         /// <remarks>
-        /// This function iterates a list of MetaFridge log files to map these records. Records from each 
-        /// log file are consolidated.  
+        /// This function iterates a list of MetaFridge log files to create Metafridge data records in csv format
         /// </remarks>
-        /// <param name="metaFridgeLogFiles">A list of deserilized MetaFridge json log files</param>
+        /// <param name="metaFridgeLogFiles">A list of deserialized MetaFridge json log files</param>
         /// <returns>
-        /// A consolidated list of csv compatible MetaFridge log file records if successful; Exception (3B6U) if any there are any failures
+        /// A list of csv compatible MetaFridge log file records if successful; Exception (3B6U) if any there are any failures
         /// </returns>
         public static List<Cfd50CsvRecordDto> MapMetaFridgeLogs(List<dynamic> metaFridgeLogFiles)
         {
-            List<Cfd50CsvRecordDto> metaFridgeCsvRow = new List<Cfd50CsvRecordDto>();
+            List<Cfd50CsvRecordDto> metaFridgeCsvRow = new();
             foreach (dynamic metaFridgeLogFile in metaFridgeLogFiles)
             {
                 metaFridgeCsvRow = DataModelMappingService.MapMetaFridgeLogFileRecords(metaFridgeLogFile);
@@ -121,42 +120,15 @@ namespace lib_edi.Services.Loggers
         }
 
         /// <summary>
-        /// Maps raw USBDG log files to denormalized, csv compatible format
-        /// </summary>
-        /// <remarks>
-        /// This function iterates a list of USBDG log files to map these records. Records
-        /// from all log files are consolidated into one list of denormalized records.
-        /// </remarks>
-        /// <param name="usbdgLogFiles">A list of deserilized USBDG json log file</param>
-        /// <returns>
-        /// A consolidated list of csv USBDG MetaFridge log file records  if successful; Exception (D39Y) if any failures occur 
-        /// </returns>
-        public static List<UsbdgSimCsvRecordDto> MapUsbdgLogs(List<dynamic> usbdgLogFiles, dynamic reportFile)
-        {
-
-
-            List<UsbdgSimCsvRecordDto> usbdbLogCsvRows = new List<UsbdgSimCsvRecordDto>();
-            /*
-            foreach (dynamic usbdbLog in usbdgLogFiles)
-            {
-                usbdbLogCsvRows.AddRange(MapUsbdgLogFileRecords(usbdbLog, reportFile));
-            }
-            */
-
-            return usbdbLogCsvRows;
-        }
-
-
-        /// <summary>
-        /// Maps raw EMD and logger files to CSV compatible format
+        /// Maps raw USBDG data simulator produced log files to CSV compatible format
         /// </summary>
         /// <remarks>
         /// This mapping denormalizes the logger data file into records ready for CSV serialization.
         /// </remarks>
-        /// <param name="emdLogFile">A deserilized logger data file</param>
-        /// <param name="metadataFile">A deserilized EMD metadata file</param>
+        /// <param name="emdLogFile">A deserialized USBDG data simulator produced logger data file</param>
+        /// <param name="metadataFile">A deserialized USBDG metadata file</param>
         /// <returns>
-        /// A list of CSV compatible EMD + logger data records, if successful; Exception (D39Y) if any failures occur 
+        /// A list of CSV compatible EMD + logger data records, if successful; Exception (HUA2) if any failures occur 
         /// </returns>
         public static List<UsbdgSimCsvRecordDto> MapUsbdgLogFileRecords(dynamic emdLogFile, dynamic metadataFile)
         {
@@ -182,11 +154,7 @@ namespace lib_edi.Services.Loggers
 					{
                         DateTime? emdAbsoluteTime = DateConverter.ConvertIso8601CompliantString(x.Value.ToString());
                         //ObjectManager.SetObjectValue(ref usbdgSimEmdMetadata, x.Key, emdAbsoluteTime);
-                    } 
-                    else
-					{
-                        //ObjectManager.SetObjectValue(ref usbdgSimEmdMetadata, x.Key, x.Value);
-                    }   
+                    }  
                 }
 
                 // Get the logger header fields
@@ -237,39 +205,20 @@ namespace lib_edi.Services.Loggers
             }
             catch (Exception e)
             {
-                throw new Exception(EdiErrorsService.BuildExceptionMessageString(e, "D39Y", null));
+                throw new Exception(EdiErrorsService.BuildExceptionMessageString(e, "HUA2", null));
             }
 
         }
 
         /// <summary>
-        /// Converts string bit value ("0" or "1") to boolean equiavlent
-        /// </summary>
-        /// <param name="bitValue">Bit value represented as string ("0" or "1")</param>
-        /// <returns>
-        /// Boolean equivalent of bit value string
-        /// </returns>
-
-        private static bool ConvertStringBitToBool(string bitValue)
-        {
-            return (bitValue == "1");
-        }
-
-        private static string BuildEmdKeyName(string s)
-		{
-            return $"EMD_{s}";
-		}
-
-        /// <summary>
-        /// Maps raw EMD and logger files to CSV compatible format
+        /// Maps raw json USBDG metadata file to USBDG device csv record
         /// </summary>
         /// <remarks>
-        /// This mapping denormalizes the logger data file into records ready for CSV serialization.
+        /// This mapping denormalizes the raw json USBDG metadata file into a USBDG device record ready for CSV serialization.
         /// </remarks>
-        /// <param name="emdLogFile">A deserialized logger data file</param>
-        /// <param name="metadataFile">A deserialized EMD metadata file</param>
+        /// <param name="sourceUsbdgMetadata">A  raw json USBDG metadata file</param>
         /// <returns>
-        /// A list of CSV compatible EMD + logger data records, if successful; Exception (D39Y) if any failures occur 
+        /// A list of one USBDG device csv record, if successful; Exception (CPA8) if any failures occur 
         /// </returns>
         public static List<EdiSinkRecord> MapUsbdgDevice(dynamic sourceUsbdgMetadata)
         {
@@ -305,15 +254,14 @@ namespace lib_edi.Services.Loggers
         }
 
         /// <summary>
-        /// Maps raw EMD and logger files to CSV compatible format
+        /// Maps raw json USBDG metadata file to USBDG event csv record
         /// </summary>
         /// <remarks>
-        /// This mapping denormalizes the logger data file into records ready for CSV serialization.
+        /// This mapping denormalizes the raw json USBDG metadata file into a USBDG event record ready for CSV serialization.
         /// </remarks>
-        /// <param name="emdLogFile">A deserialized logger data file</param>
-        /// <param name="metadataFile">A deserialized EMD metadata file</param>
+        /// <param name="sourceUsbdgMetadata">A  raw json USBDG metadata file</param>
         /// <returns>
-        /// A list of CSV compatible EMD + logger data records, if successful; Exception (D39Y) if any failures occur 
+        /// A list of one USBDG event csv record, if successful; Exception (DYUF) if any failures occur 
         /// </returns>
         public static List<EdiSinkRecord> MapUsbdgEvent(dynamic sourceUsbdgMetadata)
         {
@@ -375,17 +323,17 @@ namespace lib_edi.Services.Loggers
         }
 
         /// <summary>
-        /// Maps raw EMD and logger files to CSV compatible format
+        /// Maps raw Indigo V2 data log files to csv event records
         /// </summary>
         /// <remarks>
         /// This mapping denormalizes the logger data file into records ready for CSV serialization.
         /// </remarks>
-        /// <param name="emdLogFile">A deserilized logger data file</param>
-        /// <param name="metadataFile">A deserilized EMD metadata file</param>
+        /// <param name="sourceLogs">A list of deserilized logger data file objects</param>
+        /// <param name="sourceEdiJob">A deserilized EDI job object holding the USBDG serial number and ABST</param>
         /// <returns>
-        /// A list of CSV compatible EMD + logger data records, if successful; Exception (D39Y) if any failures occur 
+        /// A list of CSV compatible Indigo V2 event records, if successful; Exception (HKTJ) if any failures occur 
         /// </returns>
-        public static List<IndigoV2EventRecord> MapIndigoV2Events(List<dynamic> sourceLogs, EdiJob ediJob)
+        public static List<IndigoV2EventRecord> MapIndigoV2Events(List<dynamic> sourceLogs, EdiJob sourceEdiJob)
         {
             string propName = null;
             string propValue = null;
@@ -425,8 +373,8 @@ namespace lib_edi.Services.Loggers
                             foreach (JObject z in log2.Value.Children<JObject>())
                             {
                                 EdiSinkRecord sinkCsvEventRecord = new IndigoV2EventRecord();
-                                ObjectManager.SetObjectValue(sinkCsvEventRecord, "ESER", ediJob.UsbdgMetadata.ESER);
-                                ObjectManager.SetObjectValue(sinkCsvEventRecord, "ALRM", ediJob.UsbdgMetadata.ALRM);
+                                ObjectManager.SetObjectValue(sinkCsvEventRecord, "ESER", sourceEdiJob.UsbdgMetadata.ESER);
+                                ObjectManager.SetObjectValue(sinkCsvEventRecord, "ALRM", sourceEdiJob.UsbdgMetadata.ALRM);
 
                                 // Load log header properties into csv record object
                                 foreach (var logHeader in logHeaderObject)
@@ -460,22 +408,22 @@ namespace lib_edi.Services.Loggers
             }
             catch (Exception e)
             {
-                throw new Exception(EdiErrorsService.BuildExceptionMessageString(e, "D39Y", EdiErrorsService.BuildErrorVariableArrayList(propName, propValue, sourceFile)));
+                throw new Exception(EdiErrorsService.BuildExceptionMessageString(e, "HKTJ", EdiErrorsService.BuildErrorVariableArrayList(propName, propValue, sourceFile)));
             }
         }
 
         /// <summary>
-        /// Maps raw EMD and logger files to CSV compatible format
+        /// Maps raw Indigo V2 data log and USBDG metadata files to csv location records
         /// </summary>
         /// <remarks>
-        /// This mapping denormalizes the logger data file into records ready for CSV serialization.
+        /// This mapping denormalizes the Indigo V2 data log and USBDG metadata files into location records ready for CSV serialization.
         /// </remarks>
-        /// <param name="emdLogFile">A deserialized logger data file</param>
-        /// <param name="metadataFile">A deserialized EMD metadata file</param>
+        /// <param name="sourceUsbdgMetadata">A list of deserilized logger data file objects</param>
+        /// <param name="sourceEdiJob">A deserilized EDI job object holding the Indigo V2 logger serial number</param>
         /// <returns>
-        /// A list of CSV compatible EMD + logger data records, if successful; Exception (D39Y) if any failures occur 
+        /// A list of CSV compatible Indigo V2 location records, if successful; Exception (DVKA) if any failures occur 
         /// </returns>
-        public static List<EdiSinkRecord> MapIndigoV2Locations(dynamic sourceUsbdgMetadata, EdiJob ediJob)
+        public static List<EdiSinkRecord> MapIndigoV2Locations(dynamic sourceUsbdgMetadata, EdiJob sourceEdiJob)
         {
             string propName = null;
             string propValue = null;
@@ -508,7 +456,7 @@ namespace lib_edi.Services.Loggers
                         foreach (JObject z in log2.Value.Children<JObject>())
                         {
                             EdiSinkRecord sinkCsvLocationsRecord = new IndigoV2LocationRecord();
-                            ObjectManager.SetObjectValue(sinkCsvLocationsRecord, "LSER", ediJob.Logger.LSER);
+                            ObjectManager.SetObjectValue(sinkCsvLocationsRecord, "LSER", sourceEdiJob.Logger.LSER);
 
                             // Load each log record property
                             foreach (JProperty prop in z.Properties())
@@ -536,7 +484,7 @@ namespace lib_edi.Services.Loggers
             }
             catch (Exception e)
             {
-                throw new Exception(EdiErrorsService.BuildExceptionMessageString(e, "MTJV", EdiErrorsService.BuildErrorVariableArrayList(propName, propValue, sourceFile)));
+                throw new Exception(EdiErrorsService.BuildExceptionMessageString(e, "DVKA", EdiErrorsService.BuildErrorVariableArrayList(propName, propValue, sourceFile)));
             }
         }
 

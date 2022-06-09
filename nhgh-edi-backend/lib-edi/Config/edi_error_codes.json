@@ -72,6 +72,12 @@
 			"error-source": "EMS Data Mapping Service",
 			"error-mitigation": null
 		},
+		"HUA2": {
+			"error-code": "HUA2",
+			"error-message": "Unable to map USBDB data simulator record with property '{0}' and value '{1}' in source file '{2}'",
+			"error-source": "EMS Data Mapping Service",
+			"error-mitigation": null
+		},
 		"MTJV": {
 			"error-code": "MTJV",
 			"error-message": "Unable to map indigo v2 location record with property '{0}' and value '{1}' in source file '{2}'",
@@ -87,6 +93,18 @@
 		"DYUF": {
 			"error-code": "DYUF",
 			"error-message": "Unable to map USBDG event record with property '{0}' and value '{1}' in source file '{2}'",
+			"error-source": "EMS Data Mapping Service",
+			"error-mitigation": null
+		},
+		"HKTJ": {
+			"error-code": "HKTJ",
+			"error-message": "Unable to map Indigo V2 event record with property '{0}' and value '{1}' in source file '{2}'",
+			"error-source": "EMS Data Mapping Service",
+			"error-mitigation": null
+		},
+		"DVKA": {
+			"error-code": "DVKA",
+			"error-message": "Unable to map Indigo V2 location record with property '{0}' and value '{1}' in source file '{2}'",
 			"error-source": "EMS Data Mapping Service",
 			"error-mitigation": null
 		},

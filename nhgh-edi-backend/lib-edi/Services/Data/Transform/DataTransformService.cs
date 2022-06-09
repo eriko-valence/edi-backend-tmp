@@ -6,15 +6,10 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using NJsonSchema;
 using NJsonSchema.Validation;
-using System.Reflection;
 using lib_edi.Models.Dto.Http;
-using Microsoft.AspNetCore.Http;
-using System.IO;
 using lib_edi.Helpers;
 using lib_edi.Models.Edi;
 using System.Dynamic;
@@ -23,88 +18,6 @@ namespace lib_edi.Services.CceDevice
 {
     public class DataTransformService
     {
-		/// <summary>
-		/// Downloads and deserializes a list of CCE device blobs residing in Azure blob storage
-		/// </summary>
-		/// <param name="blobs">A list of CCE device blobs</param>
-		/// <param name="cloudBlobContainer">Microsoft Azure Blob service container holding the logs</param>
-		/// <param name="blobPath">Path to log blobs</param>
-		/// <param name="log">Azure function logger object</param>
-		/// <returns>
-		/// A list of deserialized CCE device logs in JObject format that have been downloaded from Azure blob storage; Exception (C26Z) if no blobs found
-		/// </returns>
-		public static async Task<List<dynamic>> DownloadAndDeserializeJsonBlobs(List<CloudBlockBlob> blobs, CloudBlobContainer cloudBlobContainer, string blobPath, ILogger log)
-		{
-
-			List<dynamic> listLogs = new();
-			foreach (CloudBlockBlob logBlob in blobs)
-			{
-				string blobSource = $"{ cloudBlobContainer.Name}/{ logBlob.Name}";
-				log.LogInformation($"  - Blob: {blobSource}");
-				string logBlobText = await AzureStorageBlobService.DownloadBlobTextAsync(cloudBlobContainer, logBlob.Name);
-				dynamic logBlobJson = DeserializeJsonText(logBlob.Name, logBlobText);
-				logBlobJson._SOURCE = $"{blobSource}";
-				listLogs.Add(logBlobJson);
-			}
-
-			if (listLogs.Count == 0)
-			{
-				string customErrorMessage = EdiErrorsService.BuildExceptionMessageString(null, "C26Z", EdiErrorsService.BuildErrorVariableArrayList(blobPath));
-				throw new Exception(customErrorMessage);
-			}
-			//return (List<dynamic>)listLogs.Cast<JObject>();
-			return listLogs;
-		}
-
-		/// <summary>
-		/// Downloads and deserializes a single CCE device blob residing in Azure blob storage
-		/// </summary>
-		/// <param name="blobs">A list of CCE device blobs</param>
-		/// <param name="cloudBlobContainer">Microsoft Azure Blob service container holding the logs</param>
-		/// <param name="blobPath">Path to log blobs</param>
-		/// <param name="log">Azure function logger object</param>
-		/// <returns>
-		/// A list of deserialized CCE device logsobjects that have been downloaded from Azure blob storage; Exception (C26Z) if no blobs found
-		/// </returns>
-		public static async Task<dynamic> DownloadAndDeserializeJsonBlob(CloudBlockBlob blob, CloudBlobContainer blobContainer, string blobPath, ILogger log)
-		{
-			string emsBlobPath = $"{ blobContainer.Name}/{ blob.Name}";
-			log.LogInformation($"  - Blob: {emsBlobPath}");
-			string logBlobText = await AzureStorageBlobService.DownloadBlobTextAsync(blobContainer, blob.Name);
-			dynamic logBlobJson = DeserializeJsonText(blob.Name, logBlobText);
-			logBlobJson._SOURCE = emsBlobPath;
-
-			if (logBlobJson == null)
-			{
-				string customErrorMessage = EdiErrorsService.BuildExceptionMessageString(null, "P76H", EdiErrorsService.BuildErrorVariableArrayList(blobPath));
-				throw new Exception(customErrorMessage);
-			}
-
-			return logBlobJson;
-		}
-
-		/// <summary>
-		/// Deserializes JSON string
-		/// </summary>
-		/// <param name="blobName">Blob name of JSON string </param>
-		/// <param name="blobText">Downloaded text of JSON string </param>
-		/// <returns>
-		/// Deserialized object of JSON string; Exception (582N) otherwise
-		/// </returns>
-		public static JObject DeserializeJsonText(string blobName, string blobText)
-		{
-			try
-			{
-				dynamic results = JsonConvert.DeserializeObject<dynamic>(blobText);
-				return results;
-			}
-			catch (Exception e)
-			{
-				string customErrorMessage = EdiErrorsService.BuildExceptionMessageString(e, "582N", EdiErrorsService.BuildErrorVariableArrayList(blobName));
-				throw new Exception(customErrorMessage);
-			}
-		}
-
 		/// <summary>
 		/// Serializes JSON object
 		/// </summary>

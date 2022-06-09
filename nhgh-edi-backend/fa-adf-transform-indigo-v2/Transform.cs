@@ -66,7 +66,7 @@ namespace fa_adf_transform_indigo_v2
                 CloudBlockBlob usbdgReportMetadataBlob = UsbdgDataProcessorService.GetReportMetadataBlob(logDirectoryBlobs, inputBlobPath);
 
                 log.LogInformation($"- Download {logType} log blobs");
-                List<dynamic> indigoLogFiles = await DataTransformService.DownloadAndDeserializeJsonBlobs(usbdgLogBlobs, inputContainer, inputBlobPath, log);
+                List<dynamic> indigoLogFiles = await AzureStorageBlobService.DownloadAndDeserializeJsonBlobs(usbdgLogBlobs, inputContainer, inputBlobPath, log);
                 log.LogInformation($"- Download {logType} log report blobs");
                 dynamic usbdgReportMetadata = await DataTransformService.DownloadAndDeserializeJsonBlob(usbdgReportMetadataBlob, inputContainer, inputBlobPath, log);
 
