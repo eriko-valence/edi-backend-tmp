@@ -22,6 +22,7 @@ using lib_edi.Exceptions;
 using lib_edi.Services.System;
 using Newtonsoft.Json.Linq;
 using lib_edi.Helpers;
+using lib_edi.Services.CceDevice;
 
 namespace fa_adf_transform_usbdg
 {
@@ -71,17 +72,18 @@ namespace fa_adf_transform_usbdg
                 log.LogInformation($"- Building input blob path: {inputBlobPath}");
 
                 log.LogInformation($"- List blobs in azure blob storage location {inputBlobPath}");
-                IEnumerable<IListBlobItem> logDirectoryBlobs = AzureStorageBlobService.ListBlobsInDirectory(inputContainer, payload.Path, inputBlobPath);
+                IEnumerable<IListBlobItem> logDirectoryBlobs = AzureStorageBlobService.GetListOfBlobsInDirectory(inputContainer, payload.Path, inputBlobPath);
 
                 log.LogInformation($"- Filter for {logType} log blobs");
                 List<CloudBlockBlob> usbdgLogBlobs = UsbdgDataProcessorService.FindUsbdgLogBlobs(logDirectoryBlobs, inputBlobPath);
                 log.LogInformation($"- Filter for {logType} log report blobs");
-                List<CloudBlockBlob> usbdgLogReportBlobs = UsbdgDataProcessorService.FindUsbdgLogReportBlobs(logDirectoryBlobs, inputBlobPath);
+                CloudBlockBlob usbdgLogReportBlobs = UsbdgDataProcessorService.GetReportMetadataBlob(logDirectoryBlobs, inputBlobPath);
 
                 log.LogInformation($"- Download {logType} log blobs");
-                List<dynamic> usbdgLogFiles = await UsbdgDataProcessorService.DownloadUsbdgLogBlobs(usbdgLogBlobs, inputContainer, inputBlobPath, log);
+                List<dynamic> usbdgLogFiles = await UsbdgDataProcessorService.DownloadAndDeserializeJsonBlobs(usbdgLogBlobs, inputContainer, inputBlobPath, log);
                 log.LogInformation($"- Download {logType} log report blobs");
-                dynamic emsLogMetadata = await UsbdgDataProcessorService.DownloadUsbdgLogReportBlobs(usbdgLogReportBlobs, inputContainer, inputBlobPath, log);
+                //dynamic emsLogMetadata = await UsbdgDataProcessorService.DownloadUsbdgLogReportBlobs(usbdgLogReportBlobs, inputContainer, inputBlobPath, log);
+                dynamic emsLogMetadata = null;
 
                 log.LogInformation($"- Retrieving time values from EMD metadata");
                 string emdRelativeTime = ObjectManager.GetJObjectPropertyValueAsString(emsLogMetadata,"RELT");
@@ -118,13 +120,13 @@ namespace fa_adf_transform_usbdg
                     log.LogInformation($"    - record[0].ABST (EMD cloud upload absolute time): {usbdbLogCsvRows[0].ABST}");
                     log.LogInformation($"    - record[0].RELT (Logger cloud upload relative time): {usbdbLogCsvRows[0].RELT}");
                     log.LogInformation($"    - record[0]._RELT_SECS (Logger cloud upload relative time seconds): {usbdbLogCsvRows[0]._RELT_SECS}");
-                    log.LogInformation($"    - record[0]._ABST (calculated absolute time): {usbdbLogCsvRows[0]._ABST}");
+                    log.LogInformation($"    - record[0]._ABST (calculated absolute time): {usbdbLogCsvRows[0].ABST_CALC}");
                     log.LogInformation($" ");
                     log.LogInformation($"    - record[1].ElapsedSecs (Elapsed secs from activation time): {UsbdgDataProcessorService.CalculateElapsedSecondsFromLoggerActivationRelativeTime(emdRelativeTime, usbdbLogCsvRows[1].RELT)}");
                     log.LogInformation($"    - record[1].ABST (EMD cloud upload absolute time): {usbdbLogCsvRows[1].ABST}");
                     log.LogInformation($"    - record[1].RELT (Logger cloud upload relative time): {usbdbLogCsvRows[1].RELT}");
                     log.LogInformation($"    - record[1]._RELT_SECS (Logger cloud upload relative time seconds): {usbdbLogCsvRows[1]._RELT_SECS}");
-                    log.LogInformation($"    - record[1]._ABST (calculated absolute time): {usbdbLogCsvRows[1]._ABST}");
+                    log.LogInformation($"    - record[1]._ABST (calculated absolute time): {usbdbLogCsvRows[1].ABST_CALC}");
                 }
 
                 log.LogInformation($"- Write {logType} csv records to azure blob storage");

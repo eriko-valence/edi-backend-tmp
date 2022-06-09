@@ -11,6 +11,8 @@ namespace lib_edi.Helpers
 	/// </summary>
 	public class DateConverter
 	{
+		private static readonly DateTime epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+
 		/// <summary>
 		/// Converts ISO 8601 compliant date/time string to DateTime object
 		/// </summary>
@@ -149,7 +151,7 @@ namespace lib_edi.Helpers
 		/// Converts a date and time object to a ISO 8601 compliant date time string representation
 		/// </summary>
 		/// <param name="s">Date and time object </param>
-		/// <returns>
+		/// <returns
 		/// An ISO 8601 compliant date/time string
 		/// </returns>
 		public static string ConvertToUtcDateTimeNowString(string format)
@@ -179,5 +181,23 @@ namespace lib_edi.Helpers
 		{
 			return dt.ToString("d MMM yyyy HH:mm:ss 'GMT'", CultureInfo.InvariantCulture);
 		}
+
+		/// <summary>
+		/// Converts Unix time to .NET DateTime object
+		/// </summary>
+		/// <returns>
+		/// .NET DateTime object representing the Unix time
+		/// </returns>
+		public static DateTime FromUnixTimeSeconds(long unixTime)
+		{
+			return epoch.AddSeconds(unixTime);
+		}
+
+		public static DateTime FromUnixTimeMilliseconds(long unixTime)
+		{
+			return epoch.AddMilliseconds(unixTime);
+		}
+
+		
 	}
 }

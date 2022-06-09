@@ -21,13 +21,18 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
+using lib_edi.Services.CceDevice;
+using lib_edi.Models.Edi;
+using System.Dynamic;
+using lib_edi.Models.Csv;
+using lib_edi.Models.Emd.Csv;
 
 namespace lib_edi.Services.Loggers
 {
 	/// <summary>
 	/// A class that provides methods processing USBDG log files
 	/// </summary>
-	public class UsbdgDataProcessorService
+	public class UsbdgDataProcessorService : DataTransformService
 	{
 		public static object UsbdgLogProcessorService { get; private set; }
 
@@ -134,15 +139,15 @@ namespace lib_edi.Services.Loggers
 		}
 
 		/// <summary>
-		/// Returns a list of only USBDB log report blobs
+		/// Returns a list of only USBDG metadata report blobs
 		/// </summary>
 		/// <param name="logDirectoryBlobs">Full list of blobs </param>
 		/// <returns>
-		/// List containing only USBDG log report blobs; Exception (RV62) otherwise
+		/// List containing only USBDG metadata report blobs; Exception (RV62) otherwise
 		/// </returns>
-		public static List<CloudBlockBlob> FindUsbdgLogReportBlobs(IEnumerable<IListBlobItem> logDirectoryBlobs, string blobPath)
+		public static CloudBlockBlob GetReportMetadataBlob(IEnumerable<IListBlobItem> logDirectoryBlobs, string blobPath)
 		{
-			List<CloudBlockBlob> usbdgLogReportBlobs = new List<CloudBlockBlob>();
+			List<CloudBlockBlob> usbdgLogReportBlobs = new();
 
 			if (logDirectoryBlobs != null)
 			{
@@ -161,7 +166,7 @@ namespace lib_edi.Services.Loggers
 				throw new Exception(customErrorMessage);
 			}
 
-			return usbdgLogReportBlobs;
+			return usbdgLogReportBlobs.First();
 		}
 
 		/// <summary>
@@ -205,7 +210,7 @@ namespace lib_edi.Services.Loggers
 			foreach (UsbdgSimCsvRecordDto record in records)
 			{
 				DateTime? dt = CalculateAbsoluteTimeForUsbdgRecord(absoluteTime, reportDurationSeconds, record.RELT, record.Source);
-				record._ABST = dt;
+				record.ABST_CALC = dt;
 			}
 			return records;
 		}
@@ -326,11 +331,11 @@ namespace lib_edi.Services.Loggers
 				int elapsedSeconds = loggerActivationRelativeTimeSecs - recordRelativeTimeSecs; // How far away time wise is this record compared to the absolute time
 				return elapsedSeconds;
 			}
-			catch (Exception e)
+			catch (Exception)
 			{
 				//string customErrorMessage = EdiErrorsService.BuildExceptionMessageString(e, "4Q5D", EdiErrorsService.BuildErrorVariableArrayList(reportAbsoluteTime, recordRelativeTime, sourceLogFile));
 				//throw new Exception(customErrorMessage);
-				throw e;
+				throw;
 			}
 		}
 
@@ -357,7 +362,7 @@ namespace lib_edi.Services.Loggers
 						//string dateFolder = DateTime.UtcNow.ToString("yyyy-MM-dd/HH");
 						//string guidFolder = CcdxService.GetGuidFromBlobPath(requestBody.Path);
 
-						blobName = CcdxService.BuildCuratedCcdxConsumerBlobPath(requestBody.Path);
+						blobName = CcdxService.BuildCuratedCcdxConsumerBlobPath(requestBody.Path, "out.csv");
 
 						//blobName = $"{dateFolder}/{guidFolder}/out.csv";
 						log.LogInformation($"  - Blob: {blobName}");
@@ -479,6 +484,7 @@ namespace lib_edi.Services.Loggers
 		public static async Task<dynamic> DownloadUsbdgLogReportBlobs(List<CloudBlockBlob> blobs, CloudBlobContainer cloudBlobContainer, string blobPath, ILogger log)
 		{
 			dynamic emsLogMetadata = null;
+
 			foreach (CloudBlockBlob reportBlob in blobs)
 			{
 				log.LogInformation($"  - Blob: {cloudBlobContainer.Name}/{reportBlob.Name}");
@@ -493,6 +499,216 @@ namespace lib_edi.Services.Loggers
 			}
 
 			return emsLogMetadata;
+		}
+
+		/// <summary>
+		/// Maps raw EMD and logger files to CSV compatible format
+		/// </summary>
+		/// <remarks>
+		/// This mapping denormalizes the logger data file into records ready for CSV serialization.
+		/// </remarks>
+		/// <param name="emdLogFile">A deserialized logger data file</param>
+		/// <param name="metadataFile">A deserialized EMD metadata file</param>
+		/// <returns>
+		/// A list of CSV compatible EMD + logger data records, if successful; Exception (D39Y) if any failures occur 
+		/// </returns>
+		public static EdiJob PopulateEdiJobObject(dynamic sourceUsbdgMetadata, List<dynamic> sourceLogs)
+		{
+			string propName = null;
+			string propValue = null;
+			string sourceFile = null;
+			EdiJob ediJob = new EdiJob();
+
+			try
+			{
+				foreach (dynamic sourceLog in sourceLogs)
+				{
+					JObject sourceLogJObject = (JObject)sourceLog;
+
+					// Grab the log header properties from the source log file
+					var logHeaderObject = new ExpandoObject() as IDictionary<string, Object>;
+					foreach (KeyValuePair<string, JToken> log1 in sourceLogJObject)
+					{
+						if (log1.Value.Type != JTokenType.Array)
+						{
+							logHeaderObject.Add(log1.Key, log1.Value);
+							ObjectManager.SetObjectValue(ediJob.Logger, log1.Key, log1.Value);
+						} 
+						
+					}
+
+				}
+
+				// 
+				JObject sourceUsbdgMetadataJObject = (JObject)sourceUsbdgMetadata;
+				var reportHeaderObject = new ExpandoObject() as IDictionary<string, Object>;
+				foreach (KeyValuePair<string, JToken> log2 in sourceUsbdgMetadataJObject)
+				{
+					if (log2.Value.Type != JTokenType.Array)
+					{
+						reportHeaderObject.Add(log2.Key, log2.Value);
+						ObjectManager.SetObjectValue(ediJob.UsbdgMetadata, log2.Key, log2.Value);
+					}
+
+					if (log2.Value.Type == JTokenType.Array && log2.Key == "records")
+					{
+						foreach (JObject z in log2.Value.Children<JObject>())
+						{
+							// Load each log record property
+							foreach (JProperty prop in z.Properties())
+							{
+								propName = prop.Name;
+								propValue = (string)prop.Value;
+								ObjectManager.SetObjectValue(ediJob.UsbdgMetadata, prop.Name, prop.Value);
+							}
+
+							//sinkCsvEventRecords.Add((IndigoV2EventRecord)sinkCsvEventRecord);
+						}
+					}
+				}
+				return ediJob;
+			}
+			catch (Exception e)
+			{
+				throw new Exception(EdiErrorsService.BuildExceptionMessageString(e, "D39Y", EdiErrorsService.BuildErrorVariableArrayList(propName, propValue, sourceFile)));
+			}
+
+
+		}
+
+		/// <summary>
+		/// Maps raw EMD and logger files to CSV compatible format
+		/// </summary>
+		/// <remarks>
+		/// This mapping denormalizes the logger data file into records ready for CSV serialization.
+		/// </remarks>
+		/// <param name="emdLogFile">A deserialized logger data file</param>
+		/// <param name="metadataFile">A deserialized EMD metadata file</param>
+		/// <returns>
+		/// A list of CSV compatible EMD + logger data records, if successful; Exception (D39Y) if any failures occur 
+		/// </returns>
+		public static List<EdiSinkRecord> MapUsbdgDevice(dynamic sourceUsbdgMetadata)
+		{
+			string propName = null;
+			string propValue = null;
+			string sourceFile = null;
+
+			try
+			{
+				List<EdiSinkRecord> sinkCsvLocationsRecords = new();
+				JObject sourceJObject = (JObject)sourceUsbdgMetadata;
+				sourceFile = DataTransformService.GetSourceFile(sourceJObject);
+
+				EdiSinkRecord sinkUsbdgDeviceRecord = new UsbdgDeviceRecord();
+
+				// Grab the log header properties from the source metadata file
+				var sourceHeaders = new ExpandoObject() as IDictionary<string, Object>;
+				foreach (KeyValuePair<string, JToken> log1 in sourceJObject)
+				{
+					if (log1.Value.Type != JTokenType.Array)
+					{
+						sourceHeaders.Add(log1.Key, log1.Value);
+						ObjectManager.SetObjectValue(sinkUsbdgDeviceRecord, log1.Key, log1.Value);
+					}
+				}
+				sinkCsvLocationsRecords.Add(sinkUsbdgDeviceRecord);
+				return sinkCsvLocationsRecords;
+			}
+			catch (Exception e)
+			{
+				throw new Exception(EdiErrorsService.BuildExceptionMessageString(e, "CPA8", EdiErrorsService.BuildErrorVariableArrayList(propName, propValue, sourceFile)));
+			}
+		}
+
+		/// <summary>
+		/// Maps raw EMD and logger files to CSV compatible format
+		/// </summary>
+		/// <remarks>
+		/// This mapping denormalizes the logger data file into records ready for CSV serialization.
+		/// </remarks>
+		/// <param name="emdLogFile">A deserialized logger data file</param>
+		/// <param name="metadataFile">A deserialized EMD metadata file</param>
+		/// <returns>
+		/// A list of CSV compatible EMD + logger data records, if successful; Exception (D39Y) if any failures occur 
+		/// </returns>
+		public static List<EdiSinkRecord> MapUsbdgEvent(dynamic sourceUsbdgMetadata)
+		{
+			string propName = null;
+			string propValue = null;
+			string sourceFile = null;
+
+			try
+			{
+				List<EdiSinkRecord> sinkCsvLocationsRecords = new();
+				JObject sourceJObject = (JObject)sourceUsbdgMetadata;
+				sourceFile = DataTransformService.GetSourceFile(sourceJObject);
+
+				EdiSinkRecord sinkUsbdgDeviceRecord = new UsbdgEventRecord();
+
+				// Grab the log header properties from the source metadata file
+				var sourceHeaders = new ExpandoObject() as IDictionary<string, Object>;
+				foreach (KeyValuePair<string, JToken> log1 in sourceJObject)
+				{
+					if (log1.Value.Type != JTokenType.Array)
+					{
+						sourceHeaders.Add(log1.Key, log1.Value);
+						ObjectManager.SetObjectValue(sinkUsbdgDeviceRecord, log1.Key, log1.Value);
+					}
+
+					// Load log record properties into csv record object
+					if (log1.Value.Type == JTokenType.Array && log1.Key == "records")
+					{
+						// Iterate each log record
+						foreach (JObject z in log1.Value.Children<JObject>())
+						{
+							// Load each log record property
+							foreach (JProperty prop in z.Properties())
+							{
+								propName = prop.Name;
+								propValue = (string)prop.Value;
+								ObjectManager.SetObjectValue(sinkUsbdgDeviceRecord, prop.Name, prop.Value);
+								if (propName == "ABST")
+                                {
+									DateTime? emdAbsoluteTime = DateConverter.ConvertIso8601CompliantString(prop.Value.ToString());
+									((UsbdgEventRecord)sinkUsbdgDeviceRecord).EDI_ABST_DATETIME = emdAbsoluteTime;
+									Console.WriteLine("debug");
+								}
+							}
+						}
+					}
+				}
+
+
+
+
+				sinkCsvLocationsRecords.Add(sinkUsbdgDeviceRecord);
+				return sinkCsvLocationsRecords;
+			}
+			catch (Exception e)
+			{
+				throw new Exception(EdiErrorsService.BuildExceptionMessageString(e, "DYUF", EdiErrorsService.BuildErrorVariableArrayList(propName, propValue, sourceFile)));
+			}
+		}
+
+		public static dynamic GetUsbdgMetadataRecordsElement(dynamic metadata)
+		{
+			dynamic recordsElement = null;
+
+			if (metadata != null)
+			{
+				if (metadata.records != null)
+				{
+					if (metadata.records.Type == JTokenType.Array)
+                    {
+						if (metadata.records.Count > 0)
+						{
+							recordsElement = metadata.records[0];
+						}
+					}
+				}
+			}
+
+			return recordsElement;
 		}
 
 

@@ -68,7 +68,25 @@
 		},
 		"D39Y": {
 			"error-code": "D39Y",
-			"error-message": "Unable to map USBDG log records",
+			"error-message": "Unable to map indigo v2 event record with property '{0}' and value '{1}' in source file '{2}'",
+			"error-source": "EMS Data Mapping Service",
+			"error-mitigation": null
+		},
+		"MTJV": {
+			"error-code": "MTJV",
+			"error-message": "Unable to map indigo v2 location record with property '{0}' and value '{1}' in source file '{2}'",
+			"error-source": "EMS Data Mapping Service",
+			"error-mitigation": null
+		},
+		"CPA8": {
+			"error-code": "CPA8",
+			"error-message": "Unable to map USBDG device record with property '{0}' and value '{1}' in source file '{2}'",
+			"error-source": "EMS Data Mapping Service",
+			"error-mitigation": null
+		},
+		"DYUF": {
+			"error-code": "DYUF",
+			"error-message": "Unable to map USBDG event record with property '{0}' and value '{1}' in source file '{2}'",
 			"error-source": "EMS Data Mapping Service",
 			"error-mitigation": null
 		},
@@ -284,7 +302,7 @@
 		},
 		"E2N8": {
 			"error-code": "E2N8",
-			"error-message": "An exception was thrown while applying time correction logic to usbdg report files",
+			"error-message": "An exception was thrown while applying time correction logic to usbdg report file {0}",
 			"error-source": "EMS Data Transformation",
 			"error-mitigation": null
 		},

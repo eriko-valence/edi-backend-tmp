@@ -1,5 +1,9 @@
-﻿using lib_edi.Models.Domain.CceDevice;
+﻿using lib_edi.Models.Csv;
+using lib_edi.Models.Domain.CceDevice;
 using lib_edi.Models.Dto.CceDevice.Csv;
+using lib_edi.Models.Edi;
+using lib_edi.Models.Loggers.Csv;
+using lib_edi.Services.Errors;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Reflection;
@@ -46,27 +50,92 @@ namespace lib_edi.Helpers
         /// <summary>
         /// Sets the property value of a specified object with a JToken value
         /// </summary>
-        /// <param name="usbdgSimMetadata"> The UsbdgSimMetadata object whose property value will be set</param>
+        /// <param name="eventRecord"> The UsbdgSimMetadata object whose property value will be set</param>
         /// <param name="propertyName">The property name of the UsbdgSimMetadata object that will be set with the JToken value</param>
         /// <param name="token">The new JToken property value</param>
-        public static void SetObjectValue(ref UsbdgSimEmdMetadata usbdgSimMetadata, string propertyName, JToken token)
+        public static void SetObjectValue(EdiSinkRecord eventRecord, string propertyName, Object token)
         {
             try
 			{
+
+                string sinkType = eventRecord.GetType().Name;
+
                 if (token != null)
 				{
                     if (propertyName != null)
 					{
-                        PropertyInfo propertyInfo = usbdgSimMetadata.GetType().GetProperty(propertyName);
+                        PropertyInfo propertyInfo = eventRecord.GetType().GetProperty(propertyName);
                         if (propertyInfo != null)
                         {
-                            propertyInfo.SetValue(usbdgSimMetadata, Convert.ChangeType(token, propertyInfo.PropertyType), null);
+                            propertyInfo.SetValue(eventRecord, Convert.ChangeType(token, propertyInfo.PropertyType), null);
                         }
                     }
                 }
-            } catch (Exception e)
+            } catch (Exception)
 			{
-                throw e;
+                throw;
+            }
+        }
+        
+        /// <summary>
+        /// Sets the property value of a specified object with a JToken value
+        /// </summary>
+        /// <param name="eventRecord"> The UsbdgSimMetadata object whose property value will be set</param>
+        /// <param name="propertyName">The property name of the UsbdgSimMetadata object that will be set with the JToken value</param>
+        /// <param name="token">The new JToken property value</param>
+        public static void SetObjectValue(EdiJobLogger ediJob, string propertyName, Object token)
+        {
+            try
+            {
+
+                string sinkType = ediJob.GetType().Name;
+
+                if (token != null)
+                {
+                    if (propertyName != null)
+                    {
+                        PropertyInfo propertyInfo = ediJob.GetType().GetProperty(propertyName);
+                        if (propertyInfo != null)
+                        {
+                            propertyInfo.SetValue(ediJob, Convert.ChangeType(token, propertyInfo.PropertyType), null);
+                        }
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Sets the property value of a specified object with a JToken value
+        /// </summary>
+        /// <param name="eventRecord"> The UsbdgSimMetadata object whose property value will be set</param>
+        /// <param name="propertyName">The property name of the UsbdgSimMetadata object that will be set with the JToken value</param>
+        /// <param name="token">The new JToken property value</param>
+        public static void SetObjectValue(EdiJobUsbdgMetadata ediJob, string propertyName, Object token)
+        {
+            try
+            {
+
+                string sinkType = ediJob.GetType().Name;
+
+                if (token != null)
+                {
+                    if (propertyName != null)
+                    {
+                        PropertyInfo propertyInfo = ediJob.GetType().GetProperty(propertyName);
+                        if (propertyInfo != null)
+                        {
+                            propertyInfo.SetValue(ediJob, Convert.ChangeType(token, propertyInfo.PropertyType), null);
+                        }
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                throw;
             }
         }
 
@@ -92,9 +161,9 @@ namespace lib_edi.Helpers
                     }
                 }
             }
-            catch (Exception e)
+            catch (Exception)
             {
-                throw e;
+                throw;
             }
         }
 
@@ -120,9 +189,9 @@ namespace lib_edi.Helpers
                     }
                 }
             }
-            catch (Exception e)
+            catch (Exception)
             {
-                throw e;
+                throw;
             }
         }
 
@@ -147,9 +216,9 @@ namespace lib_edi.Helpers
                         }
                     }
                 }
-            } catch (Exception e)
+            } catch (Exception)
 			{
-                throw e;
+                throw;
             }
         }
 
@@ -174,9 +243,9 @@ namespace lib_edi.Helpers
                         }
                     }
                 }
-            } catch (Exception e)
+            } catch (Exception)
 			{
-                throw e;
+                throw;
             }
         }
 
@@ -202,9 +271,9 @@ namespace lib_edi.Helpers
                     }
                 }
             }
-            catch (Exception e)
+            catch (Exception)
             {
-                throw e;
+                throw;
             }
         }
     }
