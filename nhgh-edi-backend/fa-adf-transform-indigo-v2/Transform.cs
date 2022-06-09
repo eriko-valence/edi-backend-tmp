@@ -48,7 +48,7 @@ namespace fa_adf_transform_indigo_v2
                 HttpService.ValidateHttpRequestBody(payload);
 
                 log.LogInformation("- Log started event to app insights");
-                CcdxService.LogEmsTransformStartedEventToAppInsights(payload.FileName, log);
+                IndigoDataTransformService.LogEmsTransformStartedEventToAppInsights(payload.FileName, log);
 
                 string inputBlobPath = $"{inputContainer.Name}/{payload.Path}";
                 log.LogInformation($"- Building input blob path: {inputBlobPath}");
@@ -127,7 +127,7 @@ namespace fa_adf_transform_indigo_v2
 
                 log.LogInformation(" - Send http response message");
                 log.LogInformation("- Log successfully completed event to app insights");
-                AzureAppInsightsService.LogEmsTransformSucceededEventToAppInsights(payload.FileName, log);
+                IndigoDataTransformService.LogEmsTransformSucceededEventToAppInsights(payload.FileName, log);
                 log.LogInformation(" - SUCCESS");
                 
                 return new OkObjectResult(responseBody);
@@ -137,7 +137,7 @@ namespace fa_adf_transform_indigo_v2
                 string errorCode = "E2N8";
                 string errorMessage = EdiErrorsService.BuildExceptionMessageString(e, errorCode, EdiErrorsService.BuildErrorVariableArrayList(payload.FileName));
                 string exceptionInnerMessage = EdiErrorsService.GetInnerException(e);
-                CcdxService.LogEmsTransformErrorEventToAppInsights(payload?.FileName, log, e, errorCode);
+                IndigoDataTransformService.LogEmsTransformErrorEventToAppInsights(payload?.FileName, log, e, errorCode);
                 if (e is BadRequestException)
                 {
                     string errStr = $"Bad request thrown while validating {logType} transformation request";
