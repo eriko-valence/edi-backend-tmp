@@ -13,6 +13,7 @@ using lib_edi.Models.Dto.Http;
 using lib_edi.Helpers;
 using lib_edi.Models.Edi;
 using System.Dynamic;
+using System.Collections;
 
 namespace lib_edi.Services.CceDevice
 {
@@ -86,7 +87,9 @@ namespace lib_edi.Services.CceDevice
 				{
 					string validationResultString = EdiErrorsService.BuildJsonValidationErrorString(errors);
 					log.LogError($"    - Validated: No - {validationResultString}");
-					string customErrorMessage = EdiErrorsService.BuildExceptionMessageString(null, "R85Y", EdiErrorsService.BuildErrorVariableArrayList(emsLog.EDI_SOURCE, validationResultString));
+					string source = emsLog.EDI_SOURCE;
+					ArrayList al = EdiErrorsService.BuildErrorVariableArrayList(source, validationResultString);
+					string customErrorMessage = EdiErrorsService.BuildExceptionMessageString(null, "R85Y", al);
 					throw new Exception(customErrorMessage);
 				}
 			}
