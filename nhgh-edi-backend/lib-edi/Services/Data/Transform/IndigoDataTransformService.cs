@@ -163,7 +163,7 @@ namespace lib_edi.Services.CceDevice
                 }
                 catch (Exception e)
                 {
-                    string customErrorMessage = EdiErrorsService.BuildExceptionMessageString(e, "M34T", EdiErrorsService.BuildErrorVariableArrayList(record.RELT, record.Source));
+                    string customErrorMessage = EdiErrorsService.BuildExceptionMessageString(e, "M34T", EdiErrorsService.BuildErrorVariableArrayList(record.RELT, record.EDI_SOURCE));
                     throw new Exception(customErrorMessage);
                 }
             }
@@ -259,7 +259,7 @@ namespace lib_edi.Services.CceDevice
 
             foreach (IndigoV2EventRecord record in records)
             {
-                DateTime? dt = CalculateAbsoluteTimeForUsbdgRecord(absoluteTime, reportDurationSeconds, record.RELT, record.Source);
+                DateTime? dt = CalculateAbsoluteTimeForUsbdgRecord(absoluteTime, reportDurationSeconds, record.RELT, record.EDI_SOURCE);
                 record.EDI_RECORD_ABST_CALC = dt;
             }
             return records;

@@ -335,6 +335,9 @@ namespace lib_edi.Services.Ccdx
 				} else if (loggerType.ToUpper() == DataLoggerTypeEnum.Name.CFD50.ToString())
 				{
 					result = true;
+				} else if (loggerType.ToUpper() == DataLoggerTypeEnum.Name.INDIGO_V2.ToString())
+				{
+					result = true;
 				}
 			}
 			return result;
@@ -351,6 +354,9 @@ namespace lib_edi.Services.Ccdx
 			{
 				result = true;
 			} else if (Environment.GetEnvironmentVariable("CCDX_PUBLISHER_HEADER_CE_TYPE_CFD50") == ceType)
+			{
+				result = true;
+			} else if (Environment.GetEnvironmentVariable("CCDX_PUBLISHER_HEADER_CE_TYPE_INDIGO_V2") == ceType)
 			{
 				result = true;
 			}
@@ -636,6 +642,7 @@ namespace lib_edi.Services.Ccdx
 		{
 			string envVarCeTypeUsbdgDataDim = "CCDX_PUBLISHER_HEADER_CE_TYPE_USBDG";
 			string envVarCeTypeCfd50 = "CCDX_PUBLISHER_HEADER_CE_TYPE_CFD50";
+			string envVarCeTypeIndigoV2 = "CCDX_PUBLISHER_HEADER_CE_TYPE_INDIGO_V2";
 			string errorCode = "JC16";
 
 			if (Environment.GetEnvironmentVariable(envVarCeTypeUsbdgDataDim) == null)
@@ -647,6 +654,11 @@ namespace lib_edi.Services.Ccdx
 			else if (Environment.GetEnvironmentVariable(envVarCeTypeCfd50) == null)
 			{
 				string errorMessage = EdiErrorsService.BuildExceptionMessageString(null, errorCode, EdiErrorsService.BuildErrorVariableArrayList(envVarCeTypeCfd50));
+				log.LogError($"- [ccdx-consumer->run]: {errorMessage}");
+				throw new Exception(errorMessage);
+			} else if (Environment.GetEnvironmentVariable(envVarCeTypeIndigoV2) == null)
+			{
+				string errorMessage = EdiErrorsService.BuildExceptionMessageString(null, errorCode, EdiErrorsService.BuildErrorVariableArrayList(envVarCeTypeIndigoV2));
 				log.LogError($"- [ccdx-consumer->run]: {errorMessage}");
 				throw new Exception(errorMessage);
 			}

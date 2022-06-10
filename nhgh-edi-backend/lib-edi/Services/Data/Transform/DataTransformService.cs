@@ -86,7 +86,7 @@ namespace lib_edi.Services.CceDevice
 				{
 					string validationResultString = EdiErrorsService.BuildJsonValidationErrorString(errors);
 					log.LogError($"    - Validated: No - {validationResultString}");
-					string customErrorMessage = EdiErrorsService.BuildExceptionMessageString(null, "R85Y", EdiErrorsService.BuildErrorVariableArrayList(emsLog._SOURCE, validationResultString));
+					string customErrorMessage = EdiErrorsService.BuildExceptionMessageString(null, "R85Y", EdiErrorsService.BuildErrorVariableArrayList(emsLog.EDI_SOURCE, validationResultString));
 					throw new Exception(customErrorMessage);
 				}
 			}
@@ -157,12 +157,12 @@ namespace lib_edi.Services.CceDevice
 		/// <returns>
 		/// A string value of the EMD source property; "unknown" otherwise
 		/// </returns>
-		private static string GetSourceFile(JObject jo)
+		public static string GetSourceFile(JObject jo)
 		{
 			string sourceFile = null;
 			if (jo != null)
 			{
-				sourceFile = ObjectManager.GetJObjectPropertyValueAsString(jo, "_SOURCE");
+				sourceFile = ObjectManager.GetJObjectPropertyValueAsString(jo, "EDI_SOURCE");
 			}
 
 			if (sourceFile != null)

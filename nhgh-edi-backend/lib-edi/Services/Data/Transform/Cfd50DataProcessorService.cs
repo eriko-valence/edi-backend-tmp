@@ -40,7 +40,7 @@ namespace lib_edi.Services.Loggers
 			try
 			{
 				dynamic obj = JsonConvert.DeserializeObject<dynamic>(blobText);
-				obj._SOURCE = blobName;
+				obj.EDI_SOURCE = blobName;
 				return obj;
 			}
 			catch (Exception e)
@@ -186,7 +186,7 @@ namespace lib_edi.Services.Loggers
 				{
 					string validationResultString = EdiErrorsService.BuildJsonValidationErrorString(errors);
 					log.LogError($"    - Validated: No - {validationResultString}");
-					string source = ObjectManager.GetJObjectPropertyValueAsString(emsLog, "_SOURCE");
+					string source = ObjectManager.GetJObjectPropertyValueAsString(emsLog, "EDI_SOURCE");
 					string customErrorMessage = EdiErrorsService.BuildExceptionMessageString(null, "TV79", EdiErrorsService.BuildErrorVariableArrayList(source, validationResultString));
 					throw new Exception(customErrorMessage);
 				}

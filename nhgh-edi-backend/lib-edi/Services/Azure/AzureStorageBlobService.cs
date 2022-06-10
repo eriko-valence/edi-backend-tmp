@@ -304,7 +304,7 @@ namespace lib_edi.Services.Azure
 				log.LogInformation($"  - Blob: {blobSource}");
 				string logBlobText = await AzureStorageBlobService.DownloadBlobTextAsync(cloudBlobContainer, logBlob.Name);
 				dynamic logBlobJson = DeserializeJsonText(logBlob.Name, logBlobText);
-				logBlobJson._SOURCE = $"{blobSource}";
+				logBlobJson.EDI_SOURCE = $"{blobSource}";
 				listLogs.Add(logBlobJson);
 			}
 
@@ -332,7 +332,7 @@ namespace lib_edi.Services.Azure
 			log.LogInformation($"  - Blob: {emsBlobPath}");
 			string logBlobText = await AzureStorageBlobService.DownloadBlobTextAsync(blobContainer, blob.Name);
 			dynamic logBlobJson = DeserializeJsonText(blob.Name, logBlobText);
-			logBlobJson._SOURCE = emsBlobPath;
+			logBlobJson.EDI_SOURCE = emsBlobPath;
 
 			if (logBlobJson == null)
 			{
