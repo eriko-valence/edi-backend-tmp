@@ -248,6 +248,23 @@ namespace lib_edi.Services.Errors
 		}
 
 		/// <summary>
+		/// Gets the inner most error code from message string; Return default code if no inner code found
+		/// </summary>
+		public static string GetInnerErrorCodeFromMessage(string message, string defaultCode)
+		{
+			string code = defaultCode;
+			string codePattern = "([A-Z0-9]{4}): ";
+			Regex r = new(codePattern);
+			MatchCollection codes = r.Matches(message);
+			for (int count = 0; count < codes.Count; count++)
+			{
+				code = codes[count].ToString().Replace(":", "");
+			}
+
+			return code;
+		}
+
+		/// <summary>
 		/// Builds a json validation error string from NJsonSchema.Validation.ValidationError
 		/// </summary>
 		/// <param name="errors">Collection of NJsonSchema.Validation.ValidationError objects</param>
