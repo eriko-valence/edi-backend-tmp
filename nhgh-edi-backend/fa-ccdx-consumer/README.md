@@ -13,9 +13,11 @@
   - Add the following application settings (provided from the Data Interchange adminstrator)
     - KAFKA_TRIGGER_SASL_USERNAME (key)
 	- KAFKA_TRIGGER_SASL_PASSWORD (secret)
+	- KAFKA_GROUP_ID (e.g., "dx.consumer.edidata.valence-prod")
+	  - Note: The Data Interchange adminstrator provides the group prefix (e.g., "dx.consumer.edidata.")
   - Add the following application settings (provided from the Data Interchange adminstrator) - these app settings are only used for documentation purposes (these values are currently pulled from the aforementioned constant variables)
 	- KAFKA_BROKER (dev and prod use the same broker endpoint) 
-	- KAFKA_TOPIC (topic)
+	- KAFKA_TOPIC (topic) (e.g., "dx.destination.edidata")
   - Add the following blob container application settings
     - CCDX_AZURE_STORAGE_BLOB_CONTAINER_NAME (e.g., "raw-ccdx-consumer")
   - Add the supported log types application settings
