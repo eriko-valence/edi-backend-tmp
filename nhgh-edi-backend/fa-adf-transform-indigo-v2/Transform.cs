@@ -135,9 +135,10 @@ namespace fa_adf_transform_indigo_v2
             catch (Exception e)
             {
                 string errorCode = "E2N8";
+                
                 string errorMessage = EdiErrorsService.BuildExceptionMessageString(e, errorCode, EdiErrorsService.BuildErrorVariableArrayList(payload.FileName));
-                string exceptionInnerMessage = EdiErrorsService.GetInnerException(e);
-                IndigoDataTransformService.LogEmsTransformErrorEventToAppInsights(payload?.FileName, log, e, errorCode);
+                string innerErrorCode = EdiErrorsService.GetInnerErrorCodeFromMessage(errorMessage, errorCode);
+                IndigoDataTransformService.LogEmsTransformErrorEventToAppInsights(payload?.FileName, log, e, innerErrorCode);
                 if (e is BadRequestException)
                 {
                     string errStr = $"Bad request thrown while validating {logType} transformation request";
