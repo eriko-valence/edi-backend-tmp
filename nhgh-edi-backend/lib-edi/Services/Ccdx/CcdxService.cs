@@ -329,10 +329,13 @@ namespace lib_edi.Services.Ccdx
 
 			if (loggerType != null)
 			{
-				if (loggerType.ToUpper() == DataLoggerTypeEnum.Name.USBDG.ToString())
+				if (loggerType.ToUpper() == DataLoggerTypeEnum.Name.USBDG_DATASIM.ToString())
 				{
 					result = true;
 				} else if (loggerType.ToUpper() == DataLoggerTypeEnum.Name.CFD50.ToString())
+				{
+					result = true;
+				} else if (loggerType.ToUpper() == DataLoggerTypeEnum.Name.INDIGO_V2.ToString())
 				{
 					result = true;
 				}
@@ -351,6 +354,9 @@ namespace lib_edi.Services.Ccdx
 			{
 				result = true;
 			} else if (Environment.GetEnvironmentVariable("CCDX_PUBLISHER_HEADER_CE_TYPE_CFD50") == ceType)
+			{
+				result = true;
+			} else if (Environment.GetEnvironmentVariable("CCDX_PUBLISHER_HEADER_CE_TYPE_INDIGO_V2") == ceType)
 			{
 				result = true;
 			}
@@ -557,22 +563,6 @@ namespace lib_edi.Services.Ccdx
 		}
 
 		/// <summary>
-		/// EMS ADF data transformation stage has started
-		/// </summary>
-		/// <param name="reportFileName">Name of Cold chain telemetry file pulled from CCDX Kafka topic</param>
-		/// <param name="log">Microsoft extension logger</param>
-		public static void LogEmsTransformStartedEventToAppInsights(string reportFileName, ILogger log)
-		{
-			PipelineEvent pipelineEvent = new PipelineEvent();
-			pipelineEvent.EventName = PipelineEventEnum.Name.STARTED;
-			pipelineEvent.StageName = PipelineStageEnum.Name.ADF_TRANSFORM;
-			pipelineEvent.LoggerType = DataLoggerTypeEnum.Name.USBDG;
-			pipelineEvent.ReportFileName = reportFileName;
-			Dictionary<string, string> customProps = AzureAppInsightsService.BuildCustomPropertiesObject(pipelineEvent);
-			AzureAppInsightsService.LogEntry(PipelineStageEnum.Name.ADF_TRANSFORM, customProps, log);
-		}
-
-		/// <summary>
 		/// EMS ADF data transformation stage has succeeded
 		/// </summary>
 		/// <param name="reportFileName">Name of Cold chain telemetry file pulled from CCDX Kafka topic</param>
@@ -582,36 +572,8 @@ namespace lib_edi.Services.Ccdx
 			PipelineEvent pipelineEvent = new PipelineEvent();
 			pipelineEvent.EventName = PipelineEventEnum.Name.SUCCEEDED;
 			pipelineEvent.StageName = PipelineStageEnum.Name.ADF_TRANSFORM;
-			pipelineEvent.LoggerType = DataLoggerTypeEnum.Name.USBDG;
+			pipelineEvent.LoggerType = DataLoggerTypeEnum.Name.USBDG_DATASIM;
 			pipelineEvent.ReportFileName = reportFileName;
-			Dictionary<string, string> customProps = AzureAppInsightsService.BuildCustomPropertiesObject(pipelineEvent);
-			AzureAppInsightsService.LogEntry(PipelineStageEnum.Name.ADF_TRANSFORM, customProps, log);
-		}
-
-		/// <summary>
-		/// Sends EMS ADF data transformatoin error event to App Insight
-		/// </summary>
-		/// <param name="reportFileName">Name of Cold chain telemetry file pulled from CCDX Kafka topic</param>
-		/// <param name="log">Microsoft extension logger</param>
-		/// <param name="e">Exception object</param>
-		/// <param name="errorCode">Error code</param>
-		public static void LogEmsTransformErrorEventToAppInsights(string reportFileName, ILogger log, Exception e, string errorCode)
-		{
-			string errorMessage = EdiErrorsService.BuildExceptionMessageString(e, errorCode, EdiErrorsService.BuildErrorVariableArrayList(reportFileName));
-			PipelineEvent pipelineEvent = new PipelineEvent();
-			pipelineEvent.EventName = PipelineEventEnum.Name.FAILED;
-			pipelineEvent.StageName = PipelineStageEnum.Name.ADF_TRANSFORM;
-			pipelineEvent.LoggerType = DataLoggerTypeEnum.Name.USBDG;
-			pipelineEvent.PipelineFailureType = PipelineFailureTypeEnum.Name.ERROR;
-			pipelineEvent.PipelineFailureReason = PipelineFailureReasonEnum.Name.UNKNOWN_EXCEPTION;
-			pipelineEvent.ReportFileName = reportFileName;
-			pipelineEvent.ErrorCode = errorCode;
-			pipelineEvent.ErrorMessage = errorMessage;
-			if (e != null)
-			{
-				pipelineEvent.ExceptionMessage = e.Message;
-				pipelineEvent.ExceptionInnerMessage = EdiErrorsService.GetInnerException(e);
-			}
 			Dictionary<string, string> customProps = AzureAppInsightsService.BuildCustomPropertiesObject(pipelineEvent);
 			AzureAppInsightsService.LogEntry(PipelineStageEnum.Name.ADF_TRANSFORM, customProps, log);
 		}
@@ -680,6 +642,7 @@ namespace lib_edi.Services.Ccdx
 		{
 			string envVarCeTypeUsbdgDataDim = "CCDX_PUBLISHER_HEADER_CE_TYPE_USBDG";
 			string envVarCeTypeCfd50 = "CCDX_PUBLISHER_HEADER_CE_TYPE_CFD50";
+			string envVarCeTypeIndigoV2 = "CCDX_PUBLISHER_HEADER_CE_TYPE_INDIGO_V2";
 			string errorCode = "JC16";
 
 			if (Environment.GetEnvironmentVariable(envVarCeTypeUsbdgDataDim) == null)
@@ -691,6 +654,11 @@ namespace lib_edi.Services.Ccdx
 			else if (Environment.GetEnvironmentVariable(envVarCeTypeCfd50) == null)
 			{
 				string errorMessage = EdiErrorsService.BuildExceptionMessageString(null, errorCode, EdiErrorsService.BuildErrorVariableArrayList(envVarCeTypeCfd50));
+				log.LogError($"- [ccdx-consumer->run]: {errorMessage}");
+				throw new Exception(errorMessage);
+			} else if (Environment.GetEnvironmentVariable(envVarCeTypeIndigoV2) == null)
+			{
+				string errorMessage = EdiErrorsService.BuildExceptionMessageString(null, errorCode, EdiErrorsService.BuildErrorVariableArrayList(envVarCeTypeIndigoV2));
 				log.LogError($"- [ccdx-consumer->run]: {errorMessage}");
 				throw new Exception(errorMessage);
 			}

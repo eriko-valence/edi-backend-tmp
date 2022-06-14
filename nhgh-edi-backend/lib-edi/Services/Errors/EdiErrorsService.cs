@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace lib_edi.Services.Errors
 {
@@ -82,7 +83,7 @@ namespace lib_edi.Services.Errors
 		/// </returns>
 		public static ArrayList BuildErrorVariableArrayList(string variable1 = null, string variable2 = null, string variable3 = null, string variable4 = null)
 		{
-			ArrayList listErrorVariables = new ArrayList();
+			ArrayList listErrorVariables = new();
 			if (variable1 != null)
 			{
 				listErrorVariables.Add(variable1);
@@ -216,7 +217,7 @@ namespace lib_edi.Services.Errors
 				{
 					customErrorMessage = processingErrorMessage;
 				}
-			} catch (Exception)
+			} catch (Exception e)
             {
 				customErrorMessage = processingErrorMessage;
 			}
@@ -266,7 +267,7 @@ namespace lib_edi.Services.Errors
 
 					if (ve != null)
 					{
-						result = ve.ToString();
+						result = ve.ToString().Replace("\r\n", "").Replace("\n", "").Replace("\r", "");
 					}
 				}
 			}

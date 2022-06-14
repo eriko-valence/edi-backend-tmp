@@ -1,5 +1,4 @@
-﻿using lib_edi.Services.Azure;
-using lib_edi.Services.Errors;
+﻿using lib_edi.Services.Errors;
 using Microsoft.Azure.Storage.Blob;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
@@ -7,10 +6,7 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using NJsonSchema;
-using NJsonSchema.Validation;
 using lib_edi.Helpers;
 using lib_edi.Models.Dto.CceDevice.Csv;
 using lib_edi.Models.Domain.CceDevice;
@@ -25,8 +21,10 @@ using lib_edi.Models.Loggers.Csv;
 using lib_edi.Models.Csv;
 using lib_edi.Models.Emd.Csv;
 using System.Dynamic;
-using System.Collections;
-using lib_edi.Models.Edi;
+using lib_edi.Models.Azure.AppInsights;
+using lib_edi.Models.Enums.Azure.AppInsights;
+using lib_edi.Models.Enums.Emd;
+using lib_edi.Services.Azure;
 
 namespace lib_edi.Services.CceDevice
 {
@@ -62,185 +60,6 @@ namespace lib_edi.Services.CceDevice
 			}
 			return listBlobs;
 		}
-
-        /*
-        public static List<EdiSinkRecord> MapSourceToSinkEvents(List<dynamic> sourceLogs)
-        {
-            foreach (dynamic sourceLog in sourceLogs)
-            {
-                sinkRecords.AddRange(MapSourceToSinkEventColumns(sourceLog));
-            }
-
-            return sinkRecords;
-        }
-        */
-
-
-        /// <summary>
-        /// Maps raw EMD and logger files to CSV compatible format
-        /// </summary>
-        /// <remarks>
-        /// This mapping denormalizes the logger data file into records ready for CSV serialization.
-        /// </remarks>
-        /// <param name="emdLogFile">A deserilized logger data file</param>
-        /// <param name="metadataFile">A deserilized EMD metadata file</param>
-        /// <returns>
-        /// A list of CSV compatible EMD + logger data records, if successful; Exception (D39Y) if any failures occur 
-        /// </returns>
-        public static List<IndigoV2EventRecord> MapIndigoV2Events(List<dynamic> sourceLogs, EdiJob ediJob)
-        {
-            string propName = null;
-            string propValue = null;
-            string sourceFile = null;
-
-            try
-            {
-                List<IndigoV2EventRecord> sinkCsvEventRecords = new();
-
-                foreach (dynamic sourceLog in sourceLogs)
-                {
-                    JObject sourceLogJObject = (JObject)sourceLog;
-                    sourceFile = GetSourceFile(sourceLogJObject);
-                    
-                    
-
-                    // Grab the log header properties from the source log file
-                    var logHeaderObject = new ExpandoObject() as IDictionary<string, Object>;
-                    foreach (KeyValuePair<string, JToken> log1 in sourceLogJObject)
-                    {
-                        if (log1.Value.Type != JTokenType.Array)
-                        {
-                            logHeaderObject.Add(log1.Key, log1.Value);
-                        }
-                    }
-
-                    // Map csv record objects from source log file
-                    foreach (KeyValuePair<string, JToken> log2 in sourceLogJObject)
-                    {
-                        // Load log record properties into csv record object
-                        if (log2.Value.Type == JTokenType.Array && log2.Key == "records")
-                        {
-                            
-
-                            //ObjectManager.SetObjectValue(ref sinkCsvEventRecord, "RELT", ediJob.RELT);
-                            // Iterate each log record
-                            foreach (JObject z in log2.Value.Children<JObject>())
-                            {
-                                EdiSinkRecord sinkCsvEventRecord = new IndigoV2EventRecord();
-                                ObjectManager.SetObjectValue(sinkCsvEventRecord, "ESER", ediJob.UsbdgMetadata.ESER);
-                                ObjectManager.SetObjectValue(sinkCsvEventRecord, "ALRM", ediJob.UsbdgMetadata.ALRM);
-
-                                // Load log header properties into csv record object
-                                foreach (var logHeader in logHeaderObject)
-                                {
-                                    ObjectManager.SetObjectValue(sinkCsvEventRecord, logHeader.Key, logHeader.Value);
-                                }
-
-                                // Load each log record property
-                                foreach (JProperty prop in z.Properties())
-                                {
-                                    propName = prop.Name;
-                                    if (propName == "RELT")
-                                    {
-                                        Console.WriteLine("debug");
-                                    }
-                                    propValue = (string)prop.Value;
-                                    ObjectManager.SetObjectValue(sinkCsvEventRecord, prop.Name, prop.Value);
-                                }
-
-                                sinkCsvEventRecords.Add((IndigoV2EventRecord)sinkCsvEventRecord);
-                            }
-                        }
-                        else
-                        {
-                            // ObjectManager.SetObjectValue(ref sink, log2.Key, log2.Value);
-                        }
-                        
-                    }
-                }
-                return sinkCsvEventRecords;
-            }
-            catch (Exception e)
-            {
-                throw new Exception(EdiErrorsService.BuildExceptionMessageString(e, "D39Y", EdiErrorsService.BuildErrorVariableArrayList(propName, propValue, sourceFile)));
-            }
-        }
-
-        /// <summary>
-        /// Maps raw EMD and logger files to CSV compatible format
-        /// </summary>
-        /// <remarks>
-        /// This mapping denormalizes the logger data file into records ready for CSV serialization.
-        /// </remarks>
-        /// <param name="emdLogFile">A deserialized logger data file</param>
-        /// <param name="metadataFile">A deserialized EMD metadata file</param>
-        /// <returns>
-        /// A list of CSV compatible EMD + logger data records, if successful; Exception (D39Y) if any failures occur 
-        /// </returns>
-        public static List<EdiSinkRecord> MapIndigoV2Locations(dynamic sourceUsbdgMetadata, EdiJob ediJob)
-        {
-            string propName = null;
-            string propValue = null;
-            string sourceFile = null;
-
-            try
-            {
-                List<EdiSinkRecord> sinkCsvLocationsRecords = new();
-                JObject sourceJObject = (JObject)sourceUsbdgMetadata;
-                sourceFile = GetSourceFile(sourceJObject);
-                
-
-                // Grab the log header properties from the source metadata file
-                var sourceHeaders = new ExpandoObject() as IDictionary<string, Object>;
-                foreach (KeyValuePair<string, JToken> log1 in sourceJObject)
-                {
-                    if (log1.Value.Type != JTokenType.Array)
-                    {
-                        sourceHeaders.Add(log1.Key, log1.Value);
-                    }
-                }
-
-                // Map csv record objects from source metadata file
-                foreach (KeyValuePair<string, JToken> log2 in sourceJObject)
-                {
-                    // Load log record properties into csv record object
-                    if (log2.Value.Type == JTokenType.Array && log2.Key == "zgps_data")
-                    {
-                        // Iterate each array
-                        foreach (JObject z in log2.Value.Children<JObject>())
-                        {
-                            EdiSinkRecord sinkCsvLocationsRecord = new IndigoV2LocationRecord();
-                            ObjectManager.SetObjectValue(sinkCsvLocationsRecord, "LSER", ediJob.Logger.LSER);
-
-                            // Load each log record property
-                            foreach (JProperty prop in z.Properties())
-                            {
-                                propName = prop.Name;
-                                propValue = (string)prop.Value;
-                                ObjectManager.SetObjectValue(sinkCsvLocationsRecord, prop.Name, prop.Value);
-
-                                if (propName == "zgps_abst")
-                                {
-                                    long zgps_abst_long = long.Parse(propValue);
-                                    ((IndigoV2LocationRecord)sinkCsvLocationsRecord).EDI_ZGPS_ABST_DATETIME = DateConverter.FromUnixTimeSeconds(zgps_abst_long);
-                                }
-                            }
-                            sinkCsvLocationsRecords.Add(sinkCsvLocationsRecord);
-                        }
-                    }
-                    else
-                    {
-                        // ObjectManager.SetObjectValue(ref sink, log2.Key, log2.Value);
-                    }
-                    
-                }
-                return sinkCsvLocationsRecords;
-            }
-            catch (Exception e)
-            {
-                throw new Exception(EdiErrorsService.BuildExceptionMessageString(e, "MTJV", EdiErrorsService.BuildErrorVariableArrayList(propName, propValue, sourceFile)));
-            }
-        }
 
         /// <summary>
         /// Sets the property value of a specified object with a JToken value
@@ -344,7 +163,7 @@ namespace lib_edi.Services.CceDevice
                 }
                 catch (Exception e)
                 {
-                    string customErrorMessage = EdiErrorsService.BuildExceptionMessageString(e, "M34T", EdiErrorsService.BuildErrorVariableArrayList(record.RELT, record.Source));
+                    string customErrorMessage = EdiErrorsService.BuildExceptionMessageString(e, "M34T", EdiErrorsService.BuildErrorVariableArrayList(record.RELT, record.EDI_SOURCE));
                     throw new Exception(customErrorMessage);
                 }
             }
@@ -354,7 +173,7 @@ namespace lib_edi.Services.CceDevice
         /// <summary>
         /// Converts relative time to total seconds
         /// </summary>
-        /// <param name="relativeTime">Relative time (e.g., P8DT30S)</param>
+        /// <param name="metadata">USBDG object holding relative time (e.g., P8DT30S)</param>
         /// <returns>
         /// Total seconds calculated from relative time; Exception (A89R) or (EZ56) otherwise
         /// </returns>
@@ -368,7 +187,6 @@ namespace lib_edi.Services.CceDevice
                 JObject sourceJObject = (JObject)metadata;
                 Console.WriteLine("debug");
                 relativeTime = GetKeyValutFromMetadataRecordsObject("RELT", metadata);
-                //jTokenObject.GetValue(propertyName).Value<string>();
                 TimeSpan ts = XmlConvert.ToTimeSpan(relativeTime); // parse iso 8601 duration string to timespan
                 result = Convert.ToInt32(ts.TotalSeconds);
                 return result;
@@ -386,20 +204,23 @@ namespace lib_edi.Services.CceDevice
                     string customErrorMessage = EdiErrorsService.BuildExceptionMessageString(e, "EZ56", null);
                     throw new Exception(customErrorMessage);
                 }
-
-
             }
         }
 
+        /// <summary>
+        /// Returns a key value from an array "records" in a JSON object 
+        /// </summary>
+        /// <param name="key">Name of property to find in array "records" of a JSON object</param>
+        /// <param name="metadata">JSON object to search</param>
+        /// <returns>
+        /// Key value found
+        /// </returns>
         public static string GetKeyValutFromMetadataRecordsObject(string key, dynamic metadata)
         {
-
             JObject sourceJObject = (JObject)metadata;
-
             string result = null;
 
             // Grab the log header properties from the source metadata file
-            var sourceHeaders = new ExpandoObject() as IDictionary<string, Object>;
             foreach (KeyValuePair<string, JToken> source in sourceJObject)
             {
                 if (source.Value.Type == JTokenType.Array && source.Key == "records")
@@ -419,31 +240,26 @@ namespace lib_edi.Services.CceDevice
                         }
                     }
                 }
-
-
             }
-
             return result;
-
         }
 
         /// <summary>
-        /// Gets the absolute timestamp of USBDG records using the report absolute timestamp and relative time of records
+        /// Calculates the absolute timestamp for each Indigo V2 records using the USBDG metadata absolute timestamp and relative time of records
         /// </summary>
         /// <param name="records">List of denormalized USBDG records </param>
-        /// <param name="reportDurationSeconds">USBDG log report duration seconds</param>
-        /// <param name="reportAbsoluteTimestamp">USBDG log report record relative time (e.g., P8DT30S)</param>
+        /// <param name="reportDurationSeconds">USBDG metadata duration seconds (converted from relative seconds)</param>
+        /// <param name="reportMetadata">USBDG metadata file json object</param>
         /// <returns>
-        /// Absolute timestamp (DateTime) of a USBDG record; Exception (4Q5D) otherwise
+        /// Absolute timestamp (DateTime) of a Indigo V2 record; Exception (4Q5D) otherwise
         /// </returns>
         public static List<IndigoV2EventRecord> CalculateAbsoluteTimeForUsbdgRecords(List<IndigoV2EventRecord> records, int reportDurationSeconds, dynamic reportMetadata)
         {
-            //string absoluteTime = ObjectManager.GetJObjectPropertyValueAsString(reportAbsoluteTimestamp, "ABST");
             string absoluteTime = GetKeyValutFromMetadataRecordsObject("ABST", reportMetadata);
 
             foreach (IndigoV2EventRecord record in records)
             {
-                DateTime? dt = CalculateAbsoluteTimeForUsbdgRecord(absoluteTime, reportDurationSeconds, record.RELT, record.Source);
+                DateTime? dt = CalculateAbsoluteTimeForUsbdgRecord(absoluteTime, reportDurationSeconds, record.RELT, record.EDI_SOURCE);
                 record.EDI_RECORD_ABST_CALC = dt;
             }
             return records;
@@ -452,9 +268,9 @@ namespace lib_edi.Services.CceDevice
         /// <summary>
         /// Gets the absolute timestamp of a record using the report absolute timestamp and record relative time
         /// </summary>
-        /// <param name="reportAbsoluteTime">Log report absolute timestamp</param>
-        /// <param name="reportDurationSeconds">Log report duration seconds</param>
-        /// <param name="recordRelativeTime">Log report record relative time (e.g., P8DT30S)</param>
+        /// <param name="reportAbsoluteTime">Logger record absolute timestamp</param>
+        /// <param name="reportDurationSeconds">USBDG metadata duration seconds (converted from relative seconds)</param>
+        /// <param name="recordRelativeTime">Logger record relative time (e.g., P8DT30S)</param>
         /// <returns>
         /// Absolute timestamp (DateTime) of a USBDG record; Exception (4Q5D) otherwise
         /// </returns>
@@ -666,6 +482,66 @@ namespace lib_edi.Services.CceDevice
             {
                 throw;
             }
+        }
+
+        /// <summary>
+        /// EMS ADF data transformation stage has succeeded
+        /// </summary>
+        /// <param name="reportFileName">Name of Cold chain telemetry file pulled from CCDX Kafka topic</param>
+        /// <param name="log">Microsoft extension logger</param>
+        public static void LogEmsTransformSucceededEventToAppInsights(string reportFileName, ILogger log)
+        {
+            PipelineEvent pipelineEvent = new PipelineEvent();
+            pipelineEvent.EventName = PipelineEventEnum.Name.SUCCEEDED;
+            pipelineEvent.StageName = PipelineStageEnum.Name.ADF_TRANSFORM;
+            pipelineEvent.LoggerType = DataLoggerTypeEnum.Name.INDIGO_V2;
+            pipelineEvent.ReportFileName = reportFileName;
+            Dictionary<string, string> customProps = AzureAppInsightsService.BuildCustomPropertiesObject(pipelineEvent);
+            AzureAppInsightsService.LogEntry(PipelineStageEnum.Name.ADF_TRANSFORM, customProps, log);
+        }
+
+        /// <summary>
+        /// EMS ADF data transformation stage has started
+        /// </summary>
+        /// <param name="reportFileName">Name of Cold chain telemetry file pulled from CCDX Kafka topic</param>
+        /// <param name="log">Microsoft extension logger</param>
+        public static void LogEmsTransformStartedEventToAppInsights(string reportFileName, ILogger log)
+        {
+            PipelineEvent pipelineEvent = new PipelineEvent();
+            pipelineEvent.EventName = PipelineEventEnum.Name.STARTED;
+            pipelineEvent.StageName = PipelineStageEnum.Name.ADF_TRANSFORM;
+            pipelineEvent.LoggerType = DataLoggerTypeEnum.Name.INDIGO_V2;
+            pipelineEvent.ReportFileName = reportFileName;
+            Dictionary<string, string> customProps = AzureAppInsightsService.BuildCustomPropertiesObject(pipelineEvent);
+            AzureAppInsightsService.LogEntry(PipelineStageEnum.Name.ADF_TRANSFORM, customProps, log);
+        }
+
+        /// <summary>
+        /// Sends EMS ADF data transformatoin error event to App Insight
+        /// </summary>
+        /// <param name="reportFileName">Name of Cold chain telemetry file pulled from CCDX Kafka topic</param>
+        /// <param name="log">Microsoft extension logger</param>
+        /// <param name="e">Exception object</param>
+        /// <param name="errorCode">Error code</param>
+        public static void LogEmsTransformErrorEventToAppInsights(string reportFileName, ILogger log, Exception e, string errorCode)
+        {
+            string errorMessage = EdiErrorsService.BuildExceptionMessageString(e, errorCode, EdiErrorsService.BuildErrorVariableArrayList(reportFileName));
+            PipelineEvent pipelineEvent = new PipelineEvent();
+            pipelineEvent.EventName = PipelineEventEnum.Name.FAILED;
+            pipelineEvent.StageName = PipelineStageEnum.Name.ADF_TRANSFORM;
+            pipelineEvent.LoggerType = DataLoggerTypeEnum.Name.INDIGO_V2;
+            pipelineEvent.PipelineFailureType = PipelineFailureTypeEnum.Name.ERROR;
+            pipelineEvent.PipelineFailureReason = PipelineFailureReasonEnum.Name.UNKNOWN_EXCEPTION;
+            pipelineEvent.ReportFileName = reportFileName;
+            pipelineEvent.ErrorCode = errorCode;
+            pipelineEvent.ErrorMessage = errorMessage;
+            if (e != null)
+            {
+                pipelineEvent.ExceptionMessage = e.Message;
+                pipelineEvent.ExceptionInnerMessage = EdiErrorsService.GetInnerException(e);
+            }
+            Dictionary<string, string> customProps = AzureAppInsightsService.BuildCustomPropertiesObject(pipelineEvent);
+            AzureAppInsightsService.LogEntry(PipelineStageEnum.Name.ADF_TRANSFORM, customProps, log);
         }
     }
 }

@@ -8,5 +8,6 @@ namespace lib_edi.Models.Csv
 {
     public class EdiSinkRecord
     {
+        public string EDI_SOURCE { get; set; }
     }
 }

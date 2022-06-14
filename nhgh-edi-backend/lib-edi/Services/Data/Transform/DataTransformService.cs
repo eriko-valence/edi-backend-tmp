@@ -6,109 +6,25 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using NJsonSchema;
 using NJsonSchema.Validation;
-using System.Reflection;
 using lib_edi.Models.Dto.Http;
-using Microsoft.AspNetCore.Http;
-using System.IO;
 using lib_edi.Helpers;
+using lib_edi.Models.Edi;
+using System.Dynamic;
+using System.Collections;
 
 namespace lib_edi.Services.CceDevice
 {
     public class DataTransformService
     {
 		/// <summary>
-		/// Downloads and deserializes a list of CCE device blobs residing in Azure blob storage
-		/// </summary>
-		/// <param name="blobs">A list of CCE device blobs</param>
-		/// <param name="cloudBlobContainer">Microsoft Azure Blob service container holding the logs</param>
-		/// <param name="blobPath">Path to log blobs</param>
-		/// <param name="log">Azure function logger object</param>
-		/// <returns>
-		/// A list of deserialized CCE device logs in JObject format that have been downloaded from Azure blob storage; Exception (C26Z) if no blobs found
-		/// </returns>
-		public static async Task<List<dynamic>> DownloadAndDeserializeJsonBlobs(List<CloudBlockBlob> blobs, CloudBlobContainer cloudBlobContainer, string blobPath, ILogger log)
-		{
-
-			List<dynamic> listLogs = new();
-			foreach (CloudBlockBlob logBlob in blobs)
-			{
-				string blobSource = $"{ cloudBlobContainer.Name}/{ logBlob.Name}";
-				log.LogInformation($"  - Blob: {blobSource}");
-				string logBlobText = await AzureStorageBlobService.DownloadBlobTextAsync(cloudBlobContainer, logBlob.Name);
-				dynamic logBlobJson = DeserializeJsonText(logBlob.Name, logBlobText);
-				logBlobJson._SOURCE = $"{blobSource}";
-				listLogs.Add(logBlobJson);
-			}
-
-			if (listLogs.Count == 0)
-			{
-				string customErrorMessage = EdiErrorsService.BuildExceptionMessageString(null, "C26Z", EdiErrorsService.BuildErrorVariableArrayList(blobPath));
-				throw new Exception(customErrorMessage);
-			}
-			//return (List<dynamic>)listLogs.Cast<JObject>();
-			return listLogs;
-		}
-
-		/// <summary>
-		/// Downloads and deserializes a single CCE device blob residing in Azure blob storage
-		/// </summary>
-		/// <param name="blobs">A list of CCE device blobs</param>
-		/// <param name="cloudBlobContainer">Microsoft Azure Blob service container holding the logs</param>
-		/// <param name="blobPath">Path to log blobs</param>
-		/// <param name="log">Azure function logger object</param>
-		/// <returns>
-		/// A list of deserialized CCE device logsobjects that have been downloaded from Azure blob storage; Exception (C26Z) if no blobs found
-		/// </returns>
-		public static async Task<dynamic> DownloadAndDeserializeJsonBlob(CloudBlockBlob blob, CloudBlobContainer blobContainer, string blobPath, ILogger log)
-		{
-			string emsBlobPath = $"{ blobContainer.Name}/{ blob.Name}";
-			log.LogInformation($"  - Blob: {emsBlobPath}");
-			string logBlobText = await AzureStorageBlobService.DownloadBlobTextAsync(blobContainer, blob.Name);
-			dynamic logBlobJson = DeserializeJsonText(blob.Name, logBlobText);
-			logBlobJson._SOURCE = emsBlobPath;
-
-			if (logBlobJson == null)
-			{
-				string customErrorMessage = EdiErrorsService.BuildExceptionMessageString(null, "P76H", EdiErrorsService.BuildErrorVariableArrayList(blobPath));
-				throw new Exception(customErrorMessage);
-			}
-
-			return logBlobJson;
-		}
-
-		/// <summary>
-		/// Deserializes JSON string
-		/// </summary>
-		/// <param name="blobName">Blob name of JSON string </param>
-		/// <param name="blobText">Downloaded text of JSON string </param>
-		/// <returns>
-		/// Deserialized object of JSON string; Exception (582N) otherwise
-		/// </returns>
-		public static JObject DeserializeJsonText(string blobName, string blobText)
-		{
-			try
-			{
-				dynamic results = JsonConvert.DeserializeObject<dynamic>(blobText);
-				return results;
-			}
-			catch (Exception e)
-			{
-				string customErrorMessage = EdiErrorsService.BuildExceptionMessageString(e, "582N", EdiErrorsService.BuildErrorVariableArrayList(blobName));
-				throw new Exception(customErrorMessage);
-			}
-		}
-
-		/// <summary>
 		/// Serializes JSON object
 		/// </summary>
 		/// <param name="emsLog">Name of JSON object </param>
 		/// <returns>
-		/// Text of serialized JSOn object; Exception (48TV) otherwise
+		/// Text of serialized JSON object; Exception (48TV) otherwise
 		/// </returns>
 		public static string SerializeJsonObject(dynamic emsLog)
 		{
@@ -136,19 +52,17 @@ namespace lib_edi.Services.CceDevice
 		/// <param name="cloudBlobContainer">A container in the Microsoft Azure Blob service</param>
 		/// <param name="log">Azure function logger object</param>
 		/// <returns>
-		/// A list validated CCE device log JSON objects; Exception thrown if at least one report fails validation (R85Y) or if the json definition file failed to be retrieved 
+		/// A list validated CCE device log JSON objects; Exception thrown if at least one report fails validation (R85Y) or if the json definition file failed to be retrieved (FY84)
 		/// </returns>
 		public static async Task<List<dynamic>> ValidateLogJsonObjects(CloudBlobContainer cloudBlobContainer, List<dynamic> emsLogs, string jsonSchemaBlobName, ILogger log)
 		{
 			List<dynamic> validatedJsonObjects = new();
 
-			//string configBlobName;
 			string configBlobJsonText;
 			JsonSchema configJsonSchema;
 
 			try
 			{
-				//jsonSchemaBlobName = Environment.GetEnvironmentVariable("EMS_LOG_JSON_SCHEMA_DEFINITION_FILE_NAME");
 				configBlobJsonText = await AzureStorageBlobService.DownloadBlobTextAsync(cloudBlobContainer, jsonSchemaBlobName);
 				configJsonSchema = await JsonSchema.FromJsonAsync(configBlobJsonText);
 			}
@@ -173,7 +87,9 @@ namespace lib_edi.Services.CceDevice
 				{
 					string validationResultString = EdiErrorsService.BuildJsonValidationErrorString(errors);
 					log.LogError($"    - Validated: No - {validationResultString}");
-					string customErrorMessage = EdiErrorsService.BuildExceptionMessageString(null, "R85Y", EdiErrorsService.BuildErrorVariableArrayList(emsLog._SOURCE, validationResultString));
+					string source = emsLog.EDI_SOURCE;
+					ArrayList al = EdiErrorsService.BuildErrorVariableArrayList(source, validationResultString);
+					string customErrorMessage = EdiErrorsService.BuildExceptionMessageString(null, "R85Y", al);
 					throw new Exception(customErrorMessage);
 				}
 			}
@@ -237,13 +153,19 @@ namespace lib_edi.Services.CceDevice
 			}
 		}
 
-		
+		/// <summary>
+		/// Gets EMD source property from JSON object
+		/// </summary>
+		/// <param name="jo">JSON object</param>
+		/// <returns>
+		/// A string value of the EMD source property; "unknown" otherwise
+		/// </returns>
 		public static string GetSourceFile(JObject jo)
 		{
 			string sourceFile = null;
 			if (jo != null)
 			{
-				sourceFile = ObjectManager.GetJObjectPropertyValueAsString(jo, "_SOURCE");
+				sourceFile = ObjectManager.GetJObjectPropertyValueAsString(jo, "EDI_SOURCE");
 			}
 
 			if (sourceFile != null)
@@ -255,6 +177,73 @@ namespace lib_edi.Services.CceDevice
 				return "unknown";
 			}
 		}
-		
+
+		/// <summary>
+		/// Populates an EDI job object from logger data and USBDG metadata files
+		/// </summary>
+		/// <remarks>
+		/// This EDI object holds properties useful further downstream in the processing
+		/// </remarks>
+		/// <param name="sourceUsbdgMetadata">A deserialized USBDG metadata</param>
+		/// <param name="sourceLogs">A list of deserialized logger data files</param>
+		/// <returns>
+		/// A list of CSV compatible EMD + logger data records, if successful; Exception (D39Y) if any failures occur 
+		/// </returns>
+		public static EdiJob PopulateEdiJobObject(dynamic sourceUsbdgMetadata, List<dynamic> sourceLogs)
+		{
+			string propName = null;
+			string propValue = null;
+			string sourceFile = null;
+			EdiJob ediJob = new EdiJob();
+
+			try
+			{
+				foreach (dynamic sourceLog in sourceLogs)
+				{
+					JObject sourceLogJObject = (JObject)sourceLog;
+
+					// Grab the log header properties from the source log file
+					var logHeaderObject = new ExpandoObject() as IDictionary<string, Object>;
+					foreach (KeyValuePair<string, JToken> log1 in sourceLogJObject)
+					{
+						if (log1.Value.Type != JTokenType.Array)
+						{
+							logHeaderObject.Add(log1.Key, log1.Value);
+							ObjectManager.SetObjectValue(ediJob.Logger, log1.Key, log1.Value);
+						}
+					}
+				}
+
+				JObject sourceUsbdgMetadataJObject = (JObject)sourceUsbdgMetadata;
+				var reportHeaderObject = new ExpandoObject() as IDictionary<string, Object>;
+				foreach (KeyValuePair<string, JToken> log2 in sourceUsbdgMetadataJObject)
+				{
+					if (log2.Value.Type != JTokenType.Array)
+					{
+						reportHeaderObject.Add(log2.Key, log2.Value);
+						ObjectManager.SetObjectValue(ediJob.UsbdgMetadata, log2.Key, log2.Value);
+					}
+
+					if (log2.Value.Type == JTokenType.Array && log2.Key == "records")
+					{
+						foreach (JObject z in log2.Value.Children<JObject>())
+						{
+							// Load each log record property
+							foreach (JProperty prop in z.Properties())
+							{
+								propName = prop.Name;
+								propValue = (string)prop.Value;
+								ObjectManager.SetObjectValue(ediJob.UsbdgMetadata, prop.Name, prop.Value);
+							}
+						}
+					}
+				}
+				return ediJob;
+			}
+			catch (Exception e)
+			{
+				throw new Exception(EdiErrorsService.BuildExceptionMessageString(e, "D39Y", EdiErrorsService.BuildErrorVariableArrayList(propName, propValue, sourceFile)));
+			}
+		}
 	}
 }

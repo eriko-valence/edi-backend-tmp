@@ -242,23 +242,9 @@ namespace lib_edi.Services.Azure
 
 			return list;
 		}
-
-		/// <summary>
-		/// EMS ADF data transformation stage has succeeded
-		/// </summary>
-		/// <param name="reportFileName">Name of Cold chain telemetry file pulled from CCDX Kafka topic</param>
-		/// <param name="log">Microsoft extension logger</param>
-		public static void LogEmsTransformSucceededEventToAppInsights(string reportFileName, ILogger log)
-		{
-			PipelineEvent pipelineEvent = new PipelineEvent();
-			pipelineEvent.EventName = PipelineEventEnum.Name.SUCCEEDED;
-			pipelineEvent.StageName = PipelineStageEnum.Name.ADF_TRANSFORM;
-			pipelineEvent.LoggerType = DataLoggerTypeEnum.Name.USBDG;
-			pipelineEvent.ReportFileName = reportFileName;
-			Dictionary<string, string> customProps = AzureAppInsightsService.BuildCustomPropertiesObject(pipelineEvent);
-			AzureAppInsightsService.LogEntry(PipelineStageEnum.Name.ADF_TRANSFORM, customProps, log);
-		}
 	}
+
+
 
 	/// <summary>
 	/// An application insights query settings object
