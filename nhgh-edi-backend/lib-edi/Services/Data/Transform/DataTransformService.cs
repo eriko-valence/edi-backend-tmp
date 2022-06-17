@@ -14,6 +14,7 @@ using lib_edi.Helpers;
 using lib_edi.Models.Edi;
 using System.Dynamic;
 using System.Collections;
+using lib_edi.Models.Enums.Emd;
 
 namespace lib_edi.Services.CceDevice
 {
@@ -244,6 +245,24 @@ namespace lib_edi.Services.CceDevice
 			{
 				throw new Exception(EdiErrorsService.BuildExceptionMessageString(e, "D39Y", EdiErrorsService.BuildErrorVariableArrayList(propName, propValue, sourceFile)));
 			}
+		}
+
+		/// <summary>
+		/// Returns type of file package based on contents of file package
+		/// </summary>
+		/// <param name="logDirectoryBlobs">Full list of blobs </param>
+		/// <returns>
+		/// String value representing file package type
+		/// </returns>
+		public static string DetermineFilePackageType(IEnumerable<IListBlobItem> logDirectoryBlobs)
+		{
+			string result = DataLoggerTypeEnum.Name.UNKNOWN.ToString();
+
+			if (IndigoDataTransformService.IsFilePackageIndigoV2(logDirectoryBlobs))
+			{
+				result = DataLoggerTypeEnum.Name.INDIGO_V2.ToString().ToLower();
+			}
+			return result;
 		}
 	}
 }

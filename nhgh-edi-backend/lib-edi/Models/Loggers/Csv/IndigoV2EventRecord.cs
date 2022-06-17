@@ -81,7 +81,7 @@ namespace lib_edi.Models.Loggers.Csv
 											//public int emd_relt { get; set; }
 											//public DateTime emd_abs { get; set; }
 
-		[Ignore]
-		public string EDI_SOURCE { get; set; }
+		//[Ignore]
+		//public string EDI_SOURCE { get; set; }
 	}
 }

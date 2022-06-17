@@ -3,4 +3,4 @@ selected resource type:		pipeline
 factory name:			adf-edi-develop
 factory location:		westus2
 subscription id:		2972ffd4-e5b4-4b98-87b9-360c084c2959
-time of download (UTC):		Tue, 07 Jun 2022 23:27:27 GMT
+time of download (UTC):		Fri, 17 Jun 2022 19:39:11 GMT

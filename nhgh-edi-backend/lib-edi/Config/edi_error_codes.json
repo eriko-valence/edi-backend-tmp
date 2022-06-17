@@ -383,6 +383,12 @@
 			"error-message": "An exception was thrown while setting property 'ASER'",
 			"error-source": "CFD-50 CSV Record DTO",
 			"error-mitigation": null
+		},
+		"KHRD": {
+			"error-code": "KHRD",
+			"error-message": "File package is unknown",
+			"error-source": "Transform Function",
+			"error-mitigation": null
 		}
 	}
 }

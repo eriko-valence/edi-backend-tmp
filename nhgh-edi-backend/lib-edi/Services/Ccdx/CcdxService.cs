@@ -182,13 +182,12 @@ namespace lib_edi.Services.Ccdx
 		/// to the curated blob container at 12:00:01 AM on 2021-10-05: 
 		///   Curated output blob path: "usbdg/2021-10-05/00/0161a794-173a-4843-879b-189ee4c625aa/"
 		/// </example>
-		public static string BuildCuratedCcdxConsumerBlobPath(string blobPath, string blobName)
+		public static string BuildCuratedCcdxConsumerBlobPath(string blobPath, string blobName, string loggerType)
 		{
 			string curatedBlobPath = null; // indigo_v2/event.csv
 
 			if (blobPath != null)
 			{
-				string loggerType = CcdxService.GetDataLoggerTypeFromBlobPath(blobPath);
 				if (loggerType != null)
 				{
 					string dateFolder = DateTime.UtcNow.ToString("yyyy-MM-dd/HH");

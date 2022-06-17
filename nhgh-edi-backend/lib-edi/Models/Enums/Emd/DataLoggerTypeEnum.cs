@@ -18,7 +18,8 @@ namespace lib_edi.Models.Enums.Emd
 			NONE,
 			USBDG_DATASIM,
 			INDIGO_V2,
-			CFD50
+			CFD50,
+			UNKNOWN
 #pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 		}
 	}
