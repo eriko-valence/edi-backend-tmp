@@ -188,13 +188,14 @@ namespace lib_edi.Services.Ccdx
 
 			if (blobPath != null)
 			{
-				string loggerType = CcdxService.GetDataLoggerTypeFromBlobPath(blobPath);
-				if (loggerType != null)
-				{
-					string dateFolder = DateTime.UtcNow.ToString("yyyy-MM-dd/HH");
-					string guidFolder = CcdxService.GetGuidFromBlobPath(blobPath);
-					curatedBlobPath = $"{loggerType}/{dateFolder}/{guidFolder}/{blobName}";
-				}
+				//string loggerType = CcdxService.GetDataLoggerTypeFromBlobPath(blobPath);
+				//if (loggerType != null)
+				//{
+				// NHGH-2362 (2022.06.16) - Remove logger type from blob path
+				string dateFolder = DateTime.UtcNow.ToString("yyyy-MM-dd/HH");
+				string guidFolder = CcdxService.GetGuidFromBlobPath(blobPath);
+				curatedBlobPath = $"{dateFolder}/{guidFolder}/{blobName}";
+				//}
 			}
 
 			return curatedBlobPath;

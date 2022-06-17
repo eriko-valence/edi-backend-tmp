@@ -217,7 +217,7 @@ namespace lib_edi.Services.Errors
 				{
 					customErrorMessage = processingErrorMessage;
 				}
-			} catch (Exception e)
+			} catch (Exception)
             {
 				customErrorMessage = processingErrorMessage;
 			}

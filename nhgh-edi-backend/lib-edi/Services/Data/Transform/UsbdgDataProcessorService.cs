@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using lib_edi.Services.CceDevice;
+using System.IO;
 
 namespace lib_edi.Services.Loggers
 {
@@ -29,7 +30,8 @@ namespace lib_edi.Services.Loggers
 			{
 				foreach (CloudBlockBlob logBlob in logDirectoryBlobs)
 				{
-					if (logBlob.Name.Contains("report"))
+					// NHGH-2362 (2022.06.16) - only add USBDG report metadata files
+					if (IsFileUsbdgReportMetadata(logBlob.Name))
 					{
 						usbdgLogReportBlobs.Add(logBlob);
 					}
@@ -43,6 +45,23 @@ namespace lib_edi.Services.Loggers
 			}
 
 			return usbdgLogReportBlobs.First();
+		}
+
+		/// <summary>
+		/// Checks if blob name a USBDB report metadata file
+		/// </summary>
+		/// <param name="blobName">blob name </param>
+		/// <returns>
+		/// True if yes; False if no
+		/// </returns>
+		public static bool IsFileUsbdgReportMetadata(string blobName)
+		{
+			bool result = false;
+			if ((Path.GetExtension(blobName) == ".json") && (blobName.Contains("report")))
+			{
+				result = true;
+			}
+			return result;
 		}
 
 		public static dynamic GetUsbdgMetadataRecordsElement(dynamic metadata)

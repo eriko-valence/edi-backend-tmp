@@ -25,6 +25,7 @@ using lib_edi.Models.Azure.AppInsights;
 using lib_edi.Models.Enums.Azure.AppInsights;
 using lib_edi.Models.Enums.Emd;
 using lib_edi.Services.Azure;
+using lib_edi.Services.Loggers;
 
 namespace lib_edi.Services.CceDevice
 {
@@ -47,10 +48,11 @@ namespace lib_edi.Services.CceDevice
 			{
 				foreach (CloudBlockBlob logBlob in logDirectoryBlobs)
 				{
-					if (logBlob.Name.Contains("DATA") || logBlob.Name.Contains("CURRENT"))
-					{
-						listBlobs.Add(logBlob);
-					}
+                    // NHGH-2362 (2022.06.16) - only add Indigo V2 data files
+                    if (IsFileFromIndigoV2Logger(logBlob.Name))
+				    {
+				        listBlobs.Add(logBlob);
+				    }
 				}
 				if (listBlobs.Count == 0)
 				{
@@ -60,6 +62,60 @@ namespace lib_edi.Services.CceDevice
 			}
 			return listBlobs;
 		}
+
+        /// <summary>
+        /// Checks contents of file package to see if it is an Indigo V2
+        /// </summary>
+        /// <param name="logDirectoryBlobs">Full list of blobs </param>
+        /// <returns>
+        /// Return true if yes; false if no
+        /// </returns>
+        public static bool IsFilePackageIndigoV2(IEnumerable<IListBlobItem> logDirectoryBlobs)
+        {
+            bool result = false;
+            bool indigoLogFileFound = false;
+            bool usbdgMetaDataFound = false;
+            if (logDirectoryBlobs != null)
+            {
+                foreach (CloudBlockBlob logBlob in logDirectoryBlobs)
+                {
+                    string fileExtension = Path.GetExtension(logBlob.Name);
+                    if (IsFileFromIndigoV2Logger(logBlob.Name))
+                    {
+                        indigoLogFileFound = true;
+                    }
+
+                    if (UsbdgDataProcessorService.IsFileUsbdgReportMetadata(logBlob.Name))
+                    {
+                        usbdgMetaDataFound = true;
+                    }
+                }
+            }
+
+            if (indigoLogFileFound && usbdgMetaDataFound)
+            {
+                result = true;
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Checks if blob name is from an Indigo logger
+        /// </summary>
+        /// <param name="blobName">blob name </param>
+        /// <returns>
+        /// True if yes; False if no
+        /// </returns>
+        public static bool IsFileFromIndigoV2Logger(string blobName)
+        {
+            bool result = false;
+            if ((Path.GetExtension(blobName) == ".json") && (blobName.Contains("DATA") || blobName.Contains("CURRENT")))
+            {
+                result = true;
+            }
+            return result;
+        }
 
         /// <summary>
         /// Sets the property value of a specified object with a JToken value
