@@ -1,6 +1,6 @@
 ﻿CREATE TABLE [indigo_v2].[event] (
     [ABST_CALC]  DATETIME2 (7)  NOT NULL,
-    [ADOP]       DATE           NULL,
+    [ADOP]       VARCHAR (100)  NULL,
     [ALRM]       VARCHAR (100)  NULL,
     [AMOD]       VARCHAR (100)  NULL,
     [AMFR]       VARCHAR (100)  NULL,
@@ -10,7 +10,7 @@
     [DORV]       INT            NULL,
     [ESER]       VARCHAR (50)   NULL,
     [HOLD]       NUMERIC (4, 1) NULL,
-    [LDOP]       DATE           NULL,
+    [LDOP]       VARCHAR (100)  NULL,
     [LERR]       VARCHAR (20)   NULL,
     [LMFR]       VARCHAR (20)   NULL,
     [LMOD]       VARCHAR (20)   NULL,
@@ -29,4 +29,6 @@
     PRIMARY KEY CLUSTERED ([ABST_CALC] ASC, [LSER] ASC),
     CONSTRAINT [FK_indigo_v2_event_ESER] FOREIGN KEY ([ESER]) REFERENCES [usbdg].[device] ([ESER])
 );
+
+
 
