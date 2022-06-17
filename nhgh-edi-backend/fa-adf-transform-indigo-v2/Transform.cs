@@ -35,7 +35,6 @@ namespace fa_adf_transform_indigo_v2
             [Blob("%AZURE_STORAGE_BLOB_CONTAINER_NAME_EMS_CONFIG%", FileAccess.ReadWrite, Connection = "AZURE_STORAGE_INPUT_CONNECTION_STRING")] CloudBlobContainer emsConfgContainer,
             ILogger log)
         {
-            //string logType = Environment.GetEnvironmentVariable("EMS_LOGGER_TYPE");
             string logType = DataLoggerTypeEnum.Name.UNKNOWN.ToString();
             TransformHttpRequestMessageBodyDto payload = null;
 
@@ -55,22 +54,22 @@ namespace fa_adf_transform_indigo_v2
                 string inputBlobPath = $"{inputContainer.Name}/{payload.Path}";
                 log.LogInformation($"- Building input blob path: {inputBlobPath}");
 
-                log.LogInformation($"- List blobs in azure blob storage location {inputBlobPath}");
+                log.LogInformation($"- Pull all blobs from file package {inputBlobPath}");
                 IEnumerable<IListBlobItem> logDirectoryBlobs = AzureStorageBlobService.GetListOfBlobsInDirectory(inputContainer, payload.Path, inputBlobPath);
-
-                log.LogInformation($"- Filter for log blobs"); // TODO - still needed? 
-                List<CloudBlockBlob> usbdgLogBlobs = IndigoDataTransformService.GetLogBlobs(logDirectoryBlobs, inputBlobPath);
 
                 logType = DataTransformService.DetermineFilePackageType(logDirectoryBlobs);
 
                 if (IndigoDataTransformService.IsFilePackageIndigoV2(logDirectoryBlobs))
                 {
-                    log.LogInformation($"- Filter for {logType} log report blobs");
+                    log.LogInformation($"- Pull {logType} log blobs from file package");  
+                    List<CloudBlockBlob> usbdgLogBlobs = IndigoDataTransformService.GetLogBlobs(logDirectoryBlobs, inputBlobPath);
+
+                    log.LogInformation($"- Pull usbdg report metadata blob from file package");
                     CloudBlockBlob usbdgReportMetadataBlob = UsbdgDataProcessorService.GetReportMetadataBlob(logDirectoryBlobs, inputBlobPath);
 
                     log.LogInformation($"- Download {logType} log blobs");
                     List<dynamic> indigoLogFiles = await AzureStorageBlobService.DownloadAndDeserializeJsonBlobs(usbdgLogBlobs, inputContainer, inputBlobPath, log);
-                    log.LogInformation($"- Download {logType} log report blobs");
+                    log.LogInformation($"- Download usbdg report metadata blob");
                     dynamic usbdgReportMetadata = await AzureStorageBlobService.DownloadAndDeserializeJsonBlob(usbdgReportMetadataBlob, inputContainer, inputBlobPath, log);
 
                     dynamic usbdgRecords = UsbdgDataProcessorService.GetUsbdgMetadataRecordsElement(usbdgReportMetadata);
@@ -138,8 +137,7 @@ namespace fa_adf_transform_indigo_v2
                     log.LogInformation(" - SUCCESS");
 
                     return new OkObjectResult(responseBody);
-                } else
-                {
+                } else {
                     string errorCode = "KHRD";
                     string errorMessage = EdiErrorsService.BuildExceptionMessageString(null, errorCode, EdiErrorsService.BuildErrorVariableArrayList(payload.FileName));
                     IndigoDataTransformService.LogEmsTransformErrorEventToAppInsights(payload?.FileName, log, null, errorCode);
