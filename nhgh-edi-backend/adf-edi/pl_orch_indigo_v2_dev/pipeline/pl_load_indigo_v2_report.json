@@ -28,7 +28,7 @@
                             "type": "AzureBlobFSReadSettings",
                             "recursive": true,
                             "wildcardFolderPath": {
-                                "value": "@pipeline().parameters.PL_P_PARAM_LOG_DIR_GUID",
+                                "value": "@pipeline().parameters.PL_C_PARAM_TRANSFORM_CURATED_PATH",
                                 "type": "Expression"
                             },
                             "wildcardFileName": "indigo_v2_event.csv",
@@ -412,7 +412,7 @@
                             "type": "AzureBlobFSReadSettings",
                             "recursive": true,
                             "wildcardFolderPath": {
-                                "value": "@pipeline().parameters.PL_P_PARAM_LOG_DIR_GUID",
+                                "value": "@pipeline().parameters.PL_C_PARAM_TRANSFORM_CURATED_PATH",
                                 "type": "Expression"
                             },
                             "wildcardFileName": "indigo_v2_location.csv",
@@ -544,7 +544,7 @@
                             "type": "AzureBlobFSReadSettings",
                             "recursive": true,
                             "wildcardFolderPath": {
-                                "value": "@pipeline().parameters.PL_P_PARAM_LOG_DIR_GUID",
+                                "value": "@pipeline().parameters.PL_C_PARAM_TRANSFORM_CURATED_PATH",
                                 "type": "Expression"
                             },
                             "wildcardFileName": "usbdg_event.csv",
@@ -667,7 +667,7 @@
                             "type": "AzureBlobFSReadSettings",
                             "recursive": true,
                             "wildcardFolderPath": {
-                                "value": "@pipeline().parameters.PL_P_PARAM_LOG_DIR_GUID",
+                                "value": "@pipeline().parameters.PL_C_PARAM_TRANSFORM_CURATED_PATH",
                                 "type": "Expression"
                             },
                             "wildcardFileName": "usbdg_device.csv",
@@ -818,13 +818,16 @@
             },
             "PL_P_PARAM_LOG_DIR_GUID": {
                 "type": "string"
+            },
+            "PL_C_PARAM_TRANSFORM_CURATED_PATH": {
+                "type": "string"
             }
         },
         "folder": {
             "name": "Load"
         },
         "annotations": [],
-        "lastPublishTime": "2022-06-07T18:55:45Z"
+        "lastPublishTime": "2022-06-10T16:49:13Z"
     },
     "type": "Microsoft.DataFactory/factories/pipelines"
 }
