@@ -199,18 +199,21 @@ namespace lib_edi.Services.CceDevice
 
 			try
 			{
-				foreach (dynamic sourceLog in sourceLogs)
-				{
-					JObject sourceLogJObject = (JObject)sourceLog;
-
-					// Grab the log header properties from the source log file
-					var logHeaderObject = new ExpandoObject() as IDictionary<string, Object>;
-					foreach (KeyValuePair<string, JToken> log1 in sourceLogJObject)
+				if (sourceLogs != null)
+                {
+					foreach (dynamic sourceLog in sourceLogs)
 					{
-						if (log1.Value.Type != JTokenType.Array)
+						JObject sourceLogJObject = (JObject)sourceLog;
+
+						// Grab the log header properties from the source log file
+						var logHeaderObject = new ExpandoObject() as IDictionary<string, Object>;
+						foreach (KeyValuePair<string, JToken> log1 in sourceLogJObject)
 						{
-							logHeaderObject.Add(log1.Key, log1.Value);
-							ObjectManager.SetObjectValue(ediJob.Logger, log1.Key, log1.Value);
+							if (log1.Value.Type != JTokenType.Array)
+							{
+								logHeaderObject.Add(log1.Key, log1.Value);
+								ObjectManager.SetObjectValue(ediJob.Logger, log1.Key, log1.Value);
+							}
 						}
 					}
 				}
