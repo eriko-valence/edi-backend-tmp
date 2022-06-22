@@ -319,9 +319,24 @@ namespace lib_edi.Services.Ccdx
 		}
 
 		/// <summary>
+		/// Pulls device type from CCDX header 'ce_type'
+		/// </summary>
+		/// <param name="ceHeader">CCDX 'ce_type' header. Example: 'org.nhgh.indigo_v2.report.dev' </param>
+		public static string GetLoggerTypeFromCeHeader(string ceHeader)
+        {
+			string result = null;
+			string[] headerParts = ceHeader.Split(".");
+			if (headerParts.Length > 2)
+            {
+				result = headerParts[2];
+            }
+			return result;
+		}
+
+		/// <summary>
 		/// Validate data logger type is supported by ETL pipeline
 		/// </summary>
-		/// <param name="path">Blob path in string format</param>
+		/// <param name="loggerType">Blob path in string format</param>
 		public static bool ValidateLoggerType(string loggerType)
 		{
 			bool result = false;
@@ -335,6 +350,9 @@ namespace lib_edi.Services.Ccdx
 				{
 					result = true;
 				} else if (loggerType.ToUpper() == DataLoggerTypeEnum.Name.INDIGO_V2.ToString())
+				{
+					result = true;
+				} else if (loggerType.ToUpper() == DataLoggerTypeEnum.Name.NO_LOGGER.ToString())
 				{
 					result = true;
 				}
@@ -356,6 +374,9 @@ namespace lib_edi.Services.Ccdx
 			{
 				result = true;
 			} else if (Environment.GetEnvironmentVariable("CCDX_PUBLISHER_HEADER_CE_TYPE_INDIGO_V2") == ceType)
+			{
+				result = true;
+			} else if (CcdxService.ValidateLoggerType(ceType))
 			{
 				result = true;
 			}

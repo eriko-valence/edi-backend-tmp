@@ -87,8 +87,10 @@ namespace fa_adf_transform_indigo_v2
                     log.LogInformation($"- Map {logType} objects to csv records");
                     List<IndigoV2EventRecord> usbdbLogCsvRows = DataModelMappingService.MapIndigoV2Events(indigoLogFiles, ediJob);
                     List<EdiSinkRecord> indigoLocationCsvRows = DataModelMappingService.MapIndigoV2Locations(usbdgReportMetadata, ediJob);
+                    List<EdiSinkRecord> usbdgLocationCsvRows = DataModelMappingService.MapUsbdgLocations(usbdgReportMetadata, ediJob);
                     List<EdiSinkRecord> usbdgDeviceCsvRows = DataModelMappingService.MapUsbdgDevice(usbdgReportMetadata);
                     List<EdiSinkRecord> usbdgEventCsvRows = DataModelMappingService.MapUsbdgEvent(usbdgReportMetadata);
+
 
                     log.LogInformation($"- Transform {logType} csv records");
                     log.LogInformation($"  - Convert relative time to total seconds (all records)");
@@ -123,13 +125,54 @@ namespace fa_adf_transform_indigo_v2
 
                     log.LogInformation($"- Write {logType} csv records to azure blob storage");
                     List<EdiSinkRecord> sortedUsbdbLogCsvRowsBase = sortedUsbdbLogCsvRows.Cast<EdiSinkRecord>().ToList();
-                    string csvOutputBlobName = await IndigoDataTransformService.WriteUsbdgLogRecordsToCsvBlob(ouputContainer, payload, sortedUsbdbLogCsvRowsBase, log);
-                    string csvOutputBlobName2 = await IndigoDataTransformService.WriteUsbdgLogRecordsToCsvBlob(ouputContainer, payload, indigoLocationCsvRows, log);
-                    string csvOutputBlobName3 = await IndigoDataTransformService.WriteUsbdgLogRecordsToCsvBlob(ouputContainer, payload, usbdgDeviceCsvRows, log);
-                    string csvOutputBlobName4 = await IndigoDataTransformService.WriteUsbdgLogRecordsToCsvBlob(ouputContainer, payload, usbdgEventCsvRows, log);
+                    string csvOutputBlobName = await IndigoDataTransformService.WriteUsbdgLogRecordsToCsvBlob(ouputContainer, payload, sortedUsbdbLogCsvRowsBase, DataLoggerTypeEnum.Name.INDIGO_V2, log);
+                    string csvOutputBlobName2 = await IndigoDataTransformService.WriteUsbdgLogRecordsToCsvBlob(ouputContainer, payload, indigoLocationCsvRows, DataLoggerTypeEnum.Name.INDIGO_V2, log);
+                    string csvOutputBlobName3 = await IndigoDataTransformService.WriteUsbdgLogRecordsToCsvBlob(ouputContainer, payload, usbdgDeviceCsvRows, DataLoggerTypeEnum.Name.INDIGO_V2, log);
+                    string csvOutputBlobName4 = await IndigoDataTransformService.WriteUsbdgLogRecordsToCsvBlob(ouputContainer, payload, usbdgEventCsvRows, DataLoggerTypeEnum.Name.INDIGO_V2, log);
+                    string csvOutputBlobName5 = await IndigoDataTransformService.WriteUsbdgLogRecordsToCsvBlob(ouputContainer, payload, usbdgLocationCsvRows, DataLoggerTypeEnum.Name.INDIGO_V2, log);
 
                     log.LogInformation(" - Serialize http response body");
                     string responseBody = DataTransformService.SerializeHttpResponseBody(csvOutputBlobName);
+
+                    log.LogInformation(" - Send http response message");
+                    log.LogInformation("- Log successfully completed event to app insights");
+                    IndigoDataTransformService.LogEmsTransformSucceededEventToAppInsights(payload.FileName, log);
+                    log.LogInformation(" - SUCCESS");
+
+                    return new OkObjectResult(responseBody);
+                // Account for file packages with no logger data files
+                } else if (UsbdgDataProcessorService.IsFilePackageUsbdgOnly(logDirectoryBlobs)) {
+
+                    log.LogInformation($"- Pull usbdg report metadata blob from file package");
+                    CloudBlockBlob usbdgReportMetadataBlob = UsbdgDataProcessorService.GetReportMetadataBlob(logDirectoryBlobs, inputBlobPath);
+
+                    log.LogInformation($"- Download usbdg report metadata blob");
+                    dynamic usbdgReportMetadata = await AzureStorageBlobService.DownloadAndDeserializeJsonBlob(usbdgReportMetadataBlob, inputContainer, inputBlobPath, log);
+
+                    dynamic usbdgRecords = UsbdgDataProcessorService.GetUsbdgMetadataRecordsElement(usbdgReportMetadata);
+
+                    log.LogInformation($"- Retrieving time values from EMD metadata");
+                    string emdRelativeTime = DataTransformService.GetJObjectPropertyValueAsString(usbdgRecords, "RELT");
+                    string emdAbsoluteTime = DataTransformService.GetJObjectPropertyValueAsString(usbdgRecords, "ABST");
+
+                    log.LogInformation($"- Start tracking EDI job status");
+                    EdiJob ediJob = UsbdgDataProcessorService.PopulateEdiJobObject(usbdgReportMetadata, null);
+
+                    log.LogInformation($"- Map {logType} objects to csv records");
+                    List<EdiSinkRecord> usbdgLocationCsvRows = DataModelMappingService.MapUsbdgLocations(usbdgReportMetadata, ediJob);
+                    List<EdiSinkRecord> usbdgDeviceCsvRows = DataModelMappingService.MapUsbdgDevice(usbdgReportMetadata);
+                    List<EdiSinkRecord> usbdgEventCsvRows = DataModelMappingService.MapUsbdgEvent(usbdgReportMetadata);
+
+                    log.LogInformation($"  - Cloud upload times: ");
+                    log.LogInformation($"    - EMD (source: cellular) : {DateConverter.ConvertIso8601CompliantString(emdAbsoluteTime)} (UTC)");
+
+                    log.LogInformation($"- Write {logType} csv records to azure blob storage");
+                    string csvOutputBlobName3 = await IndigoDataTransformService.WriteUsbdgLogRecordsToCsvBlob(ouputContainer, payload, usbdgDeviceCsvRows, DataLoggerTypeEnum.Name.NO_LOGGER, log);
+                    string csvOutputBlobName4 = await IndigoDataTransformService.WriteUsbdgLogRecordsToCsvBlob(ouputContainer, payload, usbdgEventCsvRows, DataLoggerTypeEnum.Name.NO_LOGGER, log);
+                    string csvOutputBlobName5 = await IndigoDataTransformService.WriteUsbdgLogRecordsToCsvBlob(ouputContainer, payload, usbdgLocationCsvRows, DataLoggerTypeEnum.Name.NO_LOGGER, log);
+
+                    log.LogInformation(" - Serialize http response body");
+                    string responseBody = DataTransformService.SerializeHttpResponseBody(csvOutputBlobName3);
 
                     log.LogInformation(" - Send http response message");
                     log.LogInformation("- Log successfully completed event to app insights");
