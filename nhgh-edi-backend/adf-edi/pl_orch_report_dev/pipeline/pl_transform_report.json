@@ -23,7 +23,7 @@
                     }
                 },
                 "linkedServiceName": {
-                    "referenceName": "ls_func_indigo_v2_time_correction",
+                    "referenceName": "ls_func_transform",
                     "type": "LinkedServiceReference"
                 }
             },
@@ -227,7 +227,7 @@
             "name": "Transform"
         },
         "annotations": [],
-        "lastPublishTime": "2022-06-21T23:16:11Z"
+        "lastPublishTime": "2022-06-22T17:35:12Z"
     },
     "type": "Microsoft.DataFactory/factories/pipelines"
 }

@@ -1,8 +1,8 @@
 {
-    "name": "ds_sql_indigo_v2",
+    "name": "ds_sql_db",
     "properties": {
         "linkedServiceName": {
-            "referenceName": "ls_sql_usbdg",
+            "referenceName": "ls_sql_db",
             "type": "LinkedServiceReference"
         },
         "folder": {
@@ -291,8 +291,8 @@
             }
         ],
         "typeProperties": {
-            "schema": "ems_data",
-            "table": "logger_data"
+            "schema": "",
+            "table": ""
         }
     },
     "type": "Microsoft.DataFactory/factories/datasets"

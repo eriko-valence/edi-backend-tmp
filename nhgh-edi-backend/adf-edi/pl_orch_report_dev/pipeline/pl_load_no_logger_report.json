@@ -154,7 +154,7 @@
                 ],
                 "outputs": [
                     {
-                        "referenceName": "ds_sql_indigo_v2",
+                        "referenceName": "ds_sql_db",
                         "type": "DatasetReference"
                     }
                 ]
@@ -284,7 +284,7 @@
                 ],
                 "outputs": [
                     {
-                        "referenceName": "ds_sql_indigo_v2",
+                        "referenceName": "ds_sql_db",
                         "type": "DatasetReference"
                     }
                 ]
@@ -404,7 +404,7 @@
                             ],
                             "outputs": [
                                 {
-                                    "referenceName": "ds_sql_indigo_v2",
+                                    "referenceName": "ds_sql_db",
                                     "type": "DatasetReference"
                                 }
                             ]
@@ -434,7 +434,7 @@
             "name": "Load"
         },
         "annotations": [],
-        "lastPublishTime": "2022-06-21T22:36:20Z"
+        "lastPublishTime": "2022-06-22T16:51:15Z"
     },
     "type": "Microsoft.DataFactory/factories/pipelines"
 }
