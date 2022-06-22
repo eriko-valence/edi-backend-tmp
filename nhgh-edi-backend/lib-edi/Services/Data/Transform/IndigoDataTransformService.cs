@@ -73,7 +73,7 @@ namespace lib_edi.Services.CceDevice
         public static bool IsFilePackageIndigoV2(IEnumerable<IListBlobItem> logDirectoryBlobs)
         {
             bool result = false;
-            bool indigoLogFileFound = false;
+            bool indigoLogFilesFound = false;
             bool usbdgMetaDataFound = false;
             if (logDirectoryBlobs != null)
             {
@@ -82,7 +82,7 @@ namespace lib_edi.Services.CceDevice
                     string fileExtension = Path.GetExtension(logBlob.Name);
                     if (IsFileFromIndigoV2Logger(logBlob.Name))
                     {
-                        indigoLogFileFound = true;
+                        indigoLogFilesFound = true;
                     }
 
                     if (UsbdgDataProcessorService.IsFileUsbdgReportMetadata(logBlob.Name))
@@ -92,7 +92,7 @@ namespace lib_edi.Services.CceDevice
                 }
             }
 
-            if (indigoLogFileFound && usbdgMetaDataFound)
+            if (indigoLogFilesFound && usbdgMetaDataFound)
             {
                 result = true;
             }
@@ -422,10 +422,10 @@ namespace lib_edi.Services.CceDevice
         /// <returns>
         /// Blob name of USBDG csv formatted log file; Exception (Q25U)
         /// </returns>
-        public static async Task<string> WriteUsbdgLogRecordsToCsvBlob(CloudBlobContainer cloudBlobContainer, TransformHttpRequestMessageBodyDto requestBody, List<EdiSinkRecord> usbdgRecords, ILogger log)
+        public static async Task<string> WriteUsbdgLogRecordsToCsvBlob(CloudBlobContainer cloudBlobContainer, TransformHttpRequestMessageBodyDto requestBody, List<EdiSinkRecord> usbdgRecords, DataLoggerTypeEnum.Name loggerTypeName, ILogger log)
         {
             string blobName = "";
-            string loggerType = DataLoggerTypeEnum.Name.INDIGO_V2.ToString().ToLower();
+            string loggerType = loggerTypeName.ToString().ToLower();
 
             if (requestBody != null)
             {
@@ -433,73 +433,93 @@ namespace lib_edi.Services.CceDevice
                 {
                     try
                     {
-                        log.LogInformation($"  - Determine object type using list of generic records");
-                        var firstRecord = usbdgRecords.FirstOrDefault();
-                        string recordType = firstRecord.GetType().Name;
-                        log.LogInformation($"    - Record type: {recordType}");
-                        if (recordType == "IndigoV2EventRecord")
+                        if (usbdgRecords.Count > 0)
                         {
-                            log.LogInformation($"  - Is record type supported? Yes");
-                            blobName = CcdxService.BuildCuratedCcdxConsumerBlobPath(requestBody.Path, "indigo_v2_event.csv", loggerType);
-                        }
-                        else if (recordType == "IndigoV2LocationRecord")
-                        {
-                            log.LogInformation($"  - Is record type supported? Yes");
-                            blobName = CcdxService.BuildCuratedCcdxConsumerBlobPath(requestBody.Path, "indigo_v2_location.csv", loggerType);
-                        }
-                        else if (recordType == "UsbdgDeviceRecord")
-                        {
-                            log.LogInformation($"  - Is record type supported? Yes");
-                            blobName = CcdxService.BuildCuratedCcdxConsumerBlobPath(requestBody.Path, "usbdg_device.csv", loggerType);
-                        } 
-                        else if (recordType == "UsbdgEventRecord")
-                        {
-                            log.LogInformation($"  - Is record type supported? Yes");
-                            blobName = CcdxService.BuildCuratedCcdxConsumerBlobPath(requestBody.Path, "usbdg_event.csv", loggerType);
-                        }
-                        else
-                        {
-                            log.LogInformation($"  - Is record type supported? No");
-                            return blobName;
-                        }
-                        log.LogInformation($"  - Blob: {blobName}");
-                        log.LogInformation($"  - Get block blob reference");
-                        CloudBlockBlob outBlob = cloudBlobContainer.GetBlockBlobReference(blobName);
-                        log.LogInformation($"  - Open stream for writing to the blob");
-                        using var writer = await outBlob.OpenWriteAsync();
-                        log.LogInformation($"  - Initialize new instance of stream writer");
-                        using var streamWriter = new StreamWriter(writer);
-                        log.LogInformation($"  - Initialize new instance of csv writer");
-                        using var csvWriter = new CsvWriter(streamWriter, CultureInfo.InvariantCulture);
-                        log.LogInformation($"  - Pull child records from list");
-                        var serializedParent = JsonConvert.SerializeObject(usbdgRecords);
-                        if (recordType == "IndigoV2EventRecord")
-                        {
-                            List<IndigoV2EventRecord> records = JsonConvert.DeserializeObject<List<IndigoV2EventRecord>>(serializedParent);
-                            log.LogInformation($"  - Write list of indigo v2 event records to the CSV file");
-                            csvWriter.WriteRecords(records);
-                        }
-                        else if (recordType == "IndigoV2LocationRecord")
-                        {
-                            List<IndigoV2LocationRecord> records = JsonConvert.DeserializeObject<List<IndigoV2LocationRecord>>(serializedParent);
-                            log.LogInformation($"  - Write list of indigo v2 location records to the CSV file");
-                            csvWriter.WriteRecords(records);
-                        }
-                        else if (recordType == "UsbdgDeviceRecord")
-                        {
-                            List<UsbdgDeviceRecord> records = JsonConvert.DeserializeObject<List<UsbdgDeviceRecord>>(serializedParent);
-                            log.LogInformation($"  - Write list of usbdg device records to the CSV file");
-                            csvWriter.WriteRecords(records);
-                        } 
-                        else if (recordType == "UsbdgEventRecord")
-                        {
-                            List<UsbdgEventRecord> records = JsonConvert.DeserializeObject<List<UsbdgEventRecord>>(serializedParent);
-                            log.LogInformation($"  - Write list of usbdg event records to the CSV file");
-                            csvWriter.WriteRecords(records);
+                            log.LogInformation($"  - Determine object type using list of generic records");
+                            var firstRecord = usbdgRecords.FirstOrDefault();
+                            string recordType = firstRecord.GetType().Name;
+                            log.LogInformation($"    - Record type: {recordType}");
+                            if (recordType == "IndigoV2EventRecord")
+                            {
+                                log.LogInformation($"  - Is record type supported? Yes");
+                                blobName = CcdxService.BuildCuratedCcdxConsumerBlobPath(requestBody.Path, "indigo_v2_event.csv", loggerType);
+                            }
+                            else if (recordType == "IndigoV2LocationRecord")
+                            {
+                                log.LogInformation($"  - Is record type supported? Yes");
+                                blobName = CcdxService.BuildCuratedCcdxConsumerBlobPath(requestBody.Path, "indigo_v2_location.csv", loggerType);
+                            }
+                            else if (recordType == "UsbdgLocationRecord")
+                            {
+                                log.LogInformation($"  - Is record type supported? Yes");
+                                blobName = CcdxService.BuildCuratedCcdxConsumerBlobPath(requestBody.Path, "usbdg_location.csv", loggerType);
+                            }
+                            else if (recordType == "UsbdgDeviceRecord")
+                            {
+                                log.LogInformation($"  - Is record type supported? Yes");
+                                blobName = CcdxService.BuildCuratedCcdxConsumerBlobPath(requestBody.Path, "usbdg_device.csv", loggerType);
+                            }
+                            else if (recordType == "UsbdgEventRecord")
+                            {
+                                log.LogInformation($"  - Is record type supported? Yes");
+                                blobName = CcdxService.BuildCuratedCcdxConsumerBlobPath(requestBody.Path, "usbdg_event.csv", loggerType);
+                            }
+                            else
+                            {
+                                log.LogInformation($"  - Is record type supported? No");
+                                return blobName;
+                            }
+                            log.LogInformation($"  - Blob: {blobName}");
+                            log.LogInformation($"  - Get block blob reference");
+                            CloudBlockBlob outBlob = cloudBlobContainer.GetBlockBlobReference(blobName);
+                            log.LogInformation($"  - Open stream for writing to the blob");
+                            using var writer = await outBlob.OpenWriteAsync();
+                            log.LogInformation($"  - Initialize new instance of stream writer");
+                            using var streamWriter = new StreamWriter(writer);
+                            log.LogInformation($"  - Initialize new instance of csv writer");
+                            using var csvWriter = new CsvWriter(streamWriter, CultureInfo.InvariantCulture);
+                            log.LogInformation($"  - Pull child records from list");
+                            var serializedParent = JsonConvert.SerializeObject(usbdgRecords);
+                            if (recordType == "IndigoV2EventRecord")
+                            {
+                                List<IndigoV2EventRecord> records = JsonConvert.DeserializeObject<List<IndigoV2EventRecord>>(serializedParent);
+                                log.LogInformation($"  - Write list of indigo v2 event records to the CSV file");
+                                csvWriter.WriteRecords(records);
+                            }
+                            else if (recordType == "IndigoV2LocationRecord")
+                            {
+                                List<IndigoV2LocationRecord> records = JsonConvert.DeserializeObject<List<IndigoV2LocationRecord>>(serializedParent);
+                                log.LogInformation($"  - Write list of indigo v2 location records to the CSV file");
+                                csvWriter.WriteRecords(records);
+                            }
+                            else if (recordType == "UsbdgLocationRecord")
+                            {
+                                List<UsbdgLocationRecord> records = JsonConvert.DeserializeObject<List<UsbdgLocationRecord>>(serializedParent);
+                                log.LogInformation($"  - Write list of usbdg location records to the CSV file");
+                                csvWriter.WriteRecords(records);
+                            }
+                            else if (recordType == "UsbdgDeviceRecord")
+                            {
+                                List<UsbdgDeviceRecord> records = JsonConvert.DeserializeObject<List<UsbdgDeviceRecord>>(serializedParent);
+                                log.LogInformation($"  - Write list of usbdg device records to the CSV file");
+                                csvWriter.WriteRecords(records);
+                            }
+                            else if (recordType == "UsbdgEventRecord")
+                            {
+                                List<UsbdgEventRecord> records = JsonConvert.DeserializeObject<List<UsbdgEventRecord>>(serializedParent);
+                                log.LogInformation($"  - Write list of usbdg event records to the CSV file");
+                                csvWriter.WriteRecords(records);
+                            }
+                            else
+                            {
+                                log.LogInformation($"  - Unsupported record type. Will not write list of records to CSV file.");
+                            }
+
                         } else
                         {
-                            log.LogInformation($"  - Unsupported record type. Will not write list of records to CSV file.");
+                            log.LogInformation($"  - Zero records found. CSV file will not be written to blog storage.");
                         }
+
                     }
                     catch (Exception e)
                     {

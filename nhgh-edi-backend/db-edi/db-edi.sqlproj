@@ -81,5 +81,8 @@
     <Build Include="indigo_v2\User Defined Types\event_type.sql" />
     <Build Include="Security\usbdg.sql" />
     <Build Include="Security\indigo_v2.sql" />
+    <Build Include="usbdg\Tables\location.sql" />
+    <Build Include="usbdg\Stored Procedures\uspLoadUsbdgLocations.sql" />
+    <Build Include="usbdg\User Defined Types\location_type.sql" />
   </ItemGroup>
 </Project>

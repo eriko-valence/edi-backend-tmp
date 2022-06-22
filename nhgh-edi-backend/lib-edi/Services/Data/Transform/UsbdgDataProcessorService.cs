@@ -48,6 +48,43 @@ namespace lib_edi.Services.Loggers
 		}
 
 		/// <summary>
+		/// Determines if a file package has only USBDG report metadata (i.e., "no logger" scenario)
+		/// </summary>
+		/// <param name="logDirectoryBlobs">Full list of blobs </param>
+		/// <returns>
+		/// True if file package has USBDG report metdata exists and no logger data; False otherwise 
+		/// </returns>
+		public static bool IsFilePackageUsbdgOnly(IEnumerable<IListBlobItem> logDirectoryBlobs)
+		{
+			bool result = false;
+			bool indigoLogFilesFound = false;
+			bool usbdgMetaDataFound = false;
+			if (logDirectoryBlobs != null)
+			{
+				foreach (CloudBlockBlob logBlob in logDirectoryBlobs)
+				{
+					string fileExtension = Path.GetExtension(logBlob.Name);
+					if (IndigoDataTransformService.IsFileFromIndigoV2Logger(logBlob.Name))
+					{
+						indigoLogFilesFound = true;
+					}
+
+					if (IsFileUsbdgReportMetadata(logBlob.Name))
+					{
+						usbdgMetaDataFound = true;
+					}
+				}
+			}
+
+			if ((indigoLogFilesFound == false) && usbdgMetaDataFound)
+			{
+				result = true;
+			}
+
+			return result;
+		}
+
+		/// <summary>
 		/// Checks if blob name a USBDB report metadata file
 		/// </summary>
 		/// <param name="blobName">blob name </param>

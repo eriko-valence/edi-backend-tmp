@@ -90,11 +90,16 @@ namespace fa_ccdx_consumer
                     {
                         headers.Add(header.Key, GetHeaderValueAsString(header));
                     }
-                    log.LogInformation($"- [ccdx-consumer->run]: Is this a supported cold chain telemetry message? {headers["ce_type"]}");
+
+                    string deviceType = CcdxService.GetLoggerTypeFromCeHeader(headers["ce_type"]);
+                    log.LogInformation($"- [ccdx-consumer->run]: Detected device type: {deviceType}");
+
 
                     /* Only process messages that are known to this consumer */
-                    if (CcdxService.ValidateCeTypeHeader(headers["ce_type"]))
-					{
+                    //if (CcdxService.ValidateCeTypeHeader(headers["ce_type"]))
+                    if (CcdxService.ValidateLoggerType(deviceType))
+                    {
+                        log.LogInformation($"- [ccdx-consumer->run]: Is '{headers["ce_type"]}' a supported cold chain file package? Yes. ");
                         log.LogInformation($"- [ccdx-consumer->run]: Confirmed. Content is cold chain telemetry. Proceed with processing.");
 
                         log.LogInformation($"- [ccdx-consumer->run]: Building raw ccdx raw consumer blob path.");
@@ -140,6 +145,7 @@ namespace fa_ccdx_consumer
                     }
                     else
                     {
+                        log.LogInformation($"- [ccdx-consumer->run]: Is '{headers["ce_type"]}' a supported cold chain file package? No. ");
                         //Filter out these telemetry messages as they are not supported by this consumer
                     }
                 }

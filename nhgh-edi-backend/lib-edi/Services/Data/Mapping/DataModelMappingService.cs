@@ -488,5 +488,84 @@ namespace lib_edi.Services.Loggers
             }
         }
 
+        /// <summary>
+        /// Maps raw USBDG metadata files to csv usbdg location records
+        /// </summary>
+        /// <remarks>
+        /// This mapping denormalizes the USBDG metadata files into location records ready for CSV serialization.
+        /// </remarks>
+        /// <param name="sourceUsbdgMetadata">A list of deserilized logger data file objects</param>
+        /// <returns>
+        /// A list of CSV compatible USBDG location records, if successful; Exception (DVKA) if any failures occur 
+        /// </returns>
+        public static List<EdiSinkRecord> MapUsbdgLocations(dynamic sourceUsbdgMetadata, EdiJob sourceEdiJob)
+        {
+            string propName = null;
+            string propValue = null;
+            string sourceFile = null;
+
+            try
+            {
+                List<EdiSinkRecord> sinkCsvLocationsRecords = new();
+                JObject sourceJObject = (JObject)sourceUsbdgMetadata;
+                sourceFile = DataTransformService.GetSourceFile(sourceJObject);
+
+
+                // Grab the log header properties from the source metadata file
+                /*
+                var sourceHeaders = new ExpandoObject() as IDictionary<string, Object>;
+                foreach (KeyValuePair<string, JToken> log1 in sourceJObject)
+                {
+                    if (log1.Value.Type != JTokenType.Array)
+                    {
+                        sourceHeaders.Add(log1.Key, log1.Value);
+                        //ObjectManager.SetObjectValue(sinkUsbdgDeviceRecord, log1.Key, log1.Value);
+                    }
+                }
+                */
+
+                // Map csv record objects from source metadata file
+                foreach (KeyValuePair<string, JToken> log2 in sourceJObject)
+                {
+                    // Load log record properties into csv record object
+                    if (log2.Value.Type == JTokenType.Array && log2.Key == "zgps_data")
+                    {
+                        // Iterate each array
+                        foreach (JObject z in log2.Value.Children<JObject>())
+                        {
+                            EdiSinkRecord sinkCsvLocationsRecord = new UsbdgLocationRecord();
+                            ObjectManager.SetObjectValue(sinkCsvLocationsRecord, "ESER", sourceEdiJob.UsbdgMetadata.ESER);
+                            ObjectManager.SetObjectValue(sinkCsvLocationsRecord, "usb_id", sourceEdiJob.Logger.LSER);
+
+                            // Load each log record property
+                            foreach (JProperty prop in z.Properties())
+                            {
+                                propName = prop.Name;
+                                propValue = (string)prop.Value;
+                                ObjectManager.SetObjectValue(sinkCsvLocationsRecord, prop.Name, prop.Value);
+
+                                if (propName == "zgps_abst")
+                                {
+                                    long zgps_abst_long = long.Parse(propValue);
+                                    ((UsbdgLocationRecord)sinkCsvLocationsRecord).EDI_ZGPS_ABST_DATETIME = DateConverter.FromUnixTimeSeconds(zgps_abst_long);
+                                }
+                            }
+                            sinkCsvLocationsRecords.Add(sinkCsvLocationsRecord);
+                        }
+                    }
+                    else
+                    {
+                        // ObjectManager.SetObjectValue(ref sink, log2.Key, log2.Value);
+                    }
+
+                }
+                return sinkCsvLocationsRecords;
+            }
+            catch (Exception e)
+            {
+                throw new Exception(EdiErrorsService.BuildExceptionMessageString(e, "DVKA", EdiErrorsService.BuildErrorVariableArrayList(propName, propValue, sourceFile)));
+            }
+        }
+
     }
 }
