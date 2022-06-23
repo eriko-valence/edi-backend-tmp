@@ -14,18 +14,18 @@ namespace lib_edi.Models.Emd.Csv
         [Name("ESER")]
         public string ESER { get; set; }
         [Ignore]
-        public string zgps_abst { get; set; }
+        public string ZGPS_ABST { get; set; }
 
         [Name("zgps_utc")]
         public DateTime? EDI_ZGPS_ABST_DATETIME { get; set; }
 
         [Name("zgps_ang")]
-        public string zgps_ang { get; set; }
+        public string ZGPS_ANG { get; set; }
         [Name("zgps_lat")]
-        public string zgps_lat { get; set; }
+        public string ZGPS_LAT { get; set; }
         [Name("zgps_lng")]
-        public string zgps_lng { get; set; }
+        public string ZGPS_LNG { get; set; }
         [Name("usb_id")]
-        public string usb_id { get; set; }
+        public string USB_ID { get; set; }
     }
 }
