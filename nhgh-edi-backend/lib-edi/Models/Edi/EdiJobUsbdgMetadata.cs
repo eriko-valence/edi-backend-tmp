@@ -13,5 +13,6 @@ namespace lib_edi.Models.Edi
         public string ABST { get; set; }
         public string RELT { get; set; }
         public string RTCW { get; set; }
+        public string EDI_SOURCE { get; set; }
     }
 }

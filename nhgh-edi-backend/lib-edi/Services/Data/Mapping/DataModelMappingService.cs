@@ -536,6 +536,7 @@ namespace lib_edi.Services.Loggers
                             EdiSinkRecord sinkCsvLocationsRecord = new UsbdgLocationRecord();
                             ObjectManager.SetObjectValue(sinkCsvLocationsRecord, "ESER", sourceEdiJob.UsbdgMetadata.ESER);
                             ObjectManager.SetObjectValue(sinkCsvLocationsRecord, "usb_id", sourceEdiJob.Logger.LSER);
+                            ObjectManager.SetObjectValue(sinkCsvLocationsRecord, "EDI_SOURCE", sourceEdiJob.UsbdgMetadata.EDI_SOURCE);
 
                             // Load each log record property
                             foreach (JProperty prop in z.Properties())
