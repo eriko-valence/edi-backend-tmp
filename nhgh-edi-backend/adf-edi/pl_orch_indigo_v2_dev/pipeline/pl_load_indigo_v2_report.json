@@ -375,145 +375,13 @@
                 },
                 "inputs": [
                     {
-                        "referenceName": "ds_adls_curated_usbdg",
+                        "referenceName": "ds_adls_curated",
                         "type": "DatasetReference"
                     }
                 ],
                 "outputs": [
                     {
-                        "referenceName": "ds_sql_indigo_v2",
-                        "type": "DatasetReference"
-                    }
-                ]
-            },
-            {
-                "name": "Load Indigo Location",
-                "type": "Copy",
-                "dependsOn": [
-                    {
-                        "activity": "Load Indigo Events",
-                        "dependencyConditions": [
-                            "Succeeded"
-                        ]
-                    }
-                ],
-                "policy": {
-                    "timeout": "7.00:00:00",
-                    "retry": 0,
-                    "retryIntervalInSeconds": 30,
-                    "secureOutput": false,
-                    "secureInput": false
-                },
-                "userProperties": [],
-                "typeProperties": {
-                    "source": {
-                        "type": "DelimitedTextSource",
-                        "storeSettings": {
-                            "type": "AzureBlobFSReadSettings",
-                            "recursive": true,
-                            "wildcardFolderPath": {
-                                "value": "@pipeline().parameters.PL_C_PARAM_TRANSFORM_CURATED_PATH",
-                                "type": "Expression"
-                            },
-                            "wildcardFileName": "indigo_v2_location.csv",
-                            "enablePartitionDiscovery": false
-                        },
-                        "formatSettings": {
-                            "type": "DelimitedTextReadSettings"
-                        }
-                    },
-                    "sink": {
-                        "type": "AzureSqlSink",
-                        "sqlWriterStoredProcedureName": "[indigo_v2].[uspLoadIndigoV2Locations]",
-                        "sqlWriterTableType": "[indigo_v2].[location_type]",
-                        "storedProcedureTableTypeParameterName": "indigo_v2_location",
-                        "disableMetricsCollection": false
-                    },
-                    "enableStaging": false,
-                    "translator": {
-                        "type": "TabularTranslator",
-                        "mappings": [
-                            {
-                                "source": {
-                                    "name": "LSER",
-                                    "type": "String",
-                                    "physicalType": "String"
-                                },
-                                "sink": {
-                                    "name": "LSER",
-                                    "type": "String",
-                                    "physicalType": "varchar"
-                                }
-                            },
-                            {
-                                "source": {
-                                    "name": "zgps_abst",
-                                    "type": "String",
-                                    "physicalType": "String"
-                                },
-                                "sink": {
-                                    "name": "zgps_abst",
-                                    "type": "DateTime",
-                                    "physicalType": "datetime2"
-                                }
-                            },
-                            {
-                                "source": {
-                                    "name": "zgps_ang",
-                                    "type": "String",
-                                    "physicalType": "String"
-                                },
-                                "sink": {
-                                    "name": "zgps_ang",
-                                    "type": "Int16",
-                                    "physicalType": "smallint"
-                                }
-                            },
-                            {
-                                "source": {
-                                    "name": "zgps_lat",
-                                    "type": "String",
-                                    "physicalType": "String"
-                                },
-                                "sink": {
-                                    "name": "zgps_lat",
-                                    "type": "Decimal",
-                                    "physicalType": "decimal",
-                                    "scale": 5,
-                                    "precision": 8
-                                }
-                            },
-                            {
-                                "source": {
-                                    "name": "zgps_lng",
-                                    "type": "String",
-                                    "physicalType": "String"
-                                },
-                                "sink": {
-                                    "name": "zgps_lng",
-                                    "type": "Decimal",
-                                    "physicalType": "decimal",
-                                    "scale": 5,
-                                    "precision": 8
-                                }
-                            }
-                        ],
-                        "typeConversion": true,
-                        "typeConversionSettings": {
-                            "allowDataTruncation": true,
-                            "treatBooleanAsNumber": false
-                        }
-                    }
-                },
-                "inputs": [
-                    {
-                        "referenceName": "ds_adls_curated_usbdg",
-                        "type": "DatasetReference"
-                    }
-                ],
-                "outputs": [
-                    {
-                        "referenceName": "ds_sql_indigo_v2",
+                        "referenceName": "ds_sql_db",
                         "type": "DatasetReference"
                     }
                 ]
@@ -637,13 +505,13 @@
                 },
                 "inputs": [
                     {
-                        "referenceName": "ds_adls_curated_usbdg",
+                        "referenceName": "ds_adls_curated",
                         "type": "DatasetReference"
                     }
                 ],
                 "outputs": [
                     {
-                        "referenceName": "ds_sql_indigo_v2",
+                        "referenceName": "ds_sql_db",
                         "type": "DatasetReference"
                     }
                 ]
@@ -794,16 +662,139 @@
                 },
                 "inputs": [
                     {
-                        "referenceName": "ds_adls_curated_usbdg",
+                        "referenceName": "ds_adls_curated",
                         "type": "DatasetReference"
                     }
                 ],
                 "outputs": [
                     {
-                        "referenceName": "ds_sql_indigo_v2",
+                        "referenceName": "ds_sql_db",
                         "type": "DatasetReference"
                     }
                 ]
+            },
+            {
+                "name": "Get Usbdg Location Metadata",
+                "type": "GetMetadata",
+                "dependsOn": [
+                    {
+                        "activity": "Load Indigo Events",
+                        "dependencyConditions": [
+                            "Succeeded"
+                        ]
+                    }
+                ],
+                "policy": {
+                    "timeout": "7.00:00:00",
+                    "retry": 0,
+                    "retryIntervalInSeconds": 30,
+                    "secureOutput": false,
+                    "secureInput": false
+                },
+                "userProperties": [],
+                "typeProperties": {
+                    "dataset": {
+                        "referenceName": "ds_adls_curated_usbdg_location_csv",
+                        "type": "DatasetReference",
+                        "parameters": {
+                            "PL_C_PARAM_TRANSFORM_CURATED_PATH": {
+                                "value": "@pipeline().parameters.PL_C_PARAM_TRANSFORM_CURATED_PATH",
+                                "type": "Expression"
+                            }
+                        }
+                    },
+                    "fieldList": [
+                        "exists"
+                    ],
+                    "storeSettings": {
+                        "type": "AzureBlobFSReadSettings",
+                        "recursive": true,
+                        "enablePartitionDiscovery": false
+                    },
+                    "formatSettings": {
+                        "type": "DelimitedTextReadSettings"
+                    }
+                }
+            },
+            {
+                "name": "Load Usbdg Location",
+                "type": "IfCondition",
+                "dependsOn": [
+                    {
+                        "activity": "Get Usbdg Location Metadata",
+                        "dependencyConditions": [
+                            "Succeeded"
+                        ]
+                    }
+                ],
+                "userProperties": [],
+                "typeProperties": {
+                    "expression": {
+                        "value": "@activity('Get USBDG Location Metadata').output.exists",
+                        "type": "Expression"
+                    },
+                    "ifTrueActivities": [
+                        {
+                            "name": "Copy Usbdg Location",
+                            "type": "Copy",
+                            "dependsOn": [],
+                            "policy": {
+                                "timeout": "7.00:00:00",
+                                "retry": 0,
+                                "retryIntervalInSeconds": 30,
+                                "secureOutput": false,
+                                "secureInput": false
+                            },
+                            "userProperties": [],
+                            "typeProperties": {
+                                "source": {
+                                    "type": "DelimitedTextSource",
+                                    "storeSettings": {
+                                        "type": "AzureBlobFSReadSettings",
+                                        "recursive": true,
+                                        "wildcardFolderPath": {
+                                            "value": "@pipeline().parameters.PL_C_PARAM_TRANSFORM_CURATED_PATH",
+                                            "type": "Expression"
+                                        },
+                                        "wildcardFileName": "usbdg_location.csv",
+                                        "enablePartitionDiscovery": false
+                                    },
+                                    "formatSettings": {
+                                        "type": "DelimitedTextReadSettings"
+                                    }
+                                },
+                                "sink": {
+                                    "type": "AzureSqlSink",
+                                    "sqlWriterStoredProcedureName": "[usbdg].[uspLoadUsbdgLocations]",
+                                    "sqlWriterTableType": "[usbdg].[location_type]",
+                                    "storedProcedureTableTypeParameterName": "usbdg_location",
+                                    "disableMetricsCollection": false
+                                },
+                                "enableStaging": false,
+                                "translator": {
+                                    "type": "TabularTranslator",
+                                    "typeConversion": true,
+                                    "typeConversionSettings": {
+                                        "allowDataTruncation": true,
+                                        "treatBooleanAsNumber": false
+                                    }
+                                }
+                            },
+                            "inputs": [
+                                {
+                                    "referenceName": "ds_adls_curated",
+                                    "type": "DatasetReference"
+                                }
+                            ],
+                            "outputs": [
+                                {
+                                    "referenceName": "ds_sql_db",
+                                    "type": "DatasetReference"
+                                }
+                            ]
+                        }
+                    ]
+                }
             }
         ],
         "parameters": {
@@ -827,7 +818,7 @@
             "name": "Load"
         },
         "annotations": [],
-        "lastPublishTime": "2022-06-10T16:49:13Z"
+        "lastPublishTime": "2022-06-22T17:47:02Z"
     },
     "type": "Microsoft.DataFactory/factories/pipelines"
 }

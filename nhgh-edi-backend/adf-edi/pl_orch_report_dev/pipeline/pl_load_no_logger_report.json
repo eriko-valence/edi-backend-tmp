@@ -258,6 +258,18 @@
                             },
                             {
                                 "source": {
+                                    "name": "zutc_now",
+                                    "type": "String",
+                                    "physicalType": "String"
+                                },
+                                "sink": {
+                                    "name": "zutc_now",
+                                    "type": "DateTime",
+                                    "physicalType": "datetime2"
+                                }
+                            },
+                            {
+                                "source": {
                                     "name": "zcell_info",
                                     "type": "String",
                                     "physicalType": "String"
@@ -434,7 +446,7 @@
             "name": "Load"
         },
         "annotations": [],
-        "lastPublishTime": "2022-06-22T16:51:15Z"
+        "lastPublishTime": "2022-06-22T17:47:01Z"
     },
     "type": "Microsoft.DataFactory/factories/pipelines"
 }

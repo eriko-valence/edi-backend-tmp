@@ -1,22 +1,22 @@
 {
-    "now": "2022-06-17T19:39:11.204Z",
-    "perfNow": 14140794,
-    "diagnosticCorrelation": "9bc776d6-5820-4d11-853c-4548e441f1a8",
+    "now": "2022-06-24T21:04:28.822Z",
+    "perfNow": 8042633.200000018,
+    "diagnosticCorrelation": "f756e8bc-eba1-4359-a566-49ac9c5f1a7c",
     "source": "DownloadSupportFiles",
     "environment": {
         "productName": "adf",
-        "buildVersion": "1.0.060722.13",
+        "buildVersion": "1.0.062222.1",
         "environmentType": 3,
         "resourceName": "adf-edi-develop",
         "resourceRegion": "westus2",
         "resourceGroup": "rg-edi-dev",
         "subscriptionId": "2972ffd4-e5b4-4b98-87b9-360c084c2959",
-        "sessionId": "uq2nI",
-        "operationId": "4Tt4I",
+        "sessionId": "TNrgd",
+        "operationId": "mwuNI",
         "gitType": "live"
     },
     "additionalInfo": {
-        "selectedResource": "pl_orch_indigo_v2_report",
+        "selectedResource": "pl_load_indigo_v2_report",
         "selectedResourceType": "pipeline"
     }
 }

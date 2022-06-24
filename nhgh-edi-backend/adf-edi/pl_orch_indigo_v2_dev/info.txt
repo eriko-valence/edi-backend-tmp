@@ -1,6 +1,6 @@
-selected resource name:		pl_orch_indigo_v2_report
+selected resource name:		pl_load_indigo_v2_report
 selected resource type:		pipeline
 factory name:			adf-edi-develop
 factory location:		westus2
 subscription id:		2972ffd4-e5b4-4b98-87b9-360c084c2959
-time of download (UTC):		Fri, 17 Jun 2022 19:39:11 GMT
+time of download (UTC):		Fri, 24 Jun 2022 21:04:28 GMT
