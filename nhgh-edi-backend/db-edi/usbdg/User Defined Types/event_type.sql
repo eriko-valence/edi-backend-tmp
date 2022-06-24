@@ -3,5 +3,8 @@
     [BEMD]       DECIMAL (18)  NULL,
     [EERR]       VARCHAR (20)  NULL,
     [ESER]       VARCHAR (50)  NULL,
+    [zutc_now]   DATETIME2 (7) NULL,
     [zcell_info] VARCHAR (100) NULL);
+
+
 
