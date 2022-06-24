@@ -285,6 +285,11 @@ namespace lib_edi.Services.Loggers
                     {
                         sourceHeaders.Add(log1.Key, log1.Value);
                         ObjectManager.SetObjectValue(sinkUsbdgDeviceRecord, log1.Key, log1.Value);
+                        if (log1.Key == "zutc_now" && log1.Value != null)
+                        {
+                            DateTime? zutcNow = DateConverter.ConvertIso8601CompliantString(log1.Value.ToString());
+                            ((UsbdgEventRecord)sinkUsbdgDeviceRecord).EDI_ZUTC_NOW_DATETIME = zutcNow;
+                        }
                     }
 
                     // Load log record properties into csv record object
@@ -299,12 +304,6 @@ namespace lib_edi.Services.Loggers
                                 propName = prop.Name;
                                 propValue = (string)prop.Value;
                                 ObjectManager.SetObjectValue(sinkUsbdgDeviceRecord, prop.Name, prop.Value);
-                                if (propName == "ABST")
-                                {
-                                    DateTime? emdAbsoluteTime = DateConverter.ConvertIso8601CompliantString(prop.Value.ToString());
-                                    ((UsbdgEventRecord)sinkUsbdgDeviceRecord).EDI_ABST_DATETIME = emdAbsoluteTime;
-                                    Console.WriteLine("debug");
-                                }
                             }
                         }
                     }

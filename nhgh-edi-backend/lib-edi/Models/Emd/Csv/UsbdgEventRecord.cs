@@ -21,6 +21,8 @@ namespace lib_edi.Models.Emd.Csv
         [Name("ESER")]
         public string ESER { get; set; }
         [Name("zutc_now")]
+        public DateTime? EDI_ZUTC_NOW_DATETIME { get; set; }
+        [Ignore]
         public string ZUTC_NOW { get; set; }
         [Name("zcell_info")]
         public string ZCELL_INFO { get; set; }
