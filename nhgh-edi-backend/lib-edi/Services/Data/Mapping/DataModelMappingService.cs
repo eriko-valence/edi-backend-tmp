@@ -287,8 +287,12 @@ namespace lib_edi.Services.Loggers
                         ObjectManager.SetObjectValue(sinkUsbdgDeviceRecord, log1.Key, log1.Value);
                         if (log1.Key == "zutc_now" && log1.Value != null)
                         {
-                            DateTime? zutcNow = DateConverter.ConvertIso8601CompliantString(log1.Value.ToString());
-                            ((UsbdgEventRecord)sinkUsbdgDeviceRecord).EDI_ZUTC_NOW_DATETIME = zutcNow;
+                            string strZutcNow = log1.Value.ToString();
+                            if (strZutcNow != "")
+                            {
+                                DateTime? zutcNow = DateConverter.ConvertIso8601CompliantString(log1.Value.ToString());
+                                ((UsbdgEventRecord)sinkUsbdgDeviceRecord).EDI_ZUTC_NOW_DATETIME = zutcNow;
+                            }
                         }
                     }
 
@@ -304,6 +308,15 @@ namespace lib_edi.Services.Loggers
                                 propName = prop.Name;
                                 propValue = (string)prop.Value;
                                 ObjectManager.SetObjectValue(sinkUsbdgDeviceRecord, prop.Name, prop.Value);
+                                if (propName == "ABST" && prop.Value != null)
+                                {
+                                    string strAbst = prop.Value.ToString();
+                                    if (strAbst != "")
+                                    {
+                                        DateTime? emdAbsoluteTime = DateConverter.ConvertIso8601CompliantString(prop.Value.ToString());
+                                        ((UsbdgEventRecord)sinkUsbdgDeviceRecord).EDI_ABST_DATETIME = emdAbsoluteTime;
+                                    }
+                                }
                             }
                         }
                     }
