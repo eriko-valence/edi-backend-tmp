@@ -275,7 +275,7 @@ namespace lib_edi.Services.Loggers
                 JObject sourceJObject = (JObject)sourceUsbdgMetadata;
                 sourceFile = DataTransformService.GetSourceFile(sourceJObject);
 
-                EdiSinkRecord sinkUsbdgDeviceRecord = new UsbdgEventRecord();
+                UsbdgEventRecord sinkUsbdgDeviceRecord = new UsbdgEventRecord();
 
                 // Grab the log header properties from the source metadata file
                 var sourceHeaders = new ExpandoObject() as IDictionary<string, Object>;
@@ -285,6 +285,15 @@ namespace lib_edi.Services.Loggers
                     {
                         sourceHeaders.Add(log1.Key, log1.Value);
                         ObjectManager.SetObjectValue(sinkUsbdgDeviceRecord, log1.Key, log1.Value);
+                        if (log1.Key == "zutc_now" && log1.Value != null)
+                        {
+                            string strZutcNow = log1.Value.ToString();
+                            if (strZutcNow != "")
+                            {
+                                DateTime? zutcNow = DateConverter.ConvertIso8601CompliantString(log1.Value.ToString());
+                                ((UsbdgEventRecord)sinkUsbdgDeviceRecord).EDI_ZUTC_NOW_DATETIME = zutcNow;
+                            }
+                        }
                     }
 
                     // Load log record properties into csv record object
@@ -299,19 +308,24 @@ namespace lib_edi.Services.Loggers
                                 propName = prop.Name;
                                 propValue = (string)prop.Value;
                                 ObjectManager.SetObjectValue(sinkUsbdgDeviceRecord, prop.Name, prop.Value);
-                                if (propName == "ABST")
+                                if (propName == "ABST" && prop.Value != null)
                                 {
-                                    DateTime? emdAbsoluteTime = DateConverter.ConvertIso8601CompliantString(prop.Value.ToString());
-                                    ((UsbdgEventRecord)sinkUsbdgDeviceRecord).EDI_ABST_DATETIME = emdAbsoluteTime;
-                                    Console.WriteLine("debug");
+                                    string strAbst = prop.Value.ToString();
+                                    if (strAbst != "")
+                                    {
+                                        DateTime? emdAbsoluteTime = DateConverter.ConvertIso8601CompliantString(prop.Value.ToString());
+                                        ((UsbdgEventRecord)sinkUsbdgDeviceRecord).EDI_ABST_DATETIME = emdAbsoluteTime;
+                                    }
                                 }
                             }
                         }
                     }
                 }
 
-
-
+                if (sinkUsbdgDeviceRecord.EDI_ZUTC_NOW_DATETIME == null)
+                {
+                    sinkUsbdgDeviceRecord.EDI_ZUTC_NOW_DATETIME = sinkUsbdgDeviceRecord.EDI_ABST_DATETIME;
+                }
 
                 sinkCsvLocationsRecords.Add(sinkUsbdgDeviceRecord);
                 return sinkCsvLocationsRecords;
@@ -536,6 +550,7 @@ namespace lib_edi.Services.Loggers
                             EdiSinkRecord sinkCsvLocationsRecord = new UsbdgLocationRecord();
                             ObjectManager.SetObjectValue(sinkCsvLocationsRecord, "ESER", sourceEdiJob.UsbdgMetadata.ESER);
                             ObjectManager.SetObjectValue(sinkCsvLocationsRecord, "usb_id", sourceEdiJob.Logger.LSER);
+                            ObjectManager.SetObjectValue(sinkCsvLocationsRecord, "EDI_SOURCE", sourceEdiJob.UsbdgMetadata.EDI_SOURCE);
 
                             // Load each log record property
                             foreach (JProperty prop in z.Properties())

@@ -55,16 +55,21 @@ namespace lib_edi.Helpers
         /// <param name="token">The new JToken property value</param>
         public static void SetObjectValue(EdiSinkRecord eventRecord, string propertyName, Object token)
         {
+            string propName = null;
             try
 			{
+                if (propertyName != null)
+                {
+                    propName = propertyName.ToUpper();
+                }
 
                 string sinkType = eventRecord.GetType().Name;
 
                 if (token != null)
 				{
-                    if (propertyName != null)
+                    if (propName != null)
 					{
-                        PropertyInfo propertyInfo = eventRecord.GetType().GetProperty(propertyName);
+                        PropertyInfo propertyInfo = eventRecord.GetType().GetProperty(propName);
                         if (propertyInfo != null)
                         {
                             propertyInfo.SetValue(eventRecord, Convert.ChangeType(token, propertyInfo.PropertyType), null);

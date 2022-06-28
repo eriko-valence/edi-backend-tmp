@@ -24,8 +24,8 @@ namespace lib_edi.Models.Emd.Csv
 		[Name("ESER")]
 		public string ESER { get; set; }
 		[Name("zcfg_ver")]
-		public string zcfg_ver { get; set; }
+		public string ZCFG_VER { get; set; }
 		[Name("zmcu_ver")]
-		public string zmcu_ver { get; set; }
+		public string ZMCU_VER { get; set; }
 	}
 }
