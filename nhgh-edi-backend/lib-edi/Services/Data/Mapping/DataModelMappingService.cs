@@ -275,7 +275,7 @@ namespace lib_edi.Services.Loggers
                 JObject sourceJObject = (JObject)sourceUsbdgMetadata;
                 sourceFile = DataTransformService.GetSourceFile(sourceJObject);
 
-                EdiSinkRecord sinkUsbdgDeviceRecord = new UsbdgEventRecord();
+                UsbdgEventRecord sinkUsbdgDeviceRecord = new UsbdgEventRecord();
 
                 // Grab the log header properties from the source metadata file
                 var sourceHeaders = new ExpandoObject() as IDictionary<string, Object>;
@@ -322,8 +322,10 @@ namespace lib_edi.Services.Loggers
                     }
                 }
 
-
-
+                if (sinkUsbdgDeviceRecord.EDI_ZUTC_NOW_DATETIME == null)
+                {
+                    sinkUsbdgDeviceRecord.EDI_ZUTC_NOW_DATETIME = sinkUsbdgDeviceRecord.EDI_ABST_DATETIME;
+                }
 
                 sinkCsvLocationsRecords.Add(sinkUsbdgDeviceRecord);
                 return sinkCsvLocationsRecords;
