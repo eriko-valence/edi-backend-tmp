@@ -17,7 +17,7 @@
     [LPQS]       VARCHAR (20)   NULL,
     [LSER]       VARCHAR (50)   NOT NULL,
     [LSV]        VARCHAR (20)   NULL,
-    [RELT]       VARCHAR (20)   NULL,
+    [RELT]       VARCHAR (20)   NOT NULL,
     [RTCW]       VARCHAR (20)   NULL,
     [TAMB]       NUMERIC (4, 2) NULL,
     [TVC]        NUMERIC (3, 1) NULL,
@@ -25,6 +25,8 @@
     [ZSTATE]     BIT            NULL,
     [ZVLVD]      BIT            NULL,
     [_RELT_SECS] VARCHAR (20)   NULL);
+
+
 
 
 

@@ -17,7 +17,7 @@
     [LPQS]       VARCHAR (20)   NULL,
     [LSER]       VARCHAR (50)   NOT NULL,
     [LSV]        VARCHAR (20)   NULL,
-    [RELT]       VARCHAR (20)   NULL,
+    [RELT]       VARCHAR (20)   NOT NULL,
     [RTCW]       VARCHAR (20)   NULL,
     [TAMB]       NUMERIC (4, 2) NULL,
     [TVC]        NUMERIC (3, 1) NULL,
@@ -26,9 +26,11 @@
     [ZVLVD]      BIT            NULL,
     [_RELT_SECS] VARCHAR (20)   NULL,
     [DATEADDED]  DATETIME2 (7)  NULL,
-    PRIMARY KEY CLUSTERED ([ABST_CALC] ASC, [LSER] ASC),
+    PRIMARY KEY CLUSTERED ([RELT] ASC, [LSER] ASC),
     CONSTRAINT [FK_indigo_v2_event_ESER] FOREIGN KEY ([ESER]) REFERENCES [usbdg].[device] ([ESER])
 );
+
+
 
 
 

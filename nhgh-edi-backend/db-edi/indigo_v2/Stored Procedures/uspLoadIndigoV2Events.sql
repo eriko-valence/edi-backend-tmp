@@ -3,12 +3,14 @@
 
 
 
+
+
 CREATE PROCEDURE [indigo_v2].[uspLoadIndigoV2Events] @indigo_v2_event [indigo_v2].[event_type] READONLY
 AS
 BEGIN
 	MERGE [indigo_v2].[event] AS t
 	USING @indigo_v2_event AS s
-	ON t.[ABST_CALC] = s.[ABST_CALC] and t.[LSER] = s.[LSER]
+	ON t.[RELT] = s.[RELT] and t.[LSER] = s.[LSER]
 	WHEN NOT MATCHED THEN 
 	INSERT ([ABST_CALC],[ADOP],[ALRM],[AMOD],[AMFR],[APQS],[ASER],[BLOG],[DORV],[ESER],[HOLD],[LDOP],[LERR],[LMFR],[LMOD],[LPQS],[LSER],[LSV],[RELT],[RTCW],[TAMB],[TVC],[ZCHRG],[ZSTATE],[ZVLVD],[_RELT_SECS],[DATEADDED]) 
 	VALUES(
