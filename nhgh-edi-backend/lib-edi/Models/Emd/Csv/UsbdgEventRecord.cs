@@ -27,8 +27,8 @@ namespace lib_edi.Models.Emd.Csv
         [Name("zcell_info")]
         public string ZCELL_INFO { get; set; }
         [Name("zbatt_volt")]
-        public Int16 ZBATT_VOLT { get; set; }
+        public Int16? ZBATT_VOLT { get; set; }
         [Name("zbatt_chrg")]
-        public Byte ZBATT_CHRG { get; set; }
+        public Byte? ZBATT_CHRG { get; set; }
     }
 }

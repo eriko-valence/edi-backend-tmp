@@ -2,6 +2,7 @@
 
 
 
+
 CREATE PROCEDURE [usbdg].[uspLoadUsbdgEvents] @usbdg_event [usbdg].[event_type] READONLY
 AS
 BEGIN
@@ -12,12 +13,12 @@ BEGIN
 	INSERT ([ABST],[BEMD],[EERR],[ESER],[zutc_now],[zcell_info],[zbatt_volt],[zbatt_chrg],[DATEADDED]) 
 	VALUES(
 	s.[ABST],
-	s.[BEMD],
+	NULLIF(s.[BEMD],''),
 	s.[EERR],
 	s.[ESER],
 	s.[zutc_now],
 	s.[zcell_info],
-	s.[zbatt_volt],
-	s.[zbatt_chrg],
+	NULLIF(s.[zbatt_volt], ''),
+	NULLIF(s.[zbatt_chrg], ''),
 	GETDATE());
 END
