@@ -4,7 +4,11 @@
     [EERR]       VARCHAR (20)  NULL,
     [ESER]       VARCHAR (50)  NULL,
     [zutc_now]   DATETIME2 (7) NULL,
-    [zcell_info] VARCHAR (100) NULL);
+    [zcell_info] VARCHAR (100) NULL,
+    [zbatt_volt] SMALLINT      NULL,
+    [zbatt_chrg] TINYINT       NULL);
+
+
 
 
 
