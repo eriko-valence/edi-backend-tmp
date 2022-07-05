@@ -1,4 +1,5 @@
 ﻿
+
 CREATE PROCEDURE [indigo_v2].[uspLoadIndigoV2Events] @indigo_v2_event [indigo_v2].[event_type] READONLY
 AS
 BEGIN
@@ -15,10 +16,10 @@ BEGIN
 	s.[AMFR],
 	s.[APQS],
 	s.[ASER],
-	NULLIF(s.[BLOG],''),
-	NULLIF(s.[DORV],''),
+	s.[BLOG],
+	s.[DORV],
 	s.[ESER],
-	NULLIF(s.[HOLD],''),
+	s.[HOLD],
 	s.[LDOP],
 	s.[LERR],
 	s.[LMFR],
@@ -28,11 +29,11 @@ BEGIN
 	s.[LSV],
 	s.[RELT],
 	s.[RTCW],
-	NULLIF(s.[TAMB],''),
-	NULLIF(s.[TVC],''),
+	s.[TAMB],
+	s.[TVC],
 	s.[ZCHRG],
-	NULLIF(s.[ZSTATE],''),
-	NULLIF(s.[ZVLVD],''),
+	s.[ZSTATE],
+	s.[ZVLVD],
 	s.[_RELT_SECS],
 	GETDATE());
 END
