@@ -283,6 +283,9 @@ namespace lib_edi.Services.Loggers
                 {
                     if (log1.Value.Type != JTokenType.Array)
                     {
+                        propName = log1.Key;
+                        propValue = (string)log1.Value;
+
                         sourceHeaders.Add(log1.Key, log1.Value);
                         ObjectManager.SetObjectValue(sinkUsbdgDeviceRecord, log1.Key, log1.Value);
                         if (log1.Key == "zutc_now" && log1.Value != null)
@@ -332,6 +335,11 @@ namespace lib_edi.Services.Loggers
             }
             catch (Exception e)
             {
+                // 2022.07.07 stringify null for BuildErrorVariableArrayList
+                if (propValue == null)
+                {
+                    propValue = "null";
+                }
                 throw new Exception(EdiErrorsService.BuildExceptionMessageString(e, "DYUF", EdiErrorsService.BuildErrorVariableArrayList(propName, propValue, sourceFile)));
             }
         }
