@@ -30,5 +30,7 @@ namespace lib_edi.Models.Emd.Csv
         public Int16? ZBATT_VOLT { get; set; }
         [Name("zbatt_chrg")]
         public Byte? ZBATT_CHRG { get; set; }
+        [Name("TAMB")]
+        public double? TAMB { get; set; }
     }
 }
