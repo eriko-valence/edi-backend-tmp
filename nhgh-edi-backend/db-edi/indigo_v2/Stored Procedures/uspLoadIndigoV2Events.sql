@@ -1,10 +1,5 @@
 ﻿
 
-
-
-
-
-
 CREATE PROCEDURE [indigo_v2].[uspLoadIndigoV2Events] @indigo_v2_event [indigo_v2].[event_type] READONLY
 AS
 BEGIN
