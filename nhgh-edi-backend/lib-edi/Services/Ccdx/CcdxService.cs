@@ -190,9 +190,7 @@ namespace lib_edi.Services.Ccdx
 			{
 				if (loggerType != null)
 				{
-					string dateFolder = DateTime.UtcNow.ToString("yyyy-MM-dd/HH");
-					string guidFolder = CcdxService.GetGuidFromBlobPath(blobPath);
-					curatedBlobPath = $"{loggerType}/{dateFolder}/{guidFolder}/{blobName}";
+					curatedBlobPath = $"{loggerType}/{blobPath.TrimEnd(new[] { '/' })}/{blobName}";
 				}
 			}
 

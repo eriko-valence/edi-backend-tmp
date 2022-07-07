@@ -303,6 +303,20 @@
                                     "type": "Byte",
                                     "physicalType": "tinyint"
                                 }
+                            },
+                            {
+                                "source": {
+                                    "name": "TAMB",
+                                    "type": "String",
+                                    "physicalType": "String"
+                                },
+                                "sink": {
+                                    "name": "TAMB",
+                                    "type": "Decimal",
+                                    "physicalType": "decimal",
+                                    "scale": 1,
+                                    "precision": 3
+                                }
                             }
                         ],
                         "typeConversion": true,
@@ -470,7 +484,7 @@
             "name": "Load"
         },
         "annotations": [],
-        "lastPublishTime": "2022-06-24T19:41:27Z"
+        "lastPublishTime": "2022-07-01T16:54:13Z"
     },
     "type": "Microsoft.DataFactory/factories/pipelines"
 }

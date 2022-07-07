@@ -15,7 +15,7 @@ namespace lib_edi.Models.Emd.Csv
         [Name("ABST")]
         public DateTime? EDI_ABST_DATETIME { get; set; }
         [Name("BEMD")]
-        public double BEMD { get; set; }
+        public double? BEMD { get; set; }
         [Name("EERR")]
         public string EERR { get; set; }
         [Name("ESER")]
@@ -30,5 +30,7 @@ namespace lib_edi.Models.Emd.Csv
         public Int16? ZBATT_VOLT { get; set; }
         [Name("zbatt_chrg")]
         public Byte? ZBATT_CHRG { get; set; }
+        [Name("TAMB")]
+        public double? TAMB { get; set; }
     }
 }
