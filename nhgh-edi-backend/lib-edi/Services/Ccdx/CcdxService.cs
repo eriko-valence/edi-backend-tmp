@@ -436,7 +436,7 @@ namespace lib_edi.Services.Ccdx
 		/// </summary>
 		/// <param name="reportFileName">Name of Cold chain telemetry file that triggered the CCDX Provider</param>
 		/// <param name="log">Microsoft extension logger</param>
-		public static void LogCcdxProviderUnsupportedLoggerEventToAppInsights(string reportFileName, ILogger log)
+		public static void LogCcdxProviderUnsupportedLoggerEventToAppInsights(string reportFileName, string loggerType, ILogger log)
 		{
 			PipelineEvent pipelineEvent = new PipelineEvent();
 			pipelineEvent.EventName = PipelineEventEnum.Name.FAILED;
@@ -444,6 +444,7 @@ namespace lib_edi.Services.Ccdx
 			pipelineEvent.PipelineFailureType = PipelineFailureTypeEnum.Name.VALIDATION;
 			pipelineEvent.PipelineFailureReason = PipelineFailureReasonEnum.Name.UNSUPPORTED_DATA_LOGGER;
 			pipelineEvent.ReportFileName = reportFileName;
+			pipelineEvent.ErrorMessage = $"Unsupported logger type '{loggerType}'";
 			Dictionary<string, string> customProps = AzureAppInsightsService.BuildCustomPropertiesObject(pipelineEvent);
 			AzureAppInsightsService.LogEntry(PipelineStageEnum.Name.CCDX_PROVIDER, customProps, log);
 		}
