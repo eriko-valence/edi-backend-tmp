@@ -55,6 +55,7 @@ namespace fa_ccdx_provider
             ILogger log)
         {
             string reportFileName = null;
+            string loggerType = null;
             try
             {
                 string storageConnectionString = Environment.GetEnvironmentVariable("AZURE_STORAGE_INPUT_CONNECTION_STRING");
@@ -64,7 +65,7 @@ namespace fa_ccdx_provider
                 log.LogInformation($"- [ccdx-provider->run]: Track ccdx provider started event (app insights)");
                 CcdxService.LogCcdxProviderStartedEventToAppInsights(reportFileName, log);
                 
-                string loggerType = CcdxService.GetDataLoggerTypeFromBlobPath(ccBlobInputName);
+                loggerType = CcdxService.GetDataLoggerTypeFromBlobPath(ccBlobInputName);
                 log.LogInformation($"- [ccdx-provider->run]: Extracted logger type: {loggerType}");
 
                 log.LogInformation($"- [ccdx-provider->run]: Validate incoming blob originated from supported data logger");
@@ -150,7 +151,7 @@ namespace fa_ccdx_provider
                 {
                     log.LogError($"- [ccdx-provider->run]: Incoming telemetry file {reportFileName} is not from a supported data logger");
                     log.LogInformation($"- [ccdx-provider->run]: Track ccdx provider unsupported logger event (app insights)");
-                    CcdxService.LogCcdxProviderUnsupportedLoggerEventToAppInsights(reportFileName, log);
+                    CcdxService.LogCcdxProviderUnsupportedLoggerEventToAppInsights(reportFileName, loggerType, log);
                 }
 
             }
