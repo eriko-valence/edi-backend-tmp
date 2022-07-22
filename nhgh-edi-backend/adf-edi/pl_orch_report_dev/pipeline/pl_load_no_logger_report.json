@@ -213,8 +213,7 @@
                                     "physicalType": "String"
                                 },
                                 "sink": {
-                                    "name": "ABST",
-                                    "type": "DateTime",
+                                    "name": "ABST_last_mnt",
                                     "physicalType": "datetime2"
                                 }
                             },
@@ -484,7 +483,7 @@
             "name": "Load"
         },
         "annotations": [],
-        "lastPublishTime": "2022-07-01T16:54:13Z"
+        "lastPublishTime": "2022-07-07T19:17:51Z"
     },
     "type": "Microsoft.DataFactory/factories/pipelines"
 }
