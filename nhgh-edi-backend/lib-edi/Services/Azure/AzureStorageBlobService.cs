@@ -96,6 +96,7 @@ namespace lib_edi.Services.Azure
 			}
 			catch (Exception e)
 			{
+				blobName ??= ""; // set blob name to an empty string value as error code 9L96 expects blob name to not be null
 				string customErrorMessage = EdiErrorsService.BuildExceptionMessageString(e, "9L96", EdiErrorsService.BuildErrorVariableArrayList(blobName, cloudBlobContainer.Name));
 				throw new Exception(customErrorMessage);
 			}

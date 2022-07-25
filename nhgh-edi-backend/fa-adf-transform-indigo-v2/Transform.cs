@@ -40,7 +40,8 @@ namespace fa_adf_transform_indigo_v2
 
             try
             {
-                string indigoV2LogJsonSchemaFileName = Environment.GetEnvironmentVariable("EMS_INDIGOV2_JSON_SCHEMA_FILENAME");
+                string jsonSchemaBlobNameIndigoV2Log = Environment.GetEnvironmentVariable("EMS_INDIGOV2_JSON_SCHEMA_FILENAME");
+                string jsonSchemaBlobNameUsbdgMetadata = Environment.GetEnvironmentVariable("EMS_USBDG_METADATA_JSON_SCHEMA_FILENAME");
 
                 log.LogInformation($"- Deserialize log transformation http request body");
                 payload = await HttpService.DeserializeHttpRequestBody(req);
@@ -78,8 +79,11 @@ namespace fa_adf_transform_indigo_v2
                     string emdRelativeTime = DataTransformService.GetJObjectPropertyValueAsString(usbdgRecords, "RELT");
                     string emdAbsoluteTime = DataTransformService.GetJObjectPropertyValueAsString(usbdgRecords, "ABST");
 
+                    log.LogInformation($"- Validate USBDG report metadata blob");
+                    dynamic validatedUsbdgReportMetadataFile = await DataTransformService.ValidateJsonObject(emsConfgContainer, usbdgReportMetadata, jsonSchemaBlobNameUsbdgMetadata, log);
+
                     log.LogInformation($"- Validate {logType} log blobs");
-                    List<dynamic> validatedUsbdgLogFiles = await DataTransformService.ValidateLogJsonObjects(emsConfgContainer, indigoLogFiles, indigoV2LogJsonSchemaFileName, log);
+                    List<dynamic> validatedUsbdgLogFiles = await DataTransformService.ValidateJsonObjects(emsConfgContainer, indigoLogFiles, jsonSchemaBlobNameIndigoV2Log, log);
 
                     log.LogInformation($"- Start tracking EDI job status");
                     EdiJob ediJob = UsbdgDataProcessorService.PopulateEdiJobObject(usbdgReportMetadata, indigoLogFiles);
@@ -146,8 +150,11 @@ namespace fa_adf_transform_indigo_v2
                     log.LogInformation($"- Pull usbdg report metadata blob from file package");
                     CloudBlockBlob usbdgReportMetadataBlob = UsbdgDataProcessorService.GetReportMetadataBlob(logDirectoryBlobs, inputBlobPath);
 
-                    log.LogInformation($"- Download usbdg report metadata blob");
+                    log.LogInformation($"- Download USBDG report metadata blob");
                     dynamic usbdgReportMetadata = await AzureStorageBlobService.DownloadAndDeserializeJsonBlob(usbdgReportMetadataBlob, inputContainer, inputBlobPath, log);
+
+                    log.LogInformation($"- Validate USBDG report metadata blob");
+                    dynamic validatedUsbdgReportMetadataFile = await DataTransformService.ValidateJsonObject(emsConfgContainer, usbdgReportMetadata, jsonSchemaBlobNameUsbdgMetadata, log);
 
                     dynamic usbdgRecords = UsbdgDataProcessorService.GetUsbdgMetadataRecordsElement(usbdgReportMetadata);
 

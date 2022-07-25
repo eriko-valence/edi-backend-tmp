@@ -47,15 +47,16 @@ namespace lib_edi.Services.CceDevice
 		}
 
 		/// <summary>
-		/// Validates CCE device log JSON objects against schema
+		/// Validates a list provided JSON data objects against a provided JSON schema
 		/// </summary>
-		/// <param name="emsLogs">A list validated JSON objects</param>
+		/// <param name="listOfJsonDataoValidate">A list of validated JSON objects</param>
 		/// <param name="cloudBlobContainer">A container in the Microsoft Azure Blob service</param>
+		/// <param name="blobNameJsonSchema">Blob name of JSON schema that will be used to validate the JSON data</param>
 		/// <param name="log">Azure function logger object</param>
 		/// <returns>
-		/// A list validated CCE device log JSON objects; Exception thrown if at least one report fails validation (R85Y) or if the json definition file failed to be retrieved (FY84)
+		/// A list of validated JSON data objects; Exception thrown if at least one report fails validation (R85Y) or if the json definition file failed to be retrieved from blob storage (FY84)
 		/// </returns>
-		public static async Task<List<dynamic>> ValidateLogJsonObjects(CloudBlobContainer cloudBlobContainer, List<dynamic> emsLogs, string jsonSchemaBlobName, ILogger log)
+		public static async Task<List<dynamic>> ValidateJsonObjects(CloudBlobContainer cloudBlobContainer, List<dynamic> listOfJsonDataoValidate, string blobNameJsonSchema, ILogger log)
 		{
 			List<dynamic> validatedJsonObjects = new();
 
@@ -64,7 +65,7 @@ namespace lib_edi.Services.CceDevice
 
 			try
 			{
-				configBlobJsonText = await AzureStorageBlobService.DownloadBlobTextAsync(cloudBlobContainer, jsonSchemaBlobName);
+				configBlobJsonText = await AzureStorageBlobService.DownloadBlobTextAsync(cloudBlobContainer, blobNameJsonSchema);
 				configJsonSchema = await JsonSchema.FromJsonAsync(configBlobJsonText);
 			}
 			catch (Exception e)
@@ -74,7 +75,7 @@ namespace lib_edi.Services.CceDevice
 				throw new Exception(customErrorMessage);
 			}
 
-			foreach (dynamic emsLog in emsLogs)
+			foreach (dynamic emsLog in listOfJsonDataoValidate)
 			{
 				string emsLogText = SerializeJsonObject(emsLog);
 
@@ -96,6 +97,52 @@ namespace lib_edi.Services.CceDevice
 			}
 
 			return validatedJsonObjects;
+		}
+
+		/// <summary>
+		/// Validates a provided JSON data object against a provided schema 
+		/// </summary>
+		/// <param name="cloudBlobContainer">A container in the Microsoft Azure Blob service</param>
+		/// <param name="jsonDataToValidate">JSON data object to validate</param>
+		/// <param name="blobNameJsonSchema">Blob name of JSON schema that will be used to validate the JSON data</param>
+		/// <param name="log">Azure function logger object</param>
+		/// <returns>
+		/// A vlaidated JSON data object; Exception thrown if validation fails (YR42) or if the json definition file failed to be retrieved from blob storage (4VN5)
+		/// </returns>
+		public static async Task<dynamic> ValidateJsonObject(CloudBlobContainer cloudBlobContainer, dynamic jsonDataToValidate, string blobNameJsonSchema, ILogger log)
+		{
+			// Deserialize JSON schema
+			string jsonSchemaString;
+			JsonSchema jsonSchemaObject;
+			try
+			{
+				jsonSchemaString = await AzureStorageBlobService.DownloadBlobTextAsync(cloudBlobContainer, blobNameJsonSchema);
+				jsonSchemaObject = await JsonSchema.FromJsonAsync(jsonSchemaString);
+			}
+			catch (Exception e)
+			{
+				log.LogError($"    - Validated: No");
+				string customErrorMessage = EdiErrorsService.BuildExceptionMessageString(e, "4VN5", null);
+				throw new Exception(customErrorMessage);
+			}
+
+			// Validate the JSON data against the schema
+			string jsonStringToValidate = SerializeJsonObject(jsonDataToValidate);
+			ICollection<ValidationError> errors = jsonSchemaObject.Validate(jsonStringToValidate);
+			if (errors.Count == 0)
+			{
+				log.LogInformation($"    - Validated: Yes");
+				return jsonDataToValidate;
+			}
+			else
+			{
+				string validationResultString = EdiErrorsService.BuildJsonValidationErrorString(errors);
+				log.LogError($"    - Validated: No - {validationResultString}");
+				string source = jsonDataToValidate.EDI_SOURCE;
+				ArrayList al = EdiErrorsService.BuildErrorVariableArrayList(source, validationResultString);
+				string customErrorMessage = EdiErrorsService.BuildExceptionMessageString(null, "YR42", al);
+				throw new Exception(customErrorMessage);
+			}
 		}
 
 		/// <summary>
