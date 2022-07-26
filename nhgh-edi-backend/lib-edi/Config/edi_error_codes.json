@@ -56,7 +56,7 @@
 		},
 		"9L96": {
 			"error-code": "9L96",
-			"error-message": "Unable download text for blob {0} in container {1}",
+			"error-message": "Unable download text for blob '{0}' in container {1}",
 			"error-source": "EMS Azure Blob Storage",
 			"error-mitigation": null
 		},
@@ -236,13 +236,25 @@
 		},
 		"FY84": {
 			"error-code": "FY84",
-			"error-message": "An exception was thrown while validating the log json structure",
+			"error-message": "An exception was thrown while validating the JSON structure",
+			"error-source": "EMS Transform Service",
+			"error-mitigation": null
+		},
+		"4VN5": {
+			"error-code": "4VN5",
+			"error-message": "An exception was thrown while validating the JSON structure",
 			"error-source": "EMS Transform Service",
 			"error-mitigation": null
 		},
 		"R85Y": {
 			"error-code": "R85Y",
-			"error-message": "Log {0} failed json schema validation for the following reason: {1}",
+			"error-message": "JSON data file {0} failed json schema validation for the following reason: {1}",
+			"error-source": "EMS Transform Service",
+			"error-mitigation": null
+		},
+		"YR42": {
+			"error-code": "YR42",
+			"error-message": "JSON data file {0} failed json schema validation for the following reason: {1}",
 			"error-source": "EMS Transform Service",
 			"error-mitigation": null
 		},
@@ -326,13 +338,13 @@
 		},
 		"E2N8": {
 			"error-code": "E2N8",
-			"error-message": "An exception was thrown while applying time correction logic to file {0}",
+			"error-message": "An exception was thrown while transforming file package {0}",
 			"error-source": "EMS Data Transformation",
 			"error-mitigation": null
 		},
 		"K79T": {
 			"error-code": "K79T",
-			"error-message": "An exception was thrown while applying time correction logic to MetaFridge report files",
+			"error-message": "An exception was thrown while transforming MetaFridge file package",
 			"error-source": "EMS Data Transformation",
 			"error-mitigation": null
 		},
