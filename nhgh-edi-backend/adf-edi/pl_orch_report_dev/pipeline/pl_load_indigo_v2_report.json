@@ -822,6 +822,72 @@
                                 "enableStaging": false,
                                 "translator": {
                                     "type": "TabularTranslator",
+                                    "mappings": [
+                                        {
+                                            "source": {
+                                                "name": "ESER",
+                                                "type": "String",
+                                                "physicalType": "String"
+                                            },
+                                            "sink": {
+                                                "name": "ESER",
+                                                "type": "String",
+                                                "physicalType": "varchar"
+                                            }
+                                        },
+                                        {
+                                            "source": {
+                                                "name": "zgps_utc",
+                                                "type": "String",
+                                                "physicalType": "String"
+                                            },
+                                            "sink": {
+                                                "name": "zgps_utc",
+                                                "type": "DateTime",
+                                                "physicalType": "datetime2"
+                                            }
+                                        },
+                                        {
+                                            "source": {
+                                                "name": "zgps_ang",
+                                                "type": "String",
+                                                "physicalType": "String"
+                                            },
+                                            "sink": {
+                                                "name": "zgps_ang",
+                                                "type": "Int16",
+                                                "physicalType": "smallint"
+                                            }
+                                        },
+                                        {
+                                            "source": {
+                                                "name": "zgps_lat",
+                                                "type": "String",
+                                                "physicalType": "String"
+                                            },
+                                            "sink": {
+                                                "name": "zgps_lat",
+                                                "type": "Decimal",
+                                                "physicalType": "decimal",
+                                                "scale": 5,
+                                                "precision": 8
+                                            }
+                                        },
+                                        {
+                                            "source": {
+                                                "name": "zgps_lng",
+                                                "type": "String",
+                                                "physicalType": "String"
+                                            },
+                                            "sink": {
+                                                "name": "zgps_lng",
+                                                "type": "Decimal",
+                                                "physicalType": "decimal",
+                                                "scale": 5,
+                                                "precision": 8
+                                            }
+                                        }
+                                    ],
                                     "typeConversion": true,
                                     "typeConversionSettings": {
                                         "allowDataTruncation": true,
@@ -867,7 +933,7 @@
             "name": "Load"
         },
         "annotations": [],
-        "lastPublishTime": "2022-07-07T19:17:18Z"
+        "lastPublishTime": "2022-07-22T22:14:48Z"
     },
     "type": "Microsoft.DataFactory/factories/pipelines"
 }
