@@ -1,18 +1,18 @@
 {
-    "now": "2022-07-07T22:02:12.689Z",
-    "perfNow": 20688852.399999857,
-    "diagnosticCorrelation": "1b2298d3-af80-4fe9-9bae-fc7e375141eb",
+    "now": "2022-08-26T21:53:16.601Z",
+    "perfNow": 8363929.899999976,
+    "diagnosticCorrelation": "79fae57c-54a1-48ff-9a4a-8be13e8688a6",
     "source": "DownloadSupportFiles",
     "environment": {
         "productName": "adf",
-        "buildVersion": "1.0.070122.18",
+        "buildVersion": "1.0.082322.3",
         "environmentType": 3,
         "resourceName": "adf-edi-develop",
         "resourceRegion": "westus2",
         "resourceGroup": "rg-edi-dev",
         "subscriptionId": "2972ffd4-e5b4-4b98-87b9-360c084c2959",
-        "sessionId": "PW1yJ",
-        "operationId": "topMC",
+        "sessionId": "mB5ZO",
+        "operationId": "uyeda",
         "gitType": "live"
     },
     "additionalInfo": {
