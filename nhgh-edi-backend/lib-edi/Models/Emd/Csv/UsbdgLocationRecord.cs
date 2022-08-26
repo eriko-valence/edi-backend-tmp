@@ -25,7 +25,7 @@ namespace lib_edi.Models.Emd.Csv
         public string ZGPS_LAT { get; set; }
         [Name("zgps_lng")]
         public string ZGPS_LNG { get; set; }
-        [Name("usb_id")]
-        public string USB_ID { get; set; }
+        //[Name("usb_id")]
+        //public string USB_ID { get; set; }
     }
 }
