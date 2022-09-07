@@ -140,7 +140,7 @@ namespace fa_adf_transform_indigo_v2
 
                     log.LogInformation(" - Send http response message");
                     log.LogInformation("- Log successfully completed event to app insights");
-                    IndigoDataTransformService.LogEmsTransformSucceededEventToAppInsights(payload.FileName, log);
+                    IndigoDataTransformService.LogEmsTransformSucceededEventToAppInsights(payload.FileName, DataLoggerTypeEnum.Name.INDIGO_V2, log);
                     log.LogInformation(" - SUCCESS");
 
                     return new OkObjectResult(responseBody);
@@ -180,7 +180,7 @@ namespace fa_adf_transform_indigo_v2
 
                     log.LogInformation(" - Send http response message");
                     log.LogInformation("- Log successfully completed event to app insights");
-                    IndigoDataTransformService.LogEmsTransformSucceededEventToAppInsights(payload.FileName, log);
+                    IndigoDataTransformService.LogEmsTransformSucceededEventToAppInsights(payload.FileName, DataLoggerTypeEnum.Name.NO_LOGGER, log);
                     log.LogInformation(" - SUCCESS");
 
                     return new OkObjectResult(responseBody);
