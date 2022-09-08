@@ -139,6 +139,9 @@ namespace fa_ccdx_provider
 
                             await AzureStorageBlobService.UploadBlobToContainerUsingSdk(bytes, storageAccountConnectionString, blobContainerName, reportFileName);
                             log.LogInformation($"- [ccdx-provider->run]: Confirmed. Telemetry file {reportFileName} moved to container {blobContainerName}");
+                            log.LogInformation($"- [ccdx-provider->run]: Cleaning up .... deleting telemetry file {ccBlobInputName}");
+                            await AzureStorageBlobService.DeleteBlob(storageConnectionString, inputContainerName, ccBlobInputName);
+                            log.LogInformation($"- [ccdx-provider->run]: DONE");
                         }
                     }
                     else
