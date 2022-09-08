@@ -587,7 +587,6 @@ namespace lib_edi.Services.CceDevice
             PipelineEvent pipelineEvent = new PipelineEvent();
             pipelineEvent.EventName = PipelineEventEnum.Name.STARTED;
             pipelineEvent.StageName = PipelineStageEnum.Name.ADF_TRANSFORM;
-            pipelineEvent.LoggerType = DataLoggerTypeEnum.Name.INDIGO_V2;
             pipelineEvent.ReportFileName = reportFileName;
             Dictionary<string, string> customProps = AzureAppInsightsService.BuildCustomPropertiesObject(pipelineEvent);
             AzureAppInsightsService.LogEntry(PipelineStageEnum.Name.ADF_TRANSFORM, customProps, log);
