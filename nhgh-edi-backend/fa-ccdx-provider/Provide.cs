@@ -67,12 +67,12 @@ namespace fa_ccdx_provider
                 log.LogInformation($"- [ccdx-provider->run]: Validate incoming blob file extension");
                 string fileExtension = Path.GetExtension(ccBlobInputName);
                 log.LogInformation($"- [ccdx-provider->run]: File extension: {fileExtension}");
-                // NHGH-1711 Virtual directory creation events can caus a blob trigger. However, These virtual creation
-                // events are not 'PutBlob' events, which is required to track a file package through the EDI
-                // pipeline. This file extension check filters out the virtual folder creation noise. 
+                // NHGH-1711 (2022.09.12) Virtual directory creation events can cause a blob trigger. However,
+                // These virtual creation events are not 'PutBlob' events, which is required to track a file
+                // package through the EDI pipeline. This file extension check filters out the virtual folder
+                // creation noise. 
                 if (CcdxService.IsPathExtensionSupported(ccBlobInputName))
                 {
-                    
                     string loggerType = CcdxService.GetDataLoggerTypeFromBlobPath(ccBlobInputName);
                     log.LogInformation($"- [ccdx-provider->run]: Extracted logger type: {loggerType}");
                     log.LogInformation($"- [ccdx-provider->run]: Validate incoming blob originated from supported data logger");
