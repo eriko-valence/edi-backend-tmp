@@ -55,54 +55,46 @@ namespace fa_ccdx_provider
             ILogger log)
         {
             string reportFileName = null;
-            string loggerType = null;
             try
             {
                 string storageConnectionString = Environment.GetEnvironmentVariable("AZURE_STORAGE_INPUT_CONNECTION_STRING");
                 string inputContainerName = Environment.GetEnvironmentVariable("AZURE_STORAGE_BLOB_CONTAINER_NAME_INPUT");
                 log.LogInformation($"- [ccdx-provider->run]: Received telemetry file {ccBlobInputName}");
-                reportFileName = Path.GetFileName(ccBlobInputName);
                 log.LogInformation($"- [ccdx-provider->run]: Track ccdx provider started event (app insights)");
+                reportFileName = Path.GetFileName(ccBlobInputName);
                 CcdxService.LogCcdxProviderStartedEventToAppInsights(reportFileName, log);
                 
-                loggerType = CcdxService.GetDataLoggerTypeFromBlobPath(ccBlobInputName);
-                log.LogInformation($"- [ccdx-provider->run]: Extracted logger type: {loggerType}");
-
-                log.LogInformation($"- [ccdx-provider->run]: Validate incoming blob originated from supported data logger");
-                if (CcdxService.ValidateLoggerType(loggerType))
+                log.LogInformation($"- [ccdx-provider->run]: Validate incoming blob file extension");
+                string fileExtension = Path.GetExtension(ccBlobInputName);
+                log.LogInformation($"- [ccdx-provider->run]: File extension: {fileExtension}");
+                if (CcdxService.IsPathExtensionSupported(ccBlobInputName))
                 {
-                    log.LogInformation($"- [ccdx-provider->run]: Validate incoming blob file extension");
-                    string fileExtension = Path.GetExtension(ccBlobInputName);
-                    log.LogInformation($"- [ccdx-provider->run]: File extension: {fileExtension}");
-                    if (CcdxService.IsPathExtensionSupported(ccBlobInputName))
+                    
+                    string loggerType = CcdxService.GetDataLoggerTypeFromBlobPath(ccBlobInputName);
+                    log.LogInformation($"- [ccdx-provider->run]: Extracted logger type: {loggerType}");
+                    log.LogInformation($"- [ccdx-provider->run]: Validate incoming blob originated from supported data logger");
+                    if (CcdxService.ValidateLoggerType(loggerType))
                     {
                         log.LogInformation($"- [ccdx-provider->run]: Confirmed. Blob originated from supported data logger '{loggerType}'");
                         var sr = new StreamReader(ccBlobInput);
                         var body = await sr.ReadToEndAsync();
-
                         string storageConnectionStringConfig = Environment.GetEnvironmentVariable("AZURE_STORAGE_INPUT_CONNECTION_STRING");
-
                         string blobContainerNameConfig = Environment.GetEnvironmentVariable("AZURE_STORAGE_BLOB_CONTAINER_NAME_CONFIG");
                         string fileCcdxPublisherSampleHeaderValues = Environment.GetEnvironmentVariable("CCDX_PUBLISHER_HEADER_SAMPLE_VALUES_FILENAME");
-
                         log.LogInformation($"- [ccdx-provider->run]: Retrieve sample ccdx provider metadata headers from blob storage");
                         string blobText = await AzureStorageBlobService.DownloadBlobTextAsync(storageConnectionStringConfig, blobContainerNameConfig, fileCcdxPublisherSampleHeaderValues);
                         CcdxProviderSampleHeadersDto sampleHeaders = JsonConvert.DeserializeObject<CcdxProviderSampleHeadersDto>(blobText);
-
                         log.LogInformation($"- [ccdx-provider->run]: Prepare ccdx provider http request with multipart content");
                         string ccdxHttpEndpoint = Environment.GetEnvironmentVariable("CCDX_HTTP_MULTIPART_FORM_DATA_FILE_ENDPOINT");
                         MultipartFormDataContent multipartFormDataByteArrayContent = HttpService.BuildMultipartFormDataByteArrayContent(ccBlobInput, "file", ccBlobInputName);
                         HttpRequestMessage requestMessage = CcdxService.BuildCcdxHttpMultipartFormDataRequestMessage(HttpMethod.Post, ccdxHttpEndpoint, multipartFormDataByteArrayContent, sampleHeaders, ccBlobInputName, log);
-
                         log.LogInformation($"- [ccdx-provider->run]: Request header metadata: ");
                         log.LogInformation($"- [ccdx-provider->run]:   ce-id: {HttpService.GetHeaderStringValue(requestMessage, "ce-id")}");
                         log.LogInformation($"- [ccdx-provider->run]:   ce-type: {HttpService.GetHeaderStringValue(requestMessage, "ce-type")}");
                         log.LogInformation($"- [ccdx-provider->run]:   ce-time: {HttpService.GetHeaderStringValue(requestMessage, "ce-time")}");
-
                         // Send the http request
                         log.LogInformation($"- [ccdx-provider->run]: Send the http request to {ccdxHttpEndpoint}");
                         HttpStatusCode httpStatusCode = await HttpService.SendHttpRequestMessage(requestMessage);
-
                         if (httpStatusCode == HttpStatusCode.OK)
                         {
                             // USBDG-357
@@ -130,13 +122,11 @@ namespace fa_ccdx_provider
                             //Scope of holding container: To be used only for situations with CCDX transmission.
                             log.LogInformation($"- [ccdx-provider->run]: Move failed telemetry file {reportFileName} to holding container {blobContainerName} for further investigation");
                             byte[] bytes = StreamService.ReadToEnd(ccBlobInput);
-
                             // EDI architecture: "Container where files are placed when there is a problem sending to CCDX via the provider. Examples 
                             // includes files that are too large (>5MB), or when the backend has a problem such as Kafka brokers unavailable. This 
                             // condition is typically indicated by a 5xx HTTP response from the CCDX POST by the provider. The purpose of this container 
                             // is to allow for further analysis and troubleshooting. No retry logic is currently implemented for files in this container, 
                             // but may be added in the future."
-
                             await AzureStorageBlobService.UploadBlobToContainerUsingSdk(bytes, storageAccountConnectionString, blobContainerName, reportFileName);
                             log.LogInformation($"- [ccdx-provider->run]: Confirmed. Telemetry file {reportFileName} moved to container {blobContainerName}");
                             log.LogInformation($"- [ccdx-provider->run]: Cleaning up .... deleting telemetry file {ccBlobInputName}");
@@ -146,17 +136,17 @@ namespace fa_ccdx_provider
                     }
                     else
                     {
-                        log.LogError($"- [ccdx-consumer->run]: Failed to upload blob {ccBlobInputName} to container {inputContainerName} due an unsupported attachment extension");
-                        CcdxService.LogCcdxProviderUnsupportedAttachmentExtensionEventToAppInsights(reportFileName, log);
+                        log.LogError($"- [ccdx-provider->run]: Incoming telemetry file {reportFileName} is not from a supported data logger");
+                        log.LogInformation($"- [ccdx-provider->run]: Track ccdx provider unsupported logger event (app insights)");
+                        CcdxService.LogCcdxProviderUnsupportedLoggerEventToAppInsights(reportFileName, loggerType, log);
                     }
                 }
                 else
                 {
-                    log.LogError($"- [ccdx-provider->run]: Incoming telemetry file {reportFileName} is not from a supported data logger");
-                    log.LogInformation($"- [ccdx-provider->run]: Track ccdx provider unsupported logger event (app insights)");
-                    CcdxService.LogCcdxProviderUnsupportedLoggerEventToAppInsights(reportFileName, loggerType, log);
+                    log.LogInformation($"- [ccdx-consumer->run]: Failed to upload blob {ccBlobInputName} to container {inputContainerName}. Reason: Unsupported attachment extension");
+                    log.LogError($"- [ccdx-consumer->run]: Failed to upload blob {ccBlobInputName} to container {inputContainerName} due an unsupported attachment extension");
+                    //CcdxService.LogCcdxProviderUnsupportedAttachmentExtensionEventToAppInsights(reportFileName, log);
                 }
-
             }
             catch (Exception e)
             {

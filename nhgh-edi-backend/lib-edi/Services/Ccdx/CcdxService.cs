@@ -5,6 +5,7 @@ using lib_edi.Models.Enums.Emd;
 using lib_edi.Services.Azure;
 using lib_edi.Services.Errors;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -287,10 +288,18 @@ namespace lib_edi.Services.Ccdx
 		public static bool IsPathExtensionSupported(string blobName)
 		{
 			bool result = false;
-			string fileExtension = Path.GetExtension(blobName);
-			if (Path.GetExtension(blobName) == ".gz")
+			try
 			{
-				result = true;
+                if (blobName != null)
+                {
+                    if (Path.GetExtension(blobName) == ".gz")
+                    {
+                        result = true;
+                    }
+                }
+            } catch (Exception)
+			{
+				//default to a result of false
 			}
 			return result;
 		}
@@ -392,7 +401,7 @@ namespace lib_edi.Services.Ccdx
 			PipelineEvent pipelineEvent = new PipelineEvent();
 			pipelineEvent.EventName = PipelineEventEnum.Name.STARTED;
 			pipelineEvent.StageName = PipelineStageEnum.Name.CCDX_PROVIDER;
-			pipelineEvent.ReportFileName = reportFileName;
+			pipelineEvent.ReportFileName = reportFileName ?? "";
 			Dictionary<string, string> customProps = AzureAppInsightsService.BuildCustomPropertiesObject(pipelineEvent);
 			AzureAppInsightsService.LogEntry(PipelineStageEnum.Name.CCDX_PROVIDER, customProps, log);
 		}
@@ -407,7 +416,7 @@ namespace lib_edi.Services.Ccdx
 			PipelineEvent pipelineEvent = new PipelineEvent();
 			pipelineEvent.EventName = PipelineEventEnum.Name.SUCCEEDED;
 			pipelineEvent.StageName = PipelineStageEnum.Name.CCDX_PROVIDER;
-			pipelineEvent.ReportFileName = reportFileName;
+			pipelineEvent.ReportFileName = reportFileName ?? "";
 			Dictionary<string, string> customPropsEnd = AzureAppInsightsService.BuildCustomPropertiesObject(pipelineEvent);
 			AzureAppInsightsService.LogEntry(PipelineStageEnum.Name.CCDX_PROVIDER, customPropsEnd, log);
 		}
@@ -425,7 +434,7 @@ namespace lib_edi.Services.Ccdx
 			pipelineEvent.StageName = PipelineStageEnum.Name.CCDX_PROVIDER;
 			pipelineEvent.PipelineFailureType = PipelineFailureTypeEnum.Name.ERROR;
 			pipelineEvent.PipelineFailureReason = PipelineFailureReasonEnum.Name.HTTP_STATUS_CODE_ERROR;
-			pipelineEvent.ReportFileName = reportFileName;
+			pipelineEvent.ReportFileName = reportFileName ?? "";
 
 			Dictionary<string, string> customProps = AzureAppInsightsService.BuildCustomPropertiesObject(pipelineEvent);
 			AzureAppInsightsService.LogEntry(PipelineStageEnum.Name.CCDX_PROVIDER, customProps, log);
@@ -443,7 +452,7 @@ namespace lib_edi.Services.Ccdx
 			pipelineEvent.StageName = PipelineStageEnum.Name.CCDX_PROVIDER;
 			pipelineEvent.PipelineFailureType = PipelineFailureTypeEnum.Name.VALIDATION;
 			pipelineEvent.PipelineFailureReason = PipelineFailureReasonEnum.Name.UNSUPPORTED_DATA_LOGGER;
-			pipelineEvent.ReportFileName = reportFileName;
+			pipelineEvent.ReportFileName = reportFileName ?? "";
 			pipelineEvent.ErrorMessage = $"Unsupported logger type '{loggerType}'";
 			Dictionary<string, string> customProps = AzureAppInsightsService.BuildCustomPropertiesObject(pipelineEvent);
 			AzureAppInsightsService.LogEntry(PipelineStageEnum.Name.CCDX_PROVIDER, customProps, log);
@@ -464,7 +473,7 @@ namespace lib_edi.Services.Ccdx
 			pipelineEvent.StageName = PipelineStageEnum.Name.CCDX_PROVIDER;
 			pipelineEvent.PipelineFailureType = PipelineFailureTypeEnum.Name.ERROR;
 			pipelineEvent.PipelineFailureReason = PipelineFailureReasonEnum.Name.UNKNOWN_EXCEPTION;
-			pipelineEvent.ReportFileName = reportFileName;
+			pipelineEvent.ReportFileName = reportFileName ?? "";
 			pipelineEvent.ErrorCode = errorCode;
 			pipelineEvent.ErrorMessage = errorMessage;
 			pipelineEvent.ExceptionMessage = e.Message;
@@ -483,7 +492,7 @@ namespace lib_edi.Services.Ccdx
 			PipelineEvent pipelineEvent = new PipelineEvent();
 			pipelineEvent.EventName = PipelineEventEnum.Name.STARTED;
 			pipelineEvent.StageName = PipelineStageEnum.Name.CCDX_CONSUMER;
-			pipelineEvent.ReportFileName = reportFileName;
+			pipelineEvent.ReportFileName = reportFileName ?? "";
 			Dictionary<string, string> customProps = AzureAppInsightsService.BuildCustomPropertiesObject(pipelineEvent);
 			AzureAppInsightsService.LogEntry(PipelineStageEnum.Name.CCDX_CONSUMER, customProps, log);
 		}
@@ -498,7 +507,7 @@ namespace lib_edi.Services.Ccdx
 			PipelineEvent pipelineEvent = new PipelineEvent();
 			pipelineEvent.EventName = PipelineEventEnum.Name.SUCCEEDED;
 			pipelineEvent.StageName = PipelineStageEnum.Name.CCDX_CONSUMER;
-			pipelineEvent.ReportFileName = reportFileName;
+			pipelineEvent.ReportFileName = reportFileName ?? "";
 			Dictionary<string, string> customProp = AzureAppInsightsService.BuildCustomPropertiesObject(pipelineEvent);
 			AzureAppInsightsService.LogEntry(PipelineStageEnum.Name.CCDX_CONSUMER, customProp, log);
 		}
@@ -515,7 +524,7 @@ namespace lib_edi.Services.Ccdx
 			pipelineEvent.StageName = PipelineStageEnum.Name.CCDX_CONSUMER;
 			pipelineEvent.PipelineFailureType = PipelineFailureTypeEnum.Name.VALIDATION;
 			pipelineEvent.PipelineFailureReason = PipelineFailureReasonEnum.Name.MISSING_CE_SUBJECT_HEADER;
-			pipelineEvent.ReportFileName = reportFileName;
+			pipelineEvent.ReportFileName = reportFileName ?? "";
 			Dictionary<string, string> customProps = AzureAppInsightsService.BuildCustomPropertiesObject(pipelineEvent);
 			AzureAppInsightsService.LogEntry(PipelineStageEnum.Name.CCDX_CONSUMER, customProps, log);
 		}
@@ -532,7 +541,7 @@ namespace lib_edi.Services.Ccdx
 			pipelineEvent.StageName = PipelineStageEnum.Name.CCDX_CONSUMER;
 			pipelineEvent.PipelineFailureType = PipelineFailureTypeEnum.Name.VALIDATION;
 			pipelineEvent.PipelineFailureReason = PipelineFailureReasonEnum.Name.UNSUPPORTED_EXTENSION;
-			pipelineEvent.ReportFileName = reportFileName;
+			pipelineEvent.ReportFileName = reportFileName ?? "";
 			Dictionary<string, string> customProps = AzureAppInsightsService.BuildCustomPropertiesObject(pipelineEvent);
 			AzureAppInsightsService.LogEntry(PipelineStageEnum.Name.CCDX_CONSUMER, customProps, log);
 		}
@@ -549,7 +558,7 @@ namespace lib_edi.Services.Ccdx
 			pipelineEvent.StageName = PipelineStageEnum.Name.CCDX_PROVIDER;
 			pipelineEvent.PipelineFailureType = PipelineFailureTypeEnum.Name.VALIDATION;
 			pipelineEvent.PipelineFailureReason = PipelineFailureReasonEnum.Name.UNSUPPORTED_EXTENSION;
-			pipelineEvent.ReportFileName = reportFileName;
+			pipelineEvent.ReportFileName = reportFileName ?? "";
 			Dictionary<string, string> customProps = AzureAppInsightsService.BuildCustomPropertiesObject(pipelineEvent);
 			AzureAppInsightsService.LogEntry(PipelineStageEnum.Name.CCDX_PROVIDER, customProps, log);
 		}
@@ -569,7 +578,7 @@ namespace lib_edi.Services.Ccdx
 			pipelineEvent.StageName = PipelineStageEnum.Name.CCDX_CONSUMER;
 			pipelineEvent.PipelineFailureType = PipelineFailureTypeEnum.Name.ERROR;
 			pipelineEvent.PipelineFailureReason = PipelineFailureReasonEnum.Name.UNKNOWN_EXCEPTION;
-			pipelineEvent.ReportFileName = reportFileName;
+			pipelineEvent.ReportFileName = reportFileName ?? "";
 			pipelineEvent.ErrorCode = errorCode;
 			pipelineEvent.ErrorMessage = errorMessage;
 			if (e != null)
@@ -592,7 +601,7 @@ namespace lib_edi.Services.Ccdx
 			pipelineEvent.EventName = PipelineEventEnum.Name.SUCCEEDED;
 			pipelineEvent.StageName = PipelineStageEnum.Name.ADF_TRANSFORM;
 			pipelineEvent.LoggerType = DataLoggerTypeEnum.Name.USBDG_DATASIM;
-			pipelineEvent.ReportFileName = reportFileName;
+			pipelineEvent.ReportFileName = reportFileName ?? "";
 			Dictionary<string, string> customProps = AzureAppInsightsService.BuildCustomPropertiesObject(pipelineEvent);
 			AzureAppInsightsService.LogEntry(PipelineStageEnum.Name.ADF_TRANSFORM, customProps, log);
 		}
@@ -608,7 +617,7 @@ namespace lib_edi.Services.Ccdx
 			pipelineEvent.EventName = PipelineEventEnum.Name.STARTED;
 			pipelineEvent.StageName = PipelineStageEnum.Name.ADF_TRANSFORM;
 			pipelineEvent.LoggerType = DataLoggerTypeEnum.Name.CFD50;
-			pipelineEvent.ReportFileName = reportFileName;
+			pipelineEvent.ReportFileName = reportFileName ?? "";
 			Dictionary<string, string> customProps = AzureAppInsightsService.BuildCustomPropertiesObject(pipelineEvent);
 			AzureAppInsightsService.LogEntry(PipelineStageEnum.Name.ADF_TRANSFORM, customProps, log);
 		}
@@ -624,7 +633,7 @@ namespace lib_edi.Services.Ccdx
 			pipelineEvent.EventName = PipelineEventEnum.Name.SUCCEEDED;
 			pipelineEvent.StageName = PipelineStageEnum.Name.ADF_TRANSFORM;
 			pipelineEvent.LoggerType = DataLoggerTypeEnum.Name.CFD50;
-			pipelineEvent.ReportFileName = reportFileName;
+			pipelineEvent.ReportFileName = reportFileName ?? "";
 			Dictionary<string, string> customProps = AzureAppInsightsService.BuildCustomPropertiesObject(pipelineEvent);
 			AzureAppInsightsService.LogEntry(PipelineStageEnum.Name.ADF_TRANSFORM, customProps, log);
 		}
@@ -645,7 +654,7 @@ namespace lib_edi.Services.Ccdx
 			pipelineEvent.LoggerType = DataLoggerTypeEnum.Name.CFD50;
 			pipelineEvent.PipelineFailureType = PipelineFailureTypeEnum.Name.ERROR;
 			pipelineEvent.PipelineFailureReason = PipelineFailureReasonEnum.Name.UNKNOWN_EXCEPTION;
-			pipelineEvent.ReportFileName = reportFileName;
+			pipelineEvent.ReportFileName = reportFileName ?? "";
 			pipelineEvent.ErrorCode = errorCode;
 			pipelineEvent.ErrorMessage = errorMessage;
 			if (e != null)
