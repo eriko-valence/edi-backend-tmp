@@ -15,8 +15,8 @@ BEGIN
 	s.[ESER],
 	s.[zutc_now],
 	s.[zcell_info],
-	NULLIF(s.[zbatt_volt], ''),
-	NULLIF(s.[zbatt_chrg], ''),
+	s.[zbatt_volt],
+	s.[zbatt_chrg],
 	s.[TAMB],
 	GETDATE());
 END
