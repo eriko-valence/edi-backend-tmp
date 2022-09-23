@@ -104,5 +104,9 @@
     <Build Include="telemetry\Stored Procedures\getEdiFilePackagePiplelineEvents.sql" />
     <Build Include="telemetry\Stored Procedures\getEdiFilePackagesOverallStats.sql" />
     <Build Include="Security\telemetry.sql" />
+    <Build Include="telemetry\Stored Procedures\uspCreateEdiPipelineEvent.sql" />
+    <Build Include="telemetry\Stored Procedures\uspCreateEdiJobStatusEvent.sql" />
+    <Build Include="telemetry\Stored Procedures\uspCreateEdiFunctionTrace.sql" />
+    <Build Include="telemetry\Stored Procedures\uspCreateEdiAdfPipelineEvent.sql" />
   </ItemGroup>
 </Project>
