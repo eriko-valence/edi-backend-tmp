@@ -65,6 +65,9 @@
     <Folder Include="usbdg\User Defined Types\" />
     <Folder Include="indigo_v2\User Defined Types\" />
     <Folder Include="Security\" />
+    <Folder Include="telemetry\" />
+    <Folder Include="telemetry\Tables\" />
+    <Folder Include="telemetry\Stored Procedures\" />
   </ItemGroup>
   <ItemGroup>
     <Build Include="usbdg\Tables\event.sql" />
@@ -84,5 +87,26 @@
     <Build Include="usbdg\Tables\location.sql" />
     <Build Include="usbdg\Stored Procedures\uspLoadUsbdgLocations.sql" />
     <Build Include="usbdg\User Defined Types\location_type.sql" />
+    <Build Include="telemetry\Tables\EdiPipelineEvents.sql" />
+    <Build Include="telemetry\Tables\EdiJobStatus.sql" />
+    <Build Include="telemetry\Tables\EdiFunctionTrace.sql" />
+    <Build Include="telemetry\Tables\EdiAdfActivity.sql" />
+    <Build Include="telemetry\Stored Procedures\getEdiFunctionTraces.sql" />
+    <Build Include="telemetry\Stored Procedures\getEdiJobFailureCounts.sql" />
+    <Build Include="telemetry\Stored Procedures\getEdiJobStatusEvent.sql" />
+    <Build Include="telemetry\Stored Procedures\getEdiPipelineFailureCounts.sql" />
+    <Build Include="telemetry\Stored Procedures\getEdiPiplelineEvents.sql" />
+    <Build Include="telemetry\Stored Procedures\getFailedEdiFilePackages.sql" />
+    <Build Include="telemetry\Stored Procedures\getEdiAdfActivityEvent.sql" />
+    <Build Include="telemetry\Stored Procedures\getEdiFailedFilePackagesOverTime.sql" />
+    <Build Include="telemetry\Stored Procedures\getEdiFilePackageAdfActivity.sql" />
+    <Build Include="telemetry\Stored Procedures\getEdiFilePackageJobStatus.sql" />
+    <Build Include="telemetry\Stored Procedures\getEdiFilePackagePiplelineEvents.sql" />
+    <Build Include="telemetry\Stored Procedures\getEdiFilePackagesOverallStats.sql" />
+    <Build Include="Security\telemetry.sql" />
+    <Build Include="telemetry\Stored Procedures\uspCreateEdiPipelineEvent.sql" />
+    <Build Include="telemetry\Stored Procedures\uspCreateEdiJobStatusEvent.sql" />
+    <Build Include="telemetry\Stored Procedures\uspCreateEdiFunctionTrace.sql" />
+    <Build Include="telemetry\Stored Procedures\uspCreateEdiAdfPipelineEvent.sql" />
   </ItemGroup>
 </Project>
