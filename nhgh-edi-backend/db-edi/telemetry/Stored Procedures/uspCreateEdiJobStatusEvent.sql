@@ -45,11 +45,28 @@ BEGIN
                     SET @Result = 3 --unsuccessful insert 
             END
 			ELSE
-			    SET @Result = 2 --entry already exists
+            BEGIN
+                UPDATE [telemetry].[EdiJobStatus]
+                SET 
+                    ESER = @ESER, 
+                    BlobTimeStart = @BlobTimeStart,
+                    ProviderSuccessTime = @ProviderSuccessTime,
+                    ConsumerSuccessTime = @ConsumerSuccessTime,
+                    TransformSuccessTime = @TransformSuccessTime,
+                    SQLSuccessTime = @SQLSuccessTime,
+                    DurationSecs = @DurationSecs,
+                    DateUpdated = getdate()
+                WHERE 
+                    FilePackageName = @FilePackageName;
+                IF @@ROWCOUNT = 1
+                    SET @Result = 2 --successful upsert
+                ELSE
+                    SET @Result = 4 --unsuccessful upsert 
+            END
         COMMIT
     END TRY
     BEGIN CATCH
-        SET @Result = 4 --unsuccessful insert (unknown)
+        SET @Result = 5 --unsuccessful insert (unknown)
         ROLLBACK
     END CATCH   
 END
