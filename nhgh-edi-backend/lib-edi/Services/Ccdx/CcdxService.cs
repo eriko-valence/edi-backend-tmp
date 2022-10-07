@@ -359,7 +359,11 @@ namespace lib_edi.Services.Ccdx
 				} else if (loggerType.ToUpper() == DataLoggerTypeEnum.Name.INDIGO_V2.ToString())
 				{
 					result = true;
-				} else if (loggerType.ToUpper() == DataLoggerTypeEnum.Name.NO_LOGGER.ToString())
+				} else if (loggerType.ToUpper() == DataLoggerTypeEnum.Name.SL1.ToString())
+                {
+                    result = true;
+                }
+                else if (loggerType.ToUpper() == DataLoggerTypeEnum.Name.NO_LOGGER.ToString())
 				{
 					result = true;
 				}

@@ -35,12 +35,12 @@ namespace fa_adf_transform_indigo_v2
             [Blob("%AZURE_STORAGE_BLOB_CONTAINER_NAME_EMS_CONFIG%", FileAccess.ReadWrite, Connection = "AZURE_STORAGE_INPUT_CONNECTION_STRING")] CloudBlobContainer emsConfgContainer,
             ILogger log)
         {
-            string logType = DataLoggerTypeEnum.Name.UNKNOWN.ToString();
+            string loggerType = DataLoggerTypeEnum.Name.UNKNOWN.ToString();
             TransformHttpRequestMessageBodyDto payload = null;
 
             try
             {
-                string jsonSchemaBlobNameIndigoV2Log = Environment.GetEnvironmentVariable("EMS_INDIGOV2_JSON_SCHEMA_FILENAME");
+                string jsonSchemaBlobNameEmsCompliantLog = Environment.GetEnvironmentVariable("EMS_JSON_SCHEMA_FILENAME");
                 string jsonSchemaBlobNameUsbdgMetadata = Environment.GetEnvironmentVariable("EMS_USBDG_METADATA_JSON_SCHEMA_FILENAME");
 
                 log.LogInformation($"- Deserialize log transformation http request body");
@@ -53,23 +53,26 @@ namespace fa_adf_transform_indigo_v2
                 IndigoDataTransformService.LogEmsTransformStartedEventToAppInsights(payload.FileName, log);
 
                 string inputBlobPath = $"{inputContainer.Name}/{payload.Path}";
-                log.LogInformation($"- Building input blob path: {inputBlobPath}");
+                log.LogInformation($"- Incoming blob path: {inputBlobPath}");
+
+                loggerType = CcdxService.GetDataLoggerTypeFromBlobPath(payload.Path) ?? DataLoggerTypeEnum.Name.UNKNOWN.ToString();
+                log.LogInformation($"- Detected logger type: '{loggerType}'");
 
                 log.LogInformation($"- Pull all blobs from file package {inputBlobPath}");
                 IEnumerable<IListBlobItem> logDirectoryBlobs = AzureStorageBlobService.GetListOfBlobsInDirectory(inputContainer, payload.Path, inputBlobPath);
 
-                logType = DataTransformService.DetermineFilePackageType(logDirectoryBlobs);
+                //logType = DataTransformService.DetermineFilePackageType(logDirectoryBlobs);
 
-                if (IndigoDataTransformService.IsFilePackageIndigoV2(logDirectoryBlobs))
+                if (IndigoDataTransformService.IsFilePackageEmsCompliant(logDirectoryBlobs))
                 {
-                    log.LogInformation($"- Pull {logType} log blobs from file package");  
+                    log.LogInformation($"- Pull '{loggerType}' log blobs from file package");  
                     List<CloudBlockBlob> usbdgLogBlobs = IndigoDataTransformService.GetLogBlobs(logDirectoryBlobs, inputBlobPath);
 
                     log.LogInformation($"- Pull usbdg report metadata blob from file package");
                     CloudBlockBlob usbdgReportMetadataBlob = UsbdgDataProcessorService.GetReportMetadataBlob(logDirectoryBlobs, inputBlobPath);
 
-                    log.LogInformation($"- Download {logType} log blobs");
-                    List<dynamic> indigoLogFiles = await AzureStorageBlobService.DownloadAndDeserializeJsonBlobs(usbdgLogBlobs, inputContainer, inputBlobPath, log);
+                    log.LogInformation($"- Download '{loggerType}' log blobs");
+                    List<dynamic> emsLogFiles = await AzureStorageBlobService.DownloadAndDeserializeJsonBlobs(usbdgLogBlobs, inputContainer, inputBlobPath, log);
                     log.LogInformation($"- Download usbdg report metadata blob");
                     dynamic usbdgReportMetadata = await AzureStorageBlobService.DownloadAndDeserializeJsonBlob(usbdgReportMetadataBlob, inputContainer, inputBlobPath, log);
 
@@ -82,21 +85,21 @@ namespace fa_adf_transform_indigo_v2
                     log.LogInformation($"- Validate USBDG report metadata blob");
                     dynamic validatedUsbdgReportMetadataFile = await DataTransformService.ValidateJsonObject(emsConfgContainer, usbdgReportMetadata, jsonSchemaBlobNameUsbdgMetadata, log);
 
-                    log.LogInformation($"- Validate {logType} log blobs");
-                    List<dynamic> validatedUsbdgLogFiles = await DataTransformService.ValidateJsonObjects(emsConfgContainer, indigoLogFiles, jsonSchemaBlobNameIndigoV2Log, log);
+                    log.LogInformation($"- Validate '{loggerType}' log blobs");
+                    List<dynamic> validatedUsbdgLogFiles = await DataTransformService.ValidateJsonObjects(emsConfgContainer, emsLogFiles, jsonSchemaBlobNameEmsCompliantLog, log);
 
                     log.LogInformation($"- Start tracking EDI job status");
-                    EdiJob ediJob = UsbdgDataProcessorService.PopulateEdiJobObject(usbdgReportMetadata, indigoLogFiles);
+                    EdiJob ediJob = UsbdgDataProcessorService.PopulateEdiJobObject(usbdgReportMetadata, emsLogFiles);
 
-                    log.LogInformation($"- Map {logType} objects to csv records");
-                    List<IndigoV2EventRecord> usbdbLogCsvRows = DataModelMappingService.MapIndigoV2Events(indigoLogFiles, ediJob);
+                    log.LogInformation($"- Map '{loggerType}' objects to csv records");
+                    List<IndigoV2EventRecord> usbdbLogCsvRows = DataModelMappingService.MapIndigoV2Events(emsLogFiles, ediJob);
                     //List<EdiSinkRecord> indigoLocationCsvRows = DataModelMappingService.MapIndigoV2Locations(usbdgReportMetadata, ediJob);
                     List<EdiSinkRecord> usbdgLocationCsvRows = DataModelMappingService.MapUsbdgLocations(usbdgReportMetadata, ediJob);
                     List<EdiSinkRecord> usbdgDeviceCsvRows = DataModelMappingService.MapUsbdgDevice(usbdgReportMetadata);
                     List<EdiSinkRecord> usbdgEventCsvRows = DataModelMappingService.MapUsbdgEvent(usbdgReportMetadata);
 
 
-                    log.LogInformation($"- Transform {logType} csv records");
+                    log.LogInformation($"- Transform '{loggerType}' csv records");
                     log.LogInformation($"  - Convert relative time to total seconds (all records)");
                     usbdbLogCsvRows = IndigoDataTransformService.ConvertRelativeTimeToTotalSecondsForUsbdgLogRecords(usbdbLogCsvRows);
 
@@ -127,7 +130,7 @@ namespace fa_adf_transform_indigo_v2
                         log.LogInformation($"    - record[1]._ABST (calculated absolute time): {usbdbLogCsvRows[1].EDI_RECORD_ABST_CALC}");
                     }
 
-                    log.LogInformation($"- Write {logType} csv records to azure blob storage");
+                    log.LogInformation($"- Write '{loggerType}' csv records to azure blob storage");
                     List<EdiSinkRecord> sortedUsbdbLogCsvRowsBase = sortedUsbdbLogCsvRows.Cast<EdiSinkRecord>().ToList();
                     string csvOutputBlobName = await IndigoDataTransformService.WriteUsbdgLogRecordsToCsvBlob(ouputContainer, payload, sortedUsbdbLogCsvRowsBase, DataLoggerTypeEnum.Name.INDIGO_V2, log);
                     //string csvOutputBlobName2 = await IndigoDataTransformService.WriteUsbdgLogRecordsToCsvBlob(ouputContainer, payload, indigoLocationCsvRows, DataLoggerTypeEnum.Name.INDIGO_V2, log);
@@ -165,12 +168,12 @@ namespace fa_adf_transform_indigo_v2
                     log.LogInformation($"- Start tracking EDI job status");
                     EdiJob ediJob = UsbdgDataProcessorService.PopulateEdiJobObject(usbdgReportMetadata, null);
 
-                    log.LogInformation($"- Map {logType} objects to csv records");
+                    log.LogInformation($"- Map '{loggerType}' objects to csv records");
                     List<EdiSinkRecord> usbdgLocationCsvRows = DataModelMappingService.MapUsbdgLocations(usbdgReportMetadata, ediJob);
                     List<EdiSinkRecord> usbdgDeviceCsvRows = DataModelMappingService.MapUsbdgDevice(usbdgReportMetadata);
                     List<EdiSinkRecord> usbdgEventCsvRows = DataModelMappingService.MapUsbdgEvent(usbdgReportMetadata);
 
-                    log.LogInformation($"- Write {logType} csv records to azure blob storage");
+                    log.LogInformation($"- Write '{loggerType}' csv records to azure blob storage");
                     string csvOutputBlobName3 = await IndigoDataTransformService.WriteUsbdgLogRecordsToCsvBlob(ouputContainer, payload, usbdgDeviceCsvRows, DataLoggerTypeEnum.Name.NO_LOGGER, log);
                     string csvOutputBlobName4 = await IndigoDataTransformService.WriteUsbdgLogRecordsToCsvBlob(ouputContainer, payload, usbdgEventCsvRows, DataLoggerTypeEnum.Name.NO_LOGGER, log);
                     string csvOutputBlobName5 = await IndigoDataTransformService.WriteUsbdgLogRecordsToCsvBlob(ouputContainer, payload, usbdgLocationCsvRows, DataLoggerTypeEnum.Name.NO_LOGGER, log);
@@ -204,14 +207,14 @@ namespace fa_adf_transform_indigo_v2
                 IndigoDataTransformService.LogEmsTransformErrorEventToAppInsights(payload?.FileName, log, e, innerErrorCode);
                 if (e is BadRequestException)
                 {
-                    string errStr = $"Bad request thrown while validating {logType} transformation request";
+                    string errStr = $"Bad request thrown while validating '{loggerType}' transformation request";
                     log.LogError($"- {errStr}");
                     log.LogError($" - {errorMessage}");
                     return new BadRequestObjectResult(errorMessage);
                 }
                 else
                 {
-                    string errStr = $"Global level exception thrown while processing {logType} logs";
+                    string errStr = $"Global level exception thrown while processing '{loggerType}' logs";
                     log.LogError($"- {errStr}");
                     log.LogError($" - {errorMessage}");
                     var result = new ObjectResult(new { statusCode = 500, currentDate = DateTime.Now, message = errorMessage });

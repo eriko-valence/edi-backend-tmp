@@ -410,7 +410,7 @@ namespace lib_edi.Services.Loggers
                                     propName = prop.Name;
                                     if (propName == "RELT")
                                     {
-                                        Console.WriteLine("debug");
+                                        //Console.WriteLine("debug");
                                     }
                                     propValue = (string)prop.Value;
                                     ObjectManager.SetObjectValue(sinkCsvEventRecord, prop.Name, prop.Value);

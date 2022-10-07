@@ -82,7 +82,7 @@ namespace lib_edi.Services.CceDevice
 				ICollection<ValidationError> errors = configJsonSchema.Validate(emsLogText);
 				if (errors.Count == 0)
 				{
-					log.LogInformation($"    - Validated: Yes");
+					//log.LogInformation($"    - Validated: Yes");
 					validatedJsonObjects.Add(emsLog);
 				}
 				else
@@ -308,7 +308,7 @@ namespace lib_edi.Services.CceDevice
 		{
 			string result = DataLoggerTypeEnum.Name.UNKNOWN.ToString();
 
-			if (IndigoDataTransformService.IsFilePackageIndigoV2(logDirectoryBlobs))
+			if (IndigoDataTransformService.IsFilePackageEmsCompliant(logDirectoryBlobs))
 			{
 				result = DataLoggerTypeEnum.Name.INDIGO_V2.ToString().ToLower();
 			}

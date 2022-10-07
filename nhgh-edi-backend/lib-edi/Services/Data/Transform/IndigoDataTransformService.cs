@@ -49,7 +49,7 @@ namespace lib_edi.Services.CceDevice
 				foreach (CloudBlockBlob logBlob in logDirectoryBlobs)
 				{
                     // NHGH-2362 (2022.06.16) - only add Indigo V2 data files
-                    if (IsFileFromIndigoV2Logger(logBlob.Name))
+                    if (IsFileFromEmsCompliantLogger(logBlob.Name))
 				    {
 				        listBlobs.Add(logBlob);
 				    }
@@ -64,25 +64,25 @@ namespace lib_edi.Services.CceDevice
 		}
 
         /// <summary>
-        /// Checks contents of file package to see if it is an Indigo V2
+        /// Checks contents of file package to see if it is EMS compliant
         /// </summary>
         /// <param name="logDirectoryBlobs">Full list of blobs </param>
         /// <returns>
         /// Return true if yes; false if no
         /// </returns>
-        public static bool IsFilePackageIndigoV2(IEnumerable<IListBlobItem> logDirectoryBlobs)
+        public static bool IsFilePackageEmsCompliant(IEnumerable<IListBlobItem> logDirectoryBlobs)
         {
             bool result = false;
-            bool indigoLogFilesFound = false;
+            bool emsCompliantLogFilesFound = false;
             bool usbdgMetaDataFound = false;
             if (logDirectoryBlobs != null)
             {
                 foreach (CloudBlockBlob logBlob in logDirectoryBlobs)
                 {
                     string fileExtension = Path.GetExtension(logBlob.Name);
-                    if (IsFileFromIndigoV2Logger(logBlob.Name))
+                    if (IsFileFromEmsCompliantLogger(logBlob.Name))
                     {
-                        indigoLogFilesFound = true;
+                        emsCompliantLogFilesFound = true;
                     }
 
                     if (UsbdgDataProcessorService.IsFileUsbdgReportMetadata(logBlob.Name))
@@ -92,7 +92,7 @@ namespace lib_edi.Services.CceDevice
                 }
             }
 
-            if (indigoLogFilesFound && usbdgMetaDataFound)
+            if (emsCompliantLogFilesFound && usbdgMetaDataFound)
             {
                 result = true;
             }
@@ -107,7 +107,7 @@ namespace lib_edi.Services.CceDevice
         /// <returns>
         /// True if yes; False if no
         /// </returns>
-        public static bool IsFileFromIndigoV2Logger(string blobName)
+        public static bool IsFileFromEmsCompliantLogger(string blobName)
         {
             bool result = false;
             if ((Path.GetExtension(blobName) == ".json") && (blobName.Contains("DATA") || blobName.Contains("CURRENT")))
@@ -241,7 +241,6 @@ namespace lib_edi.Services.CceDevice
             try
             {
                 JObject sourceJObject = (JObject)metadata;
-                Console.WriteLine("debug");
                 relativeTime = GetKeyValutFromMetadataRecordsObject("RELT", metadata);
                 TimeSpan ts = XmlConvert.ToTimeSpan(relativeTime); // parse iso 8601 duration string to timespan
                 result = Convert.ToInt32(ts.TotalSeconds);

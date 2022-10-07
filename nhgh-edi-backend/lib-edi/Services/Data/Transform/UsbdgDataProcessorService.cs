@@ -57,16 +57,16 @@ namespace lib_edi.Services.Loggers
 		public static bool IsFilePackageUsbdgOnly(IEnumerable<IListBlobItem> logDirectoryBlobs)
 		{
 			bool result = false;
-			bool indigoLogFilesFound = false;
+			bool emsCompliantLogFilesFound = false;
 			bool usbdgMetaDataFound = false;
 			if (logDirectoryBlobs != null)
 			{
 				foreach (CloudBlockBlob logBlob in logDirectoryBlobs)
 				{
 					string fileExtension = Path.GetExtension(logBlob.Name);
-					if (IndigoDataTransformService.IsFileFromIndigoV2Logger(logBlob.Name))
+					if (IndigoDataTransformService.IsFileFromEmsCompliantLogger(logBlob.Name))
 					{
-						indigoLogFilesFound = true;
+                        emsCompliantLogFilesFound = true;
 					}
 
 					if (IsFileUsbdgReportMetadata(logBlob.Name))
@@ -76,7 +76,7 @@ namespace lib_edi.Services.Loggers
 				}
 			}
 
-			if ((indigoLogFilesFound == false) && usbdgMetaDataFound)
+			if ((emsCompliantLogFilesFound == false) && usbdgMetaDataFound)
 			{
 				result = true;
 			}
