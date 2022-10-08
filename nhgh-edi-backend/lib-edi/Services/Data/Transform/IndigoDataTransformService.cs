@@ -26,6 +26,7 @@ using lib_edi.Models.Enums.Azure.AppInsights;
 using lib_edi.Models.Enums.Emd;
 using lib_edi.Services.Azure;
 using lib_edi.Services.Loggers;
+using lib_edi.Services.Ems;
 
 namespace lib_edi.Services.CceDevice
 {
@@ -49,7 +50,7 @@ namespace lib_edi.Services.CceDevice
 				foreach (CloudBlockBlob logBlob in logDirectoryBlobs)
 				{
                     // NHGH-2362 (2022.06.16) - only add Indigo V2 data files
-                    if (IsFileFromEmsCompliantLogger(logBlob.Name))
+                    if (EmsService.IsFileFromEmsLogger(logBlob.Name))
 				    {
 				        listBlobs.Add(logBlob);
 				    }
@@ -63,59 +64,7 @@ namespace lib_edi.Services.CceDevice
 			return listBlobs;
 		}
 
-        /// <summary>
-        /// Checks contents of file package to see if it is EMS compliant
-        /// </summary>
-        /// <param name="logDirectoryBlobs">Full list of blobs </param>
-        /// <returns>
-        /// Return true if yes; false if no
-        /// </returns>
-        public static bool IsFilePackageEmsCompliant(IEnumerable<IListBlobItem> logDirectoryBlobs)
-        {
-            bool result = false;
-            bool emsCompliantLogFilesFound = false;
-            bool usbdgMetaDataFound = false;
-            if (logDirectoryBlobs != null)
-            {
-                foreach (CloudBlockBlob logBlob in logDirectoryBlobs)
-                {
-                    string fileExtension = Path.GetExtension(logBlob.Name);
-                    if (IsFileFromEmsCompliantLogger(logBlob.Name))
-                    {
-                        emsCompliantLogFilesFound = true;
-                    }
 
-                    if (UsbdgDataProcessorService.IsFileUsbdgReportMetadata(logBlob.Name))
-                    {
-                        usbdgMetaDataFound = true;
-                    }
-                }
-            }
-
-            if (emsCompliantLogFilesFound && usbdgMetaDataFound)
-            {
-                result = true;
-            }
-
-            return result;
-        }
-
-        /// <summary>
-        /// Checks if blob name is from an Indigo logger
-        /// </summary>
-        /// <param name="blobName">blob name </param>
-        /// <returns>
-        /// True if yes; False if no
-        /// </returns>
-        public static bool IsFileFromEmsCompliantLogger(string blobName)
-        {
-            bool result = false;
-            if ((Path.GetExtension(blobName) == ".json") && (blobName.Contains("DATA") || blobName.Contains("CURRENT")))
-            {
-                result = true;
-            }
-            return result;
-        }
 
         /// <summary>
         /// Sets the property value of a specified object with a JToken value
@@ -421,7 +370,7 @@ namespace lib_edi.Services.CceDevice
         /// <returns>
         /// Blob name of USBDG csv formatted log file; Exception (Q25U)
         /// </returns>
-        public static async Task<string> WriteUsbdgLogRecordsToCsvBlob(CloudBlobContainer cloudBlobContainer, TransformHttpRequestMessageBodyDto requestBody, List<EdiSinkRecord> usbdgRecords, DataLoggerTypeEnum.Name loggerTypeName, ILogger log)
+        public static async Task<string> WriteUsbdgLogRecordsToCsvBlob(CloudBlobContainer cloudBlobContainer, TransformHttpRequestMessageBodyDto requestBody, List<EdiSinkRecord> usbdgRecords, string loggerTypeName, ILogger log)
         {
             string blobName = "";
             string loggerType = loggerTypeName.ToString().ToLower();
@@ -441,27 +390,27 @@ namespace lib_edi.Services.CceDevice
                             if (recordType == "IndigoV2EventRecord")
                             {
                                 log.LogInformation($"  - Is record type supported? Yes");
-                                blobName = CcdxService.BuildCuratedCcdxConsumerBlobPath(requestBody.Path, "indigo_v2_event.csv", loggerType);
+                                blobName = DataTransformService.BuildCuratedBlobPath(requestBody.Path, "indigo_v2_event.csv", loggerType);
                             }
                             else if (recordType == "IndigoV2LocationRecord")
                             {
                                 log.LogInformation($"  - Is record type supported? Yes");
-                                blobName = CcdxService.BuildCuratedCcdxConsumerBlobPath(requestBody.Path, "indigo_v2_location.csv", loggerType);
+                                blobName = DataTransformService.BuildCuratedBlobPath(requestBody.Path, "indigo_v2_location.csv", loggerType);
                             }
                             else if (recordType == "UsbdgLocationRecord")
                             {
                                 log.LogInformation($"  - Is record type supported? Yes");
-                                blobName = CcdxService.BuildCuratedCcdxConsumerBlobPath(requestBody.Path, "usbdg_location.csv", loggerType);
+                                blobName = DataTransformService.BuildCuratedBlobPath(requestBody.Path, "usbdg_location.csv", loggerType);
                             }
                             else if (recordType == "UsbdgDeviceRecord")
                             {
                                 log.LogInformation($"  - Is record type supported? Yes");
-                                blobName = CcdxService.BuildCuratedCcdxConsumerBlobPath(requestBody.Path, "usbdg_device.csv", loggerType);
+                                blobName = DataTransformService.BuildCuratedBlobPath(requestBody.Path, "usbdg_device.csv", loggerType);
                             }
                             else if (recordType == "UsbdgEventRecord")
                             {
                                 log.LogInformation($"  - Is record type supported? Yes");
-                                blobName = CcdxService.BuildCuratedCcdxConsumerBlobPath(requestBody.Path, "usbdg_event.csv", loggerType);
+                                blobName = DataTransformService.BuildCuratedBlobPath(requestBody.Path, "usbdg_event.csv", loggerType);
                             }
                             else
                             {

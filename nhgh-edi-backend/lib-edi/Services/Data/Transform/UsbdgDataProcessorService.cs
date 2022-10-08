@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using lib_edi.Services.CceDevice;
 using System.IO;
+using lib_edi.Services.Ems;
 
 namespace lib_edi.Services.Loggers
 {
@@ -64,7 +65,7 @@ namespace lib_edi.Services.Loggers
 				foreach (CloudBlockBlob logBlob in logDirectoryBlobs)
 				{
 					string fileExtension = Path.GetExtension(logBlob.Name);
-					if (IndigoDataTransformService.IsFileFromEmsCompliantLogger(logBlob.Name))
+					if (EmsService.IsFileFromEmsLogger(logBlob.Name))
 					{
                         emsCompliantLogFilesFound = true;
 					}

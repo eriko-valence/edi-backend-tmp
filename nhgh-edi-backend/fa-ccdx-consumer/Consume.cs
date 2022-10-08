@@ -1,6 +1,7 @@
 using lib_edi.Models.Azure.AppInsights;
 using lib_edi.Services.Azure;
 using lib_edi.Services.Ccdx;
+using lib_edi.Services.Ems;
 using lib_edi.Services.Errors;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Kafka;
@@ -97,7 +98,7 @@ namespace fa_ccdx_consumer
 
                     /* Only process messages that are known to this consumer */
                     //if (CcdxService.ValidateCeTypeHeader(headers["ce_type"]))
-                    if (CcdxService.ValidateLoggerType(deviceType))
+                    if (EmsService.ValidateLoggerType(deviceType))
                     {
                         log.LogInformation($"- [ccdx-consumer->run]: Is '{headers["ce_type"]}' a supported cold chain file package? Yes. ");
                         log.LogInformation($"- [ccdx-consumer->run]: Confirmed. Content is cold chain telemetry. Proceed with processing.");

@@ -15,6 +15,7 @@ using lib_edi.Models.Edi;
 using System.Dynamic;
 using System.Collections;
 using lib_edi.Models.Enums.Emd;
+using lib_edi.Services.Ems;
 
 namespace lib_edi.Services.CceDevice
 {
@@ -297,22 +298,31 @@ namespace lib_edi.Services.CceDevice
 			}
 		}
 
-		/// <summary>
-		/// Returns type of file package based on contents of file package
-		/// </summary>
-		/// <param name="logDirectoryBlobs">Full list of blobs </param>
-		/// <returns>
-		/// String value representing file package type
-		/// </returns>
-		public static string DetermineFilePackageType(IEnumerable<IListBlobItem> logDirectoryBlobs)
-		{
-			string result = DataLoggerTypeEnum.Name.UNKNOWN.ToString();
+        /// <summary>
+        /// Builds EDI (EMS Data Integration) ADF (Azure Data Factory) curated blob path a using staged input blob path
+        /// </summary>
+        /// <param name="blobPath">Blob path in string format</param>
+        /// <example>
+        /// ADF uncompresses a telemetry report file at 11:59:59 PM on 2021-10-04 to the staged input blob container:
+        ///   Staged input blob path: "usbdg/2021-10-04/23/0161a794-173a-4843-879b-189ee4c625aa/"
+        /// The ADF data transformation function processes these staged input files and uploads the results 
+        /// to the curated blob container at 12:00:01 AM on 2021-10-05: 
+        ///   Curated output blob path: "usbdg/2021-10-05/00/0161a794-173a-4843-879b-189ee4c625aa/"
+        /// </example>
+        public static string BuildCuratedBlobPath(string blobPath, string blobName, string loggerType)
+        {
+            string curatedBlobPath = null; // indigo_v2/event.csv
 
-			if (IndigoDataTransformService.IsFilePackageEmsCompliant(logDirectoryBlobs))
-			{
-				result = DataLoggerTypeEnum.Name.INDIGO_V2.ToString().ToLower();
-			}
-			return result;
-		}
-	}
+            if (blobPath != null)
+            {
+                if (loggerType != null)
+                {
+                    curatedBlobPath = $"{loggerType}/{blobPath.TrimEnd(new[] { '/' })}/{blobName}";
+                }
+            }
+
+            return curatedBlobPath;
+        }
+
+    }
 }

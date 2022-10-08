@@ -13,6 +13,7 @@ using Microsoft.Azure.WebJobs.Host;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using System.Threading.Tasks;
+using lib_edi.Services.Ems;
 
 namespace fa_ccdx_provider
 {
@@ -76,7 +77,7 @@ namespace fa_ccdx_provider
                     string loggerType = CcdxService.GetDataLoggerTypeFromBlobPath(ccBlobInputName);
                     log.LogInformation($"- [ccdx-provider->run]: Extracted logger type: {loggerType}");
                     log.LogInformation($"- [ccdx-provider->run]: Validate incoming blob originated from supported data logger");
-                    if (CcdxService.ValidateLoggerType(loggerType))
+                    if (EmsService.ValidateLoggerType(loggerType))
                     {
                         log.LogInformation($"- [ccdx-provider->run]: Confirmed. Blob originated from supported data logger '{loggerType}'");
                         var sr = new StreamReader(ccBlobInput);
