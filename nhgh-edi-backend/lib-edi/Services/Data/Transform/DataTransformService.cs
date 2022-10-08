@@ -299,7 +299,7 @@ namespace lib_edi.Services.CceDevice
 		}
 
         /// <summary>
-        /// Builds EDI (EMS Data Integration) ADF (Azure Data Factory) curated blob path a using staged input blob path
+        /// Builds a curated blob path using staged input blob path
         /// </summary>
         /// <param name="blobPath">Blob path in string format</param>
         /// <example>
@@ -311,7 +311,7 @@ namespace lib_edi.Services.CceDevice
         /// </example>
         public static string BuildCuratedBlobPath(string blobPath, string blobName, string loggerType)
         {
-            string curatedBlobPath = null; // indigo_v2/event.csv
+            string curatedBlobPath = null;
 
             if (blobPath != null)
             {
@@ -324,5 +324,21 @@ namespace lib_edi.Services.CceDevice
             return curatedBlobPath;
         }
 
+        /// <summary>
+        /// Builds a curated blob folder path using staged input blob path
+        /// </summary>
+        /// <param name="blobPath">Staged blob path in string format</param>
+        public static string BuildCuratedBlobFolderPath(string blobPath, string loggerType)
+        {
+            string curatedBlobPath = null;
+            if (blobPath != null)
+            {
+                if (loggerType != null)
+                {
+                    curatedBlobPath = $"{loggerType}/{blobPath.TrimEnd(new[] { '/' })}";
+                }
+            }
+            return curatedBlobPath;
+        }
     }
 }

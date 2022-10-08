@@ -139,8 +139,10 @@ namespace fa_adf_transform_indigo_v2
                     string r3 = await IndigoDataTransformService.WriteUsbdgLogRecordsToCsvBlob(ouputContainer, payload, usbdgEventCsvRows, loggerType, log);
                     string r4 = await IndigoDataTransformService.WriteUsbdgLogRecordsToCsvBlob(ouputContainer, payload, usbdgLocationCsvRows, loggerType, log);
 
+                    string blobPathFolderCurated = DataTransformService.BuildCuratedBlobFolderPath(payload.Path, loggerType);
+
                     log.LogInformation(" - Serialize http response body");
-                    string responseBody = DataTransformService.SerializeHttpResponseBody(r1);
+                    string responseBody = DataTransformService.SerializeHttpResponseBody(blobPathFolderCurated);
 
                     log.LogInformation(" - Send http response message");
                     log.LogInformation("- Send successfully completed event to app insights");
