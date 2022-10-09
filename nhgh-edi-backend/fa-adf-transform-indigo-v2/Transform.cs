@@ -95,6 +95,7 @@ namespace fa_adf_transform_indigo_v2
 
                     log.LogInformation($"- Map '{loggerType}' objects to csv records");
                     List<IndigoV2EventRecord> usbdbLogCsvRows = DataModelMappingService.MapIndigoV2Events(emsLogFiles, ediJob);
+                    List<EdiSinkRecord> emsEventCsvRows = DataModelMappingService.MapEmsLoggerEvents(emsLogFiles, loggerType, ediJob);
                     //List<EdiSinkRecord> indigoLocationCsvRows = DataModelMappingService.MapIndigoV2Locations(usbdgReportMetadata, ediJob);
                     List<EdiSinkRecord> usbdgLocationCsvRows = DataModelMappingService.MapUsbdgLocations(usbdgReportMetadata, ediJob);
                     List<EdiSinkRecord> usbdgDeviceCsvRows = DataModelMappingService.MapUsbdgDevice(usbdgReportMetadata);

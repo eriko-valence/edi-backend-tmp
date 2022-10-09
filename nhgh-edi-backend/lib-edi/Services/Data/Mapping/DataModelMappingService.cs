@@ -435,6 +435,101 @@ namespace lib_edi.Services.Loggers
         }
 
         /// <summary>
+        /// Maps raw Indigo V2 data log files to csv event records
+        /// </summary>
+        /// <remarks>
+        /// This mapping denormalizes the logger data file into records ready for CSV serialization.
+        /// </remarks>
+        /// <param name="sourceLogs">A list of deserilized logger data file objects</param>
+        /// <param name="sourceEdiJob">A deserilized EDI job object holding the USBDG serial number and ABST</param>
+        /// <returns>
+        /// A list of CSV compatible Indigo V2 event records, if successful; Exception (HKTJ) if any failures occur 
+        /// </returns>
+        public static List<EdiSinkRecord> MapEmsLoggerEvents(List<dynamic> sourceLogs, string loggerType, EdiJob sourceEdiJob)
+        {
+            string propName = null;
+            string propValue = null;
+            string sourceFile = null;
+
+            try
+            {
+                List<EdiSinkRecord> sinkCsvEventRecords = new();
+
+                foreach (dynamic sourceLog in sourceLogs)
+                {
+                    JObject sourceLogJObject = (JObject)sourceLog;
+                    sourceFile = DataTransformService.GetSourceFile(sourceLogJObject);
+
+
+
+                    // Grab the log header properties from the source log file
+                    var logHeaderObject = new ExpandoObject() as IDictionary<string, Object>;
+                    foreach (KeyValuePair<string, JToken> log1 in sourceLogJObject)
+                    {
+                        if (log1.Value.Type != JTokenType.Array)
+                        {
+                            logHeaderObject.Add(log1.Key, log1.Value);
+                        }
+                    }
+
+                    // Map csv record objects from source log file
+                    foreach (KeyValuePair<string, JToken> log2 in sourceLogJObject)
+                    {
+                        // Load log record properties into csv record object
+                        if (log2.Value.Type == JTokenType.Array && log2.Key == "records")
+                        {
+
+
+                            //ObjectManager.SetObjectValue(ref sinkCsvEventRecord, "RELT", ediJob.RELT);
+                            // Iterate each log record
+                            foreach (JObject z in log2.Value.Children<JObject>())
+                            {
+                                EmsEventRecord sinkCsvEventRecord = CreateNewEmsEventRecord(loggerType);
+                                ObjectManager.SetObjectValue(sinkCsvEventRecord, "ESER", sourceEdiJob.UsbdgMetadata.ESER);
+                                ObjectManager.SetObjectValue(sinkCsvEventRecord, "ALRM", sourceEdiJob.UsbdgMetadata.ALRM);
+
+                                // Load log header properties into csv record object
+                                foreach (var logHeader in logHeaderObject)
+                                {
+                                    ObjectManager.SetObjectValue(sinkCsvEventRecord, logHeader.Key, logHeader.Value);
+                                }
+
+                                // Load each log record property
+                                foreach (JProperty prop in z.Properties())
+                                {
+                                    propName = prop.Name;
+                                    if (propName == "RELT")
+                                    {
+                                        //Console.WriteLine("debug");
+                                    }
+                                    propValue = (string)prop.Value;
+                                    ObjectManager.SetObjectValue(sinkCsvEventRecord, prop.Name, prop.Value);
+                                }
+
+                                sinkCsvEventRecords.Add((EmsEventRecord)sinkCsvEventRecord);
+                            }
+                        }
+                        else
+                        {
+                            // ObjectManager.SetObjectValue(ref sink, log2.Key, log2.Value);
+                        }
+
+                    }
+                }
+                return sinkCsvEventRecords;
+            }
+            catch (Exception e)
+            {
+                throw new Exception(EdiErrorsService.BuildExceptionMessageString(e, "HKTJ", EdiErrorsService.BuildErrorVariableArrayList(propName, propValue, sourceFile)));
+            }
+        }
+
+        public static EmsEventRecord CreateNewEmsEventRecord(string loggerType)
+        {
+            return new Sl1EventRecord();
+        }
+
+        /// <summary>
         /// Maps raw Indigo V2 data log and USBDG metadata files to csv location records
         /// </summary>
         /// <remarks>
