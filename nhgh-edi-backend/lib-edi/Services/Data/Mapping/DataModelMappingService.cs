@@ -5,6 +5,7 @@ using lib_edi.Models.Dto.CceDevice.Csv;
 using lib_edi.Models.Dto.Loggers;
 using lib_edi.Models.Edi;
 using lib_edi.Models.Emd.Csv;
+using lib_edi.Models.Enums.Emd;
 using lib_edi.Models.Loggers.Csv;
 using lib_edi.Services.CceDevice;
 using lib_edi.Services.Errors;
@@ -526,7 +527,17 @@ namespace lib_edi.Services.Loggers
 
         public static EmsEventRecord CreateNewEmsEventRecord(string loggerType)
         {
-            return new Sl1EventRecord();
+            if (loggerType.ToUpper() == DataLoggerTypeEnum.Name.SL1.ToString())
+            {
+                return new Sl1EventRecord();
+            } else if (loggerType.ToUpper() == DataLoggerTypeEnum.Name.INDIGO_V2.ToString())
+            {
+                return new IndigoV2EventRecord();
+            } else
+            {
+                return null;
+            }
+                
         }
 
         /// <summary>
