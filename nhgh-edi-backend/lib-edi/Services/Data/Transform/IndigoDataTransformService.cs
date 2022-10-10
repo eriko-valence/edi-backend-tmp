@@ -157,9 +157,9 @@ namespace lib_edi.Services.CceDevice
         /// <returns>
         /// List of denormalized USBDG records (with the calculated duration seconds); Exception (M34T) otherwise
         /// </returns>
-        public static List<IndigoV2EventRecord> ConvertRelativeTimeToTotalSecondsForUsbdgLogRecords(List<IndigoV2EventRecord> records)
+        public static List<EmsEventRecord> ConvertRelativeTimeToTotalSecondsForUsbdgLogRecords(List<EmsEventRecord> records)
         {
-            foreach (IndigoV2EventRecord record in records)
+            foreach (EmsEventRecord record in records)
             {
                 try
                 {
@@ -257,11 +257,11 @@ namespace lib_edi.Services.CceDevice
         /// <returns>
         /// Absolute timestamp (DateTime) of a Indigo V2 record; Exception (4Q5D) otherwise
         /// </returns>
-        public static List<IndigoV2EventRecord> CalculateAbsoluteTimeForUsbdgRecords(List<IndigoV2EventRecord> records, int reportDurationSeconds, dynamic reportMetadata)
+        public static List<EmsEventRecord> CalculateAbsoluteTimeForUsbdgRecords(List<EmsEventRecord> records, int reportDurationSeconds, dynamic reportMetadata)
         {
             string absoluteTime = GetKeyValutFromMetadataRecordsObject("ABST", reportMetadata);
 
-            foreach (IndigoV2EventRecord record in records)
+            foreach (EmsEventRecord record in records)
             {
                 DateTime? dt = CalculateAbsoluteTimeForUsbdgRecord(absoluteTime, reportDurationSeconds, record.RELT, record.EDI_SOURCE);
                 record.EDI_RECORD_ABST_CALC = dt;

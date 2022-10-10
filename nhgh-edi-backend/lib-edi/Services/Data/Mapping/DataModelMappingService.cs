@@ -445,7 +445,7 @@ namespace lib_edi.Services.Loggers
         /// <returns>
         /// A list of CSV compatible Indigo V2 event records, if successful; Exception (HKTJ) if any failures occur 
         /// </returns>
-        public static List<EdiSinkRecord> MapEmsLoggerEvents(List<dynamic> sourceLogs, string loggerType, EdiJob sourceEdiJob)
+        public static List<EmsEventRecord> MapEmsLoggerEvents(List<dynamic> sourceLogs, string loggerType, EdiJob sourceEdiJob)
         {
             string propName = null;
             string propValue = null;
@@ -453,7 +453,7 @@ namespace lib_edi.Services.Loggers
 
             try
             {
-                List<EdiSinkRecord> sinkCsvEventRecords = new();
+                List<EmsEventRecord> sinkCsvEventRecords = new();
 
                 foreach (dynamic sourceLog in sourceLogs)
                 {
