@@ -439,6 +439,12 @@ namespace lib_edi.Services.CceDevice
                                 log.LogInformation($"  - Write list of indigo v2 event records to the CSV file");
                                 csvWriter.WriteRecords(records);
                             }
+                            else if (recordType == "Sl1EventRecord")
+                            {
+                                List<Sl1EventRecord> records = JsonConvert.DeserializeObject<List<Sl1EventRecord>>(serializedParent);
+                                log.LogInformation($"  - Write list of sl1 event records to the CSV file");
+                                csvWriter.WriteRecords(records);
+                            }
                             else if (recordType == "IndigoV2LocationRecord")
                             {
                                 List<IndigoV2LocationRecord> records = JsonConvert.DeserializeObject<List<IndigoV2LocationRecord>>(serializedParent);
