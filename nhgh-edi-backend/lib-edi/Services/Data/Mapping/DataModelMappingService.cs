@@ -461,8 +461,6 @@ namespace lib_edi.Services.Loggers
                     JObject sourceLogJObject = (JObject)sourceLog;
                     sourceFile = DataTransformService.GetSourceFile(sourceLogJObject);
 
-
-
                     // Grab the log header properties from the source log file
                     var logHeaderObject = new ExpandoObject() as IDictionary<string, Object>;
                     foreach (KeyValuePair<string, JToken> log1 in sourceLogJObject)

@@ -392,6 +392,11 @@ namespace lib_edi.Services.CceDevice
                                 log.LogInformation($"  - Is record type supported? Yes");
                                 blobName = DataTransformService.BuildCuratedBlobPath(requestBody.Path, "indigo_v2_event.csv", loggerType);
                             }
+                            else if (recordType == "Sl1EventRecord")
+                            {
+                                log.LogInformation($"  - Is record type supported? Yes");
+                                blobName = DataTransformService.BuildCuratedBlobPath(requestBody.Path, "sl1_event.csv", loggerType);
+                            }
                             else if (recordType == "IndigoV2LocationRecord")
                             {
                                 log.LogInformation($"  - Is record type supported? Yes");
