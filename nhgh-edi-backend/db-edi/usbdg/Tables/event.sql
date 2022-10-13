@@ -9,9 +9,11 @@
     [zbatt_chrg]    SMALLINT       NULL,
     [DATEADDED]     DATETIME2 (7)  NULL,
     [TAMB]          DECIMAL (3, 1) NULL,
-    PRIMARY KEY CLUSTERED ([zutc_now] ASC, [ESER] ASC),
+    CONSTRAINT [PK_usbdg_event] PRIMARY KEY CLUSTERED ([zutc_now] ASC, [ESER] ASC),
     CONSTRAINT [FK_usbdg_event.ESER] FOREIGN KEY ([ESER]) REFERENCES [usbdg].[device] ([ESER])
 );
+
+
 
 
 
