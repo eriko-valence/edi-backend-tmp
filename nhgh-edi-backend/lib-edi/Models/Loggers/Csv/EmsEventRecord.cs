@@ -33,13 +33,6 @@ namespace lib_edi.Models.Loggers.Csv
 		 */
         [Name("BLOG")]
         public double? BLOG { get; set; }
-        [Name("DORV")]
-        public int? DORV { get; set; }
-
-        [Name("ESER")]
-        public string ESER { get; set; }
-        [Name("HOLD")]
-        public double? HOLD { get; set; }
 
         /*
 		 * LOGGER PROPERTIES
@@ -60,22 +53,29 @@ namespace lib_edi.Models.Loggers.Csv
         public string LSV { get; set; }
 
         /*
-		 * OTHER PROPERTIES
-		 */
-        [Name("RELT")]
-        public string RELT { get; set; }
-        [Name("RTCW")]
-        public string RTCW { get; set; }
-        [Name("TAMB")]
-        public double? TAMB { get; set; }
-        [Name("TVC")]
-        public double? TVC { get; set; }
+         * USBDG REPORT PROPERTIES
+         */
+        [Name("ESER")]
+        public string ESER { get; set; }
         [Name("ZCHRG")]
         public string ZCHRG { get; set; }
         [Name("ZSTATE")]
         public bool? ZSTATE { get; set; }
         [Name("ZVLVD")]
         public bool? ZVLVD { get; set; }
+        [Name("TAMB")]
+        public double? TAMB { get; set; }
+        [Name("RELT")]
+        public string RELT { get; set; }
+        [Name("RTCW")]
+        public string RTCW { get; set; }
+
+        /*
+		 * OTHER PROPERTIES
+		 */
+        [Name("TVC")]
+        public double? TVC { get; set; }
+
         [Name("_RELT_SECS")]
         public int _RELT_SECS { get; set; } // relative time (duration) in seconds (set by azure function)
                                             //public int emd_relt { get; set; }
