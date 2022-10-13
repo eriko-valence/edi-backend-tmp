@@ -109,5 +109,6 @@
     <Build Include="telemetry\Stored Procedures\uspCreateEdiFunctionTrace.sql" />
     <Build Include="telemetry\Stored Procedures\uspCreateEdiAdfPipelineEvent.sql" />
     <Build Include="usbdg\Stored Procedures\getUsbdgDeviceEvents.sql" />
+    <Build Include="usbdg\Stored Procedures\uspUpdateDeviceComments.sql" />
   </ItemGroup>
 </Project>
