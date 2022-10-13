@@ -68,6 +68,10 @@
     <Folder Include="telemetry\" />
     <Folder Include="telemetry\Tables\" />
     <Folder Include="telemetry\Stored Procedures\" />
+    <Folder Include="sl1\" />
+    <Folder Include="sl1\Tables\" />
+    <Folder Include="sl1\Stored Procedures\" />
+    <Folder Include="sl1\User Defined Types\" />
   </ItemGroup>
   <ItemGroup>
     <Build Include="usbdg\Tables\event.sql" />
@@ -110,5 +114,9 @@
     <Build Include="telemetry\Stored Procedures\uspCreateEdiAdfPipelineEvent.sql" />
     <Build Include="usbdg\Stored Procedures\getUsbdgDeviceEvents.sql" />
     <Build Include="usbdg\Stored Procedures\uspUpdateDeviceComments.sql" />
+    <Build Include="sl1\Tables\event.sql" />
+    <Build Include="sl1\Stored Procedures\uspLoadSl1Events.sql" />
+    <Build Include="sl1\User Defined Types\event_type.sql" />
+    <Build Include="Security\sl1.sql" />
   </ItemGroup>
 </Project>
