@@ -52,7 +52,7 @@ namespace fa_adf_transform_indigo_v2
                 HttpService.ValidateHttpRequestBody(payload);
 
                 log.LogInformation("- Log started event to app insights");
-                IndigoDataTransformService.LogEmsTransformStartedEventToAppInsights(payload.FileName, log);
+                DataTransformService.LogEmsTransformStartedEventToAppInsights(payload.FileName, log);
 
                 string inputBlobPath = $"{inputContainer.Name}/{payload.Path}";
                 log.LogInformation($"- Incoming blob path: {inputBlobPath}");
@@ -68,7 +68,7 @@ namespace fa_adf_transform_indigo_v2
                 if (EmsService.IsFilePackageContentsEms(logDirectoryBlobs) && EmsService.ValidateLoggerType(loggerType))
                 {
                     log.LogInformation($"- Pull '{loggerType}' log blobs from file package");  
-                    List<CloudBlockBlob> usbdgLogBlobs = IndigoDataTransformService.GetLogBlobs(logDirectoryBlobs, inputBlobPath);
+                    List<CloudBlockBlob> usbdgLogBlobs = DataTransformService.GetLogBlobs(logDirectoryBlobs, inputBlobPath);
 
                     log.LogInformation($"- Pull usbdg report metadata blob from file package");
                     CloudBlockBlob usbdgReportMetadataBlob = UsbdgDataProcessorService.GetReportMetadataBlob(logDirectoryBlobs, inputBlobPath);
@@ -103,30 +103,30 @@ namespace fa_adf_transform_indigo_v2
 
                     log.LogInformation($"- Transform '{loggerType}' csv records");
                     log.LogInformation($"  - Convert relative time to total seconds (all records)");
-                    emsEventCsvRows = IndigoDataTransformService.ConvertRelativeTimeToTotalSecondsForUsbdgLogRecords(emsEventCsvRows);
+                    emsEventCsvRows = DataTransformService.ConvertRelativeTimeToTotalSecondsForUsbdgLogRecords(emsEventCsvRows);
 
                     log.LogInformation($"  - Sort csv records using relative time total seconds");
                     List<EmsEventRecord> sortedEmsEventCsvRows = emsEventCsvRows.OrderBy(i => (i._RELT_SECS)).ToList();
 
                     log.LogInformation($"  - Convert relative time (e.g., 'P9DT59M53S') to total seconds (report only)");
-                    int DurationSecs = IndigoDataTransformService.ConvertRelativeTimeStringToTotalSeconds(usbdgReportMetadata); // convert timespan to seconds
+                    int DurationSecs = DataTransformService.ConvertRelativeTimeStringToTotalSeconds(usbdgReportMetadata); // convert timespan to seconds
 
                     log.LogInformation($"  - Calculate absolute time for each record using record relative time (e.g., 781193) and report absolute time ('2021-06-20T23:00:02Z')");
-                    sortedEmsEventCsvRows = IndigoDataTransformService.CalculateAbsoluteTimeForUsbdgRecords(sortedEmsEventCsvRows, DurationSecs, usbdgReportMetadata);
+                    sortedEmsEventCsvRows = DataTransformService.CalculateAbsoluteTimeForUsbdgRecords(sortedEmsEventCsvRows, DurationSecs, usbdgReportMetadata);
 
                     log.LogInformation($"  - Cloud upload times: ");
                     log.LogInformation($"    - EMD (source: cellular) : {DateConverter.ConvertIso8601CompliantString(emdAbsoluteTime)} (UTC)");
                     log.LogInformation($"    - Logger (source: real time clock) : {emdRelativeTime ?? ""} (Relative Time)");
-                    log.LogInformation($"    - Logger (source: real time clock) : {IndigoDataTransformService.ConvertRelativeTimeStringToTotalSeconds(emdRelativeTime)} (Duration in Seconds)");
+                    log.LogInformation($"    - Logger (source: real time clock) : {DataTransformService.ConvertRelativeTimeStringToTotalSeconds(emdRelativeTime)} (Duration in Seconds)");
                     log.LogInformation($"  - Absolute time calculation results (first two records): ");
                     if (sortedEmsEventCsvRows.Count > 1)
                     {
-                        log.LogInformation($"    - record[0].ElapsedSecs (Elapsed secs from activation time): {IndigoDataTransformService.CalculateElapsedSecondsFromLoggerActivationRelativeTime(emdRelativeTime, sortedEmsEventCsvRows[0].RELT)}");
+                        log.LogInformation($"    - record[0].ElapsedSecs (Elapsed secs from activation time): {DataTransformService.CalculateElapsedSecondsFromLoggerActivationRelativeTime(emdRelativeTime, sortedEmsEventCsvRows[0].RELT)}");
                         log.LogInformation($"    - record[0].RELT (Logger cloud upload relative time): {sortedEmsEventCsvRows[0].RELT}");
                         log.LogInformation($"    - record[0]._RELT_SECS (Logger cloud upload relative time seconds): {sortedEmsEventCsvRows[0]._RELT_SECS}");
                         log.LogInformation($"    - record[0]._ABST (calculated absolute time): {sortedEmsEventCsvRows[0].EDI_RECORD_ABST_CALC}");
                         log.LogInformation($" ");
-                        log.LogInformation($"    - record[1].ElapsedSecs (Elapsed secs from activation time): {IndigoDataTransformService.CalculateElapsedSecondsFromLoggerActivationRelativeTime(emdRelativeTime, sortedEmsEventCsvRows[1].RELT)}");
+                        log.LogInformation($"    - record[1].ElapsedSecs (Elapsed secs from activation time): {DataTransformService.CalculateElapsedSecondsFromLoggerActivationRelativeTime(emdRelativeTime, sortedEmsEventCsvRows[1].RELT)}");
                         log.LogInformation($"    - record[1].RELT (Logger cloud upload relative time): {sortedEmsEventCsvRows[1].RELT}");
                         log.LogInformation($"    - record[1]._RELT_SECS (Logger cloud upload relative time seconds): {sortedEmsEventCsvRows[1]._RELT_SECS}");
                         log.LogInformation($"    - record[1]._ABST (calculated absolute time): {sortedEmsEventCsvRows[1].EDI_RECORD_ABST_CALC}");
@@ -135,10 +135,10 @@ namespace fa_adf_transform_indigo_v2
                     log.LogInformation($"- Write '{loggerType}' csv records to azure blob storage");
                     List<EdiSinkRecord> sortedEmsEventCsvRowsFinal = sortedEmsEventCsvRows.Cast<EdiSinkRecord>().ToList();
 
-                    string r1 = await IndigoDataTransformService.WriteUsbdgLogRecordsToCsvBlob(ouputContainer, payload, sortedEmsEventCsvRowsFinal, loggerType, log);
-                    string r2 = await IndigoDataTransformService.WriteUsbdgLogRecordsToCsvBlob(ouputContainer, payload, usbdgDeviceCsvRows, loggerType, log);
-                    string r3 = await IndigoDataTransformService.WriteUsbdgLogRecordsToCsvBlob(ouputContainer, payload, usbdgEventCsvRows, loggerType, log);
-                    string r4 = await IndigoDataTransformService.WriteUsbdgLogRecordsToCsvBlob(ouputContainer, payload, usbdgLocationCsvRows, loggerType, log);
+                    string r1 = await DataTransformService.WriteRecordsToCsvBlob(ouputContainer, payload, sortedEmsEventCsvRowsFinal, loggerType, log);
+                    string r2 = await DataTransformService.WriteRecordsToCsvBlob(ouputContainer, payload, usbdgDeviceCsvRows, loggerType, log);
+                    string r3 = await DataTransformService.WriteRecordsToCsvBlob(ouputContainer, payload, usbdgEventCsvRows, loggerType, log);
+                    string r4 = await DataTransformService.WriteRecordsToCsvBlob(ouputContainer, payload, usbdgLocationCsvRows, loggerType, log);
 
                     string blobPathFolderCurated = DataTransformService.BuildCuratedBlobFolderPath(payload.Path, loggerType);
 
@@ -147,7 +147,7 @@ namespace fa_adf_transform_indigo_v2
 
                     log.LogInformation(" - Send http response message");
                     log.LogInformation("- Send successfully completed event to app insights");
-                    IndigoDataTransformService.LogEmsTransformSucceededEventToAppInsights(payload.FileName, DataLoggerTypeEnum.Name.INDIGO_V2, log);
+                    DataTransformService.LogEmsTransformSucceededEventToAppInsights(payload.FileName, DataLoggerTypeEnum.Name.INDIGO_V2, log);
                     log.LogInformation(" - SUCCESS");
 
                     return new OkObjectResult(responseBody);
@@ -181,23 +181,23 @@ namespace fa_adf_transform_indigo_v2
                     List<EdiSinkRecord> usbdgEventCsvRows = DataModelMappingService.MapUsbdgEvent(usbdgReportMetadata);
 
                     log.LogInformation($"- Write '{loggerType}' csv records to azure blob storage");
-                    string r1 = await IndigoDataTransformService.WriteUsbdgLogRecordsToCsvBlob(ouputContainer, payload, usbdgDeviceCsvRows, loggerType, log);
-                    string r2 = await IndigoDataTransformService.WriteUsbdgLogRecordsToCsvBlob(ouputContainer, payload, usbdgEventCsvRows, loggerType, log);
-                    string r3 = await IndigoDataTransformService.WriteUsbdgLogRecordsToCsvBlob(ouputContainer, payload, usbdgLocationCsvRows, loggerType, log);
+                    string r1 = await DataTransformService.WriteRecordsToCsvBlob(ouputContainer, payload, usbdgDeviceCsvRows, loggerType, log);
+                    string r2 = await DataTransformService.WriteRecordsToCsvBlob(ouputContainer, payload, usbdgEventCsvRows, loggerType, log);
+                    string r3 = await DataTransformService.WriteRecordsToCsvBlob(ouputContainer, payload, usbdgLocationCsvRows, loggerType, log);
 
                     log.LogInformation(" - Serialize http response body");
                     string responseBody = DataTransformService.SerializeHttpResponseBody(r1);
 
                     log.LogInformation(" - Send http response message");
                     log.LogInformation("- Log successfully completed event to app insights");
-                    IndigoDataTransformService.LogEmsTransformSucceededEventToAppInsights(payload.FileName, DataLoggerTypeEnum.Name.NO_LOGGER, log);
+                    DataTransformService.LogEmsTransformSucceededEventToAppInsights(payload.FileName, DataLoggerTypeEnum.Name.NO_LOGGER, log);
                     log.LogInformation(" - SUCCESS");
 
                     return new OkObjectResult(responseBody);
                 } else {
                     string errorCode = "KHRD";
                     string errorMessage = EdiErrorsService.BuildExceptionMessageString(null, errorCode, EdiErrorsService.BuildErrorVariableArrayList(payload.FileName));
-                    IndigoDataTransformService.LogEmsTransformErrorEventToAppInsights(payload?.FileName, log, null, errorCode);
+                    DataTransformService.LogEmsTransformErrorEventToAppInsights(payload?.FileName, log, null, errorCode);
                     //string errorMessage = $"Unknown file package";
                     log.LogError($"- {errorMessage}");
                     var result = new ObjectResult(new { statusCode = 500, currentDate = DateTime.Now, message = errorMessage });
@@ -211,7 +211,7 @@ namespace fa_adf_transform_indigo_v2
                 
                 string errorMessage = EdiErrorsService.BuildExceptionMessageString(e, errorCode, EdiErrorsService.BuildErrorVariableArrayList(payload.FileName));
                 string innerErrorCode = EdiErrorsService.GetInnerErrorCodeFromMessage(errorMessage, errorCode);
-                IndigoDataTransformService.LogEmsTransformErrorEventToAppInsights(payload?.FileName, log, e, innerErrorCode);
+                DataTransformService.LogEmsTransformErrorEventToAppInsights(payload?.FileName, log, e, innerErrorCode);
                 if (e is BadRequestException)
                 {
                     string errStr = $"Bad request thrown while validating '{loggerType}' transformation request";
