@@ -1,9 +1,9 @@
 {
-    "name": "pl_load_indigo_v2_report",
+    "name": "pl_load_sl1_report",
     "properties": {
         "activities": [
             {
-                "name": "Load Indigo Events",
+                "name": "Load Sl1 Events",
                 "type": "Copy",
                 "dependsOn": [
                     {
@@ -31,7 +31,7 @@
                                 "value": "@pipeline().parameters.PL_C_PARAM_TRANSFORM_CURATED_PATH",
                                 "type": "Expression"
                             },
-                            "wildcardFileName": "indigo_v2_event.csv",
+                            "wildcardFileName": "sl1_event.csv",
                             "enablePartitionDiscovery": false
                         },
                         "formatSettings": {
@@ -40,9 +40,9 @@
                     },
                     "sink": {
                         "type": "AzureSqlSink",
-                        "sqlWriterStoredProcedureName": "[indigo_v2].[uspLoadIndigoV2Events]",
-                        "sqlWriterTableType": "[indigo_v2].[event_type]",
-                        "storedProcedureTableTypeParameterName": "indigo_v2_event",
+                        "sqlWriterStoredProcedureName": "[sl1].[uspLoadSl1Events]",
+                        "sqlWriterTableType": "[sl1].[event_type]",
+                        "storedProcedureTableTypeParameterName": "sl1_event",
                         "disableMetricsCollection": false
                     },
                     "enableStaging": false,
@@ -69,8 +69,8 @@
                                 },
                                 "sink": {
                                     "name": "ADOP",
-                                    "type": "DateTime",
-                                    "physicalType": "date"
+                                    "type": "String",
+                                    "physicalType": "varchar"
                                 }
                             },
                             {
@@ -149,18 +149,6 @@
                             },
                             {
                                 "source": {
-                                    "name": "DORV",
-                                    "type": "String",
-                                    "physicalType": "String"
-                                },
-                                "sink": {
-                                    "name": "DORV",
-                                    "type": "Int16",
-                                    "physicalType": "smallint"
-                                }
-                            },
-                            {
-                                "source": {
                                     "name": "ESER",
                                     "type": "String",
                                     "physicalType": "String"
@@ -173,28 +161,14 @@
                             },
                             {
                                 "source": {
-                                    "name": "HOLD",
-                                    "type": "String",
-                                    "physicalType": "String"
-                                },
-                                "sink": {
-                                    "name": "HOLD",
-                                    "type": "Decimal",
-                                    "physicalType": "decimal",
-                                    "scale": 1,
-                                    "precision": 4
-                                }
-                            },
-                            {
-                                "source": {
                                     "name": "LDOP",
                                     "type": "String",
                                     "physicalType": "String"
                                 },
                                 "sink": {
                                     "name": "LDOP",
-                                    "type": "DateTime",
-                                    "physicalType": "date"
+                                    "type": "String",
+                                    "physicalType": "varchar"
                                 }
                             },
                             {
@@ -359,10 +333,128 @@
                             },
                             {
                                 "source": {
-                                    "name": "_RELT_SECS"
+                                    "name": "CNAM",
+                                    "type": "String",
+                                    "physicalType": "String"
                                 },
                                 "sink": {
-                                    "name": "_RELT_SECS"
+                                    "name": "CNAM",
+                                    "type": "String",
+                                    "physicalType": "varchar"
+                                }
+                            },
+                            {
+                                "source": {
+                                    "name": "CSER",
+                                    "type": "String",
+                                    "physicalType": "String"
+                                },
+                                "sink": {
+                                    "name": "CSER",
+                                    "type": "String",
+                                    "physicalType": "varchar"
+                                }
+                            },
+                            {
+                                "source": {
+                                    "name": "CSOF",
+                                    "type": "String",
+                                    "physicalType": "String"
+                                },
+                                "sink": {
+                                    "name": "CSOF",
+                                    "type": "String",
+                                    "physicalType": "varchar"
+                                }
+                            },
+                            {
+                                "source": {
+                                    "name": "CMPR",
+                                    "type": "String",
+                                    "physicalType": "String"
+                                },
+                                "sink": {
+                                    "name": "CMPR",
+                                    "type": "Byte",
+                                    "physicalType": "tinyint"
+                                }
+                            },
+                            {
+                                "source": {
+                                    "name": "CMPS",
+                                    "type": "String",
+                                    "physicalType": "String"
+                                },
+                                "sink": {
+                                    "name": "CMPS",
+                                    "type": "Int16",
+                                    "physicalType": "smallint"
+                                }
+                            },
+                            {
+                                "source": {
+                                    "name": "DCCD",
+                                    "type": "String",
+                                    "physicalType": "String"
+                                },
+                                "sink": {
+                                    "name": "DCCD",
+                                    "type": "Decimal",
+                                    "physicalType": "decimal",
+                                    "scale": 1,
+                                    "precision": 3
+                                }
+                            },
+                            {
+                                "source": {
+                                    "name": "DCSV",
+                                    "type": "String",
+                                    "physicalType": "String"
+                                },
+                                "sink": {
+                                    "name": "DCSV",
+                                    "type": "Decimal",
+                                    "physicalType": "decimal",
+                                    "scale": 1,
+                                    "precision": 4
+                                }
+                            },
+                            {
+                                "source": {
+                                    "name": "FANS",
+                                    "type": "String",
+                                    "physicalType": "String"
+                                },
+                                "sink": {
+                                    "name": "FANS",
+                                    "type": "Decimal",
+                                    "physicalType": "decimal",
+                                    "scale": 1,
+                                    "precision": 4
+                                }
+                            },
+                            {
+                                "source": {
+                                    "name": "SVA",
+                                    "type": "String",
+                                    "physicalType": "String"
+                                },
+                                "sink": {
+                                    "name": "SVA",
+                                    "type": "Int16",
+                                    "physicalType": "smallint"
+                                }
+                            },
+                            {
+                                "source": {
+                                    "name": "_RELT_SECS",
+                                    "type": "String",
+                                    "physicalType": "String"
+                                },
+                                "sink": {
+                                    "name": "_RELT_SECS",
+                                    "type": "String",
+                                    "physicalType": "varchar"
                                 }
                             }
                         ],
@@ -727,7 +819,7 @@
                 "type": "GetMetadata",
                 "dependsOn": [
                     {
-                        "activity": "Load Indigo Events",
+                        "activity": "Load Sl1 Events",
                         "dependencyConditions": [
                             "Succeeded"
                         ]
@@ -933,7 +1025,7 @@
             "name": "Load"
         },
         "annotations": [],
-        "lastPublishTime": "2022-08-26T21:36:31Z"
+        "lastPublishTime": "2022-10-11T23:23:31Z"
     },
     "type": "Microsoft.DataFactory/factories/pipelines"
 }

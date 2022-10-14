@@ -86,7 +86,7 @@
                 }
             },
             {
-                "name": "Launch Indigo V2 Data",
+                "name": "Load Indigo V2 Data",
                 "type": "IfCondition",
                 "dependsOn": [
                     {
@@ -196,6 +196,62 @@
                         }
                     ]
                 }
+            },
+            {
+                "name": "Load Sl1 Data",
+                "type": "IfCondition",
+                "dependsOn": [
+                    {
+                        "activity": "Get Device Type",
+                        "dependencyConditions": [
+                            "Succeeded"
+                        ]
+                    }
+                ],
+                "userProperties": [],
+                "typeProperties": {
+                    "expression": {
+                        "value": "@equals(variables('PL_C_VAR_TRANSFORM_DEVICE_TYPE'),'sl1')",
+                        "type": "Expression"
+                    },
+                    "ifTrueActivities": [
+                        {
+                            "name": "Execute Pipeline1",
+                            "type": "ExecutePipeline",
+                            "dependsOn": [],
+                            "userProperties": [],
+                            "typeProperties": {
+                                "pipeline": {
+                                    "referenceName": "pl_load_sl1_report",
+                                    "type": "PipelineReference"
+                                },
+                                "waitOnCompletion": true,
+                                "parameters": {
+                                    "PL_P_PARAM_TRIGGER_TIME": {
+                                        "value": "@pipeline().parameters.PL_P_PARAM_TRIGGER_TIME",
+                                        "type": "Expression"
+                                    },
+                                    "PL_P_PARAM_FOLDER_NAME": {
+                                        "value": "@pipeline().parameters.PL_P_PARAM_FOLDER_NAME",
+                                        "type": "Expression"
+                                    },
+                                    "PL_P_PARAM_FILE_NAME": {
+                                        "value": "@pipeline().parameters.PL_P_PARAM_FILE_NAME",
+                                        "type": "Expression"
+                                    },
+                                    "PL_P_PARAM_LOG_DIR_GUID": {
+                                        "value": "@pipeline().parameters.PL_P_PARAM_LOG_DIR_GUID",
+                                        "type": "Expression"
+                                    },
+                                    "PL_C_PARAM_TRANSFORM_CURATED_PATH": {
+                                        "value": "@concat(variables('PL_C_VAR_TRANSFORM_DEVICE_TYPE'),'/',pipeline().parameters.PL_P_PARAM_LOG_DIR_GUID)",
+                                        "type": "Expression"
+                                    }
+                                }
+                            }
+                        }
+                    ]
+                }
             }
         ],
         "parameters": {
@@ -216,6 +272,9 @@
             },
             "PL_C_PARAM_REQ_JSON": {
                 "type": "string"
+            },
+            "PL_P_DEVICE_TYPE": {
+                "type": "string"
             }
         },
         "variables": {
@@ -227,7 +286,7 @@
             "name": "Transform"
         },
         "annotations": [],
-        "lastPublishTime": "2022-06-22T17:35:12Z"
+        "lastPublishTime": "2022-10-11T16:01:57Z"
     },
     "type": "Microsoft.DataFactory/factories/pipelines"
 }

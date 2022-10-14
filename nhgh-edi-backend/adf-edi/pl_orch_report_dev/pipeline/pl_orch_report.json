@@ -81,7 +81,11 @@
                             "type": "Expression"
                         },
                         "PL_C_PARAM_REQ_JSON": {
-                            "value": "@CONCAT('{\"path\":\"', pipeline().parameters.PL_P_PARAM_LOG_DIR_GUID,'\",\"fileName\":\"',pipeline().parameters.PL_P_PARAM_FILE_NAME,'\"}')",
+                            "value": "@CONCAT('{\"path\":\"', pipeline().parameters.PL_P_PARAM_LOG_DIR_GUID,'\",\"type\":\"', pipeline().parameters.PL_P_DEVICE_TYPE,'\", \"fileName\":\"',pipeline().parameters.PL_P_PARAM_FILE_NAME,'\"}')",
+                            "type": "Expression"
+                        },
+                        "PL_P_DEVICE_TYPE": {
+                            "value": "@pipeline().parameters.PL_P_DEVICE_TYPE",
                             "type": "Expression"
                         }
                     }
@@ -118,7 +122,7 @@
             "name": "Orchestration"
         },
         "annotations": [],
-        "lastPublishTime": "2022-06-21T23:20:08Z"
+        "lastPublishTime": "2022-10-08T17:22:29Z"
     },
     "type": "Microsoft.DataFactory/factories/pipelines"
 }

@@ -550,7 +550,7 @@
             "name": "Load"
         },
         "annotations": [],
-        "lastPublishTime": "2022-07-22T22:35:51Z"
+        "lastPublishTime": "2022-08-26T21:21:17Z"
     },
     "type": "Microsoft.DataFactory/factories/pipelines"
 }
