@@ -26,6 +26,7 @@ using lib_edi.Models.Enums.Azure.AppInsights;
 using lib_edi.Models.Enums.Emd;
 using lib_edi.Services.Azure;
 using lib_edi.Services.Loggers;
+using lib_edi.Services.Ems;
 
 namespace lib_edi.Services.CceDevice
 {
@@ -49,7 +50,7 @@ namespace lib_edi.Services.CceDevice
 				foreach (CloudBlockBlob logBlob in logDirectoryBlobs)
 				{
                     // NHGH-2362 (2022.06.16) - only add Indigo V2 data files
-                    if (IsFileFromIndigoV2Logger(logBlob.Name))
+                    if (EmsService.IsFileFromEmsLogger(logBlob.Name))
 				    {
 				        listBlobs.Add(logBlob);
 				    }
@@ -63,59 +64,7 @@ namespace lib_edi.Services.CceDevice
 			return listBlobs;
 		}
 
-        /// <summary>
-        /// Checks contents of file package to see if it is an Indigo V2
-        /// </summary>
-        /// <param name="logDirectoryBlobs">Full list of blobs </param>
-        /// <returns>
-        /// Return true if yes; false if no
-        /// </returns>
-        public static bool IsFilePackageIndigoV2(IEnumerable<IListBlobItem> logDirectoryBlobs)
-        {
-            bool result = false;
-            bool indigoLogFilesFound = false;
-            bool usbdgMetaDataFound = false;
-            if (logDirectoryBlobs != null)
-            {
-                foreach (CloudBlockBlob logBlob in logDirectoryBlobs)
-                {
-                    string fileExtension = Path.GetExtension(logBlob.Name);
-                    if (IsFileFromIndigoV2Logger(logBlob.Name))
-                    {
-                        indigoLogFilesFound = true;
-                    }
 
-                    if (UsbdgDataProcessorService.IsFileUsbdgReportMetadata(logBlob.Name))
-                    {
-                        usbdgMetaDataFound = true;
-                    }
-                }
-            }
-
-            if (indigoLogFilesFound && usbdgMetaDataFound)
-            {
-                result = true;
-            }
-
-            return result;
-        }
-
-        /// <summary>
-        /// Checks if blob name is from an Indigo logger
-        /// </summary>
-        /// <param name="blobName">blob name </param>
-        /// <returns>
-        /// True if yes; False if no
-        /// </returns>
-        public static bool IsFileFromIndigoV2Logger(string blobName)
-        {
-            bool result = false;
-            if ((Path.GetExtension(blobName) == ".json") && (blobName.Contains("DATA") || blobName.Contains("CURRENT")))
-            {
-                result = true;
-            }
-            return result;
-        }
 
         /// <summary>
         /// Sets the property value of a specified object with a JToken value
@@ -208,9 +157,9 @@ namespace lib_edi.Services.CceDevice
         /// <returns>
         /// List of denormalized USBDG records (with the calculated duration seconds); Exception (M34T) otherwise
         /// </returns>
-        public static List<IndigoV2EventRecord> ConvertRelativeTimeToTotalSecondsForUsbdgLogRecords(List<IndigoV2EventRecord> records)
+        public static List<EmsEventRecord> ConvertRelativeTimeToTotalSecondsForUsbdgLogRecords(List<EmsEventRecord> records)
         {
-            foreach (IndigoV2EventRecord record in records)
+            foreach (EmsEventRecord record in records)
             {
                 try
                 {
@@ -241,7 +190,6 @@ namespace lib_edi.Services.CceDevice
             try
             {
                 JObject sourceJObject = (JObject)metadata;
-                Console.WriteLine("debug");
                 relativeTime = GetKeyValutFromMetadataRecordsObject("RELT", metadata);
                 TimeSpan ts = XmlConvert.ToTimeSpan(relativeTime); // parse iso 8601 duration string to timespan
                 result = Convert.ToInt32(ts.TotalSeconds);
@@ -309,11 +257,11 @@ namespace lib_edi.Services.CceDevice
         /// <returns>
         /// Absolute timestamp (DateTime) of a Indigo V2 record; Exception (4Q5D) otherwise
         /// </returns>
-        public static List<IndigoV2EventRecord> CalculateAbsoluteTimeForUsbdgRecords(List<IndigoV2EventRecord> records, int reportDurationSeconds, dynamic reportMetadata)
+        public static List<EmsEventRecord> CalculateAbsoluteTimeForUsbdgRecords(List<EmsEventRecord> records, int reportDurationSeconds, dynamic reportMetadata)
         {
             string absoluteTime = GetKeyValutFromMetadataRecordsObject("ABST", reportMetadata);
 
-            foreach (IndigoV2EventRecord record in records)
+            foreach (EmsEventRecord record in records)
             {
                 DateTime? dt = CalculateAbsoluteTimeForUsbdgRecord(absoluteTime, reportDurationSeconds, record.RELT, record.EDI_SOURCE);
                 record.EDI_RECORD_ABST_CALC = dt;
@@ -422,7 +370,7 @@ namespace lib_edi.Services.CceDevice
         /// <returns>
         /// Blob name of USBDG csv formatted log file; Exception (Q25U)
         /// </returns>
-        public static async Task<string> WriteUsbdgLogRecordsToCsvBlob(CloudBlobContainer cloudBlobContainer, TransformHttpRequestMessageBodyDto requestBody, List<EdiSinkRecord> usbdgRecords, DataLoggerTypeEnum.Name loggerTypeName, ILogger log)
+        public static async Task<string> WriteUsbdgLogRecordsToCsvBlob(CloudBlobContainer cloudBlobContainer, TransformHttpRequestMessageBodyDto requestBody, List<EdiSinkRecord> usbdgRecords, string loggerTypeName, ILogger log)
         {
             string blobName = "";
             string loggerType = loggerTypeName.ToString().ToLower();
@@ -442,27 +390,32 @@ namespace lib_edi.Services.CceDevice
                             if (recordType == "IndigoV2EventRecord")
                             {
                                 log.LogInformation($"  - Is record type supported? Yes");
-                                blobName = CcdxService.BuildCuratedCcdxConsumerBlobPath(requestBody.Path, "indigo_v2_event.csv", loggerType);
+                                blobName = DataTransformService.BuildCuratedBlobPath(requestBody.Path, "indigo_v2_event.csv", loggerType);
+                            }
+                            else if (recordType == "Sl1EventRecord")
+                            {
+                                log.LogInformation($"  - Is record type supported? Yes");
+                                blobName = DataTransformService.BuildCuratedBlobPath(requestBody.Path, "sl1_event.csv", loggerType);
                             }
                             else if (recordType == "IndigoV2LocationRecord")
                             {
                                 log.LogInformation($"  - Is record type supported? Yes");
-                                blobName = CcdxService.BuildCuratedCcdxConsumerBlobPath(requestBody.Path, "indigo_v2_location.csv", loggerType);
+                                blobName = DataTransformService.BuildCuratedBlobPath(requestBody.Path, "indigo_v2_location.csv", loggerType);
                             }
                             else if (recordType == "UsbdgLocationRecord")
                             {
                                 log.LogInformation($"  - Is record type supported? Yes");
-                                blobName = CcdxService.BuildCuratedCcdxConsumerBlobPath(requestBody.Path, "usbdg_location.csv", loggerType);
+                                blobName = DataTransformService.BuildCuratedBlobPath(requestBody.Path, "usbdg_location.csv", loggerType);
                             }
                             else if (recordType == "UsbdgDeviceRecord")
                             {
                                 log.LogInformation($"  - Is record type supported? Yes");
-                                blobName = CcdxService.BuildCuratedCcdxConsumerBlobPath(requestBody.Path, "usbdg_device.csv", loggerType);
+                                blobName = DataTransformService.BuildCuratedBlobPath(requestBody.Path, "usbdg_device.csv", loggerType);
                             }
                             else if (recordType == "UsbdgEventRecord")
                             {
                                 log.LogInformation($"  - Is record type supported? Yes");
-                                blobName = CcdxService.BuildCuratedCcdxConsumerBlobPath(requestBody.Path, "usbdg_event.csv", loggerType);
+                                blobName = DataTransformService.BuildCuratedBlobPath(requestBody.Path, "usbdg_event.csv", loggerType);
                             }
                             else
                             {
@@ -484,6 +437,12 @@ namespace lib_edi.Services.CceDevice
                             {
                                 List<IndigoV2EventRecord> records = JsonConvert.DeserializeObject<List<IndigoV2EventRecord>>(serializedParent);
                                 log.LogInformation($"  - Write list of indigo v2 event records to the CSV file");
+                                csvWriter.WriteRecords(records);
+                            }
+                            else if (recordType == "Sl1EventRecord")
+                            {
+                                List<Sl1EventRecord> records = JsonConvert.DeserializeObject<List<Sl1EventRecord>>(serializedParent);
+                                log.LogInformation($"  - Write list of sl1 event records to the CSV file");
                                 csvWriter.WriteRecords(records);
                             }
                             else if (recordType == "IndigoV2LocationRecord")

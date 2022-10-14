@@ -3,6 +3,7 @@ using lib_edi.Models.Dto.Ccdx;
 using lib_edi.Models.Enums.Azure.AppInsights;
 using lib_edi.Models.Enums.Emd;
 using lib_edi.Services.Azure;
+using lib_edi.Services.Ems;
 using lib_edi.Services.Errors;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
@@ -340,32 +341,7 @@ namespace lib_edi.Services.Ccdx
 			return result;
 		}
 
-		/// <summary>
-		/// Validate data logger type is supported by ETL pipeline
-		/// </summary>
-		/// <param name="loggerType">Blob path in string format</param>
-		public static bool ValidateLoggerType(string loggerType)
-		{
-			bool result = false;
 
-			if (loggerType != null)
-			{
-				if (loggerType.ToUpper() == DataLoggerTypeEnum.Name.USBDG_DATASIM.ToString())
-				{
-					result = true;
-				} else if (loggerType.ToUpper() == DataLoggerTypeEnum.Name.CFD50.ToString())
-				{
-					result = true;
-				} else if (loggerType.ToUpper() == DataLoggerTypeEnum.Name.INDIGO_V2.ToString())
-				{
-					result = true;
-				} else if (loggerType.ToUpper() == DataLoggerTypeEnum.Name.NO_LOGGER.ToString())
-				{
-					result = true;
-				}
-			}
-			return result;
-		}
 
 		/// <summary>
 		/// Validate ccdx type is supported by ETL pipeline
@@ -383,7 +359,7 @@ namespace lib_edi.Services.Ccdx
 			} else if (Environment.GetEnvironmentVariable("CCDX_PUBLISHER_HEADER_CE_TYPE_INDIGO_V2") == ceType)
 			{
 				result = true;
-			} else if (CcdxService.ValidateLoggerType(ceType))
+			} else if (EmsService.ValidateLoggerType(ceType))
 			{
 				result = true;
 			}

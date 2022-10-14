@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using lib_edi.Services.CceDevice;
 using System.IO;
+using lib_edi.Services.Ems;
 
 namespace lib_edi.Services.Loggers
 {
@@ -57,16 +58,16 @@ namespace lib_edi.Services.Loggers
 		public static bool IsFilePackageUsbdgOnly(IEnumerable<IListBlobItem> logDirectoryBlobs)
 		{
 			bool result = false;
-			bool indigoLogFilesFound = false;
+			bool emsCompliantLogFilesFound = false;
 			bool usbdgMetaDataFound = false;
 			if (logDirectoryBlobs != null)
 			{
 				foreach (CloudBlockBlob logBlob in logDirectoryBlobs)
 				{
 					string fileExtension = Path.GetExtension(logBlob.Name);
-					if (IndigoDataTransformService.IsFileFromIndigoV2Logger(logBlob.Name))
+					if (EmsService.IsFileFromEmsLogger(logBlob.Name))
 					{
-						indigoLogFilesFound = true;
+                        emsCompliantLogFilesFound = true;
 					}
 
 					if (IsFileUsbdgReportMetadata(logBlob.Name))
@@ -76,7 +77,7 @@ namespace lib_edi.Services.Loggers
 				}
 			}
 
-			if ((indigoLogFilesFound == false) && usbdgMetaDataFound)
+			if ((emsCompliantLogFilesFound == false) && usbdgMetaDataFound)
 			{
 				result = true;
 			}

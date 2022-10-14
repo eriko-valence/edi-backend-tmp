@@ -20,6 +20,7 @@ namespace lib_edi.Models.Enums.Emd
 			INDIGO_V2,
 			CFD50,
 			NO_LOGGER,
+			SL1,
 			UNKNOWN
 #pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 		}

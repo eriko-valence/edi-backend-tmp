@@ -5,6 +5,8 @@
     [zgps_lat]  DECIMAL (8, 5) NULL,
     [zgps_lng]  DECIMAL (8, 5) NULL,
     [DATEADDED] DATETIME2 (7)  NULL,
-    PRIMARY KEY CLUSTERED ([LSER] ASC, [zgps_abst] ASC)
+    CONSTRAINT [PK_indigo_v2_device] PRIMARY KEY CLUSTERED ([LSER] ASC, [zgps_abst] ASC)
 );
+
+
 
