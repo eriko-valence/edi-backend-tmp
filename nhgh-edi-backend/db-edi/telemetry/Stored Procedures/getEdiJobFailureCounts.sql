@@ -7,6 +7,10 @@ CREATE PROCEDURE [telemetry].[getEdiJobFailureCounts]
 AS
 BEGIN
 
+    -- Need to account for EDI ADF jobs that have been re-run. These job will produce multiple pipeline stage 
+    -- names for a file package. We want to make sure only the latest stage record is retrieved. For example,
+    -- the ADF_TRANSFORM stage completed with a FAILED state. After the job was re-run, ADF_TRANSFORM completed
+    -- with a SUCCEEDED. We want this last result as it depicts the current pipeline state of that file package. 
 	WITH 
     LatestEdiPipelineJobResultsCTE
 	AS
