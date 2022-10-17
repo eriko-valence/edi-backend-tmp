@@ -28,6 +28,7 @@ BEGIN
 					[EventTime],
 					[FilePackageName],
 					[ESER],
+                    [PipelineState],
 					[PipelineEvent],
 					[PipelineStage],
 					[PipelineFailureReason],
@@ -39,6 +40,10 @@ BEGIN
 					@EventTime,
 					@FilePackageName,
 					@ESER,
+                    CASE @PipelineEvent
+                        WHEN 'STARTED' THEN 'STARTED'   
+                        ELSE 'COMPLETED'   
+                    END,
 					@PipelineEvent,
 					@PipelineStage,
 					@PipelineFailureReason,
