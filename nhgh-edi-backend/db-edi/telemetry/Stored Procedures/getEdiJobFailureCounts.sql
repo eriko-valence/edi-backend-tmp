@@ -7,23 +7,63 @@ CREATE PROCEDURE [telemetry].[getEdiJobFailureCounts]
 AS
 BEGIN
 
+	WITH 
+    LatestEdiPipelineJobResultsCTE
+	AS
+	(
+        SELECT 
+            MAX(EventTime) as 'EventTime',
+            FilePackageName, PipelineStage, PipelineState
+        FROM 
+            [telemetry].[EdiPipelineEvents]
+        WHERE
+            EventTime >= @StartDate AND
+            EventTime <= @EndDate --AND
+        GROUP BY
+            FilePackageName,
+            PipelineStage, 
+            PipelineState
+	)
+
     SELECT 
         count(*) as 'FailureCount', 
-        PipelineEvent, 
-        PipelineStage, 
-        PipelineFailureReason, 
-        PipelineFailureType
+        t1.PipelineState,
+        t1.PipelineEvent, 
+        t1.PipelineStage, 
+        t1.PipelineFailureReason, 
+        t1.PipelineFailureType
     FROM 
-        [telemetry].[EdiPipelineEvents]
+        [telemetry].[EdiPipelineEvents] t1,
+        LatestEdiPipelineJobResultsCTE t2
     WHERE
-        PipelineEvent in ('FAILED') AND
-        EventTime >= @StartDate AND
-        EventTime <= @EndDate
-
+        t1.EventTime = t2.EventTime AND
+        t1.PipelineStage = t2.PipelineStage AND
+        t1.PipelineState = t2.PipelineState AND
+        t1.PipelineEvent in ('FAILED')
     GROUP BY
-        PipelineEvent, 
-        PipelineStage, 
-        PipelineFailureReason, 
-        PipelineFailureType
+        t1.PipelineState,
+        t1.PipelineEvent, 
+        t1.PipelineStage, 
+        t1.PipelineFailureReason, 
+        t1.PipelineFailureType
+
+
+    -- Need to also include fail packages that never triggered an EDI pipeline job (i.e., no FAILED telemetry exists if a file package)
+    -- uploads to blob storage but does not trigger the CCDX provider azure function
+    UNION
+        SELECT 
+        count(*) as 'FailureCount',
+        'COMPLETED' as 'PipelineState',
+        'FAILED' as 'PipelineEvent',
+        'CCDX_PROVIDER' as 'PipelineStage',
+        'CCDX_PROVIDER_NOT_TRIGGERED' as 'PipelineFailureReason',
+        'NOT STARTED' AS 'PipelineFailureType'
+    FROM 
+        [telemetry].[EdiJobStatus] 
+    WHERE 
+        ProviderSuccessTime IS NULL AND 
+        DurationSecs IS NULL AND -- make sure the file package also never successfully completed (this accounts for the possibiliy of missing provider telemetry)
+        BlobTimeStart > @StartDate AND
+        BlobTimeStart < @EndDate
 
 END
