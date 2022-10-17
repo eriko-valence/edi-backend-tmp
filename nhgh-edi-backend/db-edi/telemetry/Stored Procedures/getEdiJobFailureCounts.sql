@@ -27,11 +27,11 @@ BEGIN
 
     SELECT 
         count(*) as 'FailureCount', 
-        t1.PipelineState,
         t1.PipelineEvent, 
         t1.PipelineStage, 
         t1.PipelineFailureReason, 
-        t1.PipelineFailureType
+        t1.PipelineFailureType,
+        t1.PipelineState
     FROM 
         [telemetry].[EdiPipelineEvents] t1,
         LatestEdiPipelineJobResultsCTE t2
@@ -53,11 +53,11 @@ BEGIN
     UNION
         SELECT 
         count(*) as 'FailureCount',
-        'COMPLETED' as 'PipelineState',
         'FAILED' as 'PipelineEvent',
         'CCDX_PROVIDER' as 'PipelineStage',
         'CCDX_PROVIDER_NOT_TRIGGERED' as 'PipelineFailureReason',
-        'NOT STARTED' AS 'PipelineFailureType'
+        'NOT STARTED' AS 'PipelineFailureType',
+        'COMPLETED' as 'PipelineState'
     FROM 
         [telemetry].[EdiJobStatus] 
     WHERE 
