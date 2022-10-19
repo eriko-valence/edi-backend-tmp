@@ -64,6 +64,9 @@
     <Folder Include="External Resources\" />
     <Folder Include="usbdg\" />
     <Folder Include="usbdg\External Tables\" />
+    <Folder Include="indigo_v2\" />
+    <Folder Include="indigo_v2\Stored Procedures\" />
+    <Folder Include="indigo_v2\External Tables\" />
   </ItemGroup>
   <ItemGroup>
     <Build Include="dbo\Tables\DateSeq1hour.sql" />
@@ -91,6 +94,12 @@
       <QuotedIdentifier>Off</QuotedIdentifier>
     </Build>
     <Build Include="usbdg\External Tables\location.sql">
+      <QuotedIdentifier>Off</QuotedIdentifier>
+    </Build>
+    <Build Include="indigo_v2\Stored Procedures\getLoggerEvents.sql" />
+    <Build Include="indigo_v2\Stored Procedures\getLoggers.sql" />
+    <Build Include="Security\indigo_v2.sql" />
+    <Build Include="indigo_v2\External Tables\event.sql">
       <QuotedIdentifier>Off</QuotedIdentifier>
     </Build>
   </ItemGroup>
