@@ -102,5 +102,7 @@
     <Build Include="indigo_v2\External Tables\event.sql">
       <QuotedIdentifier>Off</QuotedIdentifier>
     </Build>
+    <Build Include="indigo_v2\Stored Procedures\getIndigoLoggerStats.sql" />
+    <Build Include="indigo_v2\Stored Procedures\getAvgHourlyAmbientTemperatureOverTime.sql" />
   </ItemGroup>
 </Project>
