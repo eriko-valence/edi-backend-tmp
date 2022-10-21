@@ -51,9 +51,12 @@ BEGIN
         t1.PipelineFailureReason, 
         t1.PipelineFailureType
 
-
-    -- Need to also include fail packages that never triggered an EDI pipeline job (i.e., no FAILED telemetry exists if a file package)
-    -- uploads to blob storage but does not trigger the CCDX provider azure function
+    -- Need to also monitor file packages that never trigger a EDI pipeline job to start
+    -- These file packages upload to blob storage but the CCDX provider azure function fails to trigger
+    -- This separate UNION statement is needed becuase all events in the table [EdiPipelineEvents]
+    -- are sourced from azure function telemetry. There is no azure function involved in uploading 
+    -- the file packages to the ccdx-provider blob container. So this is a blind spot that is
+    -- accounted for by using this UNION statement. 
     UNION
         SELECT 
         count(*) as 'FailureCount',
@@ -69,5 +72,29 @@ BEGIN
         DurationSecs IS NULL AND -- make sure the file package also never successfully completed (this accounts for the possibiliy of missing provider telemetry)
         BlobTimeStart > @StartDate AND
         BlobTimeStart < @EndDate
+
+    -- Need to also monitor file packages that fail to load into the SQL database
+    -- This separate UNION statement is needed becuase all events in the table [EdiPipelineEvents]
+    -- are sourced from azure function telemetry. There is no azure function involved in loading 
+    -- the file packages into the SQL database. So this is a blind spot that is accounted for by 
+    -- using this UNION statement. 
+    UNION
+        SELECT 
+        count(*) as 'FailureCount',
+        'FAILED' as 'PipelineEvent',
+        'SQL_LOAD' as 'PipelineStage',
+        'SQL_LOAD_ERROR' as 'PipelineFailureReason',
+        'ERROR' AS 'PipelineFailureType',
+        'COMPLETED' as 'PipelineState'
+        FROM 
+            [telemetry].[EdiJobStatus] 
+        WHERE 
+            ProviderSuccessTime IS NOT NULL AND 
+            ConsumerSuccessTime IS NOT NULL AND 
+            TransformSuccessTime IS NOT NULL AND
+            SQLSuccessTime IS NULL AND
+            DurationSecs IS NULL AND -- make sure the file package also never successfully completed (this accounts for the possibiliy of missing provider telemetry)
+            BlobTimeStart > @StartDate AND
+            BlobTimeStart < @EndDate
 
 END
