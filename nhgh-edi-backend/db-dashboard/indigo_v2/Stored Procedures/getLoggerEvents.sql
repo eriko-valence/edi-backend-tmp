@@ -38,5 +38,7 @@ BEGIN
     FROM
         [indigo_v2].[event]
     WHERE 
-        [LSER] = @LSER
+        [LSER] = @LSER AND
+        ABST_CALC >= @StartDate AND 
+        ABST_CALC <= @EndDate
 END
