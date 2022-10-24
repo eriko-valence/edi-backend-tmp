@@ -72,6 +72,8 @@ BEGIN
         DurationSecs IS NULL AND -- make sure the file package also never successfully completed (this accounts for the possibiliy of missing provider telemetry)
         BlobTimeStart > @StartDate AND
         BlobTimeStart < @EndDate
+    HAVING
+        count(*) > 0
 
     -- Need to also monitor file packages that fail to load into the SQL database
     -- This separate UNION statement is needed becuase all events in the table [EdiPipelineEvents]
@@ -96,5 +98,7 @@ BEGIN
             DurationSecs IS NULL AND -- make sure the file package also never successfully completed (this accounts for the possibiliy of missing provider telemetry)
             BlobTimeStart > @StartDate AND
             BlobTimeStart < @EndDate
+        HAVING
+            count(*) > 0
 
 END
