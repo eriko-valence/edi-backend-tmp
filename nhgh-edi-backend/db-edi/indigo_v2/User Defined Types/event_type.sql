@@ -21,10 +21,12 @@
     [RTCW]       VARCHAR (20)   NULL,
     [TAMB]       NUMERIC (4, 2) NULL,
     [TVC]        NUMERIC (3, 1) NULL,
-    [ZCHRG]      VARCHAR (10)   NULL,
+    [ZCHRG]      VARCHAR (20)   NULL,
     [ZSTATE]     BIT            NULL,
     [ZVLVD]      BIT            NULL,
     [_RELT_SECS] VARCHAR (20)   NULL);
+
+
 
 
 
