@@ -1,5 +1,6 @@
 ﻿using lib_edi.Models.Enums.Emd;
 using lib_edi.Services.Loggers;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Storage.Blob;
 using System;
 using System.Collections.Generic;
@@ -44,6 +45,44 @@ namespace lib_edi.Services.Ems
                 }
             }
             return result;
+        }
+
+        /// <summary>
+        /// Returns data logger type enum
+        /// </summary>
+        /// <param name="loggerType">Blob path in string format</param>
+        public static DataLoggerTypeEnum.Name GetDataLoggerType(string loggerType)
+        {
+            if (loggerType != null)
+            {
+                if (loggerType.ToUpper() == DataLoggerTypeEnum.Name.USBDG_DATASIM.ToString())
+                {
+                    return DataLoggerTypeEnum.Name.USBDG_DATASIM;
+                }
+                else if (loggerType.ToUpper() == DataLoggerTypeEnum.Name.CFD50.ToString())
+                {
+                    return DataLoggerTypeEnum.Name.CFD50;
+                }
+                else if (loggerType.ToUpper() == DataLoggerTypeEnum.Name.INDIGO_V2.ToString())
+                {
+                    return DataLoggerTypeEnum.Name.INDIGO_V2;
+                }
+                else if (loggerType.ToUpper() == DataLoggerTypeEnum.Name.SL1.ToString())
+                {
+                    return DataLoggerTypeEnum.Name.SL1;
+                }
+                else if (loggerType.ToUpper() == DataLoggerTypeEnum.Name.NO_LOGGER.ToString())
+                {
+                    return DataLoggerTypeEnum.Name.NO_LOGGER;
+                }
+                else
+                {
+                    return DataLoggerTypeEnum.Name.UNKNOWN;
+                }
+            } else
+            {
+                return DataLoggerTypeEnum.Name.UNKNOWN;
+            }
         }
 
         /// <summary>

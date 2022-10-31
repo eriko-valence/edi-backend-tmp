@@ -38,10 +38,12 @@ namespace fa_adf_transform_indigo_v2
             ILogger log)
         {
             string loggerType = DataLoggerTypeEnum.Name.UNKNOWN.ToString();
+            DataLoggerTypeEnum.Name loggerTypeEnum = DataLoggerTypeEnum.Name.UNKNOWN;
             TransformHttpRequestMessageBodyDto payload = null;
 
             try
             {
+                
                 string jsonSchemaBlobNameEmsCompliantLog = Environment.GetEnvironmentVariable("EMS_JSON_SCHEMA_FILENAME");
                 string jsonSchemaBlobNameUsbdgMetadata = Environment.GetEnvironmentVariable("EMS_USBDG_METADATA_JSON_SCHEMA_FILENAME");
 
@@ -58,6 +60,7 @@ namespace fa_adf_transform_indigo_v2
                 log.LogInformation($"- Incoming blob path: {inputBlobPath}");
 
                 loggerType = payload.LoggerType ?? DataLoggerTypeEnum.Name.UNKNOWN.ToString();
+                loggerTypeEnum = EmsService.GetDataLoggerType(loggerType);
                 log.LogInformation($"- Detected logger type: '{loggerType}'");
 
                 log.LogInformation($"- Pull all blobs from file package {inputBlobPath}");
@@ -147,7 +150,7 @@ namespace fa_adf_transform_indigo_v2
 
                     log.LogInformation(" - Send http response message");
                     log.LogInformation("- Send successfully completed event to app insights");
-                    DataTransformService.LogEmsTransformSucceededEventToAppInsights(payload.FileName, DataLoggerTypeEnum.Name.INDIGO_V2, log);
+                    DataTransformService.LogEmsTransformSucceededEventToAppInsights(payload.FileName, loggerTypeEnum, log);
                     log.LogInformation(" - SUCCESS");
 
                     return new OkObjectResult(responseBody);
@@ -190,14 +193,14 @@ namespace fa_adf_transform_indigo_v2
 
                     log.LogInformation(" - Send http response message");
                     log.LogInformation("- Log successfully completed event to app insights");
-                    DataTransformService.LogEmsTransformSucceededEventToAppInsights(payload.FileName, DataLoggerTypeEnum.Name.NO_LOGGER, log);
+                    DataTransformService.LogEmsTransformSucceededEventToAppInsights(payload.FileName, loggerTypeEnum, log);
                     log.LogInformation(" - SUCCESS");
 
                     return new OkObjectResult(responseBody);
                 } else {
                     string errorCode = "KHRD";
                     string errorMessage = EdiErrorsService.BuildExceptionMessageString(null, errorCode, EdiErrorsService.BuildErrorVariableArrayList(payload.FileName));
-                    DataTransformService.LogEmsTransformErrorEventToAppInsights(payload?.FileName, log, null, errorCode);
+                    DataTransformService.LogEmsTransformErrorEventToAppInsights(payload?.FileName, log, null, errorCode, loggerTypeEnum);
                     //string errorMessage = $"Unknown file package";
                     log.LogError($"- {errorMessage}");
                     var result = new ObjectResult(new { statusCode = 500, currentDate = DateTime.Now, message = errorMessage });
@@ -211,7 +214,7 @@ namespace fa_adf_transform_indigo_v2
                 
                 string errorMessage = EdiErrorsService.BuildExceptionMessageString(e, errorCode, EdiErrorsService.BuildErrorVariableArrayList(payload.FileName));
                 string innerErrorCode = EdiErrorsService.GetInnerErrorCodeFromMessage(errorMessage, errorCode);
-                DataTransformService.LogEmsTransformErrorEventToAppInsights(payload?.FileName, log, e, innerErrorCode);
+                DataTransformService.LogEmsTransformErrorEventToAppInsights(payload?.FileName, log, e, innerErrorCode, loggerTypeEnum);
                 if (e is BadRequestException)
                 {
                     string errStr = $"Bad request thrown while validating '{loggerType}' transformation request";

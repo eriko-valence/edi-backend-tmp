@@ -390,13 +390,13 @@ namespace lib_edi.Services.CceDevice
         /// <param name="log">Microsoft extension logger</param>
         /// <param name="e">Exception object</param>
         /// <param name="errorCode">Error code</param>
-        public static void LogEmsTransformErrorEventToAppInsights(string reportFileName, ILogger log, Exception e, string errorCode)
+        public static void LogEmsTransformErrorEventToAppInsights(string reportFileName, ILogger log, Exception e, string errorCode, DataLoggerTypeEnum.Name loggerTypeEnum)
         {
             string errorMessage = EdiErrorsService.BuildExceptionMessageString(e, errorCode, EdiErrorsService.BuildErrorVariableArrayList(reportFileName));
             PipelineEvent pipelineEvent = new PipelineEvent();
             pipelineEvent.EventName = PipelineEventEnum.Name.FAILED;
             pipelineEvent.StageName = PipelineStageEnum.Name.ADF_TRANSFORM;
-            pipelineEvent.LoggerType = DataLoggerTypeEnum.Name.INDIGO_V2;
+            pipelineEvent.LoggerType = loggerTypeEnum;
             pipelineEvent.PipelineFailureType = PipelineFailureTypeEnum.Name.ERROR;
             pipelineEvent.PipelineFailureReason = PipelineFailureReasonEnum.Name.UNKNOWN_EXCEPTION;
             pipelineEvent.ReportFileName = reportFileName;
