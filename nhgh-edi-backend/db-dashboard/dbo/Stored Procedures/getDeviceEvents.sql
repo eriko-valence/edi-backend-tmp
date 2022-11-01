@@ -40,6 +40,9 @@ BEGIN
             zutc_now > @StartDate 
             AND zutc_now < @EndDate
             AND last_zbatt_chrg is not null
+        ORDER BY 
+            zutc_now DESC
+
     END
     ELSE
     BEGIN
