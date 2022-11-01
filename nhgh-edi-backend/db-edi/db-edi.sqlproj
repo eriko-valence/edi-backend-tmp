@@ -118,5 +118,6 @@
     <Build Include="sl1\Stored Procedures\uspLoadSl1Events.sql" />
     <Build Include="sl1\User Defined Types\event_type.sql" />
     <Build Include="Security\sl1.sql" />
+    <Build Include="telemetry\Stored Procedures\getAllEdiFilePackages.sql" />
   </ItemGroup>
 </Project>
