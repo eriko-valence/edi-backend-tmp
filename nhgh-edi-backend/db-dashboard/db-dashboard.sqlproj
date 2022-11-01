@@ -67,6 +67,9 @@
     <Folder Include="indigo_v2\" />
     <Folder Include="indigo_v2\Stored Procedures\" />
     <Folder Include="indigo_v2\External Tables\" />
+    <Folder Include="sl1\" />
+    <Folder Include="sl1\Stored Procedures\" />
+    <Folder Include="sl1\External Tables\" />
   </ItemGroup>
   <ItemGroup>
     <Build Include="dbo\Tables\DateSeq1hour.sql" />
@@ -104,5 +107,11 @@
     </Build>
     <Build Include="indigo_v2\Stored Procedures\getIndigoLoggerStats.sql" />
     <Build Include="indigo_v2\Stored Procedures\getAvgHourlyAmbientTemperatureOverTime.sql" />
+    <Build Include="sl1\Stored Procedures\getLoggerEvents.sql" />
+    <Build Include="sl1\Stored Procedures\getLoggers.sql" />
+    <Build Include="Security\sl1.sql" />
+    <Build Include="sl1\External Tables\event.sql">
+      <QuotedIdentifier>Off</QuotedIdentifier>
+    </Build>
   </ItemGroup>
 </Project>
