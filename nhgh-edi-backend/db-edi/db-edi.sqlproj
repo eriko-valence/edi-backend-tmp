@@ -72,6 +72,10 @@
     <Folder Include="sl1\Tables\" />
     <Folder Include="sl1\Stored Procedures\" />
     <Folder Include="sl1\User Defined Types\" />
+    <Folder Include="dbo\" />
+    <Folder Include="dbo\Tables\" />
+    <Folder Include="dbo\Functions\" />
+    <Folder Include="dbo\Stored Procedures\" />
   </ItemGroup>
   <ItemGroup>
     <Build Include="usbdg\Tables\event.sql" />
@@ -119,5 +123,27 @@
     <Build Include="sl1\User Defined Types\event_type.sql" />
     <Build Include="Security\sl1.sql" />
     <Build Include="telemetry\Stored Procedures\getAllEdiFilePackages.sql" />
+    <Build Include="dbo\Tables\DateSeq1hour.sql" />
+    <Build Include="dbo\Tables\DateSeq1day.sql" />
+    <Build Include="dbo\Functions\getHaversineDistance.sql" />
+    <Build Include="dbo\Functions\getHaversineBearingDistance.sql" />
+    <Build Include="dbo\Functions\getEquRectDistance.sql" />
+    <Build Include="sl1\Stored Procedures\getLoggers.sql" />
+    <Build Include="sl1\Stored Procedures\getLoggerEvents.sql" />
+    <Build Include="indigo_v2\Stored Procedures\getLoggers.sql" />
+    <Build Include="indigo_v2\Stored Procedures\getLoggerEvents.sql" />
+    <Build Include="indigo_v2\Stored Procedures\getIndigoLoggerStats.sql" />
+    <Build Include="indigo_v2\Stored Procedures\getAvgHourlyAmbientTemperatureOverTime.sql" />
+    <Build Include="dbo\Stored Procedures\getTrack.sql" />
+    <Build Include="dbo\Stored Procedures\getHotspots.sql" />
+    <Build Include="dbo\Stored Procedures\getGpsCount.sql" />
+    <Build Include="dbo\Stored Procedures\getDgData.sql" />
+    <Build Include="dbo\Stored Procedures\getDevicesWithStaleData.sql" />
+    <Build Include="dbo\Stored Procedures\getDeviceStats.sql" />
+    <Build Include="dbo\Stored Procedures\getDevices.sql" />
+    <Build Include="dbo\Stored Procedures\getDeviceEvents.sql" />
+    <Build Include="dbo\Stored Procedures\getBatteryChargeTelerik.sql" />
+    <Build Include="dbo\Stored Procedures\getBatteryChargeHighcharts.sql" />
+    <Build Include="dbo\Stored Procedures\getAmbientTemperatureHighcharts.sql" />
   </ItemGroup>
 </Project>
