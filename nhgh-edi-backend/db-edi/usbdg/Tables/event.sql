@@ -4,7 +4,7 @@
     [EERR]          VARCHAR (20)   NULL,
     [ESER]          VARCHAR (50)   NOT NULL,
     [zutc_now]      DATETIME2 (7)  NOT NULL,
-    [zcell_info]    VARCHAR (100)  NULL,
+    [zcell_info]    VARCHAR (280)  NULL,
     [zbatt_volt]    SMALLINT       NULL,
     [zbatt_chrg]    SMALLINT       NULL,
     [DATEADDED]     DATETIME2 (7)  NULL,
@@ -12,6 +12,8 @@
     CONSTRAINT [PK_usbdg_event] PRIMARY KEY CLUSTERED ([zutc_now] ASC, [ESER] ASC),
     CONSTRAINT [FK_usbdg_event.ESER] FOREIGN KEY ([ESER]) REFERENCES [usbdg].[device] ([ESER])
 );
+
+
 
 
 
