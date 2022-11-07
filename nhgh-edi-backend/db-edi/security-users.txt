@@ -1,0 +1,57 @@
+#####################################################################
+# Production Users
+#####################################################################
+
+-- Used by cdash-prod.azurewebsites.net
+CREATE USER cdashsvc FOR LOGIN cdashsvc WITH DEFAULT_SCHEMA=[dbo]
+
+-- data importer tool
+CREATE USER edi_telemetry FOR LOGIN edi_telemetry WITH DEFAULT_SCHEMA=[telemetry]
+
+
+#####################################################################
+# Production Permissions
+#####################################################################
+
+-- cdashsvc
+GRANT EXECUTE ON OBJECT::[usbdg].[getUsbdgDeviceEvents] to cdashsvc;
+GRANT EXECUTE ON OBJECT::[usbdg].[uspLoadUsbdgDevices] to cdashsvc;
+GRANT EXECUTE ON OBJECT::[usbdg].[uspUpdateDeviceComments] to cdashsvc;
+GRANT EXECUTE ON OBJECT::[usbdg].[uspLoadUsbdgLocations] to cdashsvc;
+GRANT EXECUTE ON OBJECT::[usbdg].[uspLoadUsbdgEvents] to cdashsvc;
+GRANT EXECUTE ON OBJECT::[telemetry].[getAllEdiFilePackages] to cdashsvc;
+GRANT EXECUTE ON OBJECT::[telemetry].[getEdiFilePackageAdfActivity] to cdashsvc;
+GRANT EXECUTE ON OBJECT::[telemetry].[getFailedEdiFilePackages] to cdashsvc;
+GRANT EXECUTE ON OBJECT::[telemetry].[getEdiPiplelineEvents] to cdashsvc;
+GRANT EXECUTE ON OBJECT::[telemetry].[getEdiPipelineFailureCounts] to cdashsvc;
+GRANT EXECUTE ON OBJECT::[telemetry].[getEdiJobStatusEvent] to cdashsvc;
+GRANT EXECUTE ON OBJECT::[telemetry].[getEdiJobFailureCounts] to cdashsvc;
+GRANT EXECUTE ON OBJECT::[telemetry].[getEdiFunctionTraces] to cdashsvc;
+GRANT EXECUTE ON OBJECT::[telemetry].[getEdiAdfActivityEvent] to cdashsvc;
+GRANT EXECUTE ON OBJECT::[telemetry].[getEdiFilePackagesOverallStats] to cdashsvc;
+GRANT EXECUTE ON OBJECT::[telemetry].[getEdiFilePackagePiplelineEvents] to cdashsvc;
+GRANT EXECUTE ON OBJECT::[telemetry].[getEdiFilePackageJobStatus] to cdashsvc;
+GRANT EXECUTE ON OBJECT::[telemetry].[getEdiFailedFilePackagesOverTime] to cdashsvc;
+GRANT EXECUTE ON OBJECT::[sl1].[getLoggers] to cdashsvc;
+GRANT EXECUTE ON OBJECT::[sl1].[getLoggerEvents] to cdashsvc;
+GRANT EXECUTE ON OBJECT::[indigo_v2].[getAvgHourlyAmbientTemperatureOverTime] to cdashsvc;
+GRANT EXECUTE ON OBJECT::[indigo_v2].[getLoggerEvents] to cdashsvc;
+GRANT EXECUTE ON OBJECT::[indigo_v2].[getLoggers] to cdashsvc;
+GRANT EXECUTE ON OBJECT::[indigo_v2].[getIndigoLoggerStats] to cdashsvc;
+GRANT EXECUTE ON OBJECT::[dbo].[getTrack] to cdashsvc;
+GRANT EXECUTE ON OBJECT::[dbo].[getHotspots] to cdashsvc;
+GRANT EXECUTE ON OBJECT::[dbo].[getGpsCount] to cdashsvc;
+GRANT EXECUTE ON OBJECT::[dbo].[getDgData] to cdashsvc;
+GRANT EXECUTE ON OBJECT::[dbo].[getDeviceStats] to cdashsvc;
+GRANT EXECUTE ON OBJECT::[dbo].[getDevicesWithStaleData] to cdashsvc;
+GRANT EXECUTE ON OBJECT::[dbo].[getDevices] to cdashsvc;
+GRANT EXECUTE ON OBJECT::[dbo].[getDeviceEvents] to cdashsvc;
+GRANT EXECUTE ON OBJECT::[dbo].[getBatteryChargeTelerik] to cdashsvc;
+GRANT EXECUTE ON OBJECT::[dbo].[getBatteryChargeHighcharts] to cdashsvc;
+GRANT EXECUTE ON OBJECT::[dbo].[getAmbientTemperatureHighcharts] to cdashsvc;
+
+-- edi_telemetry
+GRANT EXECUTE ON OBJECT::[telemetry].[uspCreateEdiAdfPipelineEvent] to edi_telemetry
+GRANT EXECUTE ON OBJECT::[telemetry].[uspCreateEdiFunctionTrace] to edi_telemetry
+GRANT EXECUTE ON OBJECT::[telemetry].[uspCreateEdiJobStatusEvent] to edi_telemetry
+GRANT EXECUTE ON OBJECT::[telemetry].[uspCreateEdiPipelineEvent] to edi_telemetry
