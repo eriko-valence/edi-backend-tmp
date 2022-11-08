@@ -137,12 +137,9 @@
     <Build Include="dbo\Stored Procedures\getTrack.sql" />
     <Build Include="dbo\Stored Procedures\getHotspots.sql" />
     <Build Include="dbo\Stored Procedures\getGpsCount.sql" />
-    <Build Include="dbo\Stored Procedures\getDgData.sql" />
-    <Build Include="dbo\Stored Procedures\getDevicesWithStaleData.sql" />
     <Build Include="dbo\Stored Procedures\getDeviceStats.sql" />
     <Build Include="dbo\Stored Procedures\getDevices.sql" />
     <Build Include="dbo\Stored Procedures\getDeviceEvents.sql" />
-    <Build Include="dbo\Stored Procedures\getBatteryChargeTelerik.sql" />
     <Build Include="dbo\Stored Procedures\getBatteryChargeHighcharts.sql" />
     <Build Include="dbo\Stored Procedures\getAmbientTemperatureHighcharts.sql" />
   </ItemGroup>
