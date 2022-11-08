@@ -41,4 +41,6 @@ BEGIN
         [LSER] = @LSER AND
         ABST_CALC >= @StartDate AND 
         ABST_CALC <= @EndDate
+    ORDER BY
+        ABST_CALC DESC
 END
