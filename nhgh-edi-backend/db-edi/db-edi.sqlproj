@@ -101,11 +101,7 @@
     <Build Include="telemetry\Tables\EdiAdfActivity.sql" />
     <Build Include="telemetry\Stored Procedures\getEdiFunctionTraces.sql" />
     <Build Include="telemetry\Stored Procedures\getEdiJobFailureCounts.sql" />
-    <Build Include="telemetry\Stored Procedures\getEdiJobStatusEvent.sql" />
-    <Build Include="telemetry\Stored Procedures\getEdiPipelineFailureCounts.sql" />
-    <Build Include="telemetry\Stored Procedures\getEdiPiplelineEvents.sql" />
     <Build Include="telemetry\Stored Procedures\getFailedEdiFilePackages.sql" />
-    <Build Include="telemetry\Stored Procedures\getEdiAdfActivityEvent.sql" />
     <Build Include="telemetry\Stored Procedures\getEdiFailedFilePackagesOverTime.sql" />
     <Build Include="telemetry\Stored Procedures\getEdiFilePackageAdfActivity.sql" />
     <Build Include="telemetry\Stored Procedures\getEdiFilePackageJobStatus.sql" />
