@@ -30,8 +30,8 @@ namespace lib_edi.Services.Ems
         /// </remarks>
         public static void Initialize()
         {
+            emsLoggerModelsSupported = new();
             emsLoggerModelsSupported.Add("Indigo_Lid_201", DataLoggerModelsEnum.Name.INDIGO_V2);
-            emsLoggerModelsSupported.Add("L201", DataLoggerModelsEnum.Name.INDIGO_V2);
             emsLoggerModelsSupported.Add("Demo EMS Logger", DataLoggerModelsEnum.Name.SL1);
         }
 
@@ -124,6 +124,11 @@ namespace lib_edi.Services.Ems
         /// <param name="loggerModel">EMS LMOD property value</param>
         public static EmsLoggerModelCheckResult GetEmsLoggerModelFromEmsLogLmodProperty(string loggerModel)
         {
+            if (emsLoggerModelsSupported == null)
+            {
+                Initialize();
+            }
+
             EmsLoggerModelCheckResult result = new();
             DataLoggerModelsEnum.Name wellKnownLoggerModel = DataLoggerModelsEnum.Name.UNKNOWN;
             bool isLoggerModelSupported = false;
