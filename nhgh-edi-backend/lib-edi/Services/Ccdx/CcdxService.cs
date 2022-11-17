@@ -125,15 +125,17 @@ namespace lib_edi.Services.Ccdx
 			return randomId;
 		}
 
-		/// <summary>
-		/// Builds the coldchain equipment type (ce-type) from a string formatted blob path
-		/// </summary>
-		/// <param name="path">Blob path in string format</param>
-		/// <remarks>
-		/// The ce-type would be "org.nhgh.usbdg.report.dev" with the following example report flie: 
-		///   2021-09-03/usbdg/usbdg001_2021-09-03_1629928806_logdata_eriko_4.json.zip
-		/// </remarks>
-		public static string GetCETypeFromBlobPath(string path)
+        /// <summary>
+        /// Builds the coldchain equipment type (ce-type) from a string formatted blob path
+        /// </summary>
+        /// <param name="path">Blob path in string format</param>
+        /// <example>
+        /// The ce-type would be "org.nhgh.{type}.report.dev" with the following example report flie: 
+		///		package file name:	ems/2022-11-16/40A36BCA6983_20221116T003532Z_002100255547501820383131_reports.tar.gz
+        ///		template:			org.nhgh.{0}.report.dev.local
+		///		cd-type:			org.nhgh.ems.report.dev.local
+        /// </example>
+        public static string GetCETypeFromBlobPath(string path)
 		{
 			string ceTypeTemplate = Environment.GetEnvironmentVariable("CCDX_PUBLISHER_HEADER_CE_TYPE");
 			string ceType = null;

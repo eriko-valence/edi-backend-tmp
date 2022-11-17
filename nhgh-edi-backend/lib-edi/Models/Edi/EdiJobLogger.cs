@@ -9,5 +9,6 @@ namespace lib_edi.Models.Edi
     public class EdiJobLogger
     {
         public string LSER { get; set; }
+        public string LMOD { get; set; }
     }
 }

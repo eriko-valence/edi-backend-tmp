@@ -401,6 +401,12 @@
 			"error-message": "File package is unknown",
 			"error-source": "Transform Function",
 			"error-mitigation": null
+		},
+		"EHN9": {
+			"error-code": "EHN9",
+			"error-message": "Unsupported EMS logger model",
+			"error-source": "Transform Function",
+			"error-mitigation": null
 		}
 	}
 }

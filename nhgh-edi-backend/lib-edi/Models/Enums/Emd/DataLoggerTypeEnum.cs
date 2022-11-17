@@ -15,14 +15,15 @@ namespace lib_edi.Models.Enums.Emd
 		public enum Name
 		{
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
-			NONE,
-			USBDG_DATASIM,
-			INDIGO_V2,
-			CFD50,
-			NO_LOGGER,
-			SL1,
-			UNKNOWN
+            NONE,
+            CFD50,
+            EMS,
+            INDIGO_V2,
+            NO_LOGGER,
+            SL1,
+            USBDG_DATASIM,
+            UNKNOWN
 #pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
-		}
+        }
 	}
 }
