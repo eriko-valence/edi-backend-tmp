@@ -253,7 +253,7 @@ namespace lib_edi.Services.CceDevice
 			string propName = null;
 			string propValue = null;
 			string sourceFile = null;
-			EdiJob ediJob = new EdiJob();
+			EdiJob ediJob = new ();
 
 			try
 			{
@@ -390,7 +390,7 @@ namespace lib_edi.Services.CceDevice
         /// <param name="log">Microsoft extension logger</param>
         /// <param name="e">Exception object</param>
         /// <param name="errorCode">Error code</param>
-        public static void LogEmsTransformErrorEventToAppInsights(string reportFileName, ILogger log, Exception e, string errorCode, DataLoggerTypeEnum.Name loggerTypeEnum)
+        public static void LogEmsTransformErrorEventToAppInsights(string reportFileName, ILogger log, Exception e, string errorCode, DataLoggerTypeEnum.Name loggerTypeEnum, PipelineFailureReasonEnum.Name failureReason)
         {
             string errorMessage = EdiErrorsService.BuildExceptionMessageString(e, errorCode, EdiErrorsService.BuildErrorVariableArrayList(reportFileName));
             PipelineEvent pipelineEvent = new PipelineEvent();
@@ -398,7 +398,7 @@ namespace lib_edi.Services.CceDevice
             pipelineEvent.StageName = PipelineStageEnum.Name.ADF_TRANSFORM;
             pipelineEvent.LoggerType = loggerTypeEnum;
             pipelineEvent.PipelineFailureType = PipelineFailureTypeEnum.Name.ERROR;
-            pipelineEvent.PipelineFailureReason = PipelineFailureReasonEnum.Name.UNKNOWN_EXCEPTION;
+            pipelineEvent.PipelineFailureReason = failureReason;
             pipelineEvent.ReportFileName = reportFileName;
             pipelineEvent.ErrorCode = errorCode;
             pipelineEvent.ErrorMessage = errorMessage;

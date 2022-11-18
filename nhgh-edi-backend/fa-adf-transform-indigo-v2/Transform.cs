@@ -24,6 +24,7 @@ using lib_edi.Models.Edi;
 using lib_edi.Models.Enums.Emd;
 using System.Net;
 using lib_edi.Services.Ems;
+using lib_edi.Models.Enums.Azure.AppInsights;
 
 namespace fa_adf_transform_indigo_v2
 {
@@ -38,7 +39,9 @@ namespace fa_adf_transform_indigo_v2
             ILogger log)
         {
             string loggerType = DataLoggerTypeEnum.Name.UNKNOWN.ToString();
+            string verfiedLoggerType = DataLoggerTypeEnum.Name.UNKNOWN.ToString();
             DataLoggerTypeEnum.Name loggerTypeEnum = DataLoggerTypeEnum.Name.UNKNOWN;
+            DataLoggerTypeEnum.Name verifiedLoggerTypeEnum = DataLoggerTypeEnum.Name.UNKNOWN;
             TransformHttpRequestMessageBodyDto payload = null;
 
             try
@@ -95,22 +98,27 @@ namespace fa_adf_transform_indigo_v2
 
                     log.LogInformation($"- Start tracking EDI job status");
                     EdiJob ediJob = UsbdgDataProcessorService.PopulateEdiJobObject(usbdgReportMetadata, emsLogFiles);
+                    
+                    log.LogInformation($"- Verify EMS logger type using EMS log LMOD property value");
+                    string loggerModelToCheck = ediJob.Logger.LMOD ?? "";
+                    EmsLoggerModelCheckResult loggerModelCheckResult = EmsService.GetEmsLoggerModelFromEmsLogLmodProperty(loggerModelToCheck);
 
-                    log.LogInformation($"- Assess EMS logger type using EMS log LMOD property");
-                    EmsLoggerModelCheckResult loggerModelCheckResult = EmsService.GetEmsLoggerModelFromEmsLogLmodProperty(ediJob.Logger.LMOD);
+                    verfiedLoggerType = loggerModelCheckResult.LoggerModelEnum.ToString().ToLower();
+                    verifiedLoggerTypeEnum = EmsService.GetDataLoggerType(verfiedLoggerType);
+                    log.LogInformation($"- LMOD to Check   : '{loggerModelToCheck}'");
+                    log.LogInformation($"- Check Result    : '{verfiedLoggerType}'");
 
                     if (loggerModelCheckResult.IsSupported)
                     {
-                        loggerType = loggerModelCheckResult.LoggerModel.ToString().ToLower();
-                        log.LogInformation($"- Map '{loggerType}' objects to csv records");
+                        log.LogInformation($"- Map '{verfiedLoggerType}' objects to csv records");
                         //List<IndigoV2EventRecord> usbdbLogCsvRows = DataModelMappingService.MapIndigoV2Events(emsLogFiles, ediJob);
-                        List<EmsEventRecord> emsEventCsvRows = DataModelMappingService.MapEmsLoggerEvents(emsLogFiles, loggerType, ediJob);
+                        List<EmsEventRecord> emsEventCsvRows = DataModelMappingService.MapEmsLoggerEvents(emsLogFiles, verfiedLoggerType, ediJob);
                         //List<EdiSinkRecord> indigoLocationCsvRows = DataModelMappingService.MapIndigoV2Locations(usbdgReportMetadata, ediJob);
                         List<EdiSinkRecord> usbdgLocationCsvRows = DataModelMappingService.MapUsbdgLocations(usbdgReportMetadata, ediJob);
                         List<EdiSinkRecord> usbdgDeviceCsvRows = DataModelMappingService.MapUsbdgDevice(usbdgReportMetadata);
                         List<EdiSinkRecord> usbdgEventCsvRows = DataModelMappingService.MapUsbdgEvent(usbdgReportMetadata);
 
-                        log.LogInformation($"- Transform '{loggerType}' csv records");
+                        log.LogInformation($"- Transform '{verfiedLoggerType}' csv records");
                         log.LogInformation($"  - Convert relative time to total seconds (all records)");
                         emsEventCsvRows = DataTransformService.ConvertRelativeTimeToTotalSecondsForUsbdgLogRecords(emsEventCsvRows);
 
@@ -141,29 +149,32 @@ namespace fa_adf_transform_indigo_v2
                             log.LogInformation($"    - record[1]._ABST (calculated absolute time): {sortedEmsEventCsvRows[1].EDI_RECORD_ABST_CALC}");
                         }
 
-                        log.LogInformation($"- Write '{loggerType}' csv records to azure blob storage");
+                        log.LogInformation($"- Write '{verfiedLoggerType}' csv records to azure blob storage");
                         List<EdiSinkRecord> sortedEmsEventCsvRowsFinal = sortedEmsEventCsvRows.Cast<EdiSinkRecord>().ToList();
 
-                        string r1 = await DataTransformService.WriteRecordsToCsvBlob(ouputContainer, payload, sortedEmsEventCsvRowsFinal, loggerType, log);
-                        string r2 = await DataTransformService.WriteRecordsToCsvBlob(ouputContainer, payload, usbdgDeviceCsvRows, loggerType, log);
-                        string r3 = await DataTransformService.WriteRecordsToCsvBlob(ouputContainer, payload, usbdgEventCsvRows, loggerType, log);
-                        string r4 = await DataTransformService.WriteRecordsToCsvBlob(ouputContainer, payload, usbdgLocationCsvRows, loggerType, log);
+                        string r1 = await DataTransformService.WriteRecordsToCsvBlob(ouputContainer, payload, sortedEmsEventCsvRowsFinal, verfiedLoggerType, log);
+                        string r2 = await DataTransformService.WriteRecordsToCsvBlob(ouputContainer, payload, usbdgDeviceCsvRows, verfiedLoggerType, log);
+                        string r3 = await DataTransformService.WriteRecordsToCsvBlob(ouputContainer, payload, usbdgEventCsvRows, verfiedLoggerType, log);
+                        string r4 = await DataTransformService.WriteRecordsToCsvBlob(ouputContainer, payload, usbdgLocationCsvRows, verfiedLoggerType, log);
 
-                        string blobPathFolderCurated = DataTransformService.BuildCuratedBlobFolderPath(payload.Path, loggerType);
+                        string blobPathFolderCurated = DataTransformService.BuildCuratedBlobFolderPath(payload.Path, verfiedLoggerType);
 
                         log.LogInformation(" - Serialize http response body");
                         string responseBody = DataTransformService.SerializeHttpResponseBody(blobPathFolderCurated);
 
                         log.LogInformation(" - Send http response message");
                         log.LogInformation("- Send successfully completed event to app insights");
-                        DataTransformService.LogEmsTransformSucceededEventToAppInsights(payload.FileName, loggerTypeEnum, log);
+                        DataTransformService.LogEmsTransformSucceededEventToAppInsights(payload.FileName, verifiedLoggerTypeEnum, log);
                         log.LogInformation(" - SUCCESS");
 
                         return new OkObjectResult(responseBody);
                     } else {
+                        // NHGH-2710 (2022.11.18) - Set to unknown LMOD property value not on supported EMS logger list, so 
+                        loggerType = payload.LoggerType ?? DataLoggerTypeEnum.Name.UNKNOWN.ToString();
+                        loggerTypeEnum = EmsService.GetDataLoggerType(loggerType);
                         string errorCode = "EHN9";
                         string errorMessage = EdiErrorsService.BuildExceptionMessageString(null, errorCode, EdiErrorsService.BuildErrorVariableArrayList(payload.FileName));
-                        DataTransformService.LogEmsTransformErrorEventToAppInsights(payload?.FileName, log, null, errorCode, loggerTypeEnum);
+                        DataTransformService.LogEmsTransformErrorEventToAppInsights(payload?.FileName, log, null, errorCode, loggerTypeEnum, PipelineFailureReasonEnum.Name.UNSUPPORTED_EMS_DEVICE);
                         //string errorMessage = $"Unknown file package";
                         log.LogError($"- {errorMessage}");
                         var result = new ObjectResult(new { statusCode = 500, currentDate = DateTime.Now, message = errorMessage });
@@ -213,7 +224,7 @@ namespace fa_adf_transform_indigo_v2
                 } else {
                     string errorCode = "KHRD";
                     string errorMessage = EdiErrorsService.BuildExceptionMessageString(null, errorCode, EdiErrorsService.BuildErrorVariableArrayList(payload.FileName));
-                    DataTransformService.LogEmsTransformErrorEventToAppInsights(payload?.FileName, log, null, errorCode, loggerTypeEnum);
+                    DataTransformService.LogEmsTransformErrorEventToAppInsights(payload?.FileName, log, null, errorCode, loggerTypeEnum, PipelineFailureReasonEnum.Name.UNKNOWN_FILE_PACKAGE);
                     //string errorMessage = $"Unknown file package";
                     log.LogError($"- {errorMessage}");
                     var result = new ObjectResult(new { statusCode = 500, currentDate = DateTime.Now, message = errorMessage });
@@ -227,7 +238,7 @@ namespace fa_adf_transform_indigo_v2
                 
                 string errorMessage = EdiErrorsService.BuildExceptionMessageString(e, errorCode, EdiErrorsService.BuildErrorVariableArrayList(payload.FileName));
                 string innerErrorCode = EdiErrorsService.GetInnerErrorCodeFromMessage(errorMessage, errorCode);
-                DataTransformService.LogEmsTransformErrorEventToAppInsights(payload?.FileName, log, e, innerErrorCode, loggerTypeEnum);
+                DataTransformService.LogEmsTransformErrorEventToAppInsights(payload?.FileName, log, e, innerErrorCode, loggerTypeEnum, PipelineFailureReasonEnum.Name.UNKNOWN_EXCEPTION);
                 if (e is BadRequestException)
                 {
                     string errStr = $"Bad request thrown while validating '{loggerType}' transformation request";

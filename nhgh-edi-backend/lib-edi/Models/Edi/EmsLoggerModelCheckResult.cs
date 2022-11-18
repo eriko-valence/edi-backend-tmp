@@ -9,7 +9,14 @@ namespace lib_edi.Models.Edi
 {
     public class EmsLoggerModelCheckResult
     {
-        public DataLoggerModelsEnum.Name LoggerModel { get; set; }
+        public EmsLoggerModelCheckResult()
+        {
+            LMOD = "";
+            LoggerModelEnum = DataLoggerModelsEnum.Name.UNKNOWN;
+            IsSupported = false;
+        }
+        public DataLoggerModelsEnum.Name LoggerModelEnum { get; set; }
         public bool IsSupported { get; set; }
+        public string LMOD { get; set; }
     }
 }

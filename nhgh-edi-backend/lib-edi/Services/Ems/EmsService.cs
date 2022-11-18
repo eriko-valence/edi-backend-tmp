@@ -141,7 +141,8 @@ namespace lib_edi.Services.Ems
                     isLoggerModelSupported = true;
                 }
             }
-            result.LoggerModel = wellKnownLoggerModel;
+            result.LMOD = loggerModel;
+            result.LoggerModelEnum = wellKnownLoggerModel;
             result.IsSupported = isLoggerModelSupported;
             return result;
         }
