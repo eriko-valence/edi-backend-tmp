@@ -11,12 +11,14 @@ BEGIN
                 [ESER],
                 substring([ESER],9,4) AS ShortId,
                 [LSER],
-                concat(substring([LSER],3,2),substring([LSER],7,2)) AS LoggerShortId
+                concat(substring([LSER],3,2),substring([LSER],7,2)) AS LoggerShortId,
+                [LSV]
             FROM 
                 [indigo_v2].[event]
             GROUP BY
                 [ESER],
-                [LSER]
+                [LSER],
+                [LSV]
         ),
         -- get USBDG device list
         DATAGRABBERS_CTE AS
