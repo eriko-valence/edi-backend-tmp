@@ -24,6 +24,7 @@ using lib_edi.Models.Edi;
 using lib_edi.Models.Enums.Emd;
 using System.Net;
 using lib_edi.Services.Ems;
+using lib_edi.Models.Enums.Azure.AppInsights;
 
 namespace fa_adf_transform_indigo_v2
 {
@@ -163,7 +164,7 @@ namespace fa_adf_transform_indigo_v2
                     } else {
                         string errorCode = "EHN9";
                         string errorMessage = EdiErrorsService.BuildExceptionMessageString(null, errorCode, EdiErrorsService.BuildErrorVariableArrayList(payload.FileName));
-                        DataTransformService.LogEmsTransformErrorEventToAppInsights(payload?.FileName, log, null, errorCode, loggerTypeEnum);
+                        DataTransformService.LogEmsTransformErrorEventToAppInsights(payload?.FileName, log, null, errorCode, loggerTypeEnum, PipelineFailureReasonEnum.Name.UNSUPPORTED_EMS_DEVICE);
                         //string errorMessage = $"Unknown file package";
                         log.LogError($"- {errorMessage}");
                         var result = new ObjectResult(new { statusCode = 500, currentDate = DateTime.Now, message = errorMessage });
@@ -213,7 +214,7 @@ namespace fa_adf_transform_indigo_v2
                 } else {
                     string errorCode = "KHRD";
                     string errorMessage = EdiErrorsService.BuildExceptionMessageString(null, errorCode, EdiErrorsService.BuildErrorVariableArrayList(payload.FileName));
-                    DataTransformService.LogEmsTransformErrorEventToAppInsights(payload?.FileName, log, null, errorCode, loggerTypeEnum);
+                    DataTransformService.LogEmsTransformErrorEventToAppInsights(payload?.FileName, log, null, errorCode, loggerTypeEnum, PipelineFailureReasonEnum.Name.UNKNOWN_FILE_PACKAGE);
                     //string errorMessage = $"Unknown file package";
                     log.LogError($"- {errorMessage}");
                     var result = new ObjectResult(new { statusCode = 500, currentDate = DateTime.Now, message = errorMessage });
@@ -227,7 +228,7 @@ namespace fa_adf_transform_indigo_v2
                 
                 string errorMessage = EdiErrorsService.BuildExceptionMessageString(e, errorCode, EdiErrorsService.BuildErrorVariableArrayList(payload.FileName));
                 string innerErrorCode = EdiErrorsService.GetInnerErrorCodeFromMessage(errorMessage, errorCode);
-                DataTransformService.LogEmsTransformErrorEventToAppInsights(payload?.FileName, log, e, innerErrorCode, loggerTypeEnum);
+                DataTransformService.LogEmsTransformErrorEventToAppInsights(payload?.FileName, log, e, innerErrorCode, loggerTypeEnum, PipelineFailureReasonEnum.Name.UNKNOWN_EXCEPTION);
                 if (e is BadRequestException)
                 {
                     string errStr = $"Bad request thrown while validating '{loggerType}' transformation request";
