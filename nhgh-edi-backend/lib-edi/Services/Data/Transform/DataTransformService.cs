@@ -253,7 +253,7 @@ namespace lib_edi.Services.CceDevice
 			string propName = null;
 			string propValue = null;
 			string sourceFile = null;
-			EdiJob ediJob = new EdiJob();
+			EdiJob ediJob = new ();
 
 			try
 			{
