@@ -170,7 +170,7 @@ namespace fa_adf_transform_indigo_v2
                         return new OkObjectResult(responseBody);
                     } else {
                         // NHGH-2710 (2022.11.18) - Set to unknown LMOD property value not on supported EMS logger list, so 
-                        loggerType = payload.LoggerType ?? DataLoggerTypeEnum.Name.UNKNOWN.ToString();
+                        loggerType = DataLoggerTypeEnum.Name.UNKNOWN.ToString();
                         loggerTypeEnum = EmsService.GetDataLoggerType(loggerType);
                         string errorCode = "EHN9";
                         string errorMessage = EdiErrorsService.BuildExceptionMessageString(null, errorCode, EdiErrorsService.BuildErrorVariableArrayList(payload.FileName));
