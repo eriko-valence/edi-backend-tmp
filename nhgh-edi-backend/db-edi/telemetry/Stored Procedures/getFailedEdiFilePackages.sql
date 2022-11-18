@@ -9,16 +9,18 @@ BEGIN
     FilePackageLoggerTypeCTE
 	AS
 	(
-SELECT 
-    FilePackageName, 
-    DataLoggerType
-FROM 
-    [telemetry].[EdiPipelineEvents] 
-WHERE 
-    PipelineStage = 'ADF_TRANSFORM' AND 
-    DataLoggerType IS NOT NULL
-GROUP BY 
-    FilePackageName, DataLoggerType
+        /*
+        NHGH-2653 (2022.11.17 @ 11:10AM) - This partition is needed to account for 
+          ADF pipeline jobs that are re-run. We want the most recent result.
+        */
+        SELECT * FROM (SELECT *, ROW_NUMBER() OVER (
+                                PARTITION BY [FilePackageName] 
+                                ORDER BY [EventTime] DESC
+                        ) AS [ROW_NUMBER]
+        FROM 
+        [telemetry].[EdiPipelineEvents]) EVENTS
+        WHERE 
+        ROW_NUMBER = 1
 	)
 
 

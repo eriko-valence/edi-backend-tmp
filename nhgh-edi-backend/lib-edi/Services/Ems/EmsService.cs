@@ -1,4 +1,5 @@
-﻿using lib_edi.Models.Enums.Emd;
+﻿using lib_edi.Models.Edi;
+using lib_edi.Models.Enums.Emd;
 using lib_edi.Services.Loggers;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Storage.Blob;
@@ -11,12 +12,36 @@ using System.Threading.Tasks;
 
 namespace lib_edi.Services.Ems
 {
+
+
+
+
     public class EmsService
     {
+
+        // cross references logger models (LMOD json property) to well known logger model names 
+        private static Dictionary<string, DataLoggerModelsEnum.Name> emsLoggerModelsSupported;
+
+        /// <summary>
+        /// Initializes supported EMS logger models dictionary
+        /// </summary>
+        /// <remarks>
+        /// NHGH-2700 (2022.11.16) - Added supported EMS logger models dictionary initialization
+        /// </remarks>
+        public static void Initialize()
+        {
+            emsLoggerModelsSupported = new();
+            emsLoggerModelsSupported.Add("Indigo_Lid_201", DataLoggerModelsEnum.Name.INDIGO_V2);
+            emsLoggerModelsSupported.Add("Demo EMS Logger", DataLoggerModelsEnum.Name.SL1);
+        }
+
         /// <summary>
         /// Validate data logger type is supported by ETL pipeline
         /// </summary>
         /// <param name="loggerType">Blob path in string format</param>
+        /// <remarks>
+        /// NHGH-2698 (2022.11.16) - Added generic "ems" as supported logger type
+        /// </remarks>
         public static bool ValidateLoggerType(string loggerType)
         {
             bool result = false;
@@ -40,6 +65,10 @@ namespace lib_edi.Services.Ems
                     result = true;
                 }
                 else if (loggerType.ToUpper() == DataLoggerTypeEnum.Name.NO_LOGGER.ToString())
+                {
+                    result = true;
+                }
+                else if (loggerType.ToUpper() == DataLoggerTypeEnum.Name.EMS.ToString())
                 {
                     result = true;
                 }
@@ -75,6 +104,10 @@ namespace lib_edi.Services.Ems
                 {
                     return DataLoggerTypeEnum.Name.NO_LOGGER;
                 }
+                else if (loggerType.ToUpper() == DataLoggerTypeEnum.Name.EMS.ToString())
+                {
+                    return DataLoggerTypeEnum.Name.EMS;
+                }
                 else
                 {
                     return DataLoggerTypeEnum.Name.UNKNOWN;
@@ -83,6 +116,34 @@ namespace lib_edi.Services.Ems
             {
                 return DataLoggerTypeEnum.Name.UNKNOWN;
             }
+        }
+
+        /// <summary>
+        /// Returns EMS data logger model string associated with an EMS log LMOD property value
+        /// </summary>
+        /// <param name="loggerModel">EMS LMOD property value</param>
+        public static EmsLoggerModelCheckResult GetEmsLoggerModelFromEmsLogLmodProperty(string loggerModel)
+        {
+            if (emsLoggerModelsSupported == null)
+            {
+                Initialize();
+            }
+
+            EmsLoggerModelCheckResult result = new();
+            DataLoggerModelsEnum.Name wellKnownLoggerModel = DataLoggerModelsEnum.Name.UNKNOWN;
+            bool isLoggerModelSupported = false;
+            if (loggerModel != null)
+            {
+                // is this LMOD a supported logger model? 
+                if (emsLoggerModelsSupported.ContainsKey(loggerModel))
+                {
+                    emsLoggerModelsSupported.TryGetValue(loggerModel, out wellKnownLoggerModel);
+                    isLoggerModelSupported = true;
+                }
+            }
+            result.LoggerModel = wellKnownLoggerModel;
+            result.IsSupported = isLoggerModelSupported;
+            return result;
         }
 
         /// <summary>
