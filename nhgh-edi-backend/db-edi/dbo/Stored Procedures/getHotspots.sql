@@ -21,7 +21,7 @@ BEGIN
 	declare @r table (lat float, lon float, groupNumber int)
 
 	declare @distfilter int = 500
-	declare @hotCount int = 12
+	declare @hotCount int = 8
 		
 	;with a as
 	(
