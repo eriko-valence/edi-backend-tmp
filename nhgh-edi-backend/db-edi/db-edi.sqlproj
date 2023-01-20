@@ -138,5 +138,6 @@
     <Build Include="dbo\Stored Procedures\getDeviceEvents.sql" />
     <Build Include="dbo\Stored Procedures\getBatteryChargeHighcharts.sql" />
     <Build Include="dbo\Stored Procedures\getAmbientTemperatureHighcharts.sql" />
+    <Build Include="indigo_v2\Stored Procedures\getAvgHourlyAmbientTemperatureOverTime_v2.sql" />
   </ItemGroup>
 </Project>
