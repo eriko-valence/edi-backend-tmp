@@ -17,8 +17,8 @@
     [LSV]        VARCHAR (20)   NULL,
     [RELT]       VARCHAR (20)   NOT NULL,
     [RTCW]       VARCHAR (20)   NULL,
-    [TAMB]       NUMERIC (4, 2) NULL,
-    [TVC]        NUMERIC (3, 1) NULL,
+    [TAMB]       NUMERIC (5, 2) NULL,
+    [TVC]        NUMERIC (5, 2) NULL,
     [ZCHRG]      VARCHAR (10)   NULL,
     [ZSTATE]     BIT            NULL,
     [ZVLVD]      BIT            NULL,
@@ -31,5 +31,10 @@
     [DCSV]       NUMERIC (4, 1) NULL,
     [FANS]       NUMERIC (4, 1) NULL,
     [SVA]        SMALLINT       NULL,
+    [DORV]       SMALLINT       NULL,
+    [DORF]       SMALLINT       NULL,
+    [TFRZ]       NUMERIC (5, 2) NULL,
     [_RELT_SECS] VARCHAR (20)   NULL);
+
+
 

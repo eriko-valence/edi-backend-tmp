@@ -75,6 +75,12 @@ namespace lib_edi.Models.Loggers.Csv
 		 */
         [Name("TVC")]
         public double? TVC { get; set; }
+        [Name("DORV")]
+        public string DORV { get; set; }
+        [Name("DORF")]
+        public string DORF { get; set; }
+        [Name("TFRZ")]
+        public string TFRZ { get; set; }
 
         [Name("_RELT_SECS")]
         public int _RELT_SECS { get; set; } // relative time (duration) in seconds (set by azure function)
