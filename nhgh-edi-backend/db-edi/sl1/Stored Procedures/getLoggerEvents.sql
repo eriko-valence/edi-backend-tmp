@@ -29,7 +29,10 @@ BEGIN
         --[RELT],
         --[RTCW],
         [TAMB],
-        [TVC]
+        [TVC],
+        [DORV],
+        [DORF],
+        [TFRZ]
         --[ZCHRG],
         --[ZSTATE],
         --[ZVLVD],

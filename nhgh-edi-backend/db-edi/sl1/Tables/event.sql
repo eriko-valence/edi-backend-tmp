@@ -17,8 +17,8 @@
     [LSV]        VARCHAR (20)   NULL,
     [RELT]       VARCHAR (20)   NOT NULL,
     [RTCW]       VARCHAR (20)   NULL,
-    [TAMB]       NUMERIC (4, 2) NULL,
-    [TVC]        NUMERIC (3, 1) NULL,
+    [TAMB]       NUMERIC (5, 2) NULL,
+    [TVC]        NUMERIC (5, 2) NULL,
     [ZCHRG]      VARCHAR (10)   NULL,
     [ZSTATE]     BIT            NULL,
     [ZVLVD]      BIT            NULL,
@@ -33,7 +33,12 @@
     [SVA]        SMALLINT       NULL,
     [_RELT_SECS] VARCHAR (20)   NULL,
     [DATEADDED]  DATETIME2 (7)  NULL,
+    [DORV]       SMALLINT       NULL,
+    [DORF]       SMALLINT       NULL,
+    [TFRZ]       NUMERIC (5, 2) NULL,
     CONSTRAINT [PK_sl1_event] PRIMARY KEY CLUSTERED ([RELT] ASC, [LSER] ASC),
     CONSTRAINT [FK_sl1_event_ESER] FOREIGN KEY ([ESER]) REFERENCES [usbdg].[device] ([ESER])
 );
+
+
 
