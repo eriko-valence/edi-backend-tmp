@@ -32,6 +32,7 @@ namespace lib_edi.Services.Ems
         {
             emsLoggerModelsSupported = new();
             emsLoggerModelsSupported.Add("Indigo_Lid_201", DataLoggerModelsEnum.Name.INDIGO_V2);
+            emsLoggerModelsSupported.Add("L201", DataLoggerModelsEnum.Name.INDIGO_V2);
             emsLoggerModelsSupported.Add("Demo EMS Logger", DataLoggerModelsEnum.Name.SL1);
         }
 
