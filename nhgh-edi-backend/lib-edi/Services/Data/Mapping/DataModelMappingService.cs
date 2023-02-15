@@ -471,14 +471,14 @@ namespace lib_edi.Services.Loggers
                         }
                     }
 
+                    string ediSource = DataTransformService.GetSourceFile(sourceLogJObject);
+
                     // Map csv record objects from source log file
                     foreach (KeyValuePair<string, JToken> log2 in sourceLogJObject)
                     {
                         // Load log record properties into csv record object
-                        if (log2.Value.Type == JTokenType.Array && log2.Key == "records")
+                        if (log2.Value.Type == JTokenType.Array && log2.Key == "records" && (!ediSource.Contains("_SYNC")))
                         {
-
-
                             //ObjectManager.SetObjectValue(ref sinkCsvEventRecord, "RELT", ediJob.RELT);
                             // Iterate each log record
                             foreach (JObject z in log2.Value.Children<JObject>())

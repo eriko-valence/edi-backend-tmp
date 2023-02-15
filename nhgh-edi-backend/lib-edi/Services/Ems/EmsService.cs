@@ -221,7 +221,7 @@ namespace lib_edi.Services.Ems
         public static bool IsFileFromEmsLogger(string blobName)
         {
             bool result = false;
-            if ((Path.GetExtension(blobName) == ".json") && (blobName.Contains("DATA") || blobName.Contains("CURRENT")))
+            if ((Path.GetExtension(blobName) == ".json") && (blobName.Contains("DATA") || blobName.Contains("CURRENT") || blobName.Contains("SYNC")))
             {
                 result = true;
             }
