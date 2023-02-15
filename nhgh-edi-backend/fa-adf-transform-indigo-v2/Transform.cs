@@ -52,6 +52,7 @@ namespace fa_adf_transform_indigo_v2
 
                 log.LogInformation($"- Deserialize log transformation http request body");
                 payload = await HttpService.DeserializeHttpRequestBody(req);
+                log.LogInformation($"- {payload.FileName} - Start processing file package");
 
                 log.LogInformation("- Validate http request body");
                 HttpService.ValidateHttpRequestBody(payload);
@@ -60,11 +61,11 @@ namespace fa_adf_transform_indigo_v2
                 DataTransformService.LogEmsTransformStartedEventToAppInsights(payload.FileName, log);
 
                 string inputBlobPath = $"{inputContainer.Name}/{payload.Path}";
-                log.LogInformation($"- Incoming blob path: {inputBlobPath}");
+                log.LogInformation($"- {payload.FileName} - Incoming blob path: {inputBlobPath}");
 
                 loggerType = payload.LoggerType ?? DataLoggerTypeEnum.Name.UNKNOWN.ToString();
                 loggerTypeEnum = EmsService.GetDataLoggerType(loggerType);
-                log.LogInformation($"- Detected logger type: '{loggerType}'");
+                log.LogInformation($"- {payload.FileName} - Detected logger type: '{loggerType}'");
 
                 log.LogInformation($"- Pull all blobs from file package {inputBlobPath}");
                 IEnumerable<IListBlobItem> logDirectoryBlobs = AzureStorageBlobService.GetListOfBlobsInDirectory(inputContainer, payload.Path, inputBlobPath);
@@ -99,14 +100,14 @@ namespace fa_adf_transform_indigo_v2
                     log.LogInformation($"- Start tracking EDI job status");
                     EdiJob ediJob = UsbdgDataProcessorService.PopulateEdiJobObject(usbdgReportMetadata, emsLogFiles);
                     
-                    log.LogInformation($"- Verify EMS logger type using EMS log LMOD property value");
+                    log.LogInformation($"- {payload.FileName} - Validate EMS logger type using LMOD property");
                     string loggerModelToCheck = ediJob.Logger.LMOD ?? "";
                     EmsLoggerModelCheckResult loggerModelCheckResult = EmsService.GetEmsLoggerModelFromEmsLogLmodProperty(loggerModelToCheck);
 
                     verfiedLoggerType = loggerModelCheckResult.LoggerModelEnum.ToString().ToLower();
                     verifiedLoggerTypeEnum = EmsService.GetDataLoggerType(verfiedLoggerType);
-                    log.LogInformation($"- LMOD to Check   : '{loggerModelToCheck}'");
-                    log.LogInformation($"- Check Result    : '{verfiedLoggerType}'");
+                    log.LogInformation($"- {payload.FileName}   - LMOD to Check   : '{loggerModelToCheck}'");
+                    log.LogInformation($"- {payload.FileName}   - Check Result    : '{verfiedLoggerType}'");
 
                     if (loggerModelCheckResult.IsSupported)
                     {
@@ -176,7 +177,7 @@ namespace fa_adf_transform_indigo_v2
                         string errorMessage = EdiErrorsService.BuildExceptionMessageString(null, errorCode, EdiErrorsService.BuildErrorVariableArrayList(payload.FileName));
                         DataTransformService.LogEmsTransformErrorEventToAppInsights(payload?.FileName, log, null, errorCode, loggerTypeEnum, PipelineFailureReasonEnum.Name.UNSUPPORTED_EMS_DEVICE);
                         //string errorMessage = $"Unknown file package";
-                        log.LogError($"- {errorMessage}");
+                        log.LogError($"- {payload.FileName} - {errorMessage}");
                         var result = new ObjectResult(new { statusCode = 500, currentDate = DateTime.Now, message = errorMessage });
                         result.StatusCode = 500;
                         return result;
@@ -226,7 +227,7 @@ namespace fa_adf_transform_indigo_v2
                     string errorMessage = EdiErrorsService.BuildExceptionMessageString(null, errorCode, EdiErrorsService.BuildErrorVariableArrayList(payload.FileName));
                     DataTransformService.LogEmsTransformErrorEventToAppInsights(payload?.FileName, log, null, errorCode, loggerTypeEnum, PipelineFailureReasonEnum.Name.UNKNOWN_FILE_PACKAGE);
                     //string errorMessage = $"Unknown file package";
-                    log.LogError($"- {errorMessage}");
+                    log.LogError($"- {payload.FileName} - {errorMessage}");
                     var result = new ObjectResult(new { statusCode = 500, currentDate = DateTime.Now, message = errorMessage });
                     result.StatusCode = 500;
                     return result;
@@ -242,15 +243,15 @@ namespace fa_adf_transform_indigo_v2
                 if (e is BadRequestException)
                 {
                     string errStr = $"Bad request thrown while validating '{loggerType}' transformation request";
-                    log.LogError($"- {errStr}");
-                    log.LogError($" - {errorMessage}");
+                    log.LogError($"- {payload.FileName} - {errStr}");
+                    log.LogError($"- {payload.FileName}   - {errorMessage}");
                     return new BadRequestObjectResult(errorMessage);
                 }
                 else
                 {
                     string errStr = $"Global level exception thrown while processing '{loggerType}' logs";
-                    log.LogError($"- {errStr}");
-                    log.LogError($" - {errorMessage}");
+                    log.LogError($"- {payload.FileName} - {errStr}");
+                    log.LogError($"- {payload.FileName}   - {errorMessage}");
                     var result = new ObjectResult(new { statusCode = 500, currentDate = DateTime.Now, message = errorMessage });
                     result.StatusCode = 500;
                     return result;
