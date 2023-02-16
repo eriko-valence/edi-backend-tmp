@@ -26,6 +26,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Xml;
+using Microsoft.AspNetCore.Mvc;
 
 namespace lib_edi.Services.CceDevice
 {
@@ -771,24 +772,23 @@ namespace lib_edi.Services.CceDevice
             {
                 foreach (CloudBlockBlob logBlob in logDirectoryBlobs)
                 {
-                    // NHGH-2362 (2022.06.16) - only add Indigo V2 data files
-                    if (EmsService.IsFileFromEmsLogger(logBlob.Name))
+                    // NHGH-2812 (2023.02.16) - we only want EMS logger (data, current data, and sync) files
+                    if (EmsService.IsThisEmsDataFile(logBlob.Name))
                     {
-                        if (logBlob.Name.Contains("_CURRENT_DATA_"))
-                        {
-                            listCurrentDataBlobs.Add(logBlob);
-                        }
-                        else if (logBlob.Name.Contains("_DATA_"))
-                        {
-                            listDataBlobs.Add(logBlob);
-                        }
-                        else if (logBlob.Name.Contains("_SYNC_"))
-                        {
-                            listSyncBlobs.Add(logBlob);
-                        }
+                        listDataBlobs.Add(logBlob);
                     }
+                    else if (EmsService.IsThisEmsCurrentDataFile(logBlob.Name))
+                    {
+                        listCurrentDataBlobs.Add(logBlob);
+                    }
+                    else if (EmsService.IsThisEmsSyncDataFile(logBlob.Name))
+                    {
+                        listSyncBlobs.Add(logBlob);
+                    }
+
                 }
 
+                // NHGH-2812 (2023.02.16) - Sync files have most recent data and should be processed last
                 listDataBlobs.AddRange(listCurrentDataBlobs);
                 listDataBlobs.AddRange(listSyncBlobs);
 
