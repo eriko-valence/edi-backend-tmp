@@ -472,7 +472,7 @@ namespace lib_edi.Services.Loggers
                         }
                     }
 
-                    // NHGH-2812 (2023.02.16) - Ignore sync file records (duplicate record exists in current data file)
+                    // NHGH-2812 (2023.02.16) - Ignore sync file records (duplicate records exists in current data file)
                     if (!EmsService.IsThisEmsSyncDataFile(sourceFile)) { 
                         // Map csv record objects from source log file
                         foreach (KeyValuePair<string, JToken> log2 in sourceLogJObject)
