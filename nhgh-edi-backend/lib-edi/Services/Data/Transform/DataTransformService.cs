@@ -26,7 +26,6 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Xml;
-using Microsoft.AspNetCore.Mvc;
 
 namespace lib_edi.Services.CceDevice
 {
