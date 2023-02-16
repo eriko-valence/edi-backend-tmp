@@ -174,7 +174,7 @@ namespace fa_adf_transform_indigo_v2
                         loggerType = DataLoggerTypeEnum.Name.UNKNOWN.ToString();
                         loggerTypeEnum = EmsService.GetDataLoggerType(loggerType);
                         string errorCode = "EHN9";
-                        string errorMessage = EdiErrorsService.BuildExceptionMessageString(null, errorCode, EdiErrorsService.BuildErrorVariableArrayList(payload.FileName));
+                        string errorMessage = EdiErrorsService.BuildExceptionMessageString(null, errorCode, EdiErrorsService.BuildErrorVariableArrayList(ediJob.Logger.LMOD));
                         DataTransformService.LogEmsTransformErrorEventToAppInsights(payload?.FileName, log, null, errorCode, loggerTypeEnum, PipelineFailureReasonEnum.Name.UNSUPPORTED_EMS_DEVICE);
                         //string errorMessage = $"Unknown file package";
                         log.LogError($"- {payload.FileName} - {errorMessage}");
