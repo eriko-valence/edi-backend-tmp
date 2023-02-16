@@ -10,8 +10,8 @@ namespace lib_edi.Models.Loggers.Csv
 {
     public class IndigoV2EventRecord : EmsEventRecord
     {
-        [Name("DORV")]
-        public int? DORV { get; set; }
+        //[Name("DORV")]
+        //public int? DORV { get; set; }
 
         [Name("HOLD")]
         public double? HOLD { get; set; }

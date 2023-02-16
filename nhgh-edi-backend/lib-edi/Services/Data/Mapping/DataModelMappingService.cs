@@ -8,6 +8,7 @@ using lib_edi.Models.Emd.Csv;
 using lib_edi.Models.Enums.Emd;
 using lib_edi.Models.Loggers.Csv;
 using lib_edi.Services.CceDevice;
+using lib_edi.Services.Ems;
 using lib_edi.Services.Errors;
 using Newtonsoft.Json.Linq;
 using System;
@@ -471,48 +472,44 @@ namespace lib_edi.Services.Loggers
                         }
                     }
 
-                    // Map csv record objects from source log file
-                    foreach (KeyValuePair<string, JToken> log2 in sourceLogJObject)
-                    {
-                        // Load log record properties into csv record object
-                        if (log2.Value.Type == JTokenType.Array && log2.Key == "records")
+                    // NHGH-2812 (2023.02.16) - Ignore sync file records (duplicate records exists in current data file)
+                    if (!EmsService.IsThisEmsSyncDataFile(sourceFile)) { 
+                        // Map csv record objects from source log file
+                        foreach (KeyValuePair<string, JToken> log2 in sourceLogJObject)
                         {
-
-
-                            //ObjectManager.SetObjectValue(ref sinkCsvEventRecord, "RELT", ediJob.RELT);
-                            // Iterate each log record
-                            foreach (JObject z in log2.Value.Children<JObject>())
+                            // Load log record properties into csv record object
+                            if (log2.Value.Type == JTokenType.Array && log2.Key == "records")
                             {
-                                EmsEventRecord sinkCsvEventRecord = CreateNewEmsEventRecord(loggerType);
-                                ObjectManager.SetObjectValue(sinkCsvEventRecord, "ESER", sourceEdiJob.UsbdgMetadata.ESER);
-                                ObjectManager.SetObjectValue(sinkCsvEventRecord, "ALRM", sourceEdiJob.UsbdgMetadata.ALRM);
-
-                                // Load log header properties into csv record object
-                                foreach (var logHeader in logHeaderObject)
+                                //ObjectManager.SetObjectValue(ref sinkCsvEventRecord, "RELT", ediJob.RELT);
+                                // Iterate each log record
+                                foreach (JObject z in log2.Value.Children<JObject>())
                                 {
-                                    ObjectManager.SetObjectValue(sinkCsvEventRecord, logHeader.Key, logHeader.Value);
-                                }
+                                    EmsEventRecord sinkCsvEventRecord = CreateNewEmsEventRecord(loggerType);
+                                    ObjectManager.SetObjectValue(sinkCsvEventRecord, "ESER", sourceEdiJob.UsbdgMetadata.ESER);
+                                    ObjectManager.SetObjectValue(sinkCsvEventRecord, "ALRM", sourceEdiJob.UsbdgMetadata.ALRM);
 
-                                // Load each log record property
-                                foreach (JProperty prop in z.Properties())
-                                {
-                                    propName = prop.Name;
-                                    if (propName == "RELT")
+                                    // Load log header properties into csv record object
+                                    foreach (var logHeader in logHeaderObject)
                                     {
-                                        //Console.WriteLine("debug");
+                                        ObjectManager.SetObjectValue(sinkCsvEventRecord, logHeader.Key, logHeader.Value);
                                     }
-                                    propValue = (string)prop.Value;
-                                    ObjectManager.SetObjectValue(sinkCsvEventRecord, prop.Name, prop.Value);
-                                }
 
-                                sinkCsvEventRecords.Add((EmsEventRecord)sinkCsvEventRecord);
+                                    // Load each log record property
+                                    foreach (JProperty prop in z.Properties())
+                                    {
+                                        propName = prop.Name;
+                                        propValue = (string)prop.Value;
+                                        ObjectManager.SetObjectValue(sinkCsvEventRecord, prop.Name, prop.Value);
+                                    }
+
+                                    sinkCsvEventRecords.Add((EmsEventRecord)sinkCsvEventRecord);
+                                }
+                            }
+                            else
+                            {
+                                // ObjectManager.SetObjectValue(ref sink, log2.Key, log2.Value);
                             }
                         }
-                        else
-                        {
-                            // ObjectManager.SetObjectValue(ref sink, log2.Key, log2.Value);
-                        }
-
                     }
                 }
                 return sinkCsvEventRecords;

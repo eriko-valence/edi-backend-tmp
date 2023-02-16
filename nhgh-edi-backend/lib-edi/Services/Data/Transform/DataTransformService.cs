@@ -278,7 +278,8 @@ namespace lib_edi.Services.CceDevice
 
 				JObject sourceUsbdgMetadataJObject = (JObject)sourceUsbdgMetadata;
 				var reportHeaderObject = new ExpandoObject() as IDictionary<string, Object>;
-				foreach (KeyValuePair<string, JToken> log2 in sourceUsbdgMetadataJObject)
+
+                foreach (KeyValuePair<string, JToken> log2 in sourceUsbdgMetadataJObject)
 				{
 					if (log2.Value.Type != JTokenType.Array)
 					{
@@ -762,25 +763,41 @@ namespace lib_edi.Services.CceDevice
         /// </returns>
         public static List<CloudBlockBlob> GetLogBlobs(IEnumerable<IListBlobItem> logDirectoryBlobs, string blobPath)
         {
-            List<CloudBlockBlob> listBlobs = new();
+            List<CloudBlockBlob> listDataBlobs = new();
+            List<CloudBlockBlob> listSyncBlobs = new();
+            List<CloudBlockBlob> listCurrentDataBlobs = new();
 
             if (logDirectoryBlobs != null)
             {
                 foreach (CloudBlockBlob logBlob in logDirectoryBlobs)
                 {
-                    // NHGH-2362 (2022.06.16) - only add Indigo V2 data files
-                    if (EmsService.IsFileFromEmsLogger(logBlob.Name))
+                    // NHGH-2812 (2023.02.16) - we only want EMS logger (data, current data, and sync) files
+                    if (EmsService.IsThisEmsDataFile(logBlob.Name))
                     {
-                        listBlobs.Add(logBlob);
+                        listDataBlobs.Add(logBlob);
                     }
+                    else if (EmsService.IsThisEmsCurrentDataFile(logBlob.Name))
+                    {
+                        listCurrentDataBlobs.Add(logBlob);
+                    }
+                    else if (EmsService.IsThisEmsSyncDataFile(logBlob.Name))
+                    {
+                        listSyncBlobs.Add(logBlob);
+                    }
+
                 }
-                if (listBlobs.Count == 0)
+
+                // NHGH-2812 (2023.02.16) - Sync files have most recent data and should be processed last
+                listDataBlobs.AddRange(listCurrentDataBlobs);
+                listDataBlobs.AddRange(listSyncBlobs);
+
+                if (listDataBlobs.Count == 0)
                 {
                     string customErrorMessage = EdiErrorsService.BuildExceptionMessageString(null, "L91T", EdiErrorsService.BuildErrorVariableArrayList(blobPath));
                     throw new Exception(customErrorMessage);
                 }
             }
-            return listBlobs;
+            return listDataBlobs;
         }
     }
 }

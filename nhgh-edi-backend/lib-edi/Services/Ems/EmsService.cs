@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection.Metadata.Ecma335;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -221,9 +222,76 @@ namespace lib_edi.Services.Ems
         public static bool IsFileFromEmsLogger(string blobName)
         {
             bool result = false;
-            if ((Path.GetExtension(blobName) == ".json") && (blobName.Contains("DATA") || blobName.Contains("CURRENT")))
+            if (EmsService.IsThisEmsDataFile(blobName))
             {
                 result = true;
+            }
+            else if (EmsService.IsThisEmsCurrentDataFile(blobName))
+            {
+                result = true;
+            }
+            else if (EmsService.IsThisEmsSyncDataFile(blobName))
+            {
+                result = true;
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// Checks if blob name is an EMS logger data file
+        /// </summary>
+        /// <param name="blobName">blob name </param>
+        /// <returns>
+        /// True if yes; False if no
+        /// </returns>
+        public static bool IsThisEmsDataFile(string blobName)
+        {
+            bool result = false;
+            if (Path.GetExtension(blobName) == ".json") {
+                if ((!blobName.Contains("_CURRENT_DATA_")) && (blobName.Contains("_DATA_")))
+                {
+                    result = true;
+                }
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// Checks if blob name is an EMS logger current data file
+        /// </summary>
+        /// <param name="blobName">blob name </param>
+        /// <returns>
+        /// True if yes; False if no
+        /// </returns>
+        public static bool IsThisEmsCurrentDataFile(string blobName)
+        {
+            bool result = false;
+            if (Path.GetExtension(blobName) == ".json")
+            {
+                if (blobName.Contains("_CURRENT_DATA_"))
+                {
+                    result = true;
+                }
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// Checks if blob name is an EMS logger sync file
+        /// </summary>
+        /// <param name="blobName">blob name </param>
+        /// <returns>
+        /// True if yes; False if no
+        /// </returns>
+        public static bool IsThisEmsSyncDataFile(string blobName)
+        {
+            bool result = false;
+            if (Path.GetExtension(blobName) == ".json")
+            {
+                if (blobName.Contains("_SYNC_"))
+                {
+                    result = true;
+                }
             }
             return result;
         }
