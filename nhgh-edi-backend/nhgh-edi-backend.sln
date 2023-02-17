@@ -28,8 +28,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Database", "Database", "{1D
 EndProject
 Project("{00D1A9C2-B5F0-4AF3-8072-F6C62B433612}") = "db-edi", "db-edi\db-edi.sqlproj", "{CD0EA6E2-B06D-45F5-AC42-AD9D6717E84A}"
 EndProject
-Project("{00D1A9C2-B5F0-4AF3-8072-F6C62B433612}") = "db-dashboard", "db-dashboard\db-dashboard.sqlproj", "{9B1CA386-8FAE-4DAB-8415-0E2C14FC0F0B}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -66,12 +64,6 @@ Global
 		{CD0EA6E2-B06D-45F5-AC42-AD9D6717E84A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CD0EA6E2-B06D-45F5-AC42-AD9D6717E84A}.Release|Any CPU.Build.0 = Release|Any CPU
 		{CD0EA6E2-B06D-45F5-AC42-AD9D6717E84A}.Release|Any CPU.Deploy.0 = Release|Any CPU
-		{9B1CA386-8FAE-4DAB-8415-0E2C14FC0F0B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{9B1CA386-8FAE-4DAB-8415-0E2C14FC0F0B}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{9B1CA386-8FAE-4DAB-8415-0E2C14FC0F0B}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
-		{9B1CA386-8FAE-4DAB-8415-0E2C14FC0F0B}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{9B1CA386-8FAE-4DAB-8415-0E2C14FC0F0B}.Release|Any CPU.Build.0 = Release|Any CPU
-		{9B1CA386-8FAE-4DAB-8415-0E2C14FC0F0B}.Release|Any CPU.Deploy.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -84,7 +76,6 @@ Global
 		{261BD4FE-D94F-4481-8D56-FFAD06E1E9ED} = {2F62B687-9F8C-4D48-8B7C-DD610E5459EE}
 		{866B62A4-7D78-430F-8C83-A41DEB080D19} = {9349330D-2771-4357-9C93-C161C31DC480}
 		{CD0EA6E2-B06D-45F5-AC42-AD9D6717E84A} = {1D20F52A-98B4-4E3F-889C-DC63F8356BF1}
-		{9B1CA386-8FAE-4DAB-8415-0E2C14FC0F0B} = {1D20F52A-98B4-4E3F-889C-DC63F8356BF1}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {48FE592C-9504-419F-8FC2-6D997B1FCAAA}

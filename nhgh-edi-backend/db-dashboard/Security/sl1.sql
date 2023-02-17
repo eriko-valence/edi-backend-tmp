@@ -1,3 +1,0 @@
-﻿CREATE SCHEMA [sl1]
-    AUTHORIZATION [evox5ui];
-
