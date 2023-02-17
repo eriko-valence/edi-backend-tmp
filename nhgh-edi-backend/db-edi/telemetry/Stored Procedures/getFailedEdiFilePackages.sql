@@ -33,4 +33,6 @@ WHERE
     t1.BlobTimeStart > @StartDate AND
     t1.BlobTimeStart < @EndDate AND
     t1.DurationSecs IS NULL
+ORDER BY
+    t1.BlobTimeStart DESC
 END
