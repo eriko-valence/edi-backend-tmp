@@ -404,7 +404,7 @@
 		},
 		"EHN9": {
 			"error-code": "EHN9",
-			"error-message": "Unsupported EMS logger model",
+			"error-message": "Unsupported EMS logger model. The LMOD value '{0}' does not match the list of EDI supported logger models",
 			"error-source": "Transform Function",
 			"error-mitigation": null
 		}
