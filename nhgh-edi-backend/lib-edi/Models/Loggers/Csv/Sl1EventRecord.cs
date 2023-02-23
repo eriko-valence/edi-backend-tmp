@@ -34,5 +34,13 @@ namespace lib_edi.Models.Loggers.Csv
         public string CMPR { get; set; }
         [Name("CMPS")]
         public string CMPS { get; set; }
+
+        /*
+         * OTHER PROPERTIES
+         */
+        [Name("DORF")]
+        public string DORF { get; set; }
+        [Name("TFRZ")]
+        public string TFRZ { get; set; }
     }
 }
