@@ -3,738 +3,11 @@
     "properties": {
         "activities": [
             {
-                "name": "Load Indigo Events",
-                "type": "Copy",
-                "dependsOn": [
-                    {
-                        "activity": "Load Usbdg Events",
-                        "dependencyConditions": [
-                            "Succeeded"
-                        ]
-                    }
-                ],
-                "policy": {
-                    "timeout": "7.00:00:00",
-                    "retry": 0,
-                    "retryIntervalInSeconds": 30,
-                    "secureOutput": false,
-                    "secureInput": false
-                },
-                "userProperties": [],
-                "typeProperties": {
-                    "source": {
-                        "type": "DelimitedTextSource",
-                        "storeSettings": {
-                            "type": "AzureBlobFSReadSettings",
-                            "recursive": true,
-                            "wildcardFolderPath": {
-                                "value": "@pipeline().parameters.PL_C_PARAM_TRANSFORM_CURATED_PATH",
-                                "type": "Expression"
-                            },
-                            "wildcardFileName": "indigo_v2_event.csv",
-                            "enablePartitionDiscovery": false
-                        },
-                        "formatSettings": {
-                            "type": "DelimitedTextReadSettings"
-                        }
-                    },
-                    "sink": {
-                        "type": "AzureSqlSink",
-                        "sqlWriterStoredProcedureName": "[indigo_v2].[uspLoadIndigoV2Events]",
-                        "sqlWriterTableType": "[indigo_v2].[event_type]",
-                        "storedProcedureTableTypeParameterName": "indigo_v2_event",
-                        "disableMetricsCollection": false
-                    },
-                    "enableStaging": false,
-                    "translator": {
-                        "type": "TabularTranslator",
-                        "mappings": [
-                            {
-                                "source": {
-                                    "name": "ABST_CALC",
-                                    "type": "String",
-                                    "physicalType": "String"
-                                },
-                                "sink": {
-                                    "name": "ABST_CALC",
-                                    "type": "DateTime",
-                                    "physicalType": "datetime2"
-                                }
-                            },
-                            {
-                                "source": {
-                                    "name": "ADOP",
-                                    "type": "String",
-                                    "physicalType": "String"
-                                },
-                                "sink": {
-                                    "name": "ADOP",
-                                    "type": "DateTime",
-                                    "physicalType": "date"
-                                }
-                            },
-                            {
-                                "source": {
-                                    "name": "ALRM",
-                                    "type": "String",
-                                    "physicalType": "String"
-                                },
-                                "sink": {
-                                    "name": "ALRM",
-                                    "type": "String",
-                                    "physicalType": "varchar"
-                                }
-                            },
-                            {
-                                "source": {
-                                    "name": "AMOD",
-                                    "type": "String",
-                                    "physicalType": "String"
-                                },
-                                "sink": {
-                                    "name": "AMOD",
-                                    "type": "String",
-                                    "physicalType": "varchar"
-                                }
-                            },
-                            {
-                                "source": {
-                                    "name": "AMFR",
-                                    "type": "String",
-                                    "physicalType": "String"
-                                },
-                                "sink": {
-                                    "name": "AMFR",
-                                    "type": "String",
-                                    "physicalType": "varchar"
-                                }
-                            },
-                            {
-                                "source": {
-                                    "name": "APQS",
-                                    "type": "String",
-                                    "physicalType": "String"
-                                },
-                                "sink": {
-                                    "name": "APQS",
-                                    "type": "String",
-                                    "physicalType": "varchar"
-                                }
-                            },
-                            {
-                                "source": {
-                                    "name": "ASER",
-                                    "type": "String",
-                                    "physicalType": "String"
-                                },
-                                "sink": {
-                                    "name": "ASER",
-                                    "type": "String",
-                                    "physicalType": "varchar"
-                                }
-                            },
-                            {
-                                "source": {
-                                    "name": "BLOG",
-                                    "type": "String",
-                                    "physicalType": "String"
-                                },
-                                "sink": {
-                                    "name": "BLOG",
-                                    "type": "Decimal",
-                                    "physicalType": "decimal",
-                                    "scale": 1,
-                                    "precision": 5
-                                }
-                            },
-                            {
-                                "source": {
-                                    "name": "DORV",
-                                    "type": "String",
-                                    "physicalType": "String"
-                                },
-                                "sink": {
-                                    "name": "DORV",
-                                    "type": "Int16",
-                                    "physicalType": "smallint"
-                                }
-                            },
-                            {
-                                "source": {
-                                    "name": "ESER",
-                                    "type": "String",
-                                    "physicalType": "String"
-                                },
-                                "sink": {
-                                    "name": "ESER",
-                                    "type": "String",
-                                    "physicalType": "varchar"
-                                }
-                            },
-                            {
-                                "source": {
-                                    "name": "HOLD",
-                                    "type": "String",
-                                    "physicalType": "String"
-                                },
-                                "sink": {
-                                    "name": "HOLD",
-                                    "type": "Decimal",
-                                    "physicalType": "decimal",
-                                    "scale": 1,
-                                    "precision": 4
-                                }
-                            },
-                            {
-                                "source": {
-                                    "name": "LDOP",
-                                    "type": "String",
-                                    "physicalType": "String"
-                                },
-                                "sink": {
-                                    "name": "LDOP",
-                                    "type": "DateTime",
-                                    "physicalType": "date"
-                                }
-                            },
-                            {
-                                "source": {
-                                    "name": "LERR",
-                                    "type": "String",
-                                    "physicalType": "String"
-                                },
-                                "sink": {
-                                    "name": "LERR",
-                                    "type": "String",
-                                    "physicalType": "varchar"
-                                }
-                            },
-                            {
-                                "source": {
-                                    "name": "LMFR",
-                                    "type": "String",
-                                    "physicalType": "String"
-                                },
-                                "sink": {
-                                    "name": "LMFR",
-                                    "type": "String",
-                                    "physicalType": "varchar"
-                                }
-                            },
-                            {
-                                "source": {
-                                    "name": "LMOD",
-                                    "type": "String",
-                                    "physicalType": "String"
-                                },
-                                "sink": {
-                                    "name": "LMOD",
-                                    "type": "String",
-                                    "physicalType": "varchar"
-                                }
-                            },
-                            {
-                                "source": {
-                                    "name": "LPQS",
-                                    "type": "String",
-                                    "physicalType": "String"
-                                },
-                                "sink": {
-                                    "name": "LPQS",
-                                    "type": "String",
-                                    "physicalType": "varchar"
-                                }
-                            },
-                            {
-                                "source": {
-                                    "name": "LSER",
-                                    "type": "String",
-                                    "physicalType": "String"
-                                },
-                                "sink": {
-                                    "name": "LSER",
-                                    "type": "String",
-                                    "physicalType": "varchar"
-                                }
-                            },
-                            {
-                                "source": {
-                                    "name": "LSV",
-                                    "type": "String",
-                                    "physicalType": "String"
-                                },
-                                "sink": {
-                                    "name": "LSV",
-                                    "type": "String",
-                                    "physicalType": "varchar"
-                                }
-                            },
-                            {
-                                "source": {
-                                    "name": "RELT",
-                                    "type": "String",
-                                    "physicalType": "String"
-                                },
-                                "sink": {
-                                    "name": "RELT",
-                                    "type": "String",
-                                    "physicalType": "varchar"
-                                }
-                            },
-                            {
-                                "source": {
-                                    "name": "RTCW",
-                                    "type": "String",
-                                    "physicalType": "String"
-                                },
-                                "sink": {
-                                    "name": "RTCW",
-                                    "type": "String",
-                                    "physicalType": "varchar"
-                                }
-                            },
-                            {
-                                "source": {
-                                    "name": "TAMB",
-                                    "type": "String",
-                                    "physicalType": "String"
-                                },
-                                "sink": {
-                                    "name": "TAMB",
-                                    "type": "Decimal",
-                                    "physicalType": "decimal",
-                                    "scale": 2,
-                                    "precision": 4
-                                }
-                            },
-                            {
-                                "source": {
-                                    "name": "TVC",
-                                    "type": "String",
-                                    "physicalType": "String"
-                                },
-                                "sink": {
-                                    "name": "TVC",
-                                    "type": "Decimal",
-                                    "physicalType": "decimal",
-                                    "scale": 1,
-                                    "precision": 3
-                                }
-                            },
-                            {
-                                "source": {
-                                    "name": "ZCHRG",
-                                    "type": "String",
-                                    "physicalType": "String"
-                                },
-                                "sink": {
-                                    "name": "ZCHRG",
-                                    "type": "String",
-                                    "physicalType": "varchar"
-                                }
-                            },
-                            {
-                                "source": {
-                                    "name": "ZSTATE",
-                                    "type": "String",
-                                    "physicalType": "String"
-                                },
-                                "sink": {
-                                    "name": "ZSTATE",
-                                    "type": "Boolean",
-                                    "physicalType": "bit"
-                                }
-                            },
-                            {
-                                "source": {
-                                    "name": "ZVLVD",
-                                    "type": "String",
-                                    "physicalType": "String"
-                                },
-                                "sink": {
-                                    "name": "ZVLVD",
-                                    "type": "Boolean",
-                                    "physicalType": "bit"
-                                }
-                            },
-                            {
-                                "source": {
-                                    "name": "_RELT_SECS"
-                                },
-                                "sink": {
-                                    "name": "_RELT_SECS"
-                                }
-                            }
-                        ],
-                        "typeConversion": true,
-                        "typeConversionSettings": {
-                            "allowDataTruncation": true,
-                            "treatBooleanAsNumber": false
-                        }
-                    }
-                },
-                "inputs": [
-                    {
-                        "referenceName": "ds_adls_curated",
-                        "type": "DatasetReference"
-                    }
-                ],
-                "outputs": [
-                    {
-                        "referenceName": "ds_sql_db",
-                        "type": "DatasetReference"
-                    }
-                ]
-            },
-            {
-                "name": "Load Usbdg Events",
-                "type": "Copy",
-                "dependsOn": [
-                    {
-                        "activity": "Load Usbdg Devices",
-                        "dependencyConditions": [
-                            "Succeeded"
-                        ]
-                    }
-                ],
-                "policy": {
-                    "timeout": "7.00:00:00",
-                    "retry": 0,
-                    "retryIntervalInSeconds": 30,
-                    "secureOutput": false,
-                    "secureInput": false
-                },
-                "userProperties": [],
-                "typeProperties": {
-                    "source": {
-                        "type": "DelimitedTextSource",
-                        "storeSettings": {
-                            "type": "AzureBlobFSReadSettings",
-                            "recursive": true,
-                            "wildcardFolderPath": {
-                                "value": "@pipeline().parameters.PL_C_PARAM_TRANSFORM_CURATED_PATH",
-                                "type": "Expression"
-                            },
-                            "wildcardFileName": "usbdg_event.csv",
-                            "enablePartitionDiscovery": false
-                        },
-                        "formatSettings": {
-                            "type": "DelimitedTextReadSettings"
-                        }
-                    },
-                    "sink": {
-                        "type": "AzureSqlSink",
-                        "sqlWriterStoredProcedureName": "[usbdg].[uspLoadUsbdgEvents]",
-                        "sqlWriterTableType": "[usbdg].[event_type]",
-                        "storedProcedureTableTypeParameterName": "usbdg_event",
-                        "disableMetricsCollection": false
-                    },
-                    "enableStaging": false,
-                    "translator": {
-                        "type": "TabularTranslator",
-                        "mappings": [
-                            {
-                                "source": {
-                                    "name": "ABST",
-                                    "type": "String",
-                                    "physicalType": "String"
-                                },
-                                "sink": {
-                                    "name": "ABST_last_mnt",
-                                    "physicalType": "datetime2"
-                                }
-                            },
-                            {
-                                "source": {
-                                    "name": "BEMD",
-                                    "type": "String",
-                                    "physicalType": "String"
-                                },
-                                "sink": {
-                                    "name": "BEMD",
-                                    "type": "Decimal",
-                                    "physicalType": "decimal",
-                                    "scale": 0,
-                                    "precision": 18
-                                }
-                            },
-                            {
-                                "source": {
-                                    "name": "EERR",
-                                    "type": "String",
-                                    "physicalType": "String"
-                                },
-                                "sink": {
-                                    "name": "EERR",
-                                    "type": "String",
-                                    "physicalType": "varchar"
-                                }
-                            },
-                            {
-                                "source": {
-                                    "name": "ESER",
-                                    "type": "String",
-                                    "physicalType": "String"
-                                },
-                                "sink": {
-                                    "name": "ESER",
-                                    "type": "String",
-                                    "physicalType": "varchar"
-                                }
-                            },
-                            {
-                                "source": {
-                                    "name": "zutc_now",
-                                    "type": "String",
-                                    "physicalType": "String"
-                                },
-                                "sink": {
-                                    "name": "zutc_now",
-                                    "type": "DateTime",
-                                    "physicalType": "datetime2"
-                                }
-                            },
-                            {
-                                "source": {
-                                    "name": "zcell_info",
-                                    "type": "String",
-                                    "physicalType": "String"
-                                },
-                                "sink": {
-                                    "name": "zcell_info",
-                                    "type": "String",
-                                    "physicalType": "varchar"
-                                }
-                            },
-                            {
-                                "source": {
-                                    "name": "zbatt_volt",
-                                    "type": "String",
-                                    "physicalType": "String"
-                                },
-                                "sink": {
-                                    "name": "zbatt_volt",
-                                    "type": "Int16",
-                                    "physicalType": "smallint"
-                                }
-                            },
-                            {
-                                "source": {
-                                    "name": "zbatt_chrg",
-                                    "type": "String",
-                                    "physicalType": "String"
-                                },
-                                "sink": {
-                                    "name": "zbatt_chrg",
-                                    "type": "Byte",
-                                    "physicalType": "tinyint"
-                                }
-                            },
-                            {
-                                "source": {
-                                    "name": "TAMB",
-                                    "type": "String",
-                                    "physicalType": "String"
-                                },
-                                "sink": {
-                                    "name": "TAMB",
-                                    "type": "Decimal",
-                                    "physicalType": "decimal",
-                                    "scale": 1,
-                                    "precision": 3
-                                }
-                            }
-                        ],
-                        "typeConversion": true,
-                        "typeConversionSettings": {
-                            "allowDataTruncation": true,
-                            "treatBooleanAsNumber": false
-                        }
-                    }
-                },
-                "inputs": [
-                    {
-                        "referenceName": "ds_adls_curated",
-                        "type": "DatasetReference"
-                    }
-                ],
-                "outputs": [
-                    {
-                        "referenceName": "ds_sql_db",
-                        "type": "DatasetReference"
-                    }
-                ]
-            },
-            {
-                "name": "Load Usbdg Devices",
-                "type": "Copy",
+                "name": "Get Usbdg Device Metadata",
+                "type": "GetMetadata",
                 "dependsOn": [],
                 "policy": {
-                    "timeout": "7.00:00:00",
-                    "retry": 0,
-                    "retryIntervalInSeconds": 30,
-                    "secureOutput": false,
-                    "secureInput": false
-                },
-                "userProperties": [],
-                "typeProperties": {
-                    "source": {
-                        "type": "DelimitedTextSource",
-                        "storeSettings": {
-                            "type": "AzureBlobFSReadSettings",
-                            "recursive": true,
-                            "wildcardFolderPath": {
-                                "value": "@pipeline().parameters.PL_C_PARAM_TRANSFORM_CURATED_PATH",
-                                "type": "Expression"
-                            },
-                            "wildcardFileName": "usbdg_device.csv",
-                            "enablePartitionDiscovery": false
-                        },
-                        "formatSettings": {
-                            "type": "DelimitedTextReadSettings"
-                        }
-                    },
-                    "sink": {
-                        "type": "AzureSqlSink",
-                        "sqlWriterStoredProcedureName": "[usbdg].[uspLoadUsbdgDevices]",
-                        "sqlWriterTableType": "[usbdg].[device_type]",
-                        "storedProcedureTableTypeParameterName": "usbdg_device",
-                        "disableMetricsCollection": false
-                    },
-                    "enableStaging": false,
-                    "translator": {
-                        "type": "TabularTranslator",
-                        "mappings": [
-                            {
-                                "source": {
-                                    "name": "EDOP",
-                                    "type": "String",
-                                    "physicalType": "String"
-                                },
-                                "sink": {
-                                    "name": "EDOP",
-                                    "type": "DateTime",
-                                    "physicalType": "date"
-                                }
-                            },
-                            {
-                                "source": {
-                                    "name": "EMFR",
-                                    "type": "String",
-                                    "physicalType": "String"
-                                },
-                                "sink": {
-                                    "name": "EMFR",
-                                    "type": "String",
-                                    "physicalType": "varchar"
-                                }
-                            },
-                            {
-                                "source": {
-                                    "name": "EMOD",
-                                    "type": "String",
-                                    "physicalType": "String"
-                                },
-                                "sink": {
-                                    "name": "EMOD",
-                                    "type": "String",
-                                    "physicalType": "varchar"
-                                }
-                            },
-                            {
-                                "source": {
-                                    "name": "EMSV",
-                                    "type": "String",
-                                    "physicalType": "String"
-                                },
-                                "sink": {
-                                    "name": "EMSV",
-                                    "type": "String",
-                                    "physicalType": "varchar"
-                                }
-                            },
-                            {
-                                "source": {
-                                    "name": "EPQS",
-                                    "type": "String",
-                                    "physicalType": "String"
-                                },
-                                "sink": {
-                                    "name": "EPQS",
-                                    "type": "String",
-                                    "physicalType": "varchar"
-                                }
-                            },
-                            {
-                                "source": {
-                                    "name": "ESER",
-                                    "type": "String",
-                                    "physicalType": "String"
-                                },
-                                "sink": {
-                                    "name": "ESER",
-                                    "type": "String",
-                                    "physicalType": "varchar"
-                                }
-                            },
-                            {
-                                "source": {
-                                    "name": "zcfg_ver",
-                                    "type": "String",
-                                    "physicalType": "String"
-                                },
-                                "sink": {
-                                    "name": "zcfg_ver",
-                                    "type": "String",
-                                    "physicalType": "varchar"
-                                }
-                            },
-                            {
-                                "source": {
-                                    "name": "zmcu_ver",
-                                    "type": "String",
-                                    "physicalType": "String"
-                                },
-                                "sink": {
-                                    "name": "zmcu_ver",
-                                    "type": "String",
-                                    "physicalType": "varchar"
-                                }
-                            }
-                        ],
-                        "typeConversion": true,
-                        "typeConversionSettings": {
-                            "allowDataTruncation": true,
-                            "treatBooleanAsNumber": false
-                        }
-                    }
-                },
-                "inputs": [
-                    {
-                        "referenceName": "ds_adls_curated",
-                        "type": "DatasetReference"
-                    }
-                ],
-                "outputs": [
-                    {
-                        "referenceName": "ds_sql_db",
-                        "type": "DatasetReference"
-                    }
-                ]
-            },
-            {
-                "name": "Get Usbdg Location Metadata",
-                "type": "GetMetadata",
-                "dependsOn": [
-                    {
-                        "activity": "Load Indigo Events",
-                        "dependencyConditions": [
-                            "Succeeded"
-                        ]
-                    }
-                ],
-                "policy": {
-                    "timeout": "7.00:00:00",
+                    "timeout": "0.12:00:00",
                     "retry": 0,
                     "retryIntervalInSeconds": 30,
                     "secureOutput": false,
@@ -743,7 +16,7 @@
                 "userProperties": [],
                 "typeProperties": {
                     "dataset": {
-                        "referenceName": "ds_adls_curated_usbdg_location_csv",
+                        "referenceName": "ds_adls_curated_usbdg_device_csv",
                         "type": "DatasetReference",
                         "parameters": {
                             "PL_C_PARAM_TRANSFORM_CURATED_PATH": {
@@ -757,7 +30,6 @@
                     ],
                     "storeSettings": {
                         "type": "AzureBlobFSReadSettings",
-                        "recursive": true,
                         "enablePartitionDiscovery": false
                     },
                     "formatSettings": {
@@ -766,11 +38,12 @@
                 }
             },
             {
-                "name": "Load Usbdg Location",
+                "name": "Route Indigo Loading",
+                "description": "Indigo file packages can be collected from USBDG or Varo. Varo collected indigo file packages contain only indigo_v2_event.csv files. ",
                 "type": "IfCondition",
                 "dependsOn": [
                     {
-                        "activity": "Get Usbdg Location Metadata",
+                        "activity": "Get Usbdg Device Metadata",
                         "dependencyConditions": [
                             "Succeeded"
                         ]
@@ -779,134 +52,81 @@
                 "userProperties": [],
                 "typeProperties": {
                     "expression": {
-                        "value": "@activity('Get USBDG Location Metadata').output.exists",
+                        "value": "@activity('Get Usbdg Device Metadata').output.exists",
                         "type": "Expression"
                     },
-                    "ifTrueActivities": [
+                    "ifFalseActivities": [
                         {
-                            "name": "Copy Usbdg Location",
-                            "type": "Copy",
+                            "name": "Load Varo Indigo Files",
+                            "type": "ExecutePipeline",
                             "dependsOn": [],
-                            "policy": {
-                                "timeout": "7.00:00:00",
-                                "retry": 0,
-                                "retryIntervalInSeconds": 30,
-                                "secureOutput": false,
-                                "secureInput": false
-                            },
                             "userProperties": [],
                             "typeProperties": {
-                                "source": {
-                                    "type": "DelimitedTextSource",
-                                    "storeSettings": {
-                                        "type": "AzureBlobFSReadSettings",
-                                        "recursive": true,
-                                        "wildcardFolderPath": {
-                                            "value": "@pipeline().parameters.PL_C_PARAM_TRANSFORM_CURATED_PATH",
-                                            "type": "Expression"
-                                        },
-                                        "wildcardFileName": "usbdg_location.csv",
-                                        "enablePartitionDiscovery": false
+                                "pipeline": {
+                                    "referenceName": "pl_load_indigo_v2_report_varo",
+                                    "type": "PipelineReference"
+                                },
+                                "waitOnCompletion": true,
+                                "parameters": {
+                                    "PL_P_PARAM_TRIGGER_TIME": {
+                                        "value": "@pipeline().parameters.PL_P_PARAM_TRIGGER_TIME",
+                                        "type": "Expression"
                                     },
-                                    "formatSettings": {
-                                        "type": "DelimitedTextReadSettings"
-                                    }
-                                },
-                                "sink": {
-                                    "type": "AzureSqlSink",
-                                    "sqlWriterStoredProcedureName": "[usbdg].[uspLoadUsbdgLocations]",
-                                    "sqlWriterTableType": "[usbdg].[location_type]",
-                                    "storedProcedureTableTypeParameterName": "usbdg_location",
-                                    "disableMetricsCollection": false
-                                },
-                                "enableStaging": false,
-                                "translator": {
-                                    "type": "TabularTranslator",
-                                    "mappings": [
-                                        {
-                                            "source": {
-                                                "name": "ESER",
-                                                "type": "String",
-                                                "physicalType": "String"
-                                            },
-                                            "sink": {
-                                                "name": "ESER",
-                                                "type": "String",
-                                                "physicalType": "varchar"
-                                            }
-                                        },
-                                        {
-                                            "source": {
-                                                "name": "zgps_utc",
-                                                "type": "String",
-                                                "physicalType": "String"
-                                            },
-                                            "sink": {
-                                                "name": "zgps_utc",
-                                                "type": "DateTime",
-                                                "physicalType": "datetime2"
-                                            }
-                                        },
-                                        {
-                                            "source": {
-                                                "name": "zgps_ang",
-                                                "type": "String",
-                                                "physicalType": "String"
-                                            },
-                                            "sink": {
-                                                "name": "zgps_ang",
-                                                "type": "Int16",
-                                                "physicalType": "smallint"
-                                            }
-                                        },
-                                        {
-                                            "source": {
-                                                "name": "zgps_lat",
-                                                "type": "String",
-                                                "physicalType": "String"
-                                            },
-                                            "sink": {
-                                                "name": "zgps_lat",
-                                                "type": "Decimal",
-                                                "physicalType": "decimal",
-                                                "scale": 5,
-                                                "precision": 8
-                                            }
-                                        },
-                                        {
-                                            "source": {
-                                                "name": "zgps_lng",
-                                                "type": "String",
-                                                "physicalType": "String"
-                                            },
-                                            "sink": {
-                                                "name": "zgps_lng",
-                                                "type": "Decimal",
-                                                "physicalType": "decimal",
-                                                "scale": 5,
-                                                "precision": 8
-                                            }
-                                        }
-                                    ],
-                                    "typeConversion": true,
-                                    "typeConversionSettings": {
-                                        "allowDataTruncation": true,
-                                        "treatBooleanAsNumber": false
+                                    "PL_P_PARAM_FOLDER_NAME": {
+                                        "value": "@pipeline().parameters.PL_P_PARAM_FOLDER_NAME",
+                                        "type": "Expression"
+                                    },
+                                    "PL_P_PARAM_FILE_NAME": {
+                                        "value": "@pipeline().parameters.PL_P_PARAM_FILE_NAME",
+                                        "type": "Expression"
+                                    },
+                                    "PL_P_PARAM_LOG_DIR_GUID": {
+                                        "value": "@pipeline().parameters.PL_P_PARAM_LOG_DIR_GUID",
+                                        "type": "Expression"
+                                    },
+                                    "PL_C_PARAM_TRANSFORM_CURATED_PATH": {
+                                        "value": "@pipeline().parameters.PL_C_PARAM_TRANSFORM_CURATED_PATH",
+                                        "type": "Expression"
                                     }
                                 }
-                            },
-                            "inputs": [
-                                {
-                                    "referenceName": "ds_adls_curated",
-                                    "type": "DatasetReference"
+                            }
+                        }
+                    ],
+                    "ifTrueActivities": [
+                        {
+                            "name": "Load Usbdg Indigo",
+                            "type": "ExecutePipeline",
+                            "dependsOn": [],
+                            "userProperties": [],
+                            "typeProperties": {
+                                "pipeline": {
+                                    "referenceName": "pl_load_indigo_v2_report_usbdg",
+                                    "type": "PipelineReference"
+                                },
+                                "waitOnCompletion": true,
+                                "parameters": {
+                                    "PL_P_PARAM_TRIGGER_TIME": {
+                                        "value": "@pipeline().parameters.PL_P_PARAM_TRIGGER_TIME",
+                                        "type": "Expression"
+                                    },
+                                    "PL_P_PARAM_FOLDER_NAME": {
+                                        "value": "@pipeline().parameters.PL_P_PARAM_FOLDER_NAME",
+                                        "type": "Expression"
+                                    },
+                                    "PL_P_PARAM_FILE_NAME": {
+                                        "value": "@pipeline().parameters.PL_P_PARAM_FILE_NAME",
+                                        "type": "Expression"
+                                    },
+                                    "PL_P_PARAM_LOG_DIR_GUID": {
+                                        "value": "@pipeline().parameters.PL_P_PARAM_LOG_DIR_GUID",
+                                        "type": "Expression"
+                                    },
+                                    "PL_C_PARAM_TRANSFORM_CURATED_PATH": {
+                                        "value": "@pipeline().parameters.PL_C_PARAM_TRANSFORM_CURATED_PATH",
+                                        "type": "Expression"
+                                    }
                                 }
-                            ],
-                            "outputs": [
-                                {
-                                    "referenceName": "ds_sql_db",
-                                    "type": "DatasetReference"
-                                }
-                            ]
+                            }
                         }
                     ]
                 }

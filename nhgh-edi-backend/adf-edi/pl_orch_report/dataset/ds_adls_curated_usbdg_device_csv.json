@@ -1,0 +1,65 @@
+{
+    "name": "ds_adls_curated_usbdg_device_csv",
+    "properties": {
+        "linkedServiceName": {
+            "referenceName": "ls_adls_adlsedidev",
+            "type": "LinkedServiceReference"
+        },
+        "parameters": {
+            "PL_C_PARAM_TRANSFORM_CURATED_PATH": {
+                "type": "string"
+            }
+        },
+        "folder": {
+            "name": "Curated"
+        },
+        "annotations": [],
+        "type": "DelimitedText",
+        "typeProperties": {
+            "location": {
+                "type": "AzureBlobFSLocation",
+                "fileName": "usbdg_device.csv",
+                "folderPath": "@dataset().PL_C_PARAM_TRANSFORM_CURATED_PATH",
+                "fileSystem": "curated-output"
+            },
+            "columnDelimiter": ",",
+            "escapeChar": "\\",
+            "firstRowAsHeader": true,
+            "quoteChar": "\""
+        },
+        "schema": [
+            {
+                "name": "EDOP",
+                "type": "String"
+            },
+            {
+                "name": "EMFR",
+                "type": "String"
+            },
+            {
+                "name": "EMOD",
+                "type": "String"
+            },
+            {
+                "name": "EMSV",
+                "type": "String"
+            },
+            {
+                "name": "EPQS",
+                "type": "String"
+            },
+            {
+                "name": "ESER",
+                "type": "String"
+            },
+            {
+                "name": "zcfg_ver",
+                "type": "String"
+            },
+            {
+                "name": "zmcu_ver",
+                "type": "String"
+            }
+        ]
+    }
+}

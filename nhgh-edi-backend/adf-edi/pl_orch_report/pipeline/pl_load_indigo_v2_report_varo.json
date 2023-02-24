@@ -1,0 +1,87 @@
+{
+    "name": "pl_load_indigo_v2_report_varo",
+    "properties": {
+        "activities": [
+            {
+                "name": "Load Varo Indigo Events",
+                "description": "Loads Varo collected Indigo file packages",
+                "type": "Copy",
+                "dependsOn": [],
+                "policy": {
+                    "timeout": "0.12:00:00",
+                    "retry": 0,
+                    "retryIntervalInSeconds": 30,
+                    "secureOutput": false,
+                    "secureInput": false
+                },
+                "userProperties": [],
+                "typeProperties": {
+                    "source": {
+                        "type": "DelimitedTextSource",
+                        "storeSettings": {
+                            "type": "AzureBlobFSReadSettings",
+                            "recursive": true,
+                            "wildcardFolderPath": "@pipeline().parameters.PL_C_PARAM_TRANSFORM_CURATED_PATH",
+                            "wildcardFileName": "indigo_v2_event.csv",
+                            "enablePartitionDiscovery": false
+                        },
+                        "formatSettings": {
+                            "type": "DelimitedTextReadSettings"
+                        }
+                    },
+                    "sink": {
+                        "type": "AzureSqlSink",
+                        "sqlWriterStoredProcedureName": "[indigo_v2].[uspLoadIndigoV2Events]",
+                        "sqlWriterTableType": "[indigo_v2].[event_type]",
+                        "storedProcedureTableTypeParameterName": "indigo_v2_event",
+                        "disableMetricsCollection": false
+                    },
+                    "enableStaging": false,
+                    "translator": {
+                        "type": "TabularTranslator",
+                        "typeConversion": true,
+                        "typeConversionSettings": {
+                            "allowDataTruncation": true,
+                            "treatBooleanAsNumber": false
+                        }
+                    }
+                },
+                "inputs": [
+                    {
+                        "referenceName": "ds_adls_curated",
+                        "type": "DatasetReference"
+                    }
+                ],
+                "outputs": [
+                    {
+                        "referenceName": "ds_sql_db",
+                        "type": "DatasetReference"
+                    }
+                ]
+            }
+        ],
+        "parameters": {
+            "PL_P_PARAM_TRIGGER_TIME": {
+                "type": "string"
+            },
+            "PL_P_PARAM_FOLDER_NAME": {
+                "type": "string"
+            },
+            "PL_P_PARAM_FILE_NAME": {
+                "type": "string"
+            },
+            "PL_P_PARAM_LOG_DIR_GUID": {
+                "type": "string"
+            },
+            "PL_C_PARAM_TRANSFORM_CURATED_PATH": {
+                "type": "string"
+            }
+        },
+        "folder": {
+            "name": "Load"
+        },
+        "annotations": [],
+        "lastPublishTime": "2022-08-26T21:36:31Z"
+    },
+    "type": "Microsoft.DataFactory/factories/pipelines"
+}
