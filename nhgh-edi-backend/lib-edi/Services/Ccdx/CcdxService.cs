@@ -138,6 +138,12 @@ namespace lib_edi.Services.Ccdx
         public static string GetCETypeFromBlobPath(string path)
 		{
 			string ceTypeTemplate = Environment.GetEnvironmentVariable("CCDX_PUBLISHER_HEADER_CE_TYPE");
+
+			if (ceTypeTemplate == null)
+			{
+                ceTypeTemplate = Environment.GetEnvironmentVariable("CCDX_HEADERS:CE_TYPE");
+            }
+
 			string ceType = null;
 
 			if (path != null)
@@ -697,5 +703,66 @@ namespace lib_edi.Services.Ccdx
 			return curatedBlobName;
 
 		}
-	}
+
+        /// <summary>
+        /// Builds a CCDX multipart form data request message with a file payload
+        /// </summary>
+        /// <param name="multipartFormDataContent">An HTTP multipart/form-data MIME container</param>
+        /// <param name="log">An HTTP multipart/form-data MIME container</param>
+        /// <returns>
+        /// HTTP request message
+        /// </returns>
+        public static HttpRequestMessage BuildCcdxHttpMultipartFormDataRequestMessage(MultipartFormDataContent multipartFormDataContent, string packageName, ILogger log)
+        {
+            try
+            {
+                // Headers provided by the Data Interchange Administrator during the onboarding process
+                string ccdxHttpEndpoint = Environment.GetEnvironmentVariable("CCDX_HEADERS:MULTIPART_FORM_DATA_FILE_ENDPOINT");
+                string ccdxHttpHeaderCESource = Environment.GetEnvironmentVariable("CCDX_HEADERS:CE_SOURCE");
+                string ccdxHttpHeaderDXOwner = Environment.GetEnvironmentVariable("CCDX_HEADERS:DX_OWNER");
+                string ccdxHttpHeaderDXToken = Environment.GetEnvironmentVariable("CCDX_HEADERS:DX_TOKEN");
+                string ccdxHttpHeaderCESpecVersion = Environment.GetEnvironmentVariable("CCDX_HEADERS:CE_SPECVERSION");
+
+                log.LogInformation($"  - ccdxHttpEndpoint: {ccdxHttpEndpoint}");
+                log.LogInformation($"  - ccdxHttpHeaderCESource: {ccdxHttpHeaderCESource}");
+                log.LogInformation($"  - ccdxHttpHeaderDXOwner: {ccdxHttpHeaderDXOwner}");
+                log.LogInformation($"  - ccdxHttpHeaderDXToken: {ccdxHttpHeaderDXToken}");
+                log.LogInformation($"  - ccdxHttpHeaderCESpecVersion: {ccdxHttpHeaderCESpecVersion}");
+
+                // Other headers
+                //string ceType = "org.nhgh.ems.report.dev";
+                string ccdxEventTime = DateTime.UtcNow.ToString("o");
+                //string cdId = $"40A36BCA698C_20230206T214724Z_001f00265547501820383131_{packageName}";
+
+                log.LogInformation($"  - packageName: {packageName}");
+                string reportFileName = Path.GetFileName(packageName);
+                log.LogInformation($"  - reportFileName: {reportFileName}");
+                string ceType = GetCETypeFromBlobPath(packageName);
+
+
+                log.LogInformation($"  - ceType: {ceType}");
+
+
+                Uri httpRequestUri = new Uri(ccdxHttpEndpoint);
+                HttpMethod httpMethod = HttpMethod.Post;
+                HttpRequestMessage requestMessage = new HttpRequestMessage(httpMethod, httpRequestUri);
+                requestMessage.Headers.Add("ce-id", reportFileName); // use file name unique identifier for this data report (USBDG-360)
+                requestMessage.Headers.Add("ce-specversion", ccdxHttpHeaderCESpecVersion); // the CloudEvent specification version
+                requestMessage.Headers.Add("ce-type", ceType); // the type or classification of the transmitted data report
+                requestMessage.Headers.Add("ce-source", ccdxHttpHeaderCESource); // identifies the Telemetry Provider that sent the data
+                requestMessage.Headers.Add("dx-token", ccdxHttpHeaderDXToken); // access token that permits publication of data to the Data Interchange
+                requestMessage.Headers.Add("dx-owner", ccdxHttpHeaderDXOwner); // data Owner that owns that data
+                requestMessage.Headers.Add("ce-time", ccdxEventTime); // time the originating event was created
+                requestMessage.Headers.ExpectContinue = false;
+                requestMessage.Content = multipartFormDataContent;
+                return requestMessage;
+            }
+            catch (Exception e)
+            {
+                log.LogTrace($"Exception e: {e.Message}");
+                throw;
+            }
+
+        }
+    }
 }
