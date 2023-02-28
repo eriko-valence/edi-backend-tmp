@@ -1,0 +1,75 @@
+using System;
+using System.IO;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Azure.WebJobs;
+using Microsoft.Azure.WebJobs.Extensions.Http;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
+using System.Net.Http;
+using System.Net;
+using System.Text;
+using lib_edi.Services.System.Net;
+using lib_edi.Services.Ccdx;
+
+namespace fa_ccdx_provider_varo
+{
+    public static class Provide
+    {
+        [FunctionName("ccdx-provider-varo")]
+        public static async Task<HttpResponseMessage> Run(
+            [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequest req,
+            ILogger log)
+        {
+            try
+            {
+                log.LogTrace("http trigger function processed a publishing request.");
+
+                // NHGH-2799 2022-02-09 1418 Using these temporary package related variables until requirements are defined
+                string emdType = Environment.GetEnvironmentVariable("EMD_TYPE");
+                string timeString = DateTime.Now.ToString("yyyyMMddHHmmss");
+                string dateString = DateTime.Now.ToString("yyyy-MM-dd");
+                string packageName = $"{emdType}/{dateString}/{timeString}_002200265547501820383131_mailconnectorpackage.tar.gz";
+
+                string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
+                dynamic data = JsonConvert.DeserializeObject(requestBody);
+                log.LogTrace("retrieve base64 encoded content for publishing to ccdx");
+                string compressedContentBase64 = data?.content;
+                byte[] contentBytes = Convert.FromBase64String(compressedContentBase64);
+                MemoryStream stream = new MemoryStream(contentBytes);
+
+                
+
+
+                log.LogInformation("build multipart form data data content");
+                MultipartFormDataContent multipartFormDataByteArrayContent = HttpService.BuildMultipartFormDataByteArrayContent(stream, "file", packageName);
+                log.LogInformation("build ccdx request headers");
+                HttpRequestMessage requestMessage = CcdxService.BuildCcdxHttpMultipartFormDataRequestMessage(multipartFormDataByteArrayContent, packageName, log);
+                log.LogInformation("send package to ccdx");
+                HttpStatusCode httpStatusCode = await HttpService.SendHttpRequestMessage(requestMessage);
+
+                var returnObject = new { publishedPackage = packageName };
+                HttpResponseMessage httpResponseMessage;
+                httpResponseMessage = new HttpResponseMessage()
+                {
+                    StatusCode = System.Net.HttpStatusCode.OK,
+                    Content = new StringContent(JsonConvert.SerializeObject(returnObject, Formatting.Indented), Encoding.UTF8, "application/json")
+                };
+                log.LogTrace("sent successful http response");
+                return httpResponseMessage;
+
+            }
+            catch (Exception e)
+            {
+                log.LogError("Something went wrong while publishing the tarball to ccdx");
+                log.LogError("Exception: " + e.Message);
+                HttpResponseMessage httpResponseMessage = new()
+                {
+                    StatusCode = System.Net.HttpStatusCode.InternalServerError
+                };
+                return httpResponseMessage;
+            }
+        }
+    }
+}
