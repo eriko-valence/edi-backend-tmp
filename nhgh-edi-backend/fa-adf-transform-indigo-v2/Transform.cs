@@ -87,9 +87,9 @@ namespace fa_adf_transform_indigo_v2
 
                     dynamic usbdgRecords = UsbdgDataProcessorService.GetUsbdgMetadataRecordsElement(usbdgReportMetadata);
 
-                    log.LogInformation($"- Retrieving time values from EMD metadata");
-                    string emdRelativeTime = DataTransformService.GetJObjectPropertyValueAsString(usbdgRecords, "RELT");
-                    string emdAbsoluteTime = DataTransformService.GetJObjectPropertyValueAsString(usbdgRecords, "ABST");
+                    //log.LogInformation($"- Retrieving time values from EMD metadata");
+                    //string emdRelativeTime = DataTransformService.GetJObjectPropertyValueAsString(usbdgRecords, "RELT");
+                    //string emdAbsoluteTime = DataTransformService.GetJObjectPropertyValueAsString(usbdgRecords, "ABST");
 
                     log.LogInformation($"- Validate USBDG report metadata blob");
                     dynamic validatedUsbdgReportMetadataFile = await DataTransformService.ValidateJsonObject(emsConfgContainer, usbdgReportMetadata, jsonSchemaBlobNameUsbdgMetadata, log);
@@ -99,7 +99,11 @@ namespace fa_adf_transform_indigo_v2
 
                     log.LogInformation($"- Start tracking EDI job status");
                     EdiJob ediJob = UsbdgDataProcessorService.PopulateEdiJobObject(usbdgReportMetadata, emsLogFiles, usbdgLogBlobs);
-                    
+
+                    log.LogInformation($"- Retrieving time values from EMD metadata");
+                    string emdAbsoluteTime = DataTransformService.GetAbsoluteTimeFromEmsPackage(ediJob);
+                    string emdRelativeTime = DataTransformService.GetRelativeTimeFromEmsPackage(ediJob);
+
                     log.LogInformation($"- {payload.FileName} - Validate EMS logger type using LMOD property");
                     string loggerModelToCheck = ediJob.Logger.LMOD ?? "";
                     EmsLoggerModelCheckResult loggerModelCheckResult = EmsService.GetEmsLoggerModelFromEmsLogLmodProperty(loggerModelToCheck);
