@@ -98,7 +98,7 @@ namespace fa_adf_transform_indigo_v2
                     List<dynamic> validatedUsbdgLogFiles = await DataTransformService.ValidateJsonObjects(emsConfgContainer, emsLogFiles, jsonSchemaBlobNameEmsCompliantLog, log);
 
                     log.LogInformation($"- Start tracking EDI job status");
-                    EdiJob ediJob = UsbdgDataProcessorService.PopulateEdiJobObject(usbdgReportMetadata, emsLogFiles);
+                    EdiJob ediJob = UsbdgDataProcessorService.PopulateEdiJobObject(usbdgReportMetadata, emsLogFiles, usbdgLogBlobs);
                     
                     log.LogInformation($"- {payload.FileName} - Validate EMS logger type using LMOD property");
                     string loggerModelToCheck = ediJob.Logger.LMOD ?? "";
@@ -127,10 +127,10 @@ namespace fa_adf_transform_indigo_v2
                         List<EmsEventRecord> sortedEmsEventCsvRows = emsEventCsvRows.OrderBy(i => (i._RELT_SECS)).ToList();
 
                         log.LogInformation($"  - Convert relative time (e.g., 'P9DT59M53S') to total seconds (report only)");
-                        int DurationSecs = DataTransformService.ConvertRelativeTimeStringToTotalSeconds(usbdgReportMetadata); // convert timespan to seconds
+                        int DurationSecs = DataTransformService.ConvertRelativeTimeStringToTotalSeconds(usbdgReportMetadata, ediJob); // convert timespan to seconds
 
                         log.LogInformation($"  - Calculate absolute time for each record using record relative time (e.g., 781193) and report absolute time ('2021-06-20T23:00:02Z')");
-                        sortedEmsEventCsvRows = DataTransformService.CalculateAbsoluteTimeForUsbdgRecords(sortedEmsEventCsvRows, DurationSecs, usbdgReportMetadata);
+                        sortedEmsEventCsvRows = DataTransformService.CalculateAbsoluteTimeForUsbdgRecords(sortedEmsEventCsvRows, DurationSecs, usbdgReportMetadata, ediJob);
 
                         log.LogInformation($"  - Cloud upload times: ");
                         log.LogInformation($"    - EMD (source: cellular) : {DateConverter.ConvertIso8601CompliantString(emdAbsoluteTime)} (UTC)");
@@ -201,7 +201,7 @@ namespace fa_adf_transform_indigo_v2
                     string emdAbsoluteTime = DataTransformService.GetJObjectPropertyValueAsString(usbdgRecords, "ABST");
 
                     log.LogInformation($"- Start tracking EDI job status");
-                    EdiJob ediJob = UsbdgDataProcessorService.PopulateEdiJobObject(usbdgReportMetadata, null);
+                    EdiJob ediJob = UsbdgDataProcessorService.PopulateEdiJobObject(usbdgReportMetadata, null, null);
 
                     log.LogInformation($"- Map '{loggerType}' objects to csv records");
                     List<EdiSinkRecord> usbdgLocationCsvRows = DataModelMappingService.MapUsbdgLocations(usbdgReportMetadata, ediJob);
