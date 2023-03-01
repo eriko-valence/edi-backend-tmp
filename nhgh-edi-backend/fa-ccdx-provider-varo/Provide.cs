@@ -17,7 +17,7 @@ namespace fa_ccdx_provider_varo
 {
     public static class Provide
     {
-        [FunctionName("ccdx-provider-varo")]
+        [FunctionName("publish-varo-email-report")]
         public static async Task<HttpResponseMessage> Run(
             [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequest req,
             ILogger log)
@@ -30,26 +30,24 @@ namespace fa_ccdx_provider_varo
                 string emdType = Environment.GetEnvironmentVariable("EMD_TYPE");
                 string timeString = DateTime.Now.ToString("yyyyMMddHHmmss");
                 string dateString = DateTime.Now.ToString("yyyy-MM-dd");
-                string packageName = $"{emdType}/{dateString}/{timeString}_002200265547501820383131_mailconnectorpackage.tar.gz";
-
+                
                 string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
                 dynamic data = JsonConvert.DeserializeObject(requestBody);
                 log.LogTrace("retrieve base64 encoded content for publishing to ccdx");
+                string packageName = data?.name;
+                string fullPackageName = $"{emdType}/{dateString}/{packageName}";
                 string compressedContentBase64 = data?.content;
                 byte[] contentBytes = Convert.FromBase64String(compressedContentBase64);
                 MemoryStream stream = new MemoryStream(contentBytes);
 
-                
-
-
                 log.LogInformation("build multipart form data data content");
-                MultipartFormDataContent multipartFormDataByteArrayContent = HttpService.BuildMultipartFormDataByteArrayContent(stream, "file", packageName);
+                MultipartFormDataContent multipartFormDataByteArrayContent = HttpService.BuildMultipartFormDataByteArrayContent(stream, "file", fullPackageName);
                 log.LogInformation("build ccdx request headers");
-                HttpRequestMessage requestMessage = CcdxService.BuildCcdxHttpMultipartFormDataRequestMessage(multipartFormDataByteArrayContent, packageName, log);
+                HttpRequestMessage requestMessage = CcdxService.BuildCcdxHttpMultipartFormDataRequestMessage(multipartFormDataByteArrayContent, fullPackageName, log);
                 log.LogInformation("send package to ccdx");
                 HttpStatusCode httpStatusCode = await HttpService.SendHttpRequestMessage(requestMessage);
 
-                var returnObject = new { publishedPackage = packageName };
+                var returnObject = new { publishedPackage = fullPackageName };
                 HttpResponseMessage httpResponseMessage;
                 httpResponseMessage = new HttpResponseMessage()
                 {
