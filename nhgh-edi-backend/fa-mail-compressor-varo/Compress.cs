@@ -18,7 +18,7 @@ namespace fa_mail_compressor_varo
 {
     public static class Compress
     {
-        [FunctionName("compress-varo-email-report")]
+        [FunctionName("compress-report")]
         public static async Task<HttpResponseMessage> Run(
             [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequest req,
             ILogger log)
