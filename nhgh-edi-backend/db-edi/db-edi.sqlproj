@@ -81,7 +81,6 @@
     <Build Include="usbdg\Tables\event.sql" />
     <Build Include="usbdg\Tables\device.sql" />
     <Build Include="indigo_v2\Tables\event.sql" />
-    <Build Include="indigo_v2\Tables\location.sql" />
     <Build Include="usbdg\Stored Procedures\uspLoadUsbdgEvents.sql" />
     <Build Include="usbdg\Stored Procedures\uspLoadUsbdgDevices.sql" />
     <Build Include="indigo_v2\Stored Procedures\uspLoadIndigoV2Events.sql" />
@@ -139,5 +138,6 @@
     <Build Include="dbo\Stored Procedures\getBatteryChargeHighcharts.sql" />
     <Build Include="dbo\Stored Procedures\getAmbientTemperatureHighcharts.sql" />
     <Build Include="indigo_v2\Stored Procedures\getAvgHourlyAmbientTemperatureOverTime_v2.sql" />
+    <Build Include="indigo_v2\Tables\event_aser.sql" />
   </ItemGroup>
 </Project>
