@@ -26,6 +26,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Xml;
+using System.Text.RegularExpressions;
 
 namespace lib_edi.Services.CceDevice
 {
@@ -248,7 +249,7 @@ namespace lib_edi.Services.CceDevice
 		/// <returns>
 		/// A list of CSV compatible EMD + logger data records, if successful; Exception (D39Y) if any failures occur 
 		/// </returns>
-		public static EdiJob PopulateEdiJobObject(dynamic sourceUsbdgMetadata, List<dynamic> sourceLogs)
+		public static EdiJob PopulateEdiJobObject(dynamic sourceUsbdgMetadata, List<dynamic> sourceLogs, List<CloudBlockBlob> listLoggerFiles)
 		{
 			string propName = null;
 			string propValue = null;
@@ -257,7 +258,28 @@ namespace lib_edi.Services.CceDevice
 
 			try
 			{
-				if (sourceLogs != null)
+                if (listLoggerFiles != null)
+                {
+                    foreach (CloudBlockBlob logBlob in listLoggerFiles)
+                    {
+                        if (EmsService.IsThisEmsSyncDataFile(logBlob.Name))
+                        {
+                            string[] parts = logBlob.Name.Split("/"); ;
+                            string logFileName = parts[parts.Length - 1];
+                            string logFileNamePattern = "([A-Za-z0-9]+)_SYNC_([A-Za-z0-9]+)_([A-Za-z0-9]+)\\.json";
+                            Regex r = new Regex(logFileNamePattern, RegexOptions.IgnoreCase);
+                            Match m = r.Match(logFileName);
+                            if (m.Success)
+                            {
+                                Group g = m.Groups[0];
+                                ediJob.FileName_RELT = m.Groups[2].Value;
+                                ediJob.FileName_ABST = m.Groups[3].Value;
+                            }
+                        }
+                    }
+                }
+
+                if (sourceLogs != null)
                 {
 					foreach (dynamic sourceLog in sourceLogs)
 					{
@@ -572,10 +594,11 @@ namespace lib_edi.Services.CceDevice
         /// Converts relative time to total seconds
         /// </summary>
         /// <param name="metadata">USBDG object holding relative time (e.g., P8DT30S)</param>
+        /// <param name="ediJob">EDI job object</param>
         /// <returns>
         /// Total seconds calculated from relative time; Exception (A89R) or (EZ56) otherwise
         /// </returns>
-        public static int ConvertRelativeTimeStringToTotalSeconds(dynamic metadata)
+        public static int ConvertRelativeTimeStringToTotalSeconds(dynamic metadata, EdiJob ediJob)
         {
             string relativeTime = null;
             int result = 0;
@@ -583,7 +606,8 @@ namespace lib_edi.Services.CceDevice
             try
             {
                 JObject sourceJObject = (JObject)metadata;
-                relativeTime = GetKeyValutFromMetadataRecordsObject("RELT", metadata);
+                //relativeTime = GetKeyValueFromMetadataRecordsObject("RELT", metadata);
+                relativeTime = GetRelativeTimeFromEmsPackage(ediJob);
                 TimeSpan ts = XmlConvert.ToTimeSpan(relativeTime); // parse iso 8601 duration string to timespan
                 result = Convert.ToInt32(ts.TotalSeconds);
                 return result;
@@ -612,7 +636,7 @@ namespace lib_edi.Services.CceDevice
         /// <returns>
         /// Key value found
         /// </returns>
-        public static string GetKeyValutFromMetadataRecordsObject(string key, dynamic metadata)
+        public static string GetKeyValueFromMetadataRecordsObject(string key, dynamic metadata)
         {
             JObject sourceJObject = (JObject)metadata;
             string result = null;
@@ -642,6 +666,53 @@ namespace lib_edi.Services.CceDevice
         }
 
         /// <summary>
+        /// Returns absolute time from EMS report metadata. Falls back to the logger file name if missing from the metadata. 
+        /// </summary>
+        /// <param name="ediJob">EDI job object</param>
+        /// <returns>
+        /// Absolute time
+        /// </returns>
+        public static string GetAbsoluteTimeFromEmsPackage(EdiJob ediJob)
+        {
+            string result = null;
+            if (ediJob.UsbdgMetadata != null)
+            {
+                if (ediJob.UsbdgMetadata.ABST != null && ediJob.UsbdgMetadata.ABST != "")
+                {
+                    result = ediJob.UsbdgMetadata.ABST;
+                } else if (ediJob.FileName_ABST != null)
+                {
+                    result = ediJob.FileName_ABST;
+                }
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// Returns absolute time from EMS report metadata. Falls back to the logger file name if missing from the metadata. 
+        /// </summary>
+        /// <param name="ediJob">EDI job object</param>
+        /// <returns>
+        /// Absolute time
+        /// </returns>
+        public static string GetRelativeTimeFromEmsPackage(EdiJob ediJob)
+        {
+            string result = null;
+            if (ediJob.UsbdgMetadata != null)
+            {
+                if (ediJob.UsbdgMetadata.RELT != null && ediJob.UsbdgMetadata.RELT != "")
+                {
+                    result = ediJob.UsbdgMetadata.RELT;
+                }
+                else if (ediJob.FileName_RELT != null)
+                {
+                    result = ediJob.FileName_RELT;
+                }
+            }
+            return result;
+        }
+
+        /// <summary>
         /// Calculates the absolute timestamp for each Indigo V2 records using the USBDG metadata absolute timestamp and relative time of records
         /// </summary>
         /// <param name="records">List of denormalized USBDG records </param>
@@ -650,9 +721,10 @@ namespace lib_edi.Services.CceDevice
         /// <returns>
         /// Absolute timestamp (DateTime) of a Indigo V2 record; Exception (4Q5D) otherwise
         /// </returns>
-        public static List<EmsEventRecord> CalculateAbsoluteTimeForUsbdgRecords(List<EmsEventRecord> records, int reportDurationSeconds, dynamic reportMetadata)
+        public static List<EmsEventRecord> CalculateAbsoluteTimeForUsbdgRecords(List<EmsEventRecord> records, int reportDurationSeconds, dynamic reportMetadata, EdiJob ediJob)
         {
-            string absoluteTime = GetKeyValutFromMetadataRecordsObject("ABST", reportMetadata);
+            //string absoluteTime = GetKeyValueFromMetadataRecordsObject("ABST", reportMetadata);
+            string absoluteTime = GetAbsoluteTimeFromEmsPackage(ediJob);
 
             foreach (EmsEventRecord record in records)
             {
