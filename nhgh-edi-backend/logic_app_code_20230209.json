@@ -1,0 +1,270 @@
+{
+  "definition": {
+    "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+    "actions": {
+      "Check_if_report_was_found": {
+        "actions": {},
+        "else": {
+          "actions": {
+            "Assign_Generated_Report": {
+              "inputs": {
+                "name": "Report",
+                "value": "@json(body('Generate_Report'))"
+              },
+              "runAfter": {
+                "Generate_Report": [
+                  "Succeeded"
+                ]
+              },
+              "type": "SetVariable"
+            },
+            "Generate_Report": {
+              "inputs": {
+                "body": "@triggerBody()?['Body']",
+                "function": {
+                  "id": "/subscriptions/2972ffd4-e5b4-4b98-87b9-360c084c2959/resourceGroups/rg-dx-mail-proc-dev/providers/Microsoft.Web/sites/fa-dx-mail-proc-node-dev/functions/generate-report"
+                },
+                "method": "POST"
+              },
+              "runAfter": {},
+              "type": "Function"
+            },
+            "Name_Generated_Report": {
+              "inputs": {
+                "name": "ReportName",
+                "value": "generated-report.json"
+              },
+              "runAfter": {
+                "Assign_Generated_Report": [
+                  "Succeeded"
+                ]
+              },
+              "type": "SetVariable"
+            }
+          }
+        },
+        "expression": {
+          "and": [
+            {
+              "not": {
+                "equals": [
+                  "@variables('ReportName')",
+                  "NOT_FOUND"
+                ]
+              }
+            }
+          ]
+        },
+        "runAfter": {
+          "Search_for_Varo_report_json": [
+            "Succeeded"
+          ]
+        },
+        "type": "If"
+      },
+      "Initialize_ReportName": {
+        "inputs": {
+          "variables": [
+            {
+              "name": "ReportName",
+              "type": "string",
+              "value": "NOT_FOUND"
+            }
+          ]
+        },
+        "runAfter": {
+          "Initialize_Report_object": [
+            "Succeeded"
+          ]
+        },
+        "type": "InitializeVariable"
+      },
+      "Initialize_Report_object": {
+        "inputs": {
+          "variables": [
+            {
+              "name": "Report",
+              "type": "Object"
+            }
+          ]
+        },
+        "runAfter": {},
+        "type": "InitializeVariable"
+      },
+      "Publish_Report": {
+        "actions": {
+          "Compress_Report": {
+            "inputs": {
+              "body": {
+                "attachments": "@triggerBody()?['Attachments']",
+                "dxOwner": "urn://nhgh",
+                "dxPublisherToken": "806a076715fa49b1a98af0cb2df70f7b",
+                "dxPublisherUrl": "https://publish.interchangedemo.2to8.cc/publish/file",
+                "emailFrom": "@triggerBody()?['From']",
+                "report": "@variables('Report')",
+                "reportName": "@variables('ReportName')",
+                "source": "urn:varo:edi:mail-processor"
+              },
+              "function": {
+                "id": "/subscriptions/2972ffd4-e5b4-4b98-87b9-360c084c2959/resourceGroups/rg-dx-mail-proc-dev/providers/Microsoft.Web/sites/fa-dx-mail-proc-net-dev/functions/compress-report"
+              }
+            },
+            "runAfter": {},
+            "type": "Function"
+          },
+          "Publish_Report_-_File_Endpoint": {
+            "inputs": {
+              "body": "@body('Compress_Report')",
+              "function": {
+                "id": "/subscriptions/2972ffd4-e5b4-4b98-87b9-360c084c2959/resourceGroups/rg-dx-mail-proc-dev/providers/Microsoft.Web/sites/fa-dx-mail-proc-net-dev/functions/publish-report-files"
+              }
+            },
+            "runAfter": {
+              "Compress_Report": [
+                "Succeeded"
+              ]
+            },
+            "type": "Function"
+          }
+        },
+        "else": {
+          "actions": {
+            "Publish_Report_-_Data_Endpoint": {
+              "inputs": {
+                "body": {
+                  "attachments": "@triggerBody()?['Attachments']",
+                  "dxOwner": "urn://nhgh",
+                  "dxPublisherToken": "806a076715fa49b1a98af0cb2df70f7b",
+                  "dxPublisherUrl": "https://publish.interchangedemo.2to8.cc/publish/file",
+                  "emailFrom": "@triggerBody()?['From']",
+                  "report": "@variables('Report')",
+                  "reportName": "@variables('ReportName')",
+                  "source": "urn:varo:edi:mail-processor"
+                },
+                "function": {
+                  "id": "/subscriptions/2972ffd4-e5b4-4b98-87b9-360c084c2959/resourceGroups/rg-dx-mail-proc-dev/providers/Microsoft.Web/sites/fa-dx-mail-proc-node-dev/functions/publish-report-data"
+                },
+                "headers": {},
+                "method": "POST"
+              },
+              "runAfter": {},
+              "type": "Function"
+            }
+          }
+        },
+        "expression": {
+          "and": [
+            {
+              "contains": [
+                "@triggerBody()?['Subject']",
+                "Facility Temperature Report"
+              ]
+            }
+          ]
+        },
+        "runAfter": {
+          "Check_if_report_was_found": [
+            "Succeeded"
+          ]
+        },
+        "type": "If"
+      },
+      "Search_for_Varo_report_json": {
+        "actions": {
+          "Check_for_Varo_Json_attachment": {
+            "actions": {
+              "Assign_Report": {
+                "inputs": {
+                  "name": "Report",
+                  "value": "@json(decodeBase64(items('Search_for_Varo_report_json')?['ContentBytes']))"
+                },
+                "runAfter": {},
+                "type": "SetVariable"
+              },
+              "Set_Report_Name": {
+                "inputs": {
+                  "name": "ReportName",
+                  "value": "@items('Search_for_Varo_report_json')?['Name']"
+                },
+                "runAfter": {
+                  "Assign_Report": [
+                    "Succeeded"
+                  ]
+                },
+                "type": "SetVariable"
+              }
+            },
+            "expression": {
+              "and": [
+                {
+                  "endsWith": [
+                    "@items('Search_for_Varo_report_json')?['Name']",
+                    ".json"
+                  ]
+                }
+              ]
+            },
+            "runAfter": {},
+            "type": "If"
+          }
+        },
+        "foreach": "@triggerBody()?['Attachments']",
+        "runAfter": {
+          "Initialize_ReportName": [
+            "Succeeded"
+          ]
+        },
+        "type": "Foreach"
+      }
+    },
+    "contentVersion": "1.0.0.0",
+    "outputs": {},
+    "parameters": {
+      "$connections": {
+        "defaultValue": {},
+        "type": "Object"
+      }
+    },
+    "triggers": {
+      "When_a_new_email_arrives": {
+        "evaluatedRecurrence": {
+          "frequency": "Second",
+          "interval": 15
+        },
+        "inputs": {
+          "host": {
+            "connection": {
+              "name": "@parameters('$connections')['gmail']['connectionId']"
+            }
+          },
+          "method": "get",
+          "path": "/Mail/OnNewEmail",
+          "queries": {
+            "fetchOnlyWithAttachments": false,
+            "importance": "All",
+            "includeAttachments": true,
+            "label": "INBOX",
+            "starred": "All",
+            "subject": "Facility Temperature Report"
+          }
+        },
+        "recurrence": {
+          "frequency": "Second",
+          "interval": 15
+        },
+        "type": "ApiConnection"
+      }
+    }
+  },
+  "parameters": {
+    "$connections": {
+      "value": {
+        "gmail": {
+          "connectionId": "/subscriptions/2972ffd4-e5b4-4b98-87b9-360c084c2959/resourceGroups/dxmailprocessordev/providers/Microsoft.Web/connections/gmail",
+          "connectionName": "gmail",
+          "id": "/subscriptions/2972ffd4-e5b4-4b98-87b9-360c084c2959/providers/Microsoft.Web/locations/westus2/managedApis/gmail"
+        }
+      }
+    }
+  }
+}

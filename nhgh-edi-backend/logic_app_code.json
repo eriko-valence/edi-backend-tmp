@@ -1,0 +1,83 @@
+{
+  "definition": {
+    "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+    "actions": {
+      "compress-report": {
+        "inputs": {
+          "body": {
+            "attachments": "@triggerBody()?['Attachments']",
+            "emailFrom": "@triggerBody()?['From']"
+          },
+          "function": {
+            "id": "/subscriptions/2972ffd4-e5b4-4b98-87b9-360c084c2959/resourceGroups/rg-edi-dev/providers/Microsoft.Web/sites/fa-mail-compressor-varo-dev/functions/compress-report"
+          }
+        },
+        "runAfter": {},
+        "type": "Function"
+      },
+      "publish-report": {
+        "inputs": {
+          "body": "@body('compress-report')",
+          "function": {
+            "id": "/subscriptions/2972ffd4-e5b4-4b98-87b9-360c084c2959/resourceGroups/rg-edi-dev/providers/Microsoft.Web/sites/fa-ccdx-provider-varo-dev/functions/publish-report"
+          }
+        },
+        "runAfter": {
+          "compress-report": [
+            "Succeeded"
+          ]
+        },
+        "type": "Function"
+      }
+    },
+    "contentVersion": "1.0.0.0",
+    "outputs": {},
+    "parameters": {
+      "$connections": {
+        "defaultValue": {},
+        "type": "Object"
+      }
+    },
+    "triggers": {
+      "When_a_new_email_arrives": {
+        "evaluatedRecurrence": {
+          "frequency": "Second",
+          "interval": 15
+        },
+        "inputs": {
+          "host": {
+            "connection": {
+              "name": "@parameters('$connections')['gmail']['connectionId']"
+            }
+          },
+          "method": "get",
+          "path": "/Mail/OnNewEmail",
+          "queries": {
+            "fetchOnlyWithAttachments": false,
+            "importance": "All",
+            "includeAttachments": true,
+            "label": "INBOX",
+            "starred": "All",
+            "subject": "Facility Temperature Report (30DTR Data)"
+          }
+        },
+        "recurrence": {
+          "frequency": "Second",
+          "interval": 15
+        },
+        "type": "ApiConnection"
+      }
+    }
+  },
+  "parameters": {
+    "$connections": {
+      "value": {
+        "gmail": {
+          "connectionId": "/subscriptions/2972ffd4-e5b4-4b98-87b9-360c084c2959/resourceGroups/rg-edi-dev/providers/Microsoft.Web/connections/gmail-4",
+          "connectionName": "gmail-4",
+          "id": "/subscriptions/2972ffd4-e5b4-4b98-87b9-360c084c2959/providers/Microsoft.Web/locations/westus2/managedApis/gmail"
+        }
+      }
+    }
+  }
+}
