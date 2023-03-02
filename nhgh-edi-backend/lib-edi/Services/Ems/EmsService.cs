@@ -318,7 +318,6 @@ namespace lib_edi.Services.Ems
                 foreach (dynamic item in attachments)
                 {
                     string elementName = item?.Name;
-                    Console.WriteLine(elementName + " --> " + i);
                     Regex r = new Regex(reportFileNamePattern);
                     Match m = r.Match(elementName);
                     if (m.Success)
