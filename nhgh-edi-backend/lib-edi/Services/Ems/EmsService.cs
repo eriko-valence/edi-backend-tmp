@@ -9,6 +9,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection.Metadata.Ecma335;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace lib_edi.Services.Ems
@@ -294,6 +295,42 @@ namespace lib_edi.Services.Ems
                 }
             }
             return result;
+        }
+
+        // 
+        /// <summary>
+        /// Generates an EMS package name from the Varo report metadata file name
+        /// </summary>
+        /// <param name="attachments">list of Varo email report attachments</param>
+        /// <remarks>
+        /// nhgh-2815 2023-03-01 1203 Added function
+        /// </remarks>
+        /// <returns>
+        /// Package name in format {TIMESTAMP}_{LOGGERID}_reports.tar.gz
+        /// </returns>
+        public static string GeneratePackageNameFromVaroReportFileName(dynamic attachments)
+        {
+            string name = null;
+            string reportFileNamePattern = "([a-z0-9]+)_(\\d\\d\\d\\d\\d\\d\\d\\dT\\d\\d\\d\\d\\d\\dZ)\\.json";
+            if (attachments != null)
+            {
+                int i = 0;
+                foreach (dynamic item in attachments)
+                {
+                    string elementName = item?.Name;
+                    Console.WriteLine(elementName + " --> " + i);
+                    Regex r = new Regex(reportFileNamePattern);
+                    Match m = r.Match(elementName);
+                    if (m.Success)
+                    {
+                        Group loggerId = m.Groups[1];
+                        Group timeStamp = m.Groups[2];
+                        name = $"{timeStamp.Value}_{loggerId.Value}_reports.tar.gz";
+                    }
+                    i++;
+                }
+            }
+            return name;
         }
     }
 }
