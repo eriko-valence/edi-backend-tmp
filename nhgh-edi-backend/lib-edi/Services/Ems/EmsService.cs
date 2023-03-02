@@ -311,19 +311,21 @@ namespace lib_edi.Services.Ems
         public static string GeneratePackageNameFromVaroReportFileName(dynamic attachments)
         {
             string name = null;
-            string reportFileNamePattern = "([A-Za-z0-9]+_[A-Za-z0-9]+_report)\\.json";
+            string reportFileNamePattern = "([a-z0-9]+)_(\\d\\d\\d\\d\\d\\d\\d\\dT\\d\\d\\d\\d\\d\\dZ)\\.json";
             if (attachments != null)
             {
                 int i = 0;
                 foreach (dynamic item in attachments)
                 {
                     string elementName = item?.Name;
-                    Regex r = new Regex(reportFileNamePattern, RegexOptions.IgnoreCase);
+                    Console.WriteLine(elementName + " --> " + i);
+                    Regex r = new Regex(reportFileNamePattern);
                     Match m = r.Match(elementName);
                     if (m.Success)
                     {
-                        Group g = m.Groups[1];
-                        name = $"{g.Value}.tar.gz";
+                        Group loggerId = m.Groups[1];
+                        Group timeStamp = m.Groups[2];
+                        name = $"{timeStamp.Value}_{loggerId.Value}_reports.tar.gz";
                     }
                     i++;
                 }
