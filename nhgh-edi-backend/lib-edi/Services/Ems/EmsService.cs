@@ -80,6 +80,27 @@ namespace lib_edi.Services.Ems
         }
 
         /// <summary>
+        /// Validate package has been collected from a Varo EMD
+        /// </summary>
+        /// <param name="name">Name of EMD</param>
+        /// <remarks>
+        /// NHGH-2835 (2023.03.02) - Added function
+        /// </remarks>
+        public static bool ValidatePackageIsVaroGenerated(string name)
+        {
+            bool result = false;
+
+            if (name != null)
+            {
+                if (name.ToUpper() == EmdEnum.Name.VARO.ToString())
+                {
+                    result = true;
+                }
+            }
+            return result;
+        }
+
+        /// <summary>
         /// Returns data logger type enum
         /// </summary>
         /// <param name="loggerType">Blob path in string format</param>

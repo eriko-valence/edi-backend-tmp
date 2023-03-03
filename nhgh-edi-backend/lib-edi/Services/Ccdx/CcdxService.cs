@@ -254,11 +254,10 @@ namespace lib_edi.Services.Ccdx
 		/// </remarks>
 		public static string BuildRawCcdxConsumerBlobPath(string ceSubject, string ceType)
 		{
-			string deviceType = null;
-			string blobPath = null;
+            string blobPath = null;
 
-			deviceType = GetDeviceType(ceSubject, ceType);
-			if (deviceType != null)
+            string deviceType = GetDeviceType(ceSubject, ceType);
+            if (deviceType != null)
 			{
 				string reportFileName = Path.GetFileName(ceSubject);
 				Path.GetFileName(ceSubject);
