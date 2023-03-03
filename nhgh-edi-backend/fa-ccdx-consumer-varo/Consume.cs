@@ -30,12 +30,12 @@ namespace fa_ccdx_consumer
     public class Consume
     {
         // DEV
-        const string Broker = "pkc-41973.westus2.azure.confluent.cloud:9092";
-        const string Topic = "dx.destination.example";
+        //const string Broker = "pkc-41973.westus2.azure.confluent.cloud:9092";
+        //const string Topic = "dx.destination.example";
 
         // PROD
-        //const string Broker = "pkc-41973.westus2.azure.confluent.cloud:9092";
-        //const string Topic = "dx.destination.edidata";
+        const string Broker = "pkc-41973.westus2.azure.confluent.cloud:9092";
+        const string Topic = "dx.destination.edimaildata";
 
         /// <summary>
         /// Kafka triggered azure function that consumes messages from a cold chain data interchange (CCDX) Kafka topic and loads them into 
@@ -80,9 +80,7 @@ namespace fa_ccdx_consumer
 
             try
             {
-                log.LogInformation($"- [ccdx-consumer->run]: Received {events.Length} telemetry file(s) from cold chain data interchange (CCDX) Kafka topic");
-                /* Validate the 'ce-type' env variables exist - they are needed for determing if the event message gets processed */
-                CcdxService.ValidateCcdxConsumerCeTypeEnvVariables(log);
+                log.LogInformation($"- [ccdx-consumer-varo->run]: Received {events.Length} telemetry file(s) from cold chain data interchange (CCDX) Kafka topic");
                 foreach (KafkaEventData<string, byte[]> eventData in events)
                 {
                     /* Pull headers from incoming event message */
@@ -92,62 +90,59 @@ namespace fa_ccdx_consumer
                         headers.Add(header.Key, GetHeaderValueAsString(header));
                     }
 
-                    string deviceType = CcdxService.GetLoggerTypeFromCeHeader(headers["ce_type"]);
-                    log.LogInformation($"- [ccdx-consumer->run]: Detected device type: {deviceType}");
+                    string ceType = CcdxService.GetLoggerTypeFromCeHeader(headers["ce_type"]);
+                    log.LogInformation($"- [ccdx-consumer-varo->run]: CE Type: {ceType}");
 
-
-                    /* Only process messages that are known to this consumer */
-                    //if (CcdxService.ValidateCeTypeHeader(headers["ce_type"]))
-                    if (EmsService.ValidateLoggerType(deviceType))
+                    /* Only process packages generated from a Varo EMD */
+                    if (EmsService.ValidatePackageIsVaroGenerated(ceType))
                     {
-                        log.LogInformation($"- [ccdx-consumer->run]: Is '{headers["ce_type"]}' a supported cold chain file package? Yes. ");
-                        log.LogInformation($"- [ccdx-consumer->run]: Confirmed. Content is cold chain telemetry. Proceed with processing.");
+                        log.LogInformation($"- [ccdx-consumer-varo->run]: Is '{headers["ce_type"]}' a supported cold chain file package? Yes. ");
+                        log.LogInformation($"- [ccdx-consumer-varo->run]: Confirmed. Content is cold chain telemetry. Proceed with processing.");
 
-                        log.LogInformation($"- [ccdx-consumer->run]: Building raw ccdx raw consumer blob path.");
+                        log.LogInformation($"- [ccdx-consumer-varo->run]: Building raw ccdx raw consumer blob path.");
                         string blobName = CcdxService.BuildRawCcdxConsumerBlobPath(GetKeyValueString(headers, "ce_subject"), GetKeyValueString(headers, "ce_type"));
 
                         string blobContainerName = "";
-                        //Dictionary<string, string> customProps = null;
-                        log.LogInformation($"- [ccdx-consumer->run]: Does this supported cold chain telemetry message have an attached file?");
+                        log.LogInformation($"- [ccdx-consumer-varo->run]: Does this supported cold chain telemetry message have an attached file?");
                         if (headers.ContainsKey("ce_subject"))
                         {
                             reportFileName = Path.GetFileName(GetKeyValueString(headers, "ce_subject"));
-                            log.LogInformation($"- [ccdx-consumer->run]: Validate incoming blob file extension");
+                            log.LogInformation($"- [ccdx-consumer-varo->run]: Validate incoming blob file extension");
                             string fileExtension = Path.GetExtension(blobName);
-                            log.LogInformation($"- [ccdx-consumer->run]: File extension: {fileExtension}");
+                            log.LogInformation($"- [ccdx-consumer-varo->run]: File extension: {fileExtension}");
                             if (CcdxService.IsPathExtensionSupported(blobName))
                             {
-                                log.LogInformation($"- [ccdx-consumer->run]: Confirmed. Attached cce telemetry file found. Proceed with processing.");
+                                log.LogInformation($"- [ccdx-consumer-varo->run]: Confirmed. Attached cce telemetry file found. Proceed with processing.");
                                 blobContainerName = Environment.GetEnvironmentVariable("CCDX_AZURE_STORAGE_BLOB_CONTAINER_NAME");
                                 string storageAccountConnectionString = Environment.GetEnvironmentVariable("CCDX_AZURE_STORAGE_ACCOUNT_CONNECTION_STRING");
                                 CcdxService.LogCcdxConsumerStartedEventToAppInsights(reportFileName, log);
-                                log.LogInformation($"- [ccdx-consumer->run]: Build the azure storage blob path to be used for uploading the cce telemetry file");
+                                log.LogInformation($"- [ccdx-consumer-varo->run]: Build the azure storage blob path to be used for uploading the cce telemetry file");
                                 blobName = CcdxService.BuildRawCcdxConsumerBlobPath(GetKeyValueString(headers, "ce_subject"), GetKeyValueString(headers, "ce_type"));
-                                log.LogInformation($"- [ccdx-consumer->run]: Preparing to upload blob {blobName} to container {blobContainerName}: ");
-                                log.LogInformation($"- [ccdx-consumer->run]:   ce_id: {GetKeyValueString(headers, "ce_id")} ");
-                                log.LogInformation($"- [ccdx-consumer->run]:   ce_type: {GetKeyValueString(headers, "ce_type")} ");
-                                log.LogInformation($"- [ccdx-consumer->run]:   ce_time: {GetKeyValueString(headers, "ce_time")} ");
-                                log.LogInformation($"- [ccdx-consumer->run]:   ce_subject: {GetKeyValueString(headers, "ce_subject")} ");
+                                log.LogInformation($"- [ccdx-consumer-varo->run]: Preparing to upload blob {blobName} to container {blobContainerName}: ");
+                                log.LogInformation($"- [ccdx-consumer-varo->run]:   ce_id: {GetKeyValueString(headers, "ce_id")} ");
+                                log.LogInformation($"- [ccdx-consumer-varo->run]:   ce_type: {GetKeyValueString(headers, "ce_type")} ");
+                                log.LogInformation($"- [ccdx-consumer-varo->run]:   ce_time: {GetKeyValueString(headers, "ce_time")} ");
+                                log.LogInformation($"- [ccdx-consumer-varo->run]:   ce_subject: {GetKeyValueString(headers, "ce_subject")} ");
                                 await AzureStorageBlobService.UploadBlobToContainerUsingSdk(eventData.Value, storageAccountConnectionString, blobContainerName, blobName);
-                                log.LogInformation($"- [ccdx-consumer->run]: Uploading blob {blobName} to container {blobContainerName}");
+                                log.LogInformation($"- [ccdx-consumer-varo->run]: Uploading blob {blobName} to container {blobContainerName}");
                                 CcdxService.LogCcdxConsumerSuccessEventToAppInsights(reportFileName, log);
-                                log.LogInformation($"- [ccdx-consumer->run]: Done");
+                                log.LogInformation($"- [ccdx-consumer-varo->run]: Done");
                             }
                             else
                             {
-                                log.LogError($"- [ccdx-consumer->run]: Failed to upload blob {blobName} to container {blobContainerName} due an unsupported attachment extension");
+                                log.LogError($"- [ccdx-consumer-varo->run]: Failed to upload blob {blobName} to container {blobContainerName} due an unsupported attachment extension");
                                 CcdxService.LogCcdxConsumerUnsupportedAttachmentExtensionEventToAppInsights(reportFileName, log);
                             }
                         }
                         else
                         {
-                            log.LogError($"- [ccdx-consumer->run]: Failed to upload blob {blobName} to container {blobContainerName} due to missing the ce-subject header");
+                            log.LogError($"- [ccdx-consumer-varo->run]: Failed to upload blob {blobName} to container {blobContainerName} due to missing the ce-subject header");
                             CcdxService.LogCcdxConsumerMissingSubjectHeaderEventToAppInsights(reportFileName, log);
                         }
                     }
                     else
                     {
-                        log.LogInformation($"- [ccdx-consumer->run]: Is '{headers["ce_type"]}' a supported cold chain file package? No. ");
+                        log.LogInformation($"- [ccdx-consumer-varo->run]: Is '{headers["ce_type"]}' a supported cold chain file package? No. ");
                         //Filter out these telemetry messages as they are not supported by this consumer
                     }
                 }
@@ -192,7 +187,7 @@ namespace fa_ccdx_consumer
                 }
             }
 
-            log.LogDebug($"- [ccdx-consumer->run]: ce-id; {ceId}; ce-type; {ceType}; ce-time; {ceTime}; ems-blob-name; {ceSubject}");
+            log.LogDebug($"- [ccdx-consumer-varo->run]: ce-id; {ceId}; ce-type; {ceType}; ce-time; {ceTime}; ems-blob-name; {ceSubject}");
         }
 
         public static String GetHeaderValueAsString(IKafkaEventDataHeader header)
