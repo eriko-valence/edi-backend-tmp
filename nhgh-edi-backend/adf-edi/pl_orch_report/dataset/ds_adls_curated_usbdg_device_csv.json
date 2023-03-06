@@ -19,7 +19,10 @@
             "location": {
                 "type": "AzureBlobFSLocation",
                 "fileName": "usbdg_device.csv",
-                "folderPath": "@dataset().PL_C_PARAM_TRANSFORM_CURATED_PATH",
+                "folderPath": {
+                    "value": "@dataset().PL_C_PARAM_TRANSFORM_CURATED_PATH",
+                    "type": "Expression"
+                },
                 "fileSystem": "curated-output"
             },
             "columnDelimiter": ",",
@@ -61,5 +64,6 @@
                 "type": "String"
             }
         ]
-    }
+    },
+    "type": "Microsoft.DataFactory/factories/datasets"
 }

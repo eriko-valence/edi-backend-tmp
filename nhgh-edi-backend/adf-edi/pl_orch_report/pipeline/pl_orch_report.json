@@ -59,7 +59,7 @@
                 "userProperties": [],
                 "typeProperties": {
                     "pipeline": {
-                        "referenceName": "pl_transform_report",
+                        "referenceName": "pl_transform_switch",
                         "type": "PipelineReference"
                     },
                     "waitOnCompletion": true,
@@ -80,12 +80,12 @@
                             "value": "@pipeline().parameters.PL_P_PARAM_LOG_DIR_GUID",
                             "type": "Expression"
                         },
-                        "PL_C_PARAM_REQ_JSON": {
-                            "value": "@CONCAT('{\"path\":\"', pipeline().parameters.PL_P_PARAM_LOG_DIR_GUID,'\",\"type\":\"', pipeline().parameters.PL_P_DEVICE_TYPE,'\", \"fileName\":\"',pipeline().parameters.PL_P_PARAM_FILE_NAME,'\"}')",
-                            "type": "Expression"
-                        },
                         "PL_P_DEVICE_TYPE": {
                             "value": "@pipeline().parameters.PL_P_DEVICE_TYPE",
+                            "type": "Expression"
+                        },
+                        "PL_C_PARAM_REQ_JSON": {
+                            "value": "@CONCAT('{\"path\":\"', pipeline().parameters.PL_P_PARAM_LOG_DIR_GUID,'\",\"type\":\"', pipeline().parameters.PL_P_DEVICE_TYPE,'\", \"fileName\":\"',pipeline().parameters.PL_P_PARAM_FILE_NAME,'\"}')",
                             "type": "Expression"
                         }
                     }
@@ -122,7 +122,7 @@
             "name": "Orchestration"
         },
         "annotations": [],
-        "lastPublishTime": "2022-10-08T17:22:29Z"
+        "lastPublishTime": "2023-03-04T20:39:18Z"
     },
     "type": "Microsoft.DataFactory/factories/pipelines"
 }

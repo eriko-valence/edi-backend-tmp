@@ -1,20 +1,20 @@
 {
-    "now": "2023-02-23T22:20:38.296Z",
-    "perfNow": 16980191.299999952,
-    "diagnosticCorrelation": "0589d30f-be56-4335-a063-9151ece3af70",
+    "now": "2023-03-06T22:45:42.625Z",
+    "perfNow": 21347209.200000048,
+    "diagnosticCorrelation": "71f1fe34-c78d-442a-a365-4300ad2a55b0",
     "source": "DownloadSupportFiles",
     "environment": {
         "productName": "adf",
-        "buildVersion": "1.0.022023.18",
+        "buildVersion": "1.0.030323.13",
         "environmentType": 3,
         "resourceName": "adf-edi-develop",
         "resourceRegion": "westus2",
         "resourceGroup": "rg-edi-dev",
         "subscriptionId": "2972ffd4-e5b4-4b98-87b9-360c084c2959",
-        "sessionId": "+bmo2zEkRfHPkILCaEOh7T",
+        "sessionId": "nufSbSbvk+TvtuDabLD4L8",
         "operationId": "",
         "gitType": "live",
-        "loggingKey": "afb4254a-44da-4f54-bcf5-c8ba49a5b2b7"
+        "loggingKey": "40d1954f-c631-4c88-a57d-a4f3695bc0ab"
     },
     "additionalInfo": {
         "selectedResource": "pl_orch_report",

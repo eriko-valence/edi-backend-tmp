@@ -21,7 +21,10 @@
                         "storeSettings": {
                             "type": "AzureBlobFSReadSettings",
                             "recursive": true,
-                            "wildcardFolderPath": "@pipeline().parameters.PL_C_PARAM_TRANSFORM_CURATED_PATH",
+                            "wildcardFolderPath": {
+                                "value": "@pipeline().parameters.PL_C_PARAM_TRANSFORM_CURATED_PATH",
+                                "type": "Expression"
+                            },
                             "wildcardFileName": "indigo_v2_event.csv",
                             "enablePartitionDiscovery": false
                         },
@@ -75,13 +78,16 @@
             },
             "PL_C_PARAM_TRANSFORM_CURATED_PATH": {
                 "type": "string"
+            },
+            "PL_C_PARAM_TRANSFORM_DEVICE_TYPE": {
+                "type": "string"
             }
         },
         "folder": {
             "name": "Load"
         },
         "annotations": [],
-        "lastPublishTime": "2022-08-26T21:36:31Z"
+        "lastPublishTime": "2023-02-23T19:44:18Z"
     },
     "type": "Microsoft.DataFactory/factories/pipelines"
 }

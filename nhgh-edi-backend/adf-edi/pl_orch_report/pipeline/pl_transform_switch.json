@@ -1,0 +1,179 @@
+{
+    "name": "pl_transform_switch",
+    "properties": {
+        "activities": [
+            {
+                "name": "Transform Switch",
+                "type": "Switch",
+                "dependsOn": [],
+                "userProperties": [],
+                "typeProperties": {
+                    "on": {
+                        "value": "@pipeline().parameters.PL_P_DEVICE_TYPE",
+                        "type": "Expression"
+                    },
+                    "cases": [
+                        {
+                            "value": "varo",
+                            "activities": [
+                                {
+                                    "name": "Transform Varo Packages",
+                                    "type": "ExecutePipeline",
+                                    "dependsOn": [],
+                                    "userProperties": [],
+                                    "typeProperties": {
+                                        "pipeline": {
+                                            "referenceName": "pl_transform_varo",
+                                            "type": "PipelineReference"
+                                        },
+                                        "waitOnCompletion": true,
+                                        "parameters": {
+                                            "PL_P_PARAM_TRIGGER_TIME": {
+                                                "value": "@pipeline().parameters.PL_P_PARAM_TRIGGER_TIME",
+                                                "type": "Expression"
+                                            },
+                                            "PL_P_PARAM_FOLDER_NAME": {
+                                                "value": "@pipeline().parameters.PL_P_PARAM_FOLDER_NAME",
+                                                "type": "Expression"
+                                            },
+                                            "PL_P_PARAM_FILE_NAME": {
+                                                "value": "@pipeline().parameters.PL_P_PARAM_FILE_NAME",
+                                                "type": "Expression"
+                                            },
+                                            "PL_P_PARAM_LOG_DIR_GUID": {
+                                                "value": "@pipeline().parameters.PL_P_PARAM_LOG_DIR_GUID",
+                                                "type": "Expression"
+                                            },
+                                            "PL_C_PARAM_REQ_JSON": {
+                                                "value": "@pipeline().parameters.PL_C_PARAM_REQ_JSON",
+                                                "type": "Expression"
+                                            },
+                                            "PL_P_DEVICE_TYPE": {
+                                                "value": "@pipeline().parameters.PL_P_DEVICE_TYPE",
+                                                "type": "Expression"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "value": "ems",
+                            "activities": [
+                                {
+                                    "name": "Transform EMS Data",
+                                    "type": "ExecutePipeline",
+                                    "dependsOn": [],
+                                    "userProperties": [],
+                                    "typeProperties": {
+                                        "pipeline": {
+                                            "referenceName": "pl_transform_ems",
+                                            "type": "PipelineReference"
+                                        },
+                                        "waitOnCompletion": true,
+                                        "parameters": {
+                                            "PL_P_PARAM_TRIGGER_TIME": {
+                                                "value": "@pipeline().parameters.PL_P_PARAM_TRIGGER_TIME",
+                                                "type": "Expression"
+                                            },
+                                            "PL_P_PARAM_FOLDER_NAME": {
+                                                "value": "@pipeline().parameters.PL_P_PARAM_FOLDER_NAME",
+                                                "type": "Expression"
+                                            },
+                                            "PL_P_PARAM_FILE_NAME": {
+                                                "value": "@pipeline().parameters.PL_P_PARAM_FILE_NAME",
+                                                "type": "Expression"
+                                            },
+                                            "PL_P_PARAM_LOG_DIR_GUID": {
+                                                "value": "@pipeline().parameters.PL_P_PARAM_LOG_DIR_GUID",
+                                                "type": "Expression"
+                                            },
+                                            "PL_C_PARAM_REQ_JSON": {
+                                                "value": "@pipeline().parameters.PL_C_PARAM_REQ_JSON",
+                                                "type": "Expression"
+                                            },
+                                            "PL_P_DEVICE_TYPE": {
+                                                "value": "@pipeline().parameters.PL_P_DEVICE_TYPE",
+                                                "type": "Expression"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "value": "no_logger",
+                            "activities": [
+                                {
+                                    "name": "Transform No Logger Data",
+                                    "type": "ExecutePipeline",
+                                    "dependsOn": [],
+                                    "userProperties": [],
+                                    "typeProperties": {
+                                        "pipeline": {
+                                            "referenceName": "pl_transform_ems",
+                                            "type": "PipelineReference"
+                                        },
+                                        "waitOnCompletion": true,
+                                        "parameters": {
+                                            "PL_P_PARAM_TRIGGER_TIME": {
+                                                "value": "@pipeline().parameters.PL_P_PARAM_TRIGGER_TIME",
+                                                "type": "Expression"
+                                            },
+                                            "PL_P_PARAM_FOLDER_NAME": {
+                                                "value": "@pipeline().parameters.PL_P_PARAM_FOLDER_NAME",
+                                                "type": "Expression"
+                                            },
+                                            "PL_P_PARAM_FILE_NAME": {
+                                                "value": "@pipeline().parameters.PL_P_PARAM_FILE_NAME",
+                                                "type": "Expression"
+                                            },
+                                            "PL_P_PARAM_LOG_DIR_GUID": {
+                                                "value": "@pipeline().parameters.PL_P_PARAM_LOG_DIR_GUID",
+                                                "type": "Expression"
+                                            },
+                                            "PL_C_PARAM_REQ_JSON": {
+                                                "value": "@pipeline().parameters.PL_C_PARAM_REQ_JSON",
+                                                "type": "Expression"
+                                            },
+                                            "PL_P_DEVICE_TYPE": {
+                                                "value": "@pipeline().parameters.PL_P_DEVICE_TYPE",
+                                                "type": "Expression"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                }
+            }
+        ],
+        "parameters": {
+            "PL_P_PARAM_TRIGGER_TIME": {
+                "type": "string"
+            },
+            "PL_P_PARAM_FOLDER_NAME": {
+                "type": "string"
+            },
+            "PL_P_PARAM_FILE_NAME": {
+                "type": "string"
+            },
+            "PL_P_PARAM_LOG_DIR_GUID": {
+                "type": "string"
+            },
+            "PL_P_DEVICE_TYPE": {
+                "type": "string"
+            },
+            "PL_C_PARAM_REQ_JSON": {
+                "type": "string"
+            }
+        },
+        "folder": {
+            "name": "Transform"
+        },
+        "annotations": [],
+        "lastPublishTime": "2023-03-03T23:18:29Z"
+    },
+    "type": "Microsoft.DataFactory/factories/pipelines"
+}

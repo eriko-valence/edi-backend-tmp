@@ -30,6 +30,7 @@
                     ],
                     "storeSettings": {
                         "type": "AzureBlobFSReadSettings",
+                        "recursive": true,
                         "enablePartitionDiscovery": false
                     },
                     "formatSettings": {
@@ -39,7 +40,7 @@
             },
             {
                 "name": "Route Indigo Loading",
-                "description": "Indigo file packages can be collected from USBDG or Varo. Varo collected indigo file packages contain only indigo_v2_event.csv files. ",
+                "description": "Routes Indigo packages by source (USBDG or Varo)",
                 "type": "IfCondition",
                 "dependsOn": [
                     {
@@ -87,6 +88,10 @@
                                     "PL_C_PARAM_TRANSFORM_CURATED_PATH": {
                                         "value": "@pipeline().parameters.PL_C_PARAM_TRANSFORM_CURATED_PATH",
                                         "type": "Expression"
+                                    },
+                                    "PL_C_PARAM_TRANSFORM_DEVICE_TYPE": {
+                                        "value": "@pipeline().parameters.PL_C_PARAM_TRANSFORM_DEVICE_TYPE",
+                                        "type": "Expression"
                                     }
                                 }
                             }
@@ -124,6 +129,10 @@
                                     "PL_C_PARAM_TRANSFORM_CURATED_PATH": {
                                         "value": "@pipeline().parameters.PL_C_PARAM_TRANSFORM_CURATED_PATH",
                                         "type": "Expression"
+                                    },
+                                    "PL_C_PARAM_TRANSFORM_DEVICE_TYPE": {
+                                        "value": "@pipeline().parameters.PL_C_PARAM_TRANSFORM_DEVICE_TYPE",
+                                        "type": "Expression"
                                     }
                                 }
                             }
@@ -147,13 +156,16 @@
             },
             "PL_C_PARAM_TRANSFORM_CURATED_PATH": {
                 "type": "string"
+            },
+            "PL_C_PARAM_TRANSFORM_DEVICE_TYPE": {
+                "type": "string"
             }
         },
         "folder": {
             "name": "Load"
         },
         "annotations": [],
-        "lastPublishTime": "2022-08-26T21:36:31Z"
+        "lastPublishTime": "2023-03-04T00:06:36Z"
     },
     "type": "Microsoft.DataFactory/factories/pipelines"
 }
