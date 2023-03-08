@@ -60,9 +60,9 @@ namespace lib_edi.Models.Loggers.Csv
         [Name("ZCHRG")]
         public string ZCHRG { get; set; }
         [Name("ZSTATE")]
-        public bool? ZSTATE { get; set; }
+        public int? ZSTATE { get; set; }
         [Name("ZVLVD")]
-        public bool? ZVLVD { get; set; }
+        public int? ZVLVD { get; set; }
         [Name("TAMB")]
         public double? TAMB { get; set; }
         [Name("RELT")]

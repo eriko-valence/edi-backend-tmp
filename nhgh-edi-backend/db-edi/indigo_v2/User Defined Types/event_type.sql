@@ -22,9 +22,11 @@
     [TAMB]       NUMERIC (4, 2) NULL,
     [TVC]        NUMERIC (3, 1) NULL,
     [ZCHRG]      VARCHAR (20)   NULL,
-    [ZSTATE]     BIT            NULL,
-    [ZVLVD]      BIT            NULL,
+    [ZSTATE]     TINYINT        NULL,
+    [ZVLVD]      INT            NULL,
     [_RELT_SECS] VARCHAR (20)   NULL);
+
+
 
 
 

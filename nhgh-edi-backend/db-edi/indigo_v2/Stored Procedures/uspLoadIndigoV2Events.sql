@@ -6,6 +6,11 @@ BEGIN
 	MERGE [indigo_v2].[event] AS t
 	USING @indigo_v2_event AS s
 	ON t.[RELT] = s.[RELT] and t.[LSER] = s.[LSER]
+    WHEN MATCHED THEN
+        UPDATE SET
+		t.[ZSTATE] = s.[ZSTATE],
+		t.[ZVLVD] = s.[ZVLVD],
+        t.[LASTMODIFIED] = GETDATE()
 	WHEN NOT MATCHED THEN 
 	INSERT ([ABST_CALC],[ADOP],[ALRM],[AMOD],[AMFR],[APQS],[ASER],[BLOG],[DORV],[ESER],[HOLD],[LDOP],[LERR],[LMFR],[LMOD],[LPQS],[LSER],[LSV],[RELT],[RTCW],[TAMB],[TVC],[ZCHRG],[ZSTATE],[ZVLVD],[_RELT_SECS],[DATEADDED]) 
 	VALUES(
