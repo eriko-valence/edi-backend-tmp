@@ -457,23 +457,35 @@ namespace lib_edi.Services.Loggers
             {
                 List<EmsEventRecord> sinkCsvEventRecords = new();
 
+                // NHGH-2812 (2023.03.08) - Grab the log header properties from the source log file
+                //   Sync file (source of truth should be last on this list so it is processed last
+                var logHeaderObject = new ExpandoObject() as IDictionary<string, Object>;
+                foreach (dynamic sourceLog in sourceLogs)
+                {
+                    JObject sourceLogJObject = (JObject)sourceLog;
+                    sourceFile = DataTransformService.GetSourceFile(sourceLogJObject);                
+                    foreach (KeyValuePair<string, JToken> log1 in sourceLogJObject)
+                    {
+                        if (log1.Value.Type != JTokenType.Array)
+                        {
+                            if (logHeaderObject.ContainsKey(log1.Key))
+                            {
+                                logHeaderObject[log1.Key] = log1.Value;
+                            } else
+                            {
+                                logHeaderObject.Add(log1.Key, log1.Value);
+                            }
+                        }
+                    }
+                }
+
                 foreach (dynamic sourceLog in sourceLogs)
                 {
                     JObject sourceLogJObject = (JObject)sourceLog;
                     sourceFile = DataTransformService.GetSourceFile(sourceLogJObject);
 
-                    // Grab the log header properties from the source log file
-                    var logHeaderObject = new ExpandoObject() as IDictionary<string, Object>;
-                    foreach (KeyValuePair<string, JToken> log1 in sourceLogJObject)
-                    {
-                        if (log1.Value.Type != JTokenType.Array)
-                        {
-                            logHeaderObject.Add(log1.Key, log1.Value);
-                        }
-                    }
-
                     // NHGH-2812 (2023.02.16) - Ignore sync file records (duplicate records exists in current data file)
-                    if (!EmsService.IsThisEmsSyncDataFile(sourceFile)) { 
+                    if (!EmsService.IsThisEmsSyncDataFile(sourceFile)) {
                         // Map csv record objects from source log file
                         foreach (KeyValuePair<string, JToken> log2 in sourceLogJObject)
                         {
