@@ -87,7 +87,7 @@
             "name": "Load"
         },
         "annotations": [],
-        "lastPublishTime": "2023-02-23T19:44:18Z"
+        "lastPublishTime": "2023-03-06T17:04:40Z"
     },
     "type": "Microsoft.DataFactory/factories/pipelines"
 }

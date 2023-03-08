@@ -173,7 +173,7 @@
             "name": "Transform"
         },
         "annotations": [],
-        "lastPublishTime": "2023-03-03T23:18:29Z"
+        "lastPublishTime": "2023-03-06T18:16:37Z"
     },
     "type": "Microsoft.DataFactory/factories/pipelines"
 }

@@ -69,8 +69,8 @@
                                 },
                                 "sink": {
                                     "name": "ADOP",
-                                    "type": "DateTime",
-                                    "physicalType": "date"
+                                    "type": "String",
+                                    "physicalType": "varchar"
                                 }
                             },
                             {
@@ -155,8 +155,8 @@
                                 },
                                 "sink": {
                                     "name": "DORV",
-                                    "type": "Int16",
-                                    "physicalType": "smallint"
+                                    "type": "Int32",
+                                    "physicalType": "int"
                                 }
                             },
                             {
@@ -193,8 +193,8 @@
                                 },
                                 "sink": {
                                     "name": "LDOP",
-                                    "type": "DateTime",
-                                    "physicalType": "date"
+                                    "type": "String",
+                                    "physicalType": "varchar"
                                 }
                             },
                             {
@@ -341,8 +341,8 @@
                                 },
                                 "sink": {
                                     "name": "ZSTATE",
-                                    "type": "Boolean",
-                                    "physicalType": "bit"
+                                    "type": "Byte",
+                                    "physicalType": "tinyint"
                                 }
                             },
                             {
@@ -353,16 +353,20 @@
                                 },
                                 "sink": {
                                     "name": "ZVLVD",
-                                    "type": "Boolean",
-                                    "physicalType": "bit"
+                                    "type": "Int32",
+                                    "physicalType": "int"
                                 }
                             },
                             {
                                 "source": {
-                                    "name": "_RELT_SECS"
+                                    "name": "_RELT_SECS",
+                                    "type": "String",
+                                    "physicalType": "String"
                                 },
                                 "sink": {
-                                    "name": "_RELT_SECS"
+                                    "name": "_RELT_SECS",
+                                    "type": "String",
+                                    "physicalType": "varchar"
                                 }
                             }
                         ],
@@ -936,7 +940,7 @@
             "name": "Load"
         },
         "annotations": [],
-        "lastPublishTime": "2023-02-23T19:44:18Z"
+        "lastPublishTime": "2023-03-07T19:12:56Z"
     },
     "type": "Microsoft.DataFactory/factories/pipelines"
 }
