@@ -144,6 +144,60 @@ namespace lib_edi.Helpers
             }
         }
 
+        public static void SetObjectValue(EdiJobUsbdgMetadataMountTime mountTime, string propertyName, Object token)
+        {
+            try
+            {
+
+                string sinkType = mountTime.GetType().Name;
+
+                if (token != null)
+                {
+                    if (propertyName != null)
+                    {
+                        PropertyInfo propertyInfo = mountTime.GetType().GetProperty(propertyName);
+                        if (propertyInfo != null)
+                        {
+                            propertyInfo.SetValue(mountTime, Convert.ChangeType(token, propertyInfo.PropertyType), null);
+                        }
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Sets the property value of a specified object with a JToken value
+        /// </summary>
+        /// <param name="eventRecord"> The UsbdgSimMetadata object whose property value will be set</param>
+        /// <param name="propertyName">The property name of the UsbdgSimMetadata object that will be set with the JToken value</param>
+        /// <param name="token">The new JToken property value</param>
+        public static void SetObjectValue(EdiJobVaroMetadata ediJobVaroMetadata, string propertyName, Object token)
+        {
+            try
+            {
+                string sinkType = ediJobVaroMetadata.GetType().Name;
+                if (token != null)
+                {
+                    if (propertyName != null)
+                    {
+                        PropertyInfo propertyInfo = ediJobVaroMetadata.GetType().GetProperty(propertyName);
+                        if (propertyInfo != null)
+                        {
+                            propertyInfo.SetValue(ediJobVaroMetadata, Convert.ChangeType(token, propertyInfo.PropertyType), null);
+                        }
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
         /// <summary>
         /// Sets the property value of a specified object with a JToken value
         /// </summary>

@@ -72,6 +72,12 @@
 			"error-source": "EMS Data Mapping Service",
 			"error-mitigation": null
 		},
+		"TTCW": {
+			"error-code": "TTCW",
+			"error-message": "Unable to parse Varo report metadata file '{0}'",
+			"error-source": "Varo Data Mapping Service",
+			"error-mitigation": null
+		},
 		"HUA2": {
 			"error-code": "HUA2",
 			"error-message": "Unable to map USBDB data simulator record with property '{0}' and value '{1}' in source file '{2}'",
@@ -406,6 +412,12 @@
 			"error-code": "EHN9",
 			"error-message": "Unsupported EMS logger model. The LMOD value '{0}' does not match the list of EDI supported logger models",
 			"error-source": "Transform Function",
+			"error-mitigation": null
+		},
+		"SVQJ": {
+			"error-code": "SVQJ",
+			"error-message": "Varo report metadata file not found in report package",
+			"error-source": "Varo Data Processor",
 			"error-mitigation": null
 		}
 	}

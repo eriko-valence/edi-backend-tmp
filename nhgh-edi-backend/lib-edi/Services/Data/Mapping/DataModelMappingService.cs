@@ -397,8 +397,8 @@ namespace lib_edi.Services.Loggers
                             foreach (JObject z in log2.Value.Children<JObject>())
                             {
                                 EdiSinkRecord sinkCsvEventRecord = new IndigoV2EventRecord();
-                                ObjectManager.SetObjectValue(sinkCsvEventRecord, "ESER", sourceEdiJob.UsbdgMetadata.ESER);
-                                ObjectManager.SetObjectValue(sinkCsvEventRecord, "ALRM", sourceEdiJob.UsbdgMetadata.ALRM);
+                                ObjectManager.SetObjectValue(sinkCsvEventRecord, "ESER", sourceEdiJob.Emd.Metadata.Usbdg.ESER);
+                                ObjectManager.SetObjectValue(sinkCsvEventRecord, "ALRM", sourceEdiJob.Emd.Metadata.Usbdg.ALRM);
 
                                 // Load log header properties into csv record object
                                 foreach (var logHeader in logHeaderObject)
@@ -447,7 +447,7 @@ namespace lib_edi.Services.Loggers
         /// <returns>
         /// A list of CSV compatible Indigo V2 event records, if successful; Exception (HKTJ) if any failures occur 
         /// </returns>
-        public static List<EmsEventRecord> MapEmsLoggerEvents(List<dynamic> sourceLogs, string loggerType, EdiJob sourceEdiJob)
+        public static List<EmsEventRecord> MapEmsLoggerEvents(List<dynamic> sourceLogs, EdiJob ediJob)
         {
             string propName = null;
             string propValue = null;
@@ -458,7 +458,7 @@ namespace lib_edi.Services.Loggers
                 List<EmsEventRecord> sinkCsvEventRecords = new();
 
                 // NHGH-2812 (2023.03.08) - Grab the log header properties from the source log file
-                //   Sync file (source of truth should be last on this list so it is processed last
+                //   Sync file (source of truth) should be last on this list. Last write wins.
                 var logHeaderObject = new ExpandoObject() as IDictionary<string, Object>;
                 foreach (dynamic sourceLog in sourceLogs)
                 {
@@ -479,6 +479,7 @@ namespace lib_edi.Services.Loggers
                     }
                 }
 
+                // Grab the event records from the log files
                 foreach (dynamic sourceLog in sourceLogs)
                 {
                     JObject sourceLogJObject = (JObject)sourceLog;
@@ -492,13 +493,19 @@ namespace lib_edi.Services.Loggers
                             // Load log record properties into csv record object
                             if (log2.Value.Type == JTokenType.Array && log2.Key == "records")
                             {
-                                //ObjectManager.SetObjectValue(ref sinkCsvEventRecord, "RELT", ediJob.RELT);
                                 // Iterate each log record
                                 foreach (JObject z in log2.Value.Children<JObject>())
                                 {
-                                    EmsEventRecord sinkCsvEventRecord = CreateNewEmsEventRecord(loggerType);
-                                    ObjectManager.SetObjectValue(sinkCsvEventRecord, "ESER", sourceEdiJob.UsbdgMetadata.ESER);
-                                    ObjectManager.SetObjectValue(sinkCsvEventRecord, "ALRM", sourceEdiJob.UsbdgMetadata.ALRM);
+                                    EmsEventRecord sinkCsvEventRecord = CreateNewEmsEventRecord(ediJob.Logger.Type.ToString());
+                                    // NHGH-2819 2023.03.10 1224 Only USBDG EMDs have these properties
+                                    if (ediJob.Emd.Type == EmdEnum.Name.USBDG)
+                                    {
+                                        ObjectManager.SetObjectValue(sinkCsvEventRecord, "ESER", ediJob.Emd.Metadata.Usbdg.ESER);
+                                        ObjectManager.SetObjectValue(sinkCsvEventRecord, "ALRM", ediJob.Emd.Metadata.Usbdg.ALRM);
+                                    }
+
+                                    // NHGH-2819 2023.03.10 1225 Include EMD type in the event recorcs
+                                    ObjectManager.SetObjectValue(sinkCsvEventRecord, "EMD_TYPE", ediJob.Emd.Type.ToString());
 
                                     // Load log header properties into csv record object
                                     foreach (var logHeader in logHeaderObject)
@@ -669,9 +676,9 @@ namespace lib_edi.Services.Loggers
                         foreach (JObject z in log2.Value.Children<JObject>())
                         {
                             EdiSinkRecord sinkCsvLocationsRecord = new UsbdgLocationRecord();
-                            ObjectManager.SetObjectValue(sinkCsvLocationsRecord, "ESER", sourceEdiJob.UsbdgMetadata.ESER);
+                            ObjectManager.SetObjectValue(sinkCsvLocationsRecord, "ESER", sourceEdiJob.Emd.Metadata.Usbdg.ESER);
                             //ObjectManager.SetObjectValue(sinkCsvLocationsRecord, "usb_id", sourceEdiJob.Logger.LSER);
-                            ObjectManager.SetObjectValue(sinkCsvLocationsRecord, "EDI_SOURCE", sourceEdiJob.UsbdgMetadata.EDI_SOURCE);
+                            ObjectManager.SetObjectValue(sinkCsvLocationsRecord, "EDI_SOURCE", sourceEdiJob.Emd.Metadata.Usbdg.EDI_SOURCE);
 
                             // Load each log record property
                             foreach (JProperty prop in z.Properties())

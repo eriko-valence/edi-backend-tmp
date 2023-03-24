@@ -77,7 +77,7 @@ namespace fa_ccdx_provider
                     string loggerType = CcdxService.GetDataLoggerTypeFromBlobPath(ccBlobInputName);
                     log.LogInformation($"- [ccdx-provider->run]: Extracted logger type: {loggerType}");
                     log.LogInformation($"- [ccdx-provider->run]: Validate incoming blob originated from supported data logger");
-                    if (EmsService.ValidateLoggerType(loggerType))
+                    if (EmsService.ValidateCceDeviceType(loggerType))
                     {
                         log.LogInformation($"- [ccdx-provider->run]: Confirmed. Blob originated from supported data logger '{loggerType}'");
                         var sr = new StreamReader(ccBlobInput);

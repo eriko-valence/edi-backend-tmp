@@ -13,6 +13,7 @@ using System.Text;
 using ICSharpCode.SharpZipLib.Tar;
 using ICSharpCode.SharpZipLib.GZip;
 using lib_edi.Services.Ems;
+using lib_edi.Services.Data.Transform;
 
 namespace fa_mail_compressor_varo
 {
@@ -35,7 +36,7 @@ namespace fa_mail_compressor_varo
                 dynamic attachments = data?.attachments;
 
                 // NHGH-2815 2023-03-01 1033 Generate the Varo package name from the Varo report file name
-                string outputPackageName = EmsService.GeneratePackageNameFromVaroReportFileName(attachments);
+                string outputPackageName = VaroDataProcessorService.GeneratePackageNameFromVaroReportFileName(attachments);
 
                 if (outputPackageName != null)
                 {

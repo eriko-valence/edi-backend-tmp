@@ -25,6 +25,7 @@ using lib_edi.Models.Enums.Emd;
 using System.Net;
 using lib_edi.Services.Ems;
 using lib_edi.Models.Enums.Azure.AppInsights;
+using lib_edi.Services.Data.Transform;
 
 namespace fa_adf_transform_indigo_v2
 {
@@ -40,6 +41,8 @@ namespace fa_adf_transform_indigo_v2
         {
             string loggerType = DataLoggerTypeEnum.Name.UNKNOWN.ToString();
             string verfiedLoggerType = DataLoggerTypeEnum.Name.UNKNOWN.ToString();
+            string emdType = EmdEnum.Name.UNKNOWN.ToString();
+            EmdEnum.Name emdTypeEnum = EmdEnum.Name.UNKNOWN;
             DataLoggerTypeEnum.Name loggerTypeEnum = DataLoggerTypeEnum.Name.UNKNOWN;
             DataLoggerTypeEnum.Name verifiedLoggerTypeEnum = DataLoggerTypeEnum.Name.UNKNOWN;
             TransformHttpRequestMessageBodyDto payload = null;
@@ -50,127 +53,68 @@ namespace fa_adf_transform_indigo_v2
                 string jsonSchemaBlobNameEmsCompliantLog = Environment.GetEnvironmentVariable("EMS_JSON_SCHEMA_FILENAME");
                 string jsonSchemaBlobNameUsbdgMetadata = Environment.GetEnvironmentVariable("EMS_USBDG_METADATA_JSON_SCHEMA_FILENAME");
 
-                log.LogInformation($"- Deserialize log transformation http request body");
                 payload = await HttpService.DeserializeHttpRequestBody(req);
-                log.LogInformation($"- {payload.FileName} - Start processing file package");
-
-                log.LogInformation("- Validate http request body");
+                log.LogInformation($"- {payload.FileName} - Start processing incoming usbdg transformation request");
+                string inputBlobPath = $"{inputContainer.Name}/{payload.Path}";
+                log.LogInformation($"- {payload.FileName}   - Container : {inputContainer.Name}");
+                log.LogInformation($"- {payload.FileName}   - Path      : {payload.Path}");
+                log.LogInformation($"- {payload.FileName}   - Type      : {payload.LoggerType}");
                 HttpService.ValidateHttpRequestBody(payload);
-
-                log.LogInformation("- Log started event to app insights");
                 DataTransformService.LogEmsTransformStartedEventToAppInsights(payload.FileName, log);
 
-                string inputBlobPath = $"{inputContainer.Name}/{payload.Path}";
-                log.LogInformation($"- {payload.FileName} - Incoming blob path: {inputBlobPath}");
-
+                emdType = payload.LoggerType ?? EmdEnum.Name.UNKNOWN.ToString();
+                emdTypeEnum = EmsService.GetEmdType(emdType);
                 loggerType = payload.LoggerType ?? DataLoggerTypeEnum.Name.UNKNOWN.ToString();
                 loggerTypeEnum = EmsService.GetDataLoggerType(loggerType);
-                log.LogInformation($"- {payload.FileName} - Detected logger type: '{loggerType}'");
 
-                log.LogInformation($"- Pull all blobs from file package {inputBlobPath}");
                 IEnumerable<IListBlobItem> logDirectoryBlobs = AzureStorageBlobService.GetListOfBlobsInDirectory(inputContainer, payload.Path, inputBlobPath);
 
-                //logType = DataTransformService.DetermineFilePackageType(logDirectoryBlobs);
-
-                if (EmsService.IsFilePackageContentsEms(logDirectoryBlobs) && EmsService.ValidateLoggerType(loggerType))
+                if (EmsService.IsFilePackageContentsEms(logDirectoryBlobs) && EmsService.ValidateCceDeviceType(loggerType))
                 {
-                    log.LogInformation($"- Pull '{loggerType}' log blobs from file package");  
+                    log.LogInformation($"- {payload.FileName} - Download and validate package contents");
                     List<CloudBlockBlob> usbdgLogBlobs = DataTransformService.GetLogBlobs(logDirectoryBlobs, inputBlobPath);
-
-                    log.LogInformation($"- Pull usbdg report metadata blob from file package");
                     CloudBlockBlob usbdgReportMetadataBlob = UsbdgDataProcessorService.GetReportMetadataBlob(logDirectoryBlobs, inputBlobPath);
-
-                    log.LogInformation($"- Download '{loggerType}' log blobs");
                     List<dynamic> emsLogFiles = await AzureStorageBlobService.DownloadAndDeserializeJsonBlobs(usbdgLogBlobs, inputContainer, inputBlobPath, log);
-                    log.LogInformation($"- Download usbdg report metadata blob");
-                    dynamic usbdgReportMetadata = await AzureStorageBlobService.DownloadAndDeserializeJsonBlob(usbdgReportMetadataBlob, inputContainer, inputBlobPath, log);
+                    dynamic usbdgMetadataJsonObject = await AzureStorageBlobService.DownloadAndDeserializeJsonBlob(usbdgReportMetadataBlob, inputContainer, inputBlobPath, log);
+                    await DataTransformService.ValidateJsonObject(emsConfgContainer, usbdgMetadataJsonObject, jsonSchemaBlobNameUsbdgMetadata, log);
+                    await DataTransformService.ValidateJsonObjects(emsConfgContainer, emsLogFiles, jsonSchemaBlobNameEmsCompliantLog, log);
+                    EdiJob ediJob = UsbdgDataProcessorService.PopulateEdiJobObject(usbdgMetadataJsonObject, emsLogFiles, usbdgLogBlobs, usbdgReportMetadataBlob, payload.FileName, inputBlobPath, emdTypeEnum, loggerTypeEnum);
+                    string emdAbsoluteTime = UsbdgDataProcessorService.GetUsbdgMountTimeAbst(ediJob);
+                    string emdRelativeTime = DataTransformService.GetUsbdgMountTimeRelt(ediJob);
+                    verfiedLoggerType = ediJob.Logger.Type.ToString().ToLower();
 
-                    dynamic usbdgRecords = UsbdgDataProcessorService.GetUsbdgMetadataRecordsElement(usbdgReportMetadata);
-
-                    //log.LogInformation($"- Retrieving time values from EMD metadata");
-                    //string emdRelativeTime = DataTransformService.GetJObjectPropertyValueAsString(usbdgRecords, "RELT");
-                    //string emdAbsoluteTime = DataTransformService.GetJObjectPropertyValueAsString(usbdgRecords, "ABST");
-
-                    log.LogInformation($"- Validate USBDG report metadata blob");
-                    dynamic validatedUsbdgReportMetadataFile = await DataTransformService.ValidateJsonObject(emsConfgContainer, usbdgReportMetadata, jsonSchemaBlobNameUsbdgMetadata, log);
-
-                    log.LogInformation($"- Validate '{loggerType}' log blobs");
-                    List<dynamic> validatedUsbdgLogFiles = await DataTransformService.ValidateJsonObjects(emsConfgContainer, emsLogFiles, jsonSchemaBlobNameEmsCompliantLog, log);
-
-                    log.LogInformation($"- Start tracking EDI job status");
-                    EdiJob ediJob = UsbdgDataProcessorService.PopulateEdiJobObject(usbdgReportMetadata, emsLogFiles, usbdgLogBlobs);
-
-                    log.LogInformation($"- Retrieving time values from EMD metadata");
-                    string emdAbsoluteTime = DataTransformService.GetAbsoluteTimeFromEmsPackage(ediJob);
-                    string emdRelativeTime = DataTransformService.GetRelativeTimeFromEmsPackage(ediJob);
-
-                    log.LogInformation($"- {payload.FileName} - Validate EMS logger type using LMOD property");
-                    string loggerModelToCheck = ediJob.Logger.LMOD ?? "";
-                    EmsLoggerModelCheckResult loggerModelCheckResult = EmsService.GetEmsLoggerModelFromEmsLogLmodProperty(loggerModelToCheck);
-
-                    verfiedLoggerType = loggerModelCheckResult.LoggerModelEnum.ToString().ToLower();
-                    verifiedLoggerTypeEnum = EmsService.GetDataLoggerType(verfiedLoggerType);
-                    log.LogInformation($"- {payload.FileName}   - LMOD to Check   : '{loggerModelToCheck}'");
-                    log.LogInformation($"- {payload.FileName}   - Check Result    : '{verfiedLoggerType}'");
-
-                    if (loggerModelCheckResult.IsSupported)
+                    if (ediJob.Logger.Type != DataLoggerTypeEnum.Name.UNKNOWN)
                     {
-                        log.LogInformation($"- Map '{verfiedLoggerType}' objects to csv records");
-                        //List<IndigoV2EventRecord> usbdbLogCsvRows = DataModelMappingService.MapIndigoV2Events(emsLogFiles, ediJob);
-                        List<EmsEventRecord> emsEventCsvRows = DataModelMappingService.MapEmsLoggerEvents(emsLogFiles, verfiedLoggerType, ediJob);
-                        //List<EdiSinkRecord> indigoLocationCsvRows = DataModelMappingService.MapIndigoV2Locations(usbdgReportMetadata, ediJob);
-                        List<EdiSinkRecord> usbdgLocationCsvRows = DataModelMappingService.MapUsbdgLocations(usbdgReportMetadata, ediJob);
-                        List<EdiSinkRecord> usbdgDeviceCsvRows = DataModelMappingService.MapUsbdgDevice(usbdgReportMetadata);
-                        List<EdiSinkRecord> usbdgEventCsvRows = DataModelMappingService.MapUsbdgEvent(usbdgReportMetadata);
-
-                        log.LogInformation($"- Transform '{verfiedLoggerType}' csv records");
-                        log.LogInformation($"  - Convert relative time to total seconds (all records)");
-                        emsEventCsvRows = DataTransformService.ConvertRelativeTimeToTotalSecondsForUsbdgLogRecords(emsEventCsvRows);
-
-                        log.LogInformation($"  - Sort csv records using relative time total seconds");
-                        List<EmsEventRecord> sortedEmsEventCsvRows = emsEventCsvRows.OrderBy(i => (i._RELT_SECS)).ToList();
-
-                        log.LogInformation($"  - Convert relative time (e.g., 'P9DT59M53S') to total seconds (report only)");
-                        int DurationSecs = DataTransformService.ConvertRelativeTimeStringToTotalSeconds(usbdgReportMetadata, ediJob); // convert timespan to seconds
-
-                        log.LogInformation($"  - Calculate absolute time for each record using record relative time (e.g., 781193) and report absolute time ('2021-06-20T23:00:02Z')");
-                        sortedEmsEventCsvRows = DataTransformService.CalculateAbsoluteTimeForUsbdgRecords(sortedEmsEventCsvRows, DurationSecs, usbdgReportMetadata, ediJob);
-
-                        log.LogInformation($"  - Cloud upload times: ");
-                        log.LogInformation($"    - EMD (source: cellular) : {DateConverter.ConvertIso8601CompliantString(emdAbsoluteTime)} (UTC)");
-                        log.LogInformation($"    - Logger (source: real time clock) : {emdRelativeTime ?? ""} (Relative Time)");
-                        log.LogInformation($"    - Logger (source: real time clock) : {DataTransformService.ConvertRelativeTimeStringToTotalSeconds(emdRelativeTime)} (Duration in Seconds)");
-                        log.LogInformation($"  - Absolute time calculation results (first two records): ");
-                        if (sortedEmsEventCsvRows.Count > 1)
-                        {
-                            log.LogInformation($"    - record[0].ElapsedSecs (Elapsed secs from activation time): {DataTransformService.CalculateElapsedSecondsFromLoggerActivationRelativeTime(emdRelativeTime, sortedEmsEventCsvRows[0].RELT)}");
-                            log.LogInformation($"    - record[0].RELT (Logger cloud upload relative time): {sortedEmsEventCsvRows[0].RELT}");
-                            log.LogInformation($"    - record[0]._RELT_SECS (Logger cloud upload relative time seconds): {sortedEmsEventCsvRows[0]._RELT_SECS}");
-                            log.LogInformation($"    - record[0]._ABST (calculated absolute time): {sortedEmsEventCsvRows[0].EDI_RECORD_ABST_CALC}");
-                            log.LogInformation($" ");
-                            log.LogInformation($"    - record[1].ElapsedSecs (Elapsed secs from activation time): {DataTransformService.CalculateElapsedSecondsFromLoggerActivationRelativeTime(emdRelativeTime, sortedEmsEventCsvRows[1].RELT)}");
-                            log.LogInformation($"    - record[1].RELT (Logger cloud upload relative time): {sortedEmsEventCsvRows[1].RELT}");
-                            log.LogInformation($"    - record[1]._RELT_SECS (Logger cloud upload relative time seconds): {sortedEmsEventCsvRows[1]._RELT_SECS}");
-                            log.LogInformation($"    - record[1]._ABST (calculated absolute time): {sortedEmsEventCsvRows[1].EDI_RECORD_ABST_CALC}");
-                        }
-
-                        log.LogInformation($"- Write '{verfiedLoggerType}' csv records to azure blob storage");
+                        log.LogInformation($"- {payload.FileName} - Transform package contents");
+                        List<EmsEventRecord> emsEventCsvRows = DataModelMappingService.MapEmsLoggerEvents(emsLogFiles, ediJob);
+                        List<EdiSinkRecord> usbdgLocationCsvRows = DataModelMappingService.MapUsbdgLocations(usbdgMetadataJsonObject, ediJob);
+                        List<EdiSinkRecord> usbdgDeviceCsvRows = DataModelMappingService.MapUsbdgDevice(usbdgMetadataJsonObject);
+                        List<EdiSinkRecord> usbdgEventCsvRows = DataModelMappingService.MapUsbdgEvent(usbdgMetadataJsonObject);
+                        emsEventCsvRows = DataTransformService.ConvertRelativeTimeToTotalSecondsForEmsLogRecords(emsEventCsvRows);
+                        List<EmsEventRecord> sortedEmsEventCsvRows = emsEventCsvRows.OrderBy(i => (i.EDI_RELT_ELAPSED_SECS)).ToList();
+                        int DurationSecs = DataTransformService.ConvertRelativeTimeStringToTotalSeconds(usbdgMetadataJsonObject, ediJob); // convert timespan to seconds
+                        sortedEmsEventCsvRows = UsbdgDataProcessorService.CalculateAbsoluteTimeForUsbdgRecords(sortedEmsEventCsvRows, ediJob);
                         List<EdiSinkRecord> sortedEmsEventCsvRowsFinal = sortedEmsEventCsvRows.Cast<EdiSinkRecord>().ToList();
 
-                        string r1 = await DataTransformService.WriteRecordsToCsvBlob(ouputContainer, payload, sortedEmsEventCsvRowsFinal, verfiedLoggerType, log);
-                        string r2 = await DataTransformService.WriteRecordsToCsvBlob(ouputContainer, payload, usbdgDeviceCsvRows, verfiedLoggerType, log);
-                        string r3 = await DataTransformService.WriteRecordsToCsvBlob(ouputContainer, payload, usbdgEventCsvRows, verfiedLoggerType, log);
-                        string r4 = await DataTransformService.WriteRecordsToCsvBlob(ouputContainer, payload, usbdgLocationCsvRows, verfiedLoggerType, log);
+                        //string r1 = await DataTransformService.WriteRecordsToCsvBlob(ouputContainer, payload, sortedEmsEventCsvRowsFinal, verfiedLoggerType, log);
+                        //string r2 = await DataTransformService.WriteRecordsToCsvBlob(ouputContainer, payload, usbdgDeviceCsvRows, verfiedLoggerType, log);
+                        //string r3 = await DataTransformService.WriteRecordsToCsvBlob(ouputContainer, payload, usbdgEventCsvRows, verfiedLoggerType, log);
+                        //string r4 = await DataTransformService.WriteRecordsToCsvBlob(ouputContainer, payload, usbdgLocationCsvRows, verfiedLoggerType, log);
 
+                        log.LogInformation($"- {payload.FileName} - Upload curated output to blob storage");
+                        ediJob.CuratedFiles.Add(await DataTransformService.WriteRecordsToCsvBlob(ouputContainer, payload, sortedEmsEventCsvRowsFinal, verfiedLoggerType, log));
+                        ediJob.CuratedFiles.Add(await DataTransformService.WriteRecordsToCsvBlob(ouputContainer, payload, usbdgDeviceCsvRows, verfiedLoggerType, log));
+                        ediJob.CuratedFiles.Add(await DataTransformService.WriteRecordsToCsvBlob(ouputContainer, payload, usbdgEventCsvRows, verfiedLoggerType, log));
+                        ediJob.CuratedFiles.Add(await DataTransformService.WriteRecordsToCsvBlob(ouputContainer, payload, usbdgLocationCsvRows, verfiedLoggerType, log));
+
+                        log.LogInformation($"- {payload.FileName} - Send transformation response");
                         string blobPathFolderCurated = DataTransformService.BuildCuratedBlobFolderPath(payload.Path, verfiedLoggerType);
-
-                        log.LogInformation(" - Serialize http response body");
                         string responseBody = DataTransformService.SerializeHttpResponseBody(blobPathFolderCurated);
-
-                        log.LogInformation(" - Send http response message");
-                        log.LogInformation("- Send successfully completed event to app insights");
                         DataTransformService.LogEmsTransformSucceededEventToAppInsights(payload.FileName, verifiedLoggerTypeEnum, log);
-                        log.LogInformation(" - SUCCESS");
+                        log.LogInformation($"- {payload.FileName} - Done");
+
+                        log.LogInformation($" PROCESSING SUMMARY");
+                        UsbdgDataProcessorService.LogEmsPackageInformation(log, sortedEmsEventCsvRows, ediJob);
 
                         return new OkObjectResult(responseBody);
                     } else {
@@ -187,43 +131,40 @@ namespace fa_adf_transform_indigo_v2
                         return result;
                     }
                 // Account for file packages with no logger data files
-                } else if (UsbdgDataProcessorService.IsFilePackageUsbdgOnly(logDirectoryBlobs) && EmsService.ValidateLoggerType(loggerType)) {
+                } else if (UsbdgDataProcessorService.IsFilePackageUsbdgOnly(logDirectoryBlobs) && EmsService.ValidateCceDeviceType(loggerType)) {
 
-                    log.LogInformation($"- Pull usbdg report metadata blob from file package");
+                    log.LogInformation($"- {payload.FileName} - Download and validate package contents");
+                    // NHGH-2819 2023.03.16 0950 USBDG collected package with no logger data
+                    emdTypeEnum = EmdEnum.Name.USBDG;
+                    loggerTypeEnum = DataLoggerTypeEnum.Name.NO_LOGGER;
                     CloudBlockBlob usbdgReportMetadataBlob = UsbdgDataProcessorService.GetReportMetadataBlob(logDirectoryBlobs, inputBlobPath);
-
-                    log.LogInformation($"- Download USBDG report metadata blob");
                     dynamic usbdgReportMetadata = await AzureStorageBlobService.DownloadAndDeserializeJsonBlob(usbdgReportMetadataBlob, inputContainer, inputBlobPath, log);
-
-                    log.LogInformation($"- Validate USBDG report metadata blob");
                     dynamic validatedUsbdgReportMetadataFile = await DataTransformService.ValidateJsonObject(emsConfgContainer, usbdgReportMetadata, jsonSchemaBlobNameUsbdgMetadata, log);
-
                     dynamic usbdgRecords = UsbdgDataProcessorService.GetUsbdgMetadataRecordsElement(usbdgReportMetadata);
-
-                    log.LogInformation($"- Retrieving time values from EMD metadata");
                     string emdRelativeTime = DataTransformService.GetJObjectPropertyValueAsString(usbdgRecords, "RELT");
                     string emdAbsoluteTime = DataTransformService.GetJObjectPropertyValueAsString(usbdgRecords, "ABST");
-
-                    log.LogInformation($"- Start tracking EDI job status");
-                    EdiJob ediJob = UsbdgDataProcessorService.PopulateEdiJobObject(usbdgReportMetadata, null, null);
-
-                    log.LogInformation($"- Map '{loggerType}' objects to csv records");
+                    EdiJob ediJob = UsbdgDataProcessorService.PopulateEdiJobObject(usbdgReportMetadata, null, null, usbdgReportMetadataBlob, payload.FileName, inputBlobPath, emdTypeEnum, loggerTypeEnum);
+                    
+                    log.LogInformation($"- {payload.FileName} - Transform package contents");
                     List<EdiSinkRecord> usbdgLocationCsvRows = DataModelMappingService.MapUsbdgLocations(usbdgReportMetadata, ediJob);
                     List<EdiSinkRecord> usbdgDeviceCsvRows = DataModelMappingService.MapUsbdgDevice(usbdgReportMetadata);
                     List<EdiSinkRecord> usbdgEventCsvRows = DataModelMappingService.MapUsbdgEvent(usbdgReportMetadata);
 
-                    log.LogInformation($"- Write '{loggerType}' csv records to azure blob storage");
-                    string r1 = await DataTransformService.WriteRecordsToCsvBlob(ouputContainer, payload, usbdgDeviceCsvRows, loggerType, log);
-                    string r2 = await DataTransformService.WriteRecordsToCsvBlob(ouputContainer, payload, usbdgEventCsvRows, loggerType, log);
-                    string r3 = await DataTransformService.WriteRecordsToCsvBlob(ouputContainer, payload, usbdgLocationCsvRows, loggerType, log);
+                    //string r1 = await DataTransformService.WriteRecordsToCsvBlob(ouputContainer, payload, usbdgDeviceCsvRows, loggerType, log);
+                    //string r2 = await DataTransformService.WriteRecordsToCsvBlob(ouputContainer, payload, usbdgEventCsvRows, loggerType, log);
+                    //string r3 = await DataTransformService.WriteRecordsToCsvBlob(ouputContainer, payload, usbdgLocationCsvRows, loggerType, log);
+                    log.LogInformation($"- {payload.FileName} - Upload curated output to blob storage");
+                    ediJob.CuratedFiles.Add(await DataTransformService.WriteRecordsToCsvBlob(ouputContainer, payload, usbdgDeviceCsvRows, loggerType, log));
+                    ediJob.CuratedFiles.Add(await DataTransformService.WriteRecordsToCsvBlob(ouputContainer, payload, usbdgEventCsvRows, loggerType, log));
+                    ediJob.CuratedFiles.Add(await DataTransformService.WriteRecordsToCsvBlob(ouputContainer, payload, usbdgLocationCsvRows, loggerType, log));
 
-                    log.LogInformation(" - Serialize http response body");
-                    string responseBody = DataTransformService.SerializeHttpResponseBody(r1);
-
-                    log.LogInformation(" - Send http response message");
-                    log.LogInformation("- Log successfully completed event to app insights");
+                    log.LogInformation($"- {payload.FileName} - Send transformation response");
+                    string responseBody = DataTransformService.SerializeHttpResponseBody(ediJob.CuratedFiles[0]);
                     DataTransformService.LogEmsTransformSucceededEventToAppInsights(payload.FileName, loggerTypeEnum, log);
-                    log.LogInformation(" - SUCCESS");
+                    log.LogInformation($"- {payload.FileName} - Done");
+
+                    log.LogInformation($" PROCESSING SUMMARY");
+                    UsbdgDataProcessorService.LogEmsPackageInformation(log, null, ediJob);
 
                     return new OkObjectResult(responseBody);
                 } else {

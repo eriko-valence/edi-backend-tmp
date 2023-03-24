@@ -24,7 +24,10 @@
     [ZCHRG]      VARCHAR (20)   NULL,
     [ZSTATE]     TINYINT        NULL,
     [ZVLVD]      INT            NULL,
+    [EMD_TYPE]   VARCHAR (20)   NULL,
     [_RELT_SECS] VARCHAR (20)   NULL);
+
+
 
 
 

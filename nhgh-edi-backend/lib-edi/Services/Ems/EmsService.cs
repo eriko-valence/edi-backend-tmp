@@ -1,4 +1,5 @@
-﻿using lib_edi.Models.Edi;
+﻿using Azure.Storage.Blobs.Models;
+using lib_edi.Models.Edi;
 using lib_edi.Models.Enums.Emd;
 using lib_edi.Services.Loggers;
 using Microsoft.AspNetCore.Mvc;
@@ -23,6 +24,7 @@ namespace lib_edi.Services.Ems
 
         // cross references logger models (LMOD json property) to well known logger model names 
         private static Dictionary<string, DataLoggerModelsEnum.Name> emsLoggerModelsSupported;
+        
 
         /// <summary>
         /// Initializes supported EMS logger models dictionary
@@ -45,7 +47,7 @@ namespace lib_edi.Services.Ems
         /// <remarks>
         /// NHGH-2698 (2022.11.16) - Added generic "ems" as supported logger type
         /// </remarks>
-        public static bool ValidateLoggerType(string loggerType)
+        public static bool ValidateCceDeviceType(string loggerType)
         {
             bool result = false;
 
@@ -79,26 +81,7 @@ namespace lib_edi.Services.Ems
             return result;
         }
 
-        /// <summary>
-        /// Validate package has been collected from a Varo EMD
-        /// </summary>
-        /// <param name="name">Name of EMD</param>
-        /// <remarks>
-        /// NHGH-2835 (2023.03.02) - Added function
-        /// </remarks>
-        public static bool ValidatePackageIsVaroGenerated(string name)
-        {
-            bool result = false;
 
-            if (name != null)
-            {
-                if (name.ToUpper() == EmdEnum.Name.VARO.ToString())
-                {
-                    result = true;
-                }
-            }
-            return result;
-        }
 
         /// <summary>
         /// Returns data logger type enum
@@ -139,6 +122,33 @@ namespace lib_edi.Services.Ems
             } else
             {
                 return DataLoggerTypeEnum.Name.UNKNOWN;
+            }
+        }
+
+        /// <summary>
+        /// Correlates string to an EMD type
+        /// </summary>
+        /// <param name="emdType">string to check</param>
+        public static EmdEnum.Name GetEmdType(string emdType)
+        {
+            if (emdType != null)
+            {
+                if (emdType.ToUpper() == "EMS")
+                {
+                    return EmdEnum.Name.USBDG;
+                }
+                else if (emdType.ToUpper() == EmdEnum.Name.VARO.ToString())
+                {
+                    return EmdEnum.Name.VARO;
+                }
+                else
+                {
+                    return EmdEnum.Name.UNKNOWN;
+                }
+            }
+            else
+            {
+                return EmdEnum.Name.UNKNOWN;
             }
         }
 
@@ -318,39 +328,22 @@ namespace lib_edi.Services.Ems
             return result;
         }
 
-        // 
         /// <summary>
-        /// Generates an EMS package name from the Varo report metadata file name
+        /// Looks for an EMS SYNC file name regular expression match
         /// </summary>
-        /// <param name="attachments">list of Varo email report attachments</param>
+        /// <param name="name">report file name</param>
         /// <remarks>
-        /// nhgh-2815 2023-03-01 1203 Added function
+        /// nhgh-2819 2023-03-09 1755 Added function
         /// </remarks>
         /// <returns>
-        /// Package name in format {TIMESTAMP}_{LOGGERID}_reports.tar.gz
+        /// Regular expresssion match result
         /// </returns>
-        public static string GeneratePackageNameFromVaroReportFileName(dynamic attachments)
+        public static Match IsThisEmsSyncFile(string name)
         {
-            string name = null;
-            string reportFileNamePattern = "([a-z0-9]+)_(\\d\\d\\d\\d\\d\\d\\d\\dT\\d\\d\\d\\d\\d\\dZ)\\.json";
-            if (attachments != null)
-            {
-                int i = 0;
-                foreach (dynamic item in attachments)
-                {
-                    string elementName = item?.Name;
-                    Regex r = new Regex(reportFileNamePattern);
-                    Match m = r.Match(elementName);
-                    if (m.Success)
-                    {
-                        Group loggerId = m.Groups[1];
-                        Group timeStamp = m.Groups[2];
-                        name = $"{timeStamp.Value}_{loggerId.Value}_reports.tar.gz";
-                    }
-                    i++;
-                }
-            }
-            return name;
+            string logFileNamePattern = "([A-Za-z0-9]+)_SYNC_([A-Za-z0-9]+)_([A-Za-z0-9]+)\\.json";
+            Regex r = new Regex(logFileNamePattern);
+            Match m = r.Match(name);
+            return m;
         }
     }
 }

@@ -7,6 +7,14 @@ using System.Linq;
 using lib_edi.Services.CceDevice;
 using System.IO;
 using lib_edi.Services.Ems;
+using lib_edi.Models.Edi;
+using System.Dynamic;
+using System.Text.RegularExpressions;
+using lib_edi.Helpers;
+using lib_edi.Models.Loggers.Csv;
+using lib_edi.Models.Enums.Emd;
+using Microsoft.Extensions.Logging;
+using Microsoft.Azure.Storage.Blob.Protocol;
 
 namespace lib_edi.Services.Loggers
 {
@@ -123,8 +131,324 @@ namespace lib_edi.Services.Loggers
 			return recordsElement;
 		}
 
+        // 40A36BCA695F_20230313T141954Z_NoLogger_reports.tar.gz
+        // 40A36BCA7463_20230323T160650Z_002200265547501820383131_reports.tar
+        public static bool IsThisUsbdgGeneratedPackageName(string name)
+        {
+            bool result = false;
+            string usbdgReportFileNamePattern = "([A-Z0-9]+)_(\\d\\d\\d\\d\\d\\d\\d\\dT\\d\\d\\d\\d\\d\\dZ)_([A-Za-z0-9]+)_reports\\.tar\\.gz";
+            Regex r = new Regex(usbdgReportFileNamePattern);
+            Match m = r.Match(name);
+            if (m.Success)
+            {
+                result = true;
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// Populates an EDI job object from logger data and USBDG metadata files
+        /// </summary>
+        /// <remarks>
+        /// This EDI object holds properties useful further downstream in the processing
+        /// </remarks>
+        /// <param name="sourceUsbdgMetadata">A deserialized USBDG metadata</param>
+        /// <param name="sourceLogs">A list of deserialized logger data files</param>
+        /// <returns>
+        /// A list of CSV compatible EMD + logger data records, if successful; Exception (D39Y) if any failures occur 
+        /// </returns>
+        public static EdiJob PopulateEdiJobObject(dynamic sourceUsbdgMetadata, List<dynamic> sourceLogs, List<CloudBlockBlob> listLoggerFiles, CloudBlockBlob usbdgReportMetadataBlob, string packageName, string stagePath, EmdEnum.Name emdTypeEnum, DataLoggerTypeEnum.Name dataLoggerType)
+        {
+            string propName = null;
+            string propValue = null;
+            string sourceFile = null;
+            EdiJob ediJob = new();
+
+            try
+            {
+                ediJob.Emd.Type = emdTypeEnum;
+                // NHGH-2819 2023.03.15 1643 track report package file name (for debug purposes)
+                ediJob.ReportPackageFileName = packageName;
+                ediJob.StagedBlobPath = stagePath;
+
+                if (sourceLogs != null)
+                {
+                    foreach (dynamic sourceLog in sourceLogs)
+                    {
+                        JObject sourceLogJObject = (JObject)sourceLog;
+
+                        // NHGH-2819 2023.03.15 1638 track sync file name (for debug purposes)
+                        var fileName = sourceLogJObject.SelectToken("EDI_SOURCE");
+                        ediJob.StagedFiles.Add(GetFileNameFromPath(fileName.ToString()));
+                        if (EmsService.IsThisEmsSyncDataFile(fileName.ToString()))
+                        {
+                            ediJob.SyncFileName = GetSyncFileNameFromBlobPath(fileName.ToString());
+                        }
+
+                        // Grab the log header properties from the source log file
+                        var logHeaderObject = new ExpandoObject() as IDictionary<string, Object>;
+                        foreach (KeyValuePair<string, JToken> log1 in sourceLogJObject)
+                        {
+                            if (log1.Value.Type != JTokenType.Array)
+                            {
+                                logHeaderObject.Add(log1.Key, log1.Value);
+                                ObjectManager.SetObjectValue(ediJob.Logger, log1.Key, log1.Value);
+                            }
+                        }
+                    }
+                }
+
+                JObject sourceUsbdgMetadataJObject = (JObject)sourceUsbdgMetadata;
+                var reportHeaderObject = new ExpandoObject() as IDictionary<string, Object>;
+
+                foreach (KeyValuePair<string, JToken> log2 in sourceUsbdgMetadataJObject)
+                {
+                    if (log2.Value.Type != JTokenType.Array)
+                    {
+                        reportHeaderObject.Add(log2.Key, log2.Value);
+                        ObjectManager.SetObjectValue(ediJob.Emd.Metadata.Usbdg, log2.Key, log2.Value);
+                    }
+
+                    if (log2.Value.Type == JTokenType.Array && log2.Key == "records")
+                    {
+                        foreach (JObject z in log2.Value.Children<JObject>())
+                        {
+                            // Load each log record property
+                            foreach (JProperty prop in z.Properties())
+                            {
+                                propName = prop.Name;
+                                propValue = (string)prop.Value;
+                                ObjectManager.SetObjectValue(ediJob.Emd.Metadata.Usbdg.MountTime, prop.Name, prop.Value);
+                            }
+                        }
+                    }
+                }
+
+                ediJob.Logger.Type = GetLoggerTypeFromEmsPackage(ediJob, dataLoggerType);
+
+                // NHGH-2819 2023.03.15 1644 track report package file name (for debug purposes)
+                ediJob.ReportMetadataFileName = GetReportMetadataFileNameFromBlobPath(usbdgReportMetadataBlob.Name);
+                if (ediJob.ReportMetadataFileName != null) {
+                    ediJob.StagedFiles.Add(ediJob.ReportMetadataFileName);
+                }
+                // NHGH-2819 2023.03.15 1335 Only grab the mount time if there are logger data files
+                if (listLoggerFiles != null)
+                {
+                    ediJob.Emd.Metadata.Usbdg.MountTime = GetUsbdgMountTime(ediJob, listLoggerFiles, usbdgReportMetadataBlob);
+                }
+                
+                ediJob.Emd.Metadata.Usbdg.CreationTime = GetUsbdgReportCreationTime(usbdgReportMetadataBlob);
+
+                return ediJob;
+            }
+            catch (Exception e)
+            {
+                throw new Exception(EdiErrorsService.BuildExceptionMessageString(e, "D39Y", EdiErrorsService.BuildErrorVariableArrayList(propName, propValue, sourceFile)));
+            }
+        }
 
 
 
-	}
+        /// <summary>
+        /// Returns absolute time from EMS report metadata. Falls back to the logger file name if missing from the metadata. 
+        /// </summary>
+        /// <param name="ediJob">EDI job object</param>
+        /// <returns>
+        /// Absolute time
+        /// </returns>
+        
+        public static EdiJobUsbdgMetadataMountTime GetUsbdgMountTimeFromReportMetadata(EdiJobUsbdgMetadata reportMetadata)
+        {
+            if (reportMetadata.MountTime.ABST != null && reportMetadata.MountTime.ABST != "")
+            {
+                if (reportMetadata.MountTime.RELT != null && reportMetadata.MountTime.RELT != "")
+                {
+                    reportMetadata.MountTime.Calcs.ABST_UTC = DateConverter.ConvertIso8601CompliantString(reportMetadata.MountTime.ABST);
+                    reportMetadata.MountTime.Calcs.RELT_ELAPSED_SECS = DataTransformService.ConvertRelativeTimeStringToTotalSeconds(reportMetadata.MountTime.RELT);
+                    reportMetadata.MountTime.SOURCE = EmdTimeSource.Name.EMD_REPORT_METADATA;
+                } else
+                {
+                    // NHGH-2819 2023.13.15 1502 Mount times do not exist in report metadata 
+                    reportMetadata.MountTime.SOURCE = EmdTimeSource.Name.NONE;
+                }
+            } else
+            {
+                // NHGH-2819 2023.13.15 1502 Mount times do not exist in report metadata 
+                reportMetadata.MountTime.SOURCE = EmdTimeSource.Name.NONE;
+            }
+            return reportMetadata.MountTime;
+        }
+        
+        public static EdiJobUsbdgMetadataMountTime GetUsbdgMountTime(EdiJob ediJob, List<CloudBlockBlob> listLoggerFiles, CloudBlockBlob usbdgReportMetadataBlob)
+        {
+            
+            EdiJobUsbdgMetadataMountTime timeInfo = GetUsbdgMountTimeFromReportMetadata(ediJob.Emd.Metadata.Usbdg);
+            // NHGH-2819 2023.13.15 1502 fall back to SYNC file name if mount times do not exist in report metadata
+            if (ediJob.Emd.Metadata.Usbdg.MountTime.SOURCE == EmdTimeSource.Name.NONE)
+            {
+                timeInfo = GetUsbdgMountTimeFromSyncFileName(listLoggerFiles);
+            }
+            return timeInfo;
+        }
+
+        public static EdiJobUsbdgMetadataCreationTime GetUsbdgReportCreationTime(CloudBlockBlob usbdgReportMetadataBlob)
+        {
+            EdiJobUsbdgMetadataCreationTime timeInfo = GetUsbdgReportCreationTimeFromMetadataFileName(usbdgReportMetadataBlob.Name);
+            return timeInfo;
+        }
+
+        public static EdiJobUsbdgMetadataCreationTime GetUsbdgReportCreationTimeFromMetadataFileName(string name)
+        {
+            EdiJobUsbdgMetadataCreationTime timeInfo = null;
+
+            if (name != null)
+            {
+                string[] parts = name.Split("/"); ;
+                string fileName = parts[parts.Length - 1];
+
+                Match m = UsbdgDataProcessorService.IsUsbdgReportMetadataFile(fileName);
+                if (m.Success)
+                {
+                    timeInfo ??= new EdiJobUsbdgMetadataCreationTime();
+                    timeInfo.ABST = m.Groups[2].Value;
+                    timeInfo.ABST_UTC = DateConverter.ConvertIso8601CompliantString(m.Groups[2].Value); ;
+                    timeInfo.RELT = m.Groups[1].Value;
+                    timeInfo.SOURCE = EmdTimeSource.Name.EMD_REPORT_METADATA_FILENAME;
+                }
+            }
+            return timeInfo;
+        }
+
+
+
+
+        /// <summary>
+        /// Returns absolute time from EMS report metadata. Falls back to the logger file name if missing from the metadata. 
+        /// </summary>
+        /// <param name="ediJob">EDI job object</param>
+        /// <returns>
+        /// Absolute time
+        /// </returns>
+        /*
+        public static string GetRelativeTimeFromEmsPackage(EdiJob ediJob)
+        {
+            string result = null;
+            if (ediJob.UsbdgMetadata != null)
+            {
+                if (ediJob.UsbdgMetadata.RELT != null && ediJob.UsbdgMetadata.RELT != "")
+                {
+                    result = ediJob.UsbdgMetadata.RELT;
+                }
+                else if (ediJob.FileName_RELT != null)
+                {
+                    result = ediJob.FileName_RELT;
+                }
+            }
+            return result;
+        }
+        */
+
+        /// <summary>
+        /// Calculates the absolute timestamp for each Indigo V2 records using the USBDG metadata absolute timestamp and relative time of records
+        /// </summary>
+        /// <param name="records">List of denormalized USBDG records </param>
+        /// <param name="reportDurationSeconds">USBDG metadata duration seconds (converted from relative seconds)</param>
+        /// <param name="reportMetadata">USBDG metadata file json object</param>
+        /// <returns>
+        /// Absolute timestamp (DateTime) of a Indigo V2 record; Exception (4Q5D) otherwise
+        /// </returns>
+        //public static List<EmsEventRecord> CalculateAbsoluteTimeForUsbdgRecords(List<EmsEventRecord> records, int reportDurationSeconds, dynamic reportMetadata, EdiJob ediJob)
+        public static List<EmsEventRecord> CalculateAbsoluteTimeForUsbdgRecords(List<EmsEventRecord> records, EdiJob ediJob)
+        {
+            //string absoluteTime = GetKeyValueFromMetadataRecordsObject("ABST", reportMetadata);
+            string emdTimeAbst = GetUsbdgMountTimeAbst(ediJob);
+            int emdTimeElapsedSecs = ediJob.Emd.Metadata.Usbdg.MountTime.Calcs.RELT_ELAPSED_SECS;
+
+            foreach (EmsEventRecord record in records)
+            {
+                DateTime? dt = DataTransformService.CalculateAbsoluteTimeForEmsRecord(emdTimeAbst, emdTimeElapsedSecs, record.RELT, record.EDI_SOURCE);
+                record.EDI_ABST = dt;
+            }
+            return records;
+        }
+
+        public static Match IsUsbdgReportMetadataFile(string name)
+        {
+            // 40A36BCA69DD_20221221T224627Z_report.json
+            // 40A36BCA692C_20230302T000314Z_report.json
+            string varoReportFileNamePattern = "([A-Z0-9]+)_(\\d\\d\\d\\d\\d\\d\\d\\dT\\d\\d\\d\\d\\d\\dZ)_report\\.json";
+            Regex r = new Regex(varoReportFileNamePattern);
+            Match m = r.Match(name);
+            return m;
+        }
+
+        public static EdiJobUsbdgMetadataMountTime GetUsbdgMountTimeFromSyncFileName(List<CloudBlockBlob> listLoggerFiles)
+        {
+            EdiJobUsbdgMetadataMountTime timeInfo = null;
+
+            if (listLoggerFiles != null)
+            {
+                foreach (CloudBlockBlob logBlob in listLoggerFiles)
+                {
+                    if (EmsService.IsThisEmsSyncDataFile(logBlob.Name))
+                    {
+                        string[] parts = logBlob.Name.Split("/"); ;
+                        string logFileName = parts[parts.Length - 1];
+                        Match m1 = EmsService.IsThisEmsSyncFile(logFileName);
+                        if (m1.Success)
+                        {
+                            timeInfo ??= new EdiJobUsbdgMetadataMountTime();
+                            timeInfo.ABST = m1.Groups[3].Value;
+                            timeInfo.RELT = m1.Groups[2].Value;
+                            timeInfo.Calcs.ABST_UTC = DateConverter.ConvertIso8601CompliantString(m1.Groups[3].Value);
+                            timeInfo.Calcs.RELT_ELAPSED_SECS = DataTransformService.ConvertRelativeTimeStringToTotalSeconds(m1.Groups[2].Value);
+                            timeInfo.SOURCE = EmdTimeSource.Name.EMS_SYNC_FILENAME;
+                        }
+                    }
+                }
+            }
+            return timeInfo;
+        }
+
+
+
+        /// <summary>
+        /// Returns absolute time from EMS report metadata. Falls back to the logger file name if missing from the metadata. 
+        /// </summary>
+        /// <param name="ediJob">EDI job object</param>
+        /// <returns>
+        /// Absolute time
+        /// </returns>
+        public static string GetUsbdgMountTimeAbst(EdiJob ediJob)
+        {
+            string result = null;
+            if (ediJob != null)
+            {
+                if (ediJob.Emd.Metadata.Usbdg.MountTime.ABST != null)
+                {
+                    if (ediJob.Emd.Metadata.Usbdg.MountTime.ABST != null)
+                    {
+                        result = ediJob.Emd.Metadata.Usbdg.MountTime.ABST;
+                    }
+                }
+            }
+            return result;
+        }
+
+        public static string GetReportMetadataFileNameFromBlobPath(string blobPath)
+        {
+            string reportFileName = null;
+            if (blobPath != null)
+            {
+                string[] parts = blobPath.Split("/"); ;
+                string fileName = parts[parts.Length - 1];
+                Match m = UsbdgDataProcessorService.IsUsbdgReportMetadataFile(fileName);
+                if (m.Success)
+                {
+                    reportFileName = fileName;
+                }
+            }
+            return reportFileName;
+        }
+    }
 }

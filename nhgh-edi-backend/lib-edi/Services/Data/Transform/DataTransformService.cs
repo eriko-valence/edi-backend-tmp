@@ -27,6 +27,7 @@ using System.IO;
 using System.Linq;
 using System.Xml;
 using System.Text.RegularExpressions;
+using lib_edi.Services.Loggers;
 
 namespace lib_edi.Services.CceDevice
 {
@@ -133,7 +134,7 @@ namespace lib_edi.Services.CceDevice
 			}
 			catch (Exception e)
 			{
-				log.LogError($"    - Validated: No");
+				//log.LogError($"    - Validated: No");
 				string customErrorMessage = EdiErrorsService.BuildExceptionMessageString(e, "4VN5", null);
 				throw new Exception(customErrorMessage);
 			}
@@ -143,7 +144,7 @@ namespace lib_edi.Services.CceDevice
 			ICollection<ValidationError> errors = jsonSchemaObject.Validate(jsonStringToValidate);
 			if (errors.Count == 0)
 			{
-				log.LogInformation($"    - Validated: Yes");
+				//log.LogInformation($"    - Validated: Yes");
 				return jsonDataToValidate;
 			}
 			else
@@ -235,99 +236,6 @@ namespace lib_edi.Services.CceDevice
 			else
 			{
 				return "unknown";
-			}
-		}
-
-		/// <summary>
-		/// Populates an EDI job object from logger data and USBDG metadata files
-		/// </summary>
-		/// <remarks>
-		/// This EDI object holds properties useful further downstream in the processing
-		/// </remarks>
-		/// <param name="sourceUsbdgMetadata">A deserialized USBDG metadata</param>
-		/// <param name="sourceLogs">A list of deserialized logger data files</param>
-		/// <returns>
-		/// A list of CSV compatible EMD + logger data records, if successful; Exception (D39Y) if any failures occur 
-		/// </returns>
-		public static EdiJob PopulateEdiJobObject(dynamic sourceUsbdgMetadata, List<dynamic> sourceLogs, List<CloudBlockBlob> listLoggerFiles)
-		{
-			string propName = null;
-			string propValue = null;
-			string sourceFile = null;
-			EdiJob ediJob = new ();
-
-			try
-			{
-                if (listLoggerFiles != null)
-                {
-                    foreach (CloudBlockBlob logBlob in listLoggerFiles)
-                    {
-                        if (EmsService.IsThisEmsSyncDataFile(logBlob.Name))
-                        {
-                            string[] parts = logBlob.Name.Split("/"); ;
-                            string logFileName = parts[parts.Length - 1];
-                            string logFileNamePattern = "([A-Za-z0-9]+)_SYNC_([A-Za-z0-9]+)_([A-Za-z0-9]+)\\.json";
-                            Regex r = new Regex(logFileNamePattern, RegexOptions.IgnoreCase);
-                            Match m = r.Match(logFileName);
-                            if (m.Success)
-                            {
-                                Group g = m.Groups[0];
-                                ediJob.FileName_RELT = m.Groups[2].Value;
-                                ediJob.FileName_ABST = m.Groups[3].Value;
-                            }
-                        }
-                    }
-                }
-
-                if (sourceLogs != null)
-                {
-					foreach (dynamic sourceLog in sourceLogs)
-					{
-						JObject sourceLogJObject = (JObject)sourceLog;
-
-						// Grab the log header properties from the source log file
-						var logHeaderObject = new ExpandoObject() as IDictionary<string, Object>;
-						foreach (KeyValuePair<string, JToken> log1 in sourceLogJObject)
-						{
-							if (log1.Value.Type != JTokenType.Array)
-							{
-								logHeaderObject.Add(log1.Key, log1.Value);
-								ObjectManager.SetObjectValue(ediJob.Logger, log1.Key, log1.Value);
-							}
-						}
-					}
-				}
-
-				JObject sourceUsbdgMetadataJObject = (JObject)sourceUsbdgMetadata;
-				var reportHeaderObject = new ExpandoObject() as IDictionary<string, Object>;
-
-                foreach (KeyValuePair<string, JToken> log2 in sourceUsbdgMetadataJObject)
-				{
-					if (log2.Value.Type != JTokenType.Array)
-					{
-						reportHeaderObject.Add(log2.Key, log2.Value);
-						ObjectManager.SetObjectValue(ediJob.UsbdgMetadata, log2.Key, log2.Value);
-					}
-
-					if (log2.Value.Type == JTokenType.Array && log2.Key == "records")
-					{
-						foreach (JObject z in log2.Value.Children<JObject>())
-						{
-							// Load each log record property
-							foreach (JProperty prop in z.Properties())
-							{
-								propName = prop.Name;
-								propValue = (string)prop.Value;
-								ObjectManager.SetObjectValue(ediJob.UsbdgMetadata, prop.Name, prop.Value);
-							}
-						}
-					}
-				}
-				return ediJob;
-			}
-			catch (Exception e)
-			{
-				throw new Exception(EdiErrorsService.BuildExceptionMessageString(e, "D39Y", EdiErrorsService.BuildErrorVariableArrayList(propName, propValue, sourceFile)));
 			}
 		}
 
@@ -457,101 +365,101 @@ namespace lib_edi.Services.CceDevice
                     {
                         if (usbdgRecords.Count > 0)
                         {
-                            log.LogInformation($"  - Determine object type using list of generic records");
+                            //log.LogInformation($"  - Determine object type using list of generic records");
                             var firstRecord = usbdgRecords.FirstOrDefault();
                             string recordType = firstRecord.GetType().Name;
-                            log.LogInformation($"    - Record type: {recordType}");
+                            //log.LogInformation($"    - Record type: {recordType}");
                             if (recordType == "IndigoV2EventRecord")
                             {
-                                log.LogInformation($"  - Is record type supported? Yes");
+                                //log.LogInformation($"  - Is record type supported? Yes");
                                 blobName = DataTransformService.BuildCuratedBlobPath(requestBody.Path, "indigo_v2_event.csv", loggerType);
                             }
                             else if (recordType == "Sl1EventRecord")
                             {
-                                log.LogInformation($"  - Is record type supported? Yes");
+                                //log.LogInformation($"  - Is record type supported? Yes");
                                 blobName = DataTransformService.BuildCuratedBlobPath(requestBody.Path, "sl1_event.csv", loggerType);
                             }
                             else if (recordType == "IndigoV2LocationRecord")
                             {
-                                log.LogInformation($"  - Is record type supported? Yes");
+                                //log.LogInformation($"  - Is record type supported? Yes");
                                 blobName = DataTransformService.BuildCuratedBlobPath(requestBody.Path, "indigo_v2_location.csv", loggerType);
                             }
                             else if (recordType == "UsbdgLocationRecord")
                             {
-                                log.LogInformation($"  - Is record type supported? Yes");
+                                //log.LogInformation($"  - Is record type supported? Yes");
                                 blobName = DataTransformService.BuildCuratedBlobPath(requestBody.Path, "usbdg_location.csv", loggerType);
                             }
                             else if (recordType == "UsbdgDeviceRecord")
                             {
-                                log.LogInformation($"  - Is record type supported? Yes");
+                                //log.LogInformation($"  - Is record type supported? Yes");
                                 blobName = DataTransformService.BuildCuratedBlobPath(requestBody.Path, "usbdg_device.csv", loggerType);
                             }
                             else if (recordType == "UsbdgEventRecord")
                             {
-                                log.LogInformation($"  - Is record type supported? Yes");
+                                //log.LogInformation($"  - Is record type supported? Yes");
                                 blobName = DataTransformService.BuildCuratedBlobPath(requestBody.Path, "usbdg_event.csv", loggerType);
                             }
                             else
                             {
-                                log.LogInformation($"  - Is record type supported? No");
+                                //log.LogInformation($"  - Is record type supported? No");
                                 return blobName;
                             }
-                            log.LogInformation($"  - Blob: {blobName}");
-                            log.LogInformation($"  - Get block blob reference");
+                            //log.LogInformation($"  - Blob: {blobName}");
+                            //log.LogInformation($"  - Get block blob reference");
                             CloudBlockBlob outBlob = cloudBlobContainer.GetBlockBlobReference(blobName);
-                            log.LogInformation($"  - Open stream for writing to the blob");
+                            //log.LogInformation($"  - Open stream for writing to the blob");
                             using var writer = await outBlob.OpenWriteAsync();
-                            log.LogInformation($"  - Initialize new instance of stream writer");
+                            //log.LogInformation($"  - Initialize new instance of stream writer");
                             using var streamWriter = new StreamWriter(writer);
-                            log.LogInformation($"  - Initialize new instance of csv writer");
+                            //log.LogInformation($"  - Initialize new instance of csv writer");
                             using var csvWriter = new CsvWriter(streamWriter, CultureInfo.InvariantCulture);
-                            log.LogInformation($"  - Pull child records from list");
+                            //log.LogInformation($"  - Pull child records from list");
                             var serializedParent = JsonConvert.SerializeObject(usbdgRecords);
                             if (recordType == "IndigoV2EventRecord")
                             {
                                 List<IndigoV2EventRecord> records = JsonConvert.DeserializeObject<List<IndigoV2EventRecord>>(serializedParent);
-                                log.LogInformation($"  - Write list of indigo v2 event records to the CSV file");
+                                //log.LogInformation($"  - Write list of indigo v2 event records to the CSV file");
                                 csvWriter.WriteRecords(records);
                             }
                             else if (recordType == "Sl1EventRecord")
                             {
                                 List<Sl1EventRecord> records = JsonConvert.DeserializeObject<List<Sl1EventRecord>>(serializedParent);
-                                log.LogInformation($"  - Write list of sl1 event records to the CSV file");
+                                //log.LogInformation($"  - Write list of sl1 event records to the CSV file");
                                 csvWriter.WriteRecords(records);
                             }
                             else if (recordType == "IndigoV2LocationRecord")
                             {
                                 List<IndigoV2LocationRecord> records = JsonConvert.DeserializeObject<List<IndigoV2LocationRecord>>(serializedParent);
-                                log.LogInformation($"  - Write list of indigo v2 location records to the CSV file");
+                                //log.LogInformation($"  - Write list of indigo v2 location records to the CSV file");
                                 csvWriter.WriteRecords(records);
                             }
                             else if (recordType == "UsbdgLocationRecord")
                             {
                                 List<UsbdgLocationRecord> records = JsonConvert.DeserializeObject<List<UsbdgLocationRecord>>(serializedParent);
-                                log.LogInformation($"  - Write list of usbdg location records to the CSV file");
+                                //log.LogInformation($"  - Write list of usbdg location records to the CSV file");
                                 csvWriter.WriteRecords(records);
                             }
                             else if (recordType == "UsbdgDeviceRecord")
                             {
                                 List<UsbdgDeviceRecord> records = JsonConvert.DeserializeObject<List<UsbdgDeviceRecord>>(serializedParent);
-                                log.LogInformation($"  - Write list of usbdg device records to the CSV file");
+                                //log.LogInformation($"  - Write list of usbdg device records to the CSV file");
                                 csvWriter.WriteRecords(records);
                             }
                             else if (recordType == "UsbdgEventRecord")
                             {
                                 List<UsbdgEventRecord> records = JsonConvert.DeserializeObject<List<UsbdgEventRecord>>(serializedParent);
-                                log.LogInformation($"  - Write list of usbdg event records to the CSV file");
+                                //log.LogInformation($"  - Write list of usbdg event records to the CSV file");
                                 csvWriter.WriteRecords(records);
                             }
                             else
                             {
-                                log.LogInformation($"  - Unsupported record type. Will not write list of records to CSV file.");
+                                //log.LogInformation($"  - Unsupported record type. Will not write list of records to CSV file.");
                             }
 
                         }
                         else
                         {
-                            log.LogInformation($"  - Zero records found. CSV file will not be written to blog storage.");
+                            //log.LogInformation($"  - Zero records found. CSV file will not be written to blog storage.");
                         }
 
                     }
@@ -572,14 +480,14 @@ namespace lib_edi.Services.CceDevice
         /// <returns>
         /// List of denormalized USBDG records (with the calculated duration seconds); Exception (M34T) otherwise
         /// </returns>
-        public static List<EmsEventRecord> ConvertRelativeTimeToTotalSecondsForUsbdgLogRecords(List<EmsEventRecord> records)
+        public static List<EmsEventRecord> ConvertRelativeTimeToTotalSecondsForEmsLogRecords(List<EmsEventRecord> records)
         {
             foreach (EmsEventRecord record in records)
             {
                 try
                 {
                     TimeSpan ts = XmlConvert.ToTimeSpan(record.RELT);
-                    record._RELT_SECS = Convert.ToInt32(ts.TotalSeconds);
+                    record.EDI_RELT_ELAPSED_SECS = Convert.ToInt32(ts.TotalSeconds);
                 }
                 catch (Exception e)
                 {
@@ -605,9 +513,9 @@ namespace lib_edi.Services.CceDevice
 
             try
             {
-                JObject sourceJObject = (JObject)metadata;
+                //JObject sourceJObject = (JObject)metadata;
                 //relativeTime = GetKeyValueFromMetadataRecordsObject("RELT", metadata);
-                relativeTime = GetRelativeTimeFromEmsPackage(ediJob);
+                relativeTime = UsbdgDataProcessorService.GetUsbdgMountTimeRelt(ediJob);
                 TimeSpan ts = XmlConvert.ToTimeSpan(relativeTime); // parse iso 8601 duration string to timespan
                 result = Convert.ToInt32(ts.TotalSeconds);
                 return result;
@@ -666,112 +574,6 @@ namespace lib_edi.Services.CceDevice
         }
 
         /// <summary>
-        /// Returns absolute time from EMS report metadata. Falls back to the logger file name if missing from the metadata. 
-        /// </summary>
-        /// <param name="ediJob">EDI job object</param>
-        /// <returns>
-        /// Absolute time
-        /// </returns>
-        public static string GetAbsoluteTimeFromEmsPackage(EdiJob ediJob)
-        {
-            string result = null;
-            if (ediJob.UsbdgMetadata != null)
-            {
-                if (ediJob.UsbdgMetadata.ABST != null && ediJob.UsbdgMetadata.ABST != "")
-                {
-                    result = ediJob.UsbdgMetadata.ABST;
-                } else if (ediJob.FileName_ABST != null)
-                {
-                    result = ediJob.FileName_ABST;
-                }
-            }
-            return result;
-        }
-
-        /// <summary>
-        /// Returns absolute time from EMS report metadata. Falls back to the logger file name if missing from the metadata. 
-        /// </summary>
-        /// <param name="ediJob">EDI job object</param>
-        /// <returns>
-        /// Absolute time
-        /// </returns>
-        public static string GetRelativeTimeFromEmsPackage(EdiJob ediJob)
-        {
-            string result = null;
-            if (ediJob.UsbdgMetadata != null)
-            {
-                if (ediJob.UsbdgMetadata.RELT != null && ediJob.UsbdgMetadata.RELT != "")
-                {
-                    result = ediJob.UsbdgMetadata.RELT;
-                }
-                else if (ediJob.FileName_RELT != null)
-                {
-                    result = ediJob.FileName_RELT;
-                }
-            }
-            return result;
-        }
-
-        /// <summary>
-        /// Calculates the absolute timestamp for each Indigo V2 records using the USBDG metadata absolute timestamp and relative time of records
-        /// </summary>
-        /// <param name="records">List of denormalized USBDG records </param>
-        /// <param name="reportDurationSeconds">USBDG metadata duration seconds (converted from relative seconds)</param>
-        /// <param name="reportMetadata">USBDG metadata file json object</param>
-        /// <returns>
-        /// Absolute timestamp (DateTime) of a Indigo V2 record; Exception (4Q5D) otherwise
-        /// </returns>
-        public static List<EmsEventRecord> CalculateAbsoluteTimeForUsbdgRecords(List<EmsEventRecord> records, int reportDurationSeconds, dynamic reportMetadata, EdiJob ediJob)
-        {
-            //string absoluteTime = GetKeyValueFromMetadataRecordsObject("ABST", reportMetadata);
-            string absoluteTime = GetAbsoluteTimeFromEmsPackage(ediJob);
-
-            foreach (EmsEventRecord record in records)
-            {
-                DateTime? dt = CalculateAbsoluteTimeForUsbdgRecord(absoluteTime, reportDurationSeconds, record.RELT, record.EDI_SOURCE);
-                record.EDI_RECORD_ABST_CALC = dt;
-            }
-            return records;
-        }
-
-        /// <summary>
-        /// Gets the absolute timestamp of a record using the report absolute timestamp and record relative time
-        /// </summary>
-        /// <param name="reportAbsoluteTime">Logger record absolute timestamp</param>
-        /// <param name="reportDurationSeconds">USBDG metadata duration seconds (converted from relative seconds)</param>
-        /// <param name="recordRelativeTime">Logger record relative time (e.g., P8DT30S)</param>
-        /// <returns>
-        /// Absolute timestamp (DateTime) of a USBDG record; Exception (4Q5D) otherwise
-        /// </returns>
-        private static DateTime? CalculateAbsoluteTimeForUsbdgRecord(string reportAbsoluteTime, int reportDurationSeconds, string recordRelativeTime, string sourceLogFile)
-        {
-            try
-            {
-                int recordDurationSeconds = ConvertRelativeTimeStringToTotalSeconds(recordRelativeTime);
-                int elapsedSeconds = reportDurationSeconds - recordDurationSeconds; // How far away time wise is this record compared to the absolute time
-
-                DateTime? reportAbsoluteDateTime = DateConverter.ConvertIso8601CompliantString(reportAbsoluteTime);
-
-                TimeSpan ts = TimeSpan.FromSeconds(elapsedSeconds);
-                if (reportAbsoluteDateTime != null)
-                {
-                    DateTime reportAbsDateTime = (DateTime)reportAbsoluteDateTime;
-                    DateTime UtcTime = reportAbsDateTime.Subtract(ts);
-                    return UtcTime;
-                }
-                else
-                {
-                    return null;
-                }
-            }
-            catch (Exception e)
-            {
-                string customErrorMessage = EdiErrorsService.BuildExceptionMessageString(e, "4Q5D", EdiErrorsService.BuildErrorVariableArrayList(reportAbsoluteTime, recordRelativeTime, sourceLogFile));
-                throw new Exception(customErrorMessage);
-            }
-        }
-
-        /// <summary>
         /// Converts relative time to total seconds
         /// </summary>
         /// <param name="relativeTime">Relative time (e.g., P8DT30S)</param>
@@ -808,13 +610,14 @@ namespace lib_edi.Services.CceDevice
         /// <returns>
         /// Seconds that elapsed snce logger activation relative time
         /// </returns>
-        public static int CalculateElapsedSecondsFromLoggerActivationRelativeTime(string loggerActivationRelativeTime, string recordRelativeTime)
+        public static int CalculateElapsedSecondsFromLoggerMountRelativeTime(string loggerActivationRelativeTime, string recordRelativeTime)
         {
             try
             {
                 int loggerActivationRelativeTimeSecs = ConvertRelativeTimeStringToTotalSeconds(loggerActivationRelativeTime); // convert timespan to seconds
                 int recordRelativeTimeSecs = ConvertRelativeTimeStringToTotalSeconds(recordRelativeTime);
                 int elapsedSeconds = loggerActivationRelativeTimeSecs - recordRelativeTimeSecs; // How far away time wise is this record compared to the absolute time
+                int elapsedDays = (elapsedSeconds / 86000);
                 return elapsedSeconds;
             }
             catch (Exception)
@@ -871,5 +674,242 @@ namespace lib_edi.Services.CceDevice
             }
             return listDataBlobs;
         }
+
+        /// <summary>
+        /// Returns absolute time from EMS report metadata. Falls back to the logger file name if missing from the metadata. 
+        /// </summary>
+        /// <param name="ediJob">EDI job object</param>
+        /// <returns>
+        /// Absolute time
+        /// </returns>
+        public static string GetUsbdgMountTimeRelt(EdiJob ediJob)
+        {
+            string result = null;
+            if (ediJob != null)
+            {
+                if (ediJob.Emd != null)
+                {
+                    if (ediJob.Emd.Metadata.Usbdg.MountTime != null)
+                    {
+                        if (ediJob.Emd.Metadata.Usbdg.MountTime.RELT != null)
+                        {
+                            result = ediJob.Emd.Metadata.Usbdg.MountTime.RELT;
+                        }
+                    }
+                }
+            }
+            return result;
+        }
+
+        public static DataLoggerTypeEnum.Name GetLoggerTypeFromEmsPackage(EdiJob ediJob, DataLoggerTypeEnum.Name dataLoggerType)
+        {
+            DataLoggerTypeEnum.Name result;
+            if (dataLoggerType == DataLoggerTypeEnum.Name.NO_LOGGER)
+            {
+                result = DataLoggerTypeEnum.Name.NO_LOGGER;
+            } 
+            else 
+            {
+                string loggerModelToCheck = ediJob.Logger.LMOD ?? "";
+                EmsLoggerModelCheckResult loggerModelCheckResult = EmsService.GetEmsLoggerModelFromEmsLogLmodProperty(loggerModelToCheck);
+                string verfiedLoggerType = loggerModelCheckResult.LoggerModelEnum.ToString().ToLower();
+                result = EmsService.GetDataLoggerType(verfiedLoggerType);
+            }
+
+
+            return result;
+        }
+
+        /// <summary>
+        /// Gets the absolute timestamp of a record using the report absolute timestamp and record relative time
+        /// </summary>
+        /// <param name="reportAbsoluteTime">Logger record absolute timestamp</param>
+        /// <param name="reportDurationSeconds">USBDG metadata duration seconds (converted from relative seconds)</param>
+        /// <param name="recordRelativeTime">Logger record relative time (e.g., P8DT30S)</param>
+        /// <returns>
+        /// Absolute timestamp (DateTime) of a USBDG record; Exception (4Q5D) otherwise
+        /// </returns>
+        public static DateTime? CalculateAbsoluteTimeForEmsRecord(string reportAbsoluteTime, int reportDurationSeconds, string recordRelativeTime, string sourceLogFile)
+        {
+            try
+            {
+                int recordDurationSeconds = ConvertRelativeTimeStringToTotalSeconds(recordRelativeTime);
+                int elapsedSeconds = reportDurationSeconds - recordDurationSeconds; // How far away time wise is this record compared to the absolute time
+
+                DateTime? reportAbsoluteDateTime = DateConverter.ConvertIso8601CompliantString(reportAbsoluteTime);
+
+                TimeSpan ts = TimeSpan.FromSeconds(elapsedSeconds);
+                if (reportAbsoluteDateTime != null)
+                {
+                    DateTime reportAbsDateTime = (DateTime)reportAbsoluteDateTime;
+                    DateTime UtcTime = reportAbsDateTime.Subtract(ts);
+                    return UtcTime;
+                }
+                else
+                {
+                    return null;
+                }
+            }
+            catch (Exception e)
+            {
+                string customErrorMessage = EdiErrorsService.BuildExceptionMessageString(e, "4Q5D", EdiErrorsService.BuildErrorVariableArrayList(reportAbsoluteTime, recordRelativeTime, sourceLogFile));
+                throw new Exception(customErrorMessage);
+            }
+        }
+
+        public static void LogEmsPackageInformation(ILogger log, List<EmsEventRecord> records, EdiJob ediJob)
+        {
+            log.LogInformation($" ###########################################################################");
+            log.LogInformation($" #  - EDI package information ");
+            log.LogInformation($" #    - EMD type ..............................: {ediJob.Emd.Type}");
+            log.LogInformation($" #    - Logger type ...........................: {ediJob.Logger.Type}");
+            log.LogInformation($" #    - Staged path ...........................: {ediJob.StagedBlobPath}");
+            log.LogInformation($" #    - Report package file name ..............: {ediJob.ReportPackageFileName ?? "NOT_FOUND"}");
+            log.LogInformation($" #    - Report metadata file name .............: {ediJob.ReportMetadataFileName ?? "NOT_FOUND"}");
+            if (ediJob.Logger.Type == DataLoggerTypeEnum.Name.NO_LOGGER)
+            {
+                log.LogInformation($" #    - Sync file name ........................: N/A");
+            } else
+            {
+                log.LogInformation($" #    - Sync file name ........................: {ediJob.SyncFileName ?? "NOT_FOUND"}");
+            }
+            if (ediJob.Emd.Type == EmdEnum.Name.USBDG)
+            {
+                log.LogInformation($" #    - Report creation time source ...........: {ediJob.Emd.Metadata.Usbdg.CreationTime.SOURCE}");
+                if (ediJob.Logger.Type == DataLoggerTypeEnum.Name.NO_LOGGER)
+                {
+                    log.LogInformation($" #    - EMD logger mount time source ..........: N/A");
+                } else
+                {
+                    log.LogInformation($" #    - EMD logger mount time source ..........: {ediJob.Emd.Metadata.Usbdg.MountTime.SOURCE}");
+                }
+                    
+                log.LogInformation($" #  - EMD report creation times ");
+                log.LogInformation($" #    - Absolute UTC (ISO 8601 string format) .: {ediJob.Emd.Metadata.Usbdg.CreationTime.ABST}");
+                log.LogInformation($" #    - Absolute UTC (date/time object) .......: {ediJob.Emd.Metadata.Usbdg.CreationTime.ABST_UTC}");
+                log.LogInformation($" #    - Relative (ISO 8601 duration format) ...: {ediJob.Emd.Metadata.Usbdg.CreationTime.RELT ?? ""}");
+                if (ediJob.Logger.Type == DataLoggerTypeEnum.Name.NO_LOGGER)
+                {
+                    log.LogInformation($" #  - EMD logger mount times ");
+                    log.LogInformation($" #    - Absolute UTC (ISO 8601 string format) .: N/A");
+                    log.LogInformation($" #    - Absolute UTC (date/time object) .......: N/A");
+                    log.LogInformation($" #    - Relative (ISO 8601 duration format) ...: N/A");
+                    log.LogInformation($" #    - Relative (seconds since activation) ...: N/A");
+                }
+                else
+                {
+                    log.LogInformation($" #  - EMD logger mount times ");
+                    log.LogInformation($" #    - Absolute UTC (ISO 8601 string format) .: {ediJob.Emd.Metadata.Usbdg.MountTime.ABST}");
+                    log.LogInformation($" #    - Absolute UTC (date/time object) .......: {ediJob.Emd.Metadata.Usbdg.MountTime.Calcs.ABST_UTC}");
+                    log.LogInformation($" #    - Relative (ISO 8601 duration format) ...: {ediJob.Emd.Metadata.Usbdg.MountTime.RELT ?? ""}");
+                    log.LogInformation($" #    - Relative (seconds since activation) ...: {ediJob.Emd.Metadata.Usbdg.MountTime.Calcs.RELT_ELAPSED_SECS}");
+                }
+            }
+            else if (ediJob.Emd.Type == EmdEnum.Name.VARO)
+            {
+                log.LogInformation($" #    - Report creation time source ...........: {ediJob.Emd.Metadata.Varo.CreationTime.SOURCE}");
+                log.LogInformation($" #    - EMD logger mount time source ..........: {ediJob.Emd.Metadata.Varo.MountTime.SOURCE}");
+                log.LogInformation($" #  - EMD report creation times ");
+                log.LogInformation($" #    - Absolute UTC (ISO 8601 string format) .: {ediJob.Emd.Metadata.Varo.CreationTime.ABST}");
+                log.LogInformation($" #    - Absolute UTC (date/time object) .......: {ediJob.Emd.Metadata.Varo.CreationTime.ABST_UTC}");
+                log.LogInformation($" #   - Relative (ISO 8601 duration format) ....: N/A");
+                log.LogInformation($" #  - EMD logger mount times ");
+                log.LogInformation($" #    - Absolute UTC (ISO 8601 string format) .: {ediJob.Emd.Metadata.Varo.MountTime.ABST}");
+                log.LogInformation($" #    - Absolute UTC (date/time object) .......: {ediJob.Emd.Metadata.Varo.MountTime.Calcs.ABST_UTC}");
+                log.LogInformation($" #    - Relative (ISO 8601 duration format) ...: {ediJob.Emd.Metadata.Varo.MountTime.RELT ?? ""}");
+                log.LogInformation($" #    - Relative (seconds since activation) ...: {ediJob.Emd.Metadata.Varo.MountTime.Calcs.RELT_ELAPSED_SECS}");
+            }
+
+            // NHGH-2819 2023.03.15 1929 Only log if EMD report package has logger data
+            if (records != null)
+            {
+                if (records.Count > 1)
+                {
+                    int first = (records.Count - 1);
+                    int last = (0);
+                    log.LogInformation($" #  - EDI logger event records (sample only) ");
+                    log.LogInformation($" #    - records[{last}] times");
+                    log.LogInformation($" #      - Relative (ISO 8601 duration format) .: {records[last].RELT}");
+                    log.LogInformation($" #      - Relative (seconds since activation) .: {records[last].EDI_RELT_ELAPSED_SECS}");
+                    if (ediJob.Emd.Type == EmdEnum.Name.VARO)
+                    {
+                        log.LogInformation($" #      - Relative (seconds since mount time) .: {DataTransformService.CalculateElapsedSecondsFromLoggerMountRelativeTime(ediJob.Emd.Metadata.Varo.MountTime.RELT, records[last].RELT)}");
+                    } else if (ediJob.Emd.Type == EmdEnum.Name.USBDG)
+                    {
+                        log.LogInformation($" #      - Relative (seconds since mount time) .: {DataTransformService.CalculateElapsedSecondsFromLoggerMountRelativeTime(ediJob.Emd.Metadata.Usbdg.MountTime.RELT, records[last].RELT)}");
+                    }
+                        
+                    log.LogInformation($" #      - Absolute UTC (date/time object) .....: {records[last].EDI_ABST}");
+                    log.LogInformation($" #    - records[{first}] times");
+                    log.LogInformation($" #      - Relative (ISO 8601 duration format) .: {records[first].RELT}");
+                    log.LogInformation($" #      - Relative (seconds since activation) .: {records[first].EDI_RELT_ELAPSED_SECS}");
+
+                    if (ediJob.Emd.Type == EmdEnum.Name.VARO)
+                    {
+                        log.LogInformation($" #      - Relative (seconds since mount time) .: {DataTransformService.CalculateElapsedSecondsFromLoggerMountRelativeTime(ediJob.Emd.Metadata.Varo.MountTime.RELT, records[first].RELT)}");
+                    }
+                    else if (ediJob.Emd.Type == EmdEnum.Name.USBDG)
+                    {
+                        log.LogInformation($" #      - Relative (seconds since mount time) .: {DataTransformService.CalculateElapsedSecondsFromLoggerMountRelativeTime(ediJob.Emd.Metadata.Usbdg.MountTime.RELT, records[first].RELT)}");
+                    }
+
+                    log.LogInformation($" #      - Absolute UTC (date/time object) .....: {records[first].EDI_ABST}");
+                }
+            }
+
+            if (ediJob.StagedFiles != null)
+            {
+                if (ediJob.StagedFiles.Count > 0)
+                {
+                    log.LogInformation($" #  - EDI staged files ");
+                    foreach (string stagedFile in ediJob.StagedFiles)
+                    {
+                        log.LogInformation($" #    - {stagedFile}");
+                    }
+
+                }
+            }
+
+            if (ediJob.CuratedFiles != null)
+            {
+                if (ediJob.CuratedFiles.Count > 0)
+                {
+                    log.LogInformation($" #  - EDI curated files ");
+                    foreach (string curatedFiles in ediJob.CuratedFiles)
+                    {
+                        log.LogInformation($" #    - {curatedFiles}");
+                    }
+
+                }
+            }
+
+            log.LogInformation($" ###########################################################################");
+        }
+
+        public static string GetSyncFileNameFromBlobPath(string blobPath)
+        {
+            string syncFileName = null;
+            if (EmsService.IsThisEmsSyncDataFile(blobPath))
+            {
+                string[] parts = blobPath.Split("/"); ;
+                string logFileName = parts[parts.Length - 1];
+                Match m = EmsService.IsThisEmsSyncFile(logFileName);
+                if (m.Success)
+                {
+                    syncFileName = logFileName;
+                }
+            }
+            return syncFileName;
+        }
+
+        public static string GetFileNameFromPath(string path)
+        {
+            string[] parts = path.Split("/"); ;
+            string logFileName = parts[parts.Length - 1];
+            return logFileName;
+
+        }
+
+
     }
 }

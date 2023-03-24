@@ -17,14 +17,14 @@ namespace fa_ccdx_provider_varo
 {
     public static class Provide
     {
-        [FunctionName("publish-report")]
+        [FunctionName("publish-report-varo")]
         public static async Task<HttpResponseMessage> Run(
             [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequest req,
             ILogger log)
         {
             try
             {
-                log.LogTrace("http trigger function processed a publishing request.");
+                log.LogInformation($"- [ccdx-provider->run]: Extracted logger type: http trigger function processed a publishing request.");
 
                 // NHGH-2799 2022-02-09 1418 Using these temporary package related variables until requirements are defined
                 string emdType = Environment.GetEnvironmentVariable("EMD_TYPE");
@@ -33,18 +33,22 @@ namespace fa_ccdx_provider_varo
                 
                 string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
                 dynamic data = JsonConvert.DeserializeObject(requestBody);
-                log.LogTrace("retrieve base64 encoded content for publishing to ccdx");
+                log.LogInformation($"- [ccdx-provider->run]: Retrieve base64 encoded content for publishing to ccdx.");
+
                 string packageName = data?.name;
                 string fullPackageName = $"{emdType}/{dateString}/{packageName}";
                 string compressedContentBase64 = data?.content;
                 byte[] contentBytes = Convert.FromBase64String(compressedContentBase64);
                 MemoryStream stream = new MemoryStream(contentBytes);
 
-                log.LogInformation("build multipart form data data content");
+                log.LogInformation($"- [ccdx-provider->run]: Build multipart form data data content.");
+
                 MultipartFormDataContent multipartFormDataByteArrayContent = HttpService.BuildMultipartFormDataByteArrayContent(stream, "file", fullPackageName);
-                log.LogInformation("build ccdx request headers");
+                log.LogInformation($"- [ccdx-provider->run]: Build ccdx request headers.");
+
                 HttpRequestMessage requestMessage = CcdxService.BuildCcdxHttpMultipartFormDataRequestMessage(multipartFormDataByteArrayContent, fullPackageName, log);
-                log.LogInformation("send package to ccdx");
+                log.LogInformation($"- [ccdx-provider->run]: Send package to ccdx.");
+
                 HttpStatusCode httpStatusCode = await HttpService.SendHttpRequestMessage(requestMessage);
 
                 var returnObject = new { publishedPackage = fullPackageName };
@@ -54,7 +58,8 @@ namespace fa_ccdx_provider_varo
                     StatusCode = System.Net.HttpStatusCode.OK,
                     Content = new StringContent(JsonConvert.SerializeObject(returnObject, Formatting.Indented), Encoding.UTF8, "application/json")
                 };
-                log.LogTrace("sent successful http response");
+                log.LogInformation($"- [ccdx-provider->run]: Sent successful http response.");
+
                 return httpResponseMessage;
 
             }

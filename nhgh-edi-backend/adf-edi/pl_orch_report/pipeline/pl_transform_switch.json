@@ -145,6 +145,18 @@
                                 }
                             ]
                         }
+                    ],
+                    "defaultActivities": [
+                        {
+                            "name": "Unknown Transform",
+                            "type": "Fail",
+                            "dependsOn": [],
+                            "userProperties": [],
+                            "typeProperties": {
+                                "message": "Package type (PL_P_DEVICE_TYPE) is not supported",
+                                "errorCode": "500"
+                            }
+                        }
                     ]
                 }
             }

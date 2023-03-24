@@ -1,4 +1,11 @@
-﻿CREATE PROCEDURE [indigo_v2].[getLoggers]
+﻿
+/*
+
+exec [indigo_v2].[getLoggers]
+
+*/
+
+CREATE PROCEDURE [indigo_v2].[getLoggers]
 
 AS
 BEGIN

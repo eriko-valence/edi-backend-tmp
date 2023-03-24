@@ -359,6 +359,18 @@
                             },
                             {
                                 "source": {
+                                    "name": "EMD_TYPE",
+                                    "type": "String",
+                                    "physicalType": "String"
+                                },
+                                "sink": {
+                                    "name": "EMD_TYPE",
+                                    "type": "String",
+                                    "physicalType": "varchar"
+                                }
+                            },
+                            {
+                                "source": {
                                     "name": "_RELT_SECS",
                                     "type": "String",
                                     "physicalType": "String"
@@ -940,7 +952,7 @@
             "name": "Load"
         },
         "annotations": [],
-        "lastPublishTime": "2023-03-07T19:12:56Z"
+        "lastPublishTime": "2023-03-10T22:13:46Z"
     },
     "type": "Microsoft.DataFactory/factories/pipelines"
 }

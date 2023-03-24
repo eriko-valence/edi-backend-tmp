@@ -10,8 +10,6 @@ namespace lib_edi.Models.Loggers.Csv
 {
     public class EmsEventRecord : EdiSinkRecord
     {
-        [Name("ABST_CALC")]
-        public DateTime? EDI_RECORD_ABST_CALC { get; set; }
         /*
 		 * APPLIANCE PROPERTIES
 		 */
@@ -69,6 +67,8 @@ namespace lib_edi.Models.Loggers.Csv
         public string RELT { get; set; }
         [Name("RTCW")]
         public string RTCW { get; set; }
+        [Name("EMD_TYPE")]
+        public string EMD_TYPE { get; set; }
 
         /*
 		 * OTHER PROPERTIES
@@ -77,8 +77,10 @@ namespace lib_edi.Models.Loggers.Csv
         public double? TVC { get; set; }
         [Name("DORV")]
         public string DORV { get; set; }
+        [Name("ABST_CALC")]
+        public DateTime? EDI_ABST { get; set; }
         [Name("_RELT_SECS")]
-        public int _RELT_SECS { get; set; } // relative time (duration) in seconds (set by azure function)
+        public int EDI_RELT_ELAPSED_SECS { get; set; } // relative time (duration) in seconds (set by azure function)
                                             //public int emd_relt { get; set; }
                                             //public DateTime emd_abs { get; set; }
     }

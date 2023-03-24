@@ -1,8 +1,10 @@
 using lib_edi.Models.Azure.AppInsights;
 using lib_edi.Services.Azure;
 using lib_edi.Services.Ccdx;
+using lib_edi.Services.Data.Transform;
 using lib_edi.Services.Ems;
 using lib_edi.Services.Errors;
+using lib_edi.Services.Loggers;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Kafka;
 using Microsoft.Extensions.Logging;
@@ -90,59 +92,78 @@ namespace fa_ccdx_consumer
                         headers.Add(header.Key, GetHeaderValueAsString(header));
                     }
 
-                    string ceType = CcdxService.GetLoggerTypeFromCeHeader(headers["ce_type"]);
-                    log.LogInformation($"- [ccdx-consumer-varo->run]: CE Type: {ceType}");
+                    string ceType = GetKeyValueString(headers, "ce_type");
+                    string emdType = CcdxService.GetLoggerTypeFromCeHeader(headers["ce_type"]);
+                    string ceSubject = GetKeyValueString(headers, "ce_subject");
+                    string dxEmail = GetKeyValueString(headers, "dx-ext-email");
+                    string ceId = GetKeyValueString(headers, "ce_id");
+                    string ceTime = GetKeyValueString(headers, "ce_time");
+                    //log.LogInformation($"- [ccdx-consumer-varo->run]: CE Type: {ceType}");
 
                     /* Only process packages generated from a Varo EMD */
-                    if (EmsService.ValidatePackageIsVaroGenerated(ceType))
+                    if (VaroDataProcessorService.IsReportPackageSupported(ceType, dxEmail))
+                    //if (VaroDataProcessorService.IsVaroEmd(emdType))
                     {
-                        log.LogInformation($"- [ccdx-consumer-varo->run]: Is '{headers["ce_type"]}' a supported cold chain file package? Yes. ");
+                        log.LogInformation($"- [ccdx-consumer-varo->run]: Is '{ceType}' a supported cold chain file package? Yes. ");
                         log.LogInformation($"- [ccdx-consumer-varo->run]: Confirmed. Content is cold chain telemetry. Proceed with processing.");
 
-                        log.LogInformation($"- [ccdx-consumer-varo->run]: Building raw ccdx raw consumer blob path.");
-                        string blobName = CcdxService.BuildRawCcdxConsumerBlobPath(GetKeyValueString(headers, "ce_subject"), GetKeyValueString(headers, "ce_type"));
+
 
                         string blobContainerName = "";
-                        log.LogInformation($"- [ccdx-consumer-varo->run]: Does this supported cold chain telemetry message have an attached file?");
+                        
                         if (headers.ContainsKey("ce_subject"))
                         {
+                            log.LogInformation($"- [ccdx-consumer-varo->run]: Building raw ccdx raw consumer blob path.");
+
+                            log.LogInformation($"- [ccdx-consumer-varo->run]: Does this supported cold chain telemetry message have an attached file? Yes");
                             reportFileName = Path.GetFileName(GetKeyValueString(headers, "ce_subject"));
                             log.LogInformation($"- [ccdx-consumer-varo->run]: Validate incoming blob file extension");
-                            string fileExtension = Path.GetExtension(blobName);
-                            log.LogInformation($"- [ccdx-consumer-varo->run]: File extension: {fileExtension}");
-                            if (CcdxService.IsPathExtensionSupported(blobName))
+                            //string fileExtension = Path.GetExtension(ceId);
+                            //log.LogInformation($"- [ccdx-consumer-varo->run]: File extension: {fileExtension}");
+                            if (VaroDataProcessorService.IsThisVaroGeneratedPackageName(ceId))
+                            //if (CcdxService.IsPathExtensionSupported(blobName))
                             {
+                                string blobName = CcdxService.BuildRawCcdxConsumerBlobPath(ceSubject, ceType);
+
                                 log.LogInformation($"- [ccdx-consumer-varo->run]: Confirmed. Attached cce telemetry file found. Proceed with processing.");
                                 blobContainerName = Environment.GetEnvironmentVariable("CCDX_AZURE_STORAGE_BLOB_CONTAINER_NAME");
                                 string storageAccountConnectionString = Environment.GetEnvironmentVariable("CCDX_AZURE_STORAGE_ACCOUNT_CONNECTION_STRING");
                                 CcdxService.LogCcdxConsumerStartedEventToAppInsights(reportFileName, log);
                                 log.LogInformation($"- [ccdx-consumer-varo->run]: Build the azure storage blob path to be used for uploading the cce telemetry file");
-                                blobName = CcdxService.BuildRawCcdxConsumerBlobPath(GetKeyValueString(headers, "ce_subject"), GetKeyValueString(headers, "ce_type"));
+                                blobName = CcdxService.BuildRawCcdxConsumerBlobPath(ceSubject, ceType);
                                 log.LogInformation($"- [ccdx-consumer-varo->run]: Preparing to upload blob {blobName} to container {blobContainerName}: ");
-                                log.LogInformation($"- [ccdx-consumer-varo->run]:   ce_id: {GetKeyValueString(headers, "ce_id")} ");
-                                log.LogInformation($"- [ccdx-consumer-varo->run]:   ce_type: {GetKeyValueString(headers, "ce_type")} ");
-                                log.LogInformation($"- [ccdx-consumer-varo->run]:   ce_time: {GetKeyValueString(headers, "ce_time")} ");
-                                log.LogInformation($"- [ccdx-consumer-varo->run]:   ce_subject: {GetKeyValueString(headers, "ce_subject")} ");
                                 await AzureStorageBlobService.UploadBlobToContainerUsingSdk(eventData.Value, storageAccountConnectionString, blobContainerName, blobName);
                                 log.LogInformation($"- [ccdx-consumer-varo->run]: Uploading blob {blobName} to container {blobContainerName}");
                                 CcdxService.LogCcdxConsumerSuccessEventToAppInsights(reportFileName, log);
+
+                                log.LogInformation($"- [ccdx-consumer-varo->run]: Debug");
+                                log.LogInformation($"  ##########################################################################");
+                                log.LogInformation($"  # - Package: {reportFileName}");
+                                log.LogInformation($"  # - EmdType: {emdType}");
+                                log.LogInformation($"  # - CEId: {ceId}");
+                                log.LogInformation($"  # - CEType: {ceType}");
+                                log.LogInformation($"  # - CESubject: {ceSubject}");
+                                log.LogInformation($"  # - CETime: {ceTime}");
+                                log.LogInformation($"  # - DxEmail: {dxEmail}");
+                                log.LogInformation($"  ##########################################################################");
                                 log.LogInformation($"- [ccdx-consumer-varo->run]: Done");
                             }
                             else
                             {
-                                log.LogError($"- [ccdx-consumer-varo->run]: Failed to upload blob {blobName} to container {blobContainerName} due an unsupported attachment extension");
-                                CcdxService.LogCcdxConsumerUnsupportedAttachmentExtensionEventToAppInsights(reportFileName, log);
+                                log.LogError($"- [ccdx-consumer-varo->run]: Report package {ceId} is not from a Varo EMD");
+                                //CcdxService.LogCcdxConsumerUnsupportedAttachmentExtensionEventToAppInsights(reportFileName, log);
                             }
                         }
                         else
                         {
-                            log.LogError($"- [ccdx-consumer-varo->run]: Failed to upload blob {blobName} to container {blobContainerName} due to missing the ce-subject header");
-                            CcdxService.LogCcdxConsumerMissingSubjectHeaderEventToAppInsights(reportFileName, log);
+                            log.LogInformation($"- [ccdx-consumer-varo->run]: Does this supported cold chain telemetry message have an attached file? No");
+                            log.LogError($"- [ccdx-consumer-varo->run]: Email report package event is missing the ce-subject header");
+                            //CcdxService.LogCcdxConsumerMissingSubjectHeaderEventToAppInsights(reportFileName, log);
                         }
                     }
                     else
                     {
-                        log.LogInformation($"- [ccdx-consumer-varo->run]: Is '{headers["ce_type"]}' a supported cold chain file package? No. ");
+                        log.LogInformation($"- [ccdx-consumer-varo->run]: Is '{ceType}' a supported cold chain file package? No. ");
                         //Filter out these telemetry messages as they are not supported by this consumer
                     }
                 }

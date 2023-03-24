@@ -1,4 +1,4 @@
-﻿CREATE TABLE [telemetry].[EdiJobStatus] (
+CREATE TABLE [telemetry].[EdiJobStatus] (
     [FilePackageName]      VARCHAR (255) NOT NULL,
     [ESER]                 VARCHAR (50)  NOT NULL,
     [BlobTimeStart]        DATETIME2 (7) NULL,
@@ -11,4 +11,14 @@
     [DateUpdated]          DATETIME2 (7) NULL,
     CONSTRAINT [PK_EdiJobStatus] PRIMARY KEY CLUSTERED ([FilePackageName] ASC)
 );
+
+
+
+
+
+
+GO
+CREATE NONCLUSTERED INDEX [IDX_EdiJobStatus_FailedEdiJobsOverTime]
+    ON [telemetry].[EdiJobStatus]([BlobTimeStart] ASC, [DurationSecs] ASC)
+    INCLUDE([ESER], [ProviderSuccessTime], [ConsumerSuccessTime], [TransformSuccessTime], [SQLSuccessTime], [DateAdded], [DateUpdated]);
 

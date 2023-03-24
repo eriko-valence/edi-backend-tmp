@@ -366,7 +366,7 @@ namespace lib_edi.Services.Ccdx
 			} else if (Environment.GetEnvironmentVariable("CCDX_PUBLISHER_HEADER_CE_TYPE_INDIGO_V2") == ceType)
 			{
 				result = true;
-			} else if (EmsService.ValidateLoggerType(ceType))
+			} else if (EmsService.ValidateCceDeviceType(ceType))
 			{
 				result = true;
 			}
@@ -721,25 +721,18 @@ namespace lib_edi.Services.Ccdx
                 string ccdxHttpHeaderDXOwner = Environment.GetEnvironmentVariable("CCDX_HEADERS:DX_OWNER");
                 string ccdxHttpHeaderDXToken = Environment.GetEnvironmentVariable("CCDX_HEADERS:DX_TOKEN");
                 string ccdxHttpHeaderCESpecVersion = Environment.GetEnvironmentVariable("CCDX_HEADERS:CE_SPECVERSION");
+                string ccdxHttpHeaderDxEmail = Environment.GetEnvironmentVariable("CCDX_HEADERS:DX_EMAIL"); // email address from which the Azure Logic App pulled the report
 
-                log.LogInformation($"  - ccdxHttpEndpoint: {ccdxHttpEndpoint}");
-                log.LogInformation($"  - ccdxHttpHeaderCESource: {ccdxHttpHeaderCESource}");
-                log.LogInformation($"  - ccdxHttpHeaderDXOwner: {ccdxHttpHeaderDXOwner}");
-                log.LogInformation($"  - ccdxHttpHeaderDXToken: {ccdxHttpHeaderDXToken}");
-                log.LogInformation($"  - ccdxHttpHeaderCESpecVersion: {ccdxHttpHeaderCESpecVersion}");
 
-                // Other headers
-                //string ceType = "org.nhgh.ems.report.dev";
+
                 string ccdxEventTime = DateTime.UtcNow.ToString("o");
-                //string cdId = $"40A36BCA698C_20230206T214724Z_001f00265547501820383131_{packageName}";
 
-                log.LogInformation($"  - packageName: {packageName}");
+                //log.LogInformation($"  - packageName: {packageName}");
                 string reportFileName = Path.GetFileName(packageName);
-                log.LogInformation($"  - reportFileName: {reportFileName}");
+                //log.LogInformation($"  - reportFileName: {reportFileName}");
                 string ceType = GetCETypeFromBlobPath(packageName);
 
 
-                log.LogInformation($"  - ceType: {ceType}");
 
 
                 Uri httpRequestUri = new Uri(ccdxHttpEndpoint);
@@ -752,8 +745,24 @@ namespace lib_edi.Services.Ccdx
                 requestMessage.Headers.Add("dx-token", ccdxHttpHeaderDXToken); // access token that permits publication of data to the Data Interchange
                 requestMessage.Headers.Add("dx-owner", ccdxHttpHeaderDXOwner); // data Owner that owns that data
                 requestMessage.Headers.Add("ce-time", ccdxEventTime); // time the originating event was created
+                requestMessage.Headers.Add("dx-ext-email", ccdxHttpHeaderDxEmail); 
                 requestMessage.Headers.ExpectContinue = false;
                 requestMessage.Content = multipartFormDataContent;
+
+                log.LogInformation($"- [ccdx-provider-varo->run]: Debug");
+                log.LogInformation($"  ##########################################################################");
+                log.LogInformation($"  # - Package: {packageName}");
+                log.LogInformation($"  # - Endpoint: {ccdxHttpEndpoint}");
+                log.LogInformation($"  # - CEId: {reportFileName}");
+                log.LogInformation($"  # - CEType: {ceType}");
+                log.LogInformation($"  # - CESource: {ccdxHttpHeaderCESource}");
+                log.LogInformation($"  # - CETime: {ccdxEventTime}");
+                log.LogInformation($"  # - DXOwner: {ccdxHttpHeaderDXOwner}");
+                log.LogInformation($"  # - DXToken: {ccdxHttpHeaderDXToken}");
+                log.LogInformation($"  # - CESpecVersion: {ccdxHttpHeaderCESpecVersion}");
+                log.LogInformation($"  # - DxEmail: {ccdxHttpHeaderDxEmail}");
+                log.LogInformation($"  ##########################################################################");
+
                 return requestMessage;
             }
             catch (Exception e)

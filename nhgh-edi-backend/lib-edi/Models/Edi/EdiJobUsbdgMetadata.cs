@@ -8,11 +8,18 @@ namespace lib_edi.Models.Edi
 {
     public class EdiJobUsbdgMetadata
     {
-        public string ALRM { get; set; } // Required EMD object, so it will come from the USBDG metadata file
+        public EdiJobUsbdgMetadata()
+        {
+            MountTime = new EdiJobUsbdgMetadataMountTime();
+            CreationTime = new EdiJobUsbdgMetadataCreationTime();
+        }
+        public string ALRM { get; set; }
         public string ESER { get; set; }
         public string ABST { get; set; }
         public string RELT { get; set; }
         public string RTCW { get; set; }
         public string EDI_SOURCE { get; set; }
+        public EdiJobUsbdgMetadataMountTime MountTime { get; set; }
+        public EdiJobUsbdgMetadataCreationTime CreationTime { get; set; }
     }
 }

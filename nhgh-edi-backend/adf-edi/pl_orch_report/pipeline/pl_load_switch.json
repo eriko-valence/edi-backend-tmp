@@ -145,6 +145,18 @@
                                 }
                             ]
                         }
+                    ],
+                    "defaultActivities": [
+                        {
+                            "name": "Unknown Load",
+                            "type": "Fail",
+                            "dependsOn": [],
+                            "userProperties": [],
+                            "typeProperties": {
+                                "message": "Curated output type (PL_C_PARAM_TRANSFORM_DEVICE_TYPE) is not supported",
+                                "errorCode": "500"
+                            }
+                        }
                     ]
                 }
             }

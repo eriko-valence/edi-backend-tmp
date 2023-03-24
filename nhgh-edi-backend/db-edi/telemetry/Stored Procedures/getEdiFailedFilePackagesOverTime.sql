@@ -1,4 +1,5 @@
 ﻿
+
 CREATE PROCEDURE [telemetry].[getEdiFailedFilePackagesOverTime]
 (
 	@StartDate [datetime2](7),
@@ -25,9 +26,9 @@ BEGIN
         FROM
             [telemetry].[EdiJobStatus] t1
         WHERE
-            t1.DurationSecs IS NULL AND
             t1.BlobTimeStart >= @StartDate AND
-            t1.BlobTimeStart <= DATEADD(DAY,1, DATEDIFF(day,0, @EndDate))
+            t1.BlobTimeStart <= DATEADD(DAY,1, DATEDIFF(day,0, @EndDate)) AND 
+			t1.DurationSecs IS NULL
         GROUP BY
             DATEADD(DAY,0, DATEDIFF(day,0, t1.BlobTimeStart))
     ),
@@ -40,9 +41,9 @@ BEGIN
         FROM
             [telemetry].[EdiJobStatus] t1
         WHERE
-            t1.DurationSecs IS NOT NULL AND
             t1.BlobTimeStart >= @StartDate AND
-            t1.BlobTimeStart <= DATEADD(DAY,1, DATEDIFF(day,0, @EndDate))
+            t1.BlobTimeStart <= DATEADD(DAY,1, DATEDIFF(day,0, @EndDate)) AND
+			t1.DurationSecs IS NOT NULL
         GROUP BY
             DATEADD(DAY,0, DATEDIFF(day,0, t1.BlobTimeStart))
     )

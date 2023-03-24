@@ -30,6 +30,13 @@ namespace lib_edi.Helpers
 				string format = "yyyyMMddTHHmmssZ"; //20211018T164303Z
 				var cultureInfo = new CultureInfo("en-US");
 				DateTime? reportAbsoluteDateTime = DateTime.ParseExact(s, format, cultureInfo);
+				
+				if (reportAbsoluteDateTime.HasValue)
+				{
+					reportAbsoluteDateTime = ((DateTime)reportAbsoluteDateTime).ToUniversalTime();
+
+                }
+				
 				return reportAbsoluteDateTime;
 			}
 			catch (ArgumentNullException ane)

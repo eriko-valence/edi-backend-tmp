@@ -302,7 +302,7 @@ namespace lib_edi.Services.Azure
 			foreach (CloudBlockBlob logBlob in blobs)
 			{
 				string blobSource = $"{ cloudBlobContainer.Name}/{ logBlob.Name}";
-				log.LogInformation($"  - Blob: {blobSource}");
+				//log.LogInformation($"  - Blob: {blobSource}");
 				string logBlobText = await AzureStorageBlobService.DownloadBlobTextAsync(cloudBlobContainer, logBlob.Name);
 				dynamic logBlobJson = DeserializeJsonText(logBlob.Name, logBlobText);
 				logBlobJson.EDI_SOURCE = $"{blobSource}";
@@ -330,7 +330,7 @@ namespace lib_edi.Services.Azure
 		public static async Task<dynamic> DownloadAndDeserializeJsonBlob(CloudBlockBlob blob, CloudBlobContainer blobContainer, string blobPath, ILogger log)
 		{
 			string emsBlobPath = $"{ blobContainer.Name}/{ blob.Name}";
-			log.LogInformation($"  - Blob: {emsBlobPath}");
+			//log.LogInformation($"  - Blob: {emsBlobPath}");
 			string logBlobText = await AzureStorageBlobService.DownloadBlobTextAsync(blobContainer, blob.Name);
 			dynamic logBlobJson = DeserializeJsonText(blob.Name, logBlobText);
 			logBlobJson.EDI_SOURCE = emsBlobPath;

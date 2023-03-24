@@ -27,9 +27,12 @@
     [_RELT_SECS]   VARCHAR (20)   NULL,
     [DATEADDED]    DATETIME2 (7)  NULL,
     [LASTMODIFIED] DATETIME2 (7)  NULL,
+    [EMD_TYPE]     VARCHAR (20)   NULL,
     CONSTRAINT [PK_indigo_v2_event] PRIMARY KEY CLUSTERED ([RELT] ASC, [LSER] ASC),
     CONSTRAINT [FK_indigo_v2_event_ESER] FOREIGN KEY ([ESER]) REFERENCES [usbdg].[device] ([ESER])
 );
+
+
 
 
 
