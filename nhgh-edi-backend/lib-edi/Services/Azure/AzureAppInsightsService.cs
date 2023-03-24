@@ -2,6 +2,7 @@
 using lib_edi.Models.Dto.Azure.AppInsights;
 using lib_edi.Models.Enums.Azure.AppInsights;
 using lib_edi.Models.Enums.Emd;
+using lib_edi.Models.SendGrid;
 using lib_edi.Services.Errors;
 using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.Extensibility;
@@ -242,7 +243,83 @@ namespace lib_edi.Services.Azure
 
 			return list;
 		}
-	}
+
+        /// <summary>
+        /// Retrieves custom event errors from App Insights using the App Insights REST API
+        /// </summary>
+        /// <param name="settings">An App Insights Api query app errors settings object</param>
+        /// <param name="log">A Microsoft extensions logger object</param>
+        /// <returns>
+        /// A list of Pogo LT app errors
+        /// </returns>
+        public static List<PogoLTAppError> GetDailyAppInsightsAppErrors(AppInsightsApiQueryAppErrorsSettings settings, ILogger log)
+        {
+            AppInsightsCustomErrorsResponseDto appInsightsErrorsDto;
+            List<PogoLTAppError> appErrors;
+
+            if (settings != null)
+            {
+                string appid = settings.AppID;
+                string apikey = settings.ApiKey;
+                string queryTimespan = settings.ErrorQueryInterval;
+                string queryParam = "customEvents | extend errorName = customDimensions.['ErrorName'] | extend orchestrationID = customDimensions.['OrchestrationID'] | extend errorType = customDimensions.['ErrorType'] | extend authenticatedUserID = customDimensions.['AuthenticatedUserID'] | where isnotempty(tostring(customDimensions.['ErrorName'])) | project timestamp, name, errorName, errorType, authenticatedUserID, orchestrationID";
+                string URL = settings.ErrorQueryUrl;
+
+                HttpClient client = new HttpClient();
+                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                client.DefaultRequestHeaders.Add("x-api-key", apikey);
+                var req = string.Format(URL, appid, queryTimespan, queryParam);
+                HttpResponseMessage response = client.GetAsync(req).Result;
+                if (response.IsSuccessStatusCode)
+                {
+                    string result = response.Content.ReadAsStringAsync().Result;
+                    appInsightsErrorsDto = JsonConvert.DeserializeObject<AppInsightsCustomErrorsResponseDto>(result);
+                    appErrors = BuildPogoLTAppErrorsList(appInsightsErrorsDto);
+                    return appErrors;
+                }
+                else
+                {
+                    log.LogError($"   - [azure_app_insights_service->get_daily_errors]: received an unsuccessful status code {response.StatusCode}: {response.ReasonPhrase}");
+                    return new List<PogoLTAppError>(); // return zero results
+                }
+
+            }
+            else
+            {
+                log.LogError("   - [azure_app_insights_service->get_daily_errors]: missing api query settings");
+                return new List<PogoLTAppError>(); // return zero results
+            }
+
+
+        }
+
+        /// <summary>
+        /// Builds a list of Pogo LT app errors from the App Insights custom errors response DTO object
+        /// </summary>
+        /// <param name="errors">A App Insights custom errors response DTO object</param>
+        /// <returns>
+        /// A list of Pogo LT app errors
+        /// </returns>
+        public static List<PogoLTAppError> BuildPogoLTAppErrorsList(AppInsightsCustomErrorsResponseDto errors)
+        {
+            List<PogoLTAppError> listPogoLTAppError = new List<PogoLTAppError>();
+
+            foreach (AppInsightsCustomErrorsResponseDtoTable table in errors.tables)
+            {
+                foreach (List<object> row in table.rows)
+                {
+                    PogoLTAppError appError = new PogoLTAppError();
+                    appError.TimeStamp = row[0]?.ToString() ?? "";
+                    appError.ErrorName = row[2]?.ToString() ?? "";
+                    appError.ErrorType = row[3]?.ToString() ?? "";
+                    appError.QueryEmail = row[4]?.ToString() ?? "";
+                    appError.OrchestrationID = row[5]?.ToString() ?? "";
+                    listPogoLTAppError.Add(appError);
+                }
+            }
+            return listPogoLTAppError;
+        }
+    }
 
 
 
