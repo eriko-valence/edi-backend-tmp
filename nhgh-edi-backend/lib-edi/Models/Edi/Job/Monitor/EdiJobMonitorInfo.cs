@@ -1,4 +1,5 @@
 ﻿using lib_edi.Models.Azure.Sql.Connection;
+using lib_edi.Models.Edi.Data.Import;
 using lib_edi.Models.Enums.Edi.Data.Import;
 using Microsoft.Extensions.Logging;
 using System;
@@ -7,16 +8,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace lib_edi.Models.Edi.Data.Import
+namespace lib_edi.Models.Edi.Job.Monitor
 {
-    public class OtaImportJob
+    public class EdiJobMonitorInfo
     {
-        public OtaImportJob()
+        public EdiJobMonitorInfo()
         {
-            OtaDb = new OtaImportJobDb();
-            MfoxDb = new OtaImportJobDb();
             EdiDb = new AzureSqlDbConnectInfo();
-            ApplicationName = "OTA Data Importer";
+            ApplicationName = "EDI Job Monitor Report";
         }
         public Guid JobId { get; set; }
         public string ApplicationName { get; set; }
@@ -25,5 +24,6 @@ namespace lib_edi.Models.Edi.Data.Import
         public OtaImportJobDb MfoxDb { get; set; }
         public AzureSqlDbConnectInfo EdiDb { get; set; }
         public ILogger Logger { get; set; }
+
     }
 }

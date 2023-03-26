@@ -11,22 +11,26 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Net.Http;
 using System.Net;
+using lib_edi.Models.Azure.Sql.Query;
+using Azure;
 
 namespace lib_edi.Services.SendGrid
 {
     public class SendGridService
     {
         /// <summary>
-        /// Sends job monitor email report 
+        /// Sends EDI job failure report email via SendGrid 
         /// </summary>
         /// <returns>
         /// true if the email was successfully sent; otherwise, false.
         /// </returns>
-        public async static Task<bool> SendJobMonitorEmailReport(List<JobMonitorResult> listJMR, List<PogoLTAppError> listErrors, DailyStatusEmailReportSendGridSettings settings, ILogger log)
+        public async static Task<bool> SendEdiJobFailuresEmailReport(List<FailedEdiJob> jobs, DailyStatusEmailReportSendGridSettings settings, ILogger log)
         {
+            string logPrefix = "  - [sendgrid_service->send_edi_job_failure_report_email]: ";
+
             try
             {
-                log.LogInformation("  - [email_message_service->send_job_monitor_email_report]: retrieving environment variables");
+                log.LogInformation($"{logPrefix} start");
 
                 if (settings != null)
                 {
@@ -36,13 +40,13 @@ namespace lib_edi.Services.SendGrid
                     string emailReceipients = settings.EmailReceipients;
                     string emailSubjectLine = settings.EmailSubjectLine;
 
-                    log.LogInformation("  - [email_message_service->send_job_monitor_email_report]: initializing sendgrid client and message");
+                    log.LogInformation($"{logPrefix} initializing sendgrid client and message");
                     var client = new SendGridClient(apiKey);
                     var msg = new SendGridMessage();
-                    msg.SetFrom(new EmailAddress(fromEmailAddress, "Pogo LT"));
+                    msg.SetFrom(new EmailAddress(fromEmailAddress, "EDI"));
                     msg.SetTemplateId(templateId);
 
-                    log.LogInformation("  - [email_message_service->send_job_monitor_email_report]: building email receipient list");
+                    log.LogInformation($"{logPrefix} building email receipient list");
                     string[] arrayEmailReceipients = emailReceipients.Split(',');
                     List<EmailAddress> listEmailAddresses = new List<EmailAddress>();
                     foreach (string email in arrayEmailReceipients)
@@ -56,42 +60,46 @@ namespace lib_edi.Services.SendGrid
                     });
                     msg.Personalizations = toEmailList;
 
-                    log.LogInformation("  - [email_message_service->send_job_monitor_email_report]: add dynamic template data to email");
-                    var dynamicTemplateData = new SendGridTemplateJobMonitorData
+                    log.LogInformation($"{logPrefix} add dynamic template data to email");
+                    var dynamicTemplateData = new EdiFailedJobsResults
                     {
-                        TotalJobsRun = listJMR.Count,
-                        TotalErrors = listErrors.Count,
                         Subject = emailSubjectLine,
-                        Results = listJMR,
-                        Errors = listErrors
+                        Results = jobs,
                     };
                     string stringJsonDynamicTemplateData = JsonConvert.SerializeObject(dynamicTemplateData);
-                    //log.LogInformation(stringJsonDynamicTemplateData);
+                    log.LogInformation($"{logPrefix} template data: ");
+                    log.LogInformation($"{logPrefix} ------------------------------------ ");
+                    log.LogInformation(stringJsonDynamicTemplateData);
+                    log.LogInformation($"{logPrefix} ------------------------------------ ");
+
                     msg.SetTemplateData(dynamicTemplateData);
 
-                    log.LogInformation("  - [email_message_service->send_job_monitor_email_report]: make a request to send an email through Twilio SendGrid");
+                    log.LogInformation($"{logPrefix} submit request to send an email through Twilio SendGrid ");
                     var response = await client.SendEmailAsync(msg);
                     if (response.StatusCode == HttpStatusCode.Accepted)
                     {
-                        log.LogInformation("  - [email_message_service->send_job_monitor_email_report]: request has been accepted for further processing");
+                        log.LogInformation($"{logPrefix} submission request accepted");
                         return true;
                     }
                     else
                     {
-                        log.LogError("  - [email_message_service->send_job_monitor_email_report]: request was not accepted for further processing");
+                        log.LogInformation($"{logPrefix} submission request not accepted with status code {response.StatusCode}");
                         return false;
                     }
                 }
                 else
                 {
-                    log.LogError("  - [email_message_service->send_job_monitor_email_report]: missign required settings");
+                    log.LogInformation($"{logPrefix} missign required settings");
                     return false;
                 }
 
             }
             catch (Exception e)
             {
-                log.LogError($" - [email_message_service->send_job_monitor_email_report]: an exception was thrown: {e.Message}");
+                log.LogInformation($"{logPrefix} an exception was thrown:");
+                log.LogInformation($"{logPrefix} ------------------------------------ ");
+                log.LogInformation(e.Message);
+                log.LogInformation($"{logPrefix} ------------------------------------ ");
                 return false;
             }
 

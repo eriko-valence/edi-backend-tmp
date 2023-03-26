@@ -1,6 +1,8 @@
 ﻿using lib_edi.Models.Azure.Monitor.Query;
+using lib_edi.Models.Azure.Sql.Connection;
 using lib_edi.Models.Azure.Sql.Query;
 using lib_edi.Models.Edi.Data.Import;
+using lib_edi.Models.Edi.Job.EmailReport;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -20,7 +22,7 @@ namespace lib_edi.Services.Azure
 
         }
 
-        public static string BuildConnectionString(string appName, OtaImportJobDb db)
+        public static string BuildConnectionString(string appName, AzureSqlDbConnectInfo db)
         {
             string conStr = $"Server={db.Server};Database={db.Name};User ID ={db.UserId}@{db.Server};Password={db.Password};Trusted_Connection=False;Encrypt=True;";
 
@@ -550,7 +552,7 @@ namespace lib_edi.Services.Azure
             return jobStats;
         }
 
-        public static async Task<List<FailedEdiJob>> GetFailedEdiJobsFromLast24Hours(OtaImportJob job)
+        public static async Task<List<FailedEdiJob>> GetFailedEdiJobsFromLast24Hours(EdiJobsStatusReportInfo job)
         {
             //logger.LogInfo("Checking Azure SQL database connection string", job);
             List<FailedEdiJob> failedEdiJobs = new List<FailedEdiJob>();

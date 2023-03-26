@@ -1,20 +1,15 @@
 using System;
-using System.IO;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Extensions.Http;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 using System.Collections.Generic;
 using lib_edi.Services.Azure;
 using lib_edi.Models.SendGrid;
 using lib_edi.Services.SendGrid;
-using lib_edi.Models.Edi.Data.Import;
-using lib_edi.Models.Enums.Edi.Data.Import;
-using lib_edi.Models.Enums.Azure.Sql;
 using lib_edi.Models.Azure.Sql.Query;
+using lib_edi.Models.Enums.Edi.Functions;
+using lib_edi.Models.Edi.Job.EmailReport;
+using lib_edi.Models.Azure.KeyVault;
 
 namespace fa_maint
 {
@@ -24,22 +19,11 @@ namespace fa_maint
         public static async Task Run([TimerTrigger("%EDI_DAILY_STATUS_REPORT_TIMER_SCHEDULE%")] TimerInfo timerInfo, ILogger log)
         {
             log.LogInformation("- [monitor_job_status_time_trigger_function->run]: retrieving environment variables");
-
-            OtaImportJob job = InitializeOtaImportJob(OtaJobImportFunctionEnum.Name.EDI_EVENTS);
-
-            List<FailedEdiJob> result = await AzureSqlDatabaseService.GetFailedEdiJobsFromLast24Hours(job);
-
-            string jobStatusProgressTableName = Environment.GetEnvironmentVariable("AZURE_STORAGE_TABLE_NAME_JOB_STATUS_PROGRESS");
-            string jobStatusTableName = Environment.GetEnvironmentVariable("AZURE_STORAGE_TABLE_NAME_JOB_STATUS");
-            string storageConnectionStringAppData = Environment.GetEnvironmentVariable("AZURE_STORAGE_CONNECTION_STRING_APPDATA");
-            string tableStorageQueryHours = Environment.GetEnvironmentVariable("EDI_DAILY_STATUS_REPORT_QUERY_HOURS");
-            int queyrHours = Int32.Parse(tableStorageQueryHours);
+            EdiJobsStatusReportInfo job = InitializeJob(EdiFunctionsEnum.Name.EDI_DAILY_STATUS_EMAIL_REPORT);
+            List<FailedEdiJob> results = await AzureSqlDatabaseService.GetFailedEdiJobsFromLast24Hours(job);
             log.LogInformation("- [monitor_job_status_time_trigger_function->run]: build sendgrid dynamic templdate dto");
-            List<JobMonitorResult> results = await AzureTableStorageService.GetPogoLTJobResults(storageConnectionStringAppData, jobStatusProgressTableName, jobStatusTableName, queyrHours, false, log);
-            log.LogInformation("- [monitor_job_status_time_trigger_function->run]: pull last 24 hours of app errors from app insights");
-            List<PogoLTAppError> errors = AzureAppInsightsService.GetDailyAppInsightsAppErrors(GetAppInsightsApiQueryAppErrorsSettings(), log);
-            log.LogInformation("- [monitor_job_status_time_trigger_function->run]: send pogo lt web job status email report via sendgrid");
-            await SendGridService.SendJobMonitorEmailReport(results, errors, GetDailyStatusEmailReportSendGridSettings(), log);
+            log.LogInformation("- [monitor_job_status_time_trigger_function->run]: send edi daily job status email report via sendgrid");
+            await SendGridService.SendEdiJobFailuresEmailReport(results, GetDailyStatusEmailReportSendGridSettings(), log);
         }
 
         /// <summary>
@@ -48,6 +32,7 @@ namespace fa_maint
         /// <returns>
         /// An App Insights API query app errors settings object
         /// </returns>
+        /*
         public static AppInsightsApiQueryAppErrorsSettings GetAppInsightsApiQueryAppErrorsSettings()
         {
             AppInsightsApiQueryAppErrorsSettings settings = new AppInsightsApiQueryAppErrorsSettings();
@@ -63,6 +48,7 @@ namespace fa_maint
 
             return settings;
         }
+        */
 
         public static DailyStatusEmailReportSendGridSettings GetDailyStatusEmailReportSendGridSettings()
         {
@@ -72,26 +58,30 @@ namespace fa_maint
             settings.FromEmailAddress = Environment.GetEnvironmentVariable("SENDGRID_FROM_EMAIL_ADDRESS");
             settings.EmailReceipients = Environment.GetEnvironmentVariable("EDI_DAILY_STATUS_REPORT_RECEIPIENTS");
             settings.EmailSubjectLine = Environment.GetEnvironmentVariable("EDI_DAILY_STATUS_REPORT_SUBJECT_LINE");
-
             if (settings.ApiKey == null) { return null; }
             if (settings.TemplateID == null) { return null; }
             if (settings.FromEmailAddress == null) { return null; }
             if (settings.EmailReceipients == null) { return null; }
             if (settings.EmailSubjectLine == null) { return null; }
-
             return settings;
         }
 
-        public static OtaImportJob InitializeOtaImportJob(OtaJobImportFunctionEnum.Name funcName)
+        public static EdiJobsStatusReportInfo InitializeJob(EdiFunctionsEnum.Name funcName)
         {
-            OtaImportJob job = new()
+            EdiJobsStatusReportInfo job = new()
             {
                 FunctionName = funcName
             };
-
+            SqlDbSecretKeys sqlDbSecretKeys = new()
+            {
+                SecretNameUserId = "AzureSqlServerLoginName-Edi",
+                SecretNameUserPw = "AzureSqlServerLoginPass-Edi",
+                SecretNameDbName = "AzureSqlDatabaseName-Edi",
+                SecretNameDbServer = "AzureSqlServerName-Edi"
+            };
             job.JobId = Guid.NewGuid();
-            job.EdiDb = AzureKeyVaultService.GetDatabaseCredentials(job.ApplicationName, funcName, OtaDbCredEnum.Name.EDI_LAW_IMPORTER, job);
-
+            job.EdiDb = AzureKeyVaultService.GetDatabaseCredentials(job.ApplicationName, sqlDbSecretKeys);
+            job.EdiDb.ConnectionString = AzureSqlDatabaseService.BuildConnectionString(job.ApplicationName, job.EdiDb); ;
             return job;
         }
     }
