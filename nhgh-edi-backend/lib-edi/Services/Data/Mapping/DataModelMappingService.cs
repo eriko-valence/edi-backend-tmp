@@ -14,6 +14,7 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
+using System.Linq;
 using System.Reflection;
 using System.Text;
 
@@ -521,7 +522,12 @@ namespace lib_edi.Services.Loggers
                                         ObjectManager.SetObjectValue(sinkCsvEventRecord, prop.Name, prop.Value);
                                     }
 
-                                    sinkCsvEventRecords.Add((EmsEventRecord)sinkCsvEventRecord);
+                                    // NHGH-2866 2023.03.27 1519 ignore duplicate event records
+                                    bool exists = sinkCsvEventRecords.Any(evt => evt.RELT == ((EmsEventRecord)sinkCsvEventRecord).RELT);
+                                    if (!exists)
+                                    {
+                                        sinkCsvEventRecords.Add((EmsEventRecord)sinkCsvEventRecord);
+                                    }                            
                                 }
                             }
                             else
