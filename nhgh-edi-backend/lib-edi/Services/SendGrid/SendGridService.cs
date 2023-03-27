@@ -24,7 +24,7 @@ namespace lib_edi.Services.SendGrid
         /// <returns>
         /// true if the email was successfully sent; otherwise, false.
         /// </returns>
-        public async static Task<bool> SendEdiJobFailuresEmailReport(List<FailedEdiJob> jobs, DailyStatusEmailReportSendGridSettings settings, ILogger log)
+        public async static Task<bool> SendEdiJobFailuresEmailReport(List<FailedEdiJob> jobs, SendGridConnectInfo settings, ILogger log)
         {
             string logPrefix = "  - [sendgrid_service->send_edi_job_failure_report_email]: ";
 

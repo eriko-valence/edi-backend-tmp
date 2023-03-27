@@ -1,5 +1,6 @@
 ﻿using lib_edi.Models.Azure.AppInsights;
 using lib_edi.Models.Dto.Azure.AppInsights;
+using lib_edi.Models.Edi.Data.Import;
 using lib_edi.Models.Enums.Azure.AppInsights;
 using lib_edi.Models.Enums.Emd;
 using lib_edi.Models.SendGrid;
@@ -7,6 +8,7 @@ using lib_edi.Services.Errors;
 using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.Extensions.Logging;
+using Microsoft.IdentityModel.Abstractions;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -319,6 +321,51 @@ namespace lib_edi.Services.Azure
             }
             return listPogoLTAppError;
         }
+
+        public static void LogEvent(string eventName, Dictionary<string, string> customProps)
+        {
+            if (telemetryClient == null)
+            {
+                TelemetryConfiguration configuration = TelemetryConfiguration.CreateDefault();
+                configuration.InstrumentationKey = Environment.GetEnvironmentVariable("APPINSIGHTS_INSTRUMENTATIONKEY");
+                telemetryClient = new TelemetryClient(configuration);
+            }
+            telemetryClient.TrackEvent(eventName, customProps);
+        }
+
+        public static void LogEvent(EdiImportJobStats jobStats)
+        {
+            Dictionary<string, string> customProps = new()
+            {
+                { "job_name", jobStats.EdiJobName.ToString() },
+                { "job_status", jobStats.EdiJobStatus.ToString() },
+                { "job_exception_message", jobStats.ExceptionMessage },
+                { "queried", jobStats.Queried.ToString() },
+                { "loaded", jobStats.Loaded.ToString() },
+                { "excluded", jobStats.Skipped.ToString() },
+                { "failed", jobStats.Failed.ToString() }
+            };
+
+            if (telemetryClient == null)
+            {
+                TelemetryConfiguration configuration = TelemetryConfiguration.CreateDefault();
+                configuration.InstrumentationKey = Environment.GetEnvironmentVariable("APPINSIGHTS_INSTRUMENTATIONKEY");
+                telemetryClient = new TelemetryClient(configuration);
+            }
+            telemetryClient.TrackEvent(jobStats.EdiJobEventType.ToString(), customProps);
+
+        }
+
+        public static void LogException(Exception e)
+        {
+            if (telemetryClient == null)
+            {
+                TelemetryConfiguration configuration = TelemetryConfiguration.CreateDefault();
+                configuration.InstrumentationKey = Environment.GetEnvironmentVariable("APPINSIGHTS_INSTRUMENTATIONKEY");
+                telemetryClient = new TelemetryClient(configuration);
+            }
+            telemetryClient.TrackException(e);
+        }
     }
 
 
@@ -335,4 +382,5 @@ namespace lib_edi.Services.Azure
 		public string ErrorQueryUrl { get; set; }
 		#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 	}
+
 }

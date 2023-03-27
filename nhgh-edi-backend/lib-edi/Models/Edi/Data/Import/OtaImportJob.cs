@@ -20,7 +20,7 @@ namespace lib_edi.Models.Edi.Data.Import
         }
         public Guid JobId { get; set; }
         public string ApplicationName { get; set; }
-        public OtaJobImportFunctionEnum.Name FunctionName { get; set; }
+        public EdiJobImportFunctionEnum.Name FunctionName { get; set; }
         public OtaImportJobDb OtaDb { get; set; }
         public OtaImportJobDb MfoxDb { get; set; }
         public AzureSqlDbConnectInfo EdiDb { get; set; }

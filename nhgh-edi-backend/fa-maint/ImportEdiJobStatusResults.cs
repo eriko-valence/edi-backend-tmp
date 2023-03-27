@@ -15,22 +15,22 @@ using Microsoft.Extensions.Logging;
 
 namespace fa_maint
 {
-    public class ImportEdiJobStatusEvents
+    public class ImportEdiJobStatusResults
     {
         [FunctionName("ImportEdiJobStatusEvents")]
         public static async Task Run([TimerTrigger("%EDI_DAILY_STATUS_REPORT_TIMER_SCHEDULE%")] TimerInfo schedule, ILogger log)
         {
-            string logPrefix = "- [import_edi_job_status_events->run]: ";
-            log.LogInformation($"C# Timer trigger function executed at: {DateTime.Now}");
+            string logPrefix = "- [edi_job_status_importer->run]: ";
+            log.LogInformation($"{logPrefix} Triggered at: {DateTime.Now}");
 
             log.LogInformation($"{logPrefix} retrieve azure sql database connection information from azure key vault");
             
 
             // track import job results using these objects
-            OtaImportJobStats r1 = new();
-            OtaImportJobStats r2 = new();
-            OtaImportJobStats r3 = new();
-            OtaImportJobStats r4 = new();
+            EdiImportJobStats r1 = new();
+            EdiImportJobStats r2 = new();
+            EdiImportJobStats r3 = new();
+            EdiImportJobStats r4 = new();
 
             //OtaLoggerService logger = new(log);
             if (schedule is null)
@@ -38,7 +38,6 @@ namespace fa_maint
                 throw new ArgumentNullException(nameof(schedule));
             }
 
-            log.LogInformation($"[EdiLawImporter:RunAsync] Triggered at: {DateTime.Now}");
             try
             {
                 //OtaImportJob job = OtaImporterService.InitializeOtaImportJob(OtaJobImportFunctionEnum.Name.EDI_EVENTS, logger);
@@ -52,7 +51,7 @@ namespace fa_maint
                 }
                 else
                 {
-                    log.LogInformation($"[EdiLawImporter:RunAsync] No EDI job status records found in the Log Analytics workspace");
+                    log.LogInformation($"{logPrefix} No EDI job status records found in the Log Analytics workspace");
                 }
 
                 // Query Log Analytics workspace for EDI job pipeline events
@@ -63,7 +62,7 @@ namespace fa_maint
                 }
                 else
                 {
-                    log.LogInformation($"[EdiLawImporter:RunAsync] No EDI pipeline records found in the Log Analytics workspace");
+                    log.LogInformation($"{logPrefix} No EDI pipeline records found in the Log Analytics workspace");
                 }
 
                 // Query Log Analytics workspace for EDI ADF pipeline activity events
@@ -74,7 +73,7 @@ namespace fa_maint
                 }
                 else
                 {
-                    log.LogInformation($"[EdiLawImporter:RunAsync] No EDI ADF pipeline activity records found in the Log Analytics workspace");
+                    log.LogInformation($"{logPrefix} No EDI ADF pipeline activity records found in the Log Analytics workspace");
                 }
 
                 // Query Log Analytics workspace for EDI Azure Function trace events
@@ -85,35 +84,35 @@ namespace fa_maint
                 }
                 else
                 {
-                    log.LogInformation($"[EdiLawImporter:RunAsync] No EDI ADF pipeline activity records found in the Log Analytics workspace");
+                    log.LogInformation($"{logPrefix} No EDI ADF pipeline activity records found in the Log Analytics workspace");
                 }
 
-                OtaImportJobStats jobStatsSummarySucceeded = new()
+                EdiImportJobStats jobStatsSummarySucceeded = new()
                 {
-                    OtaJobEventType = OtaJobImportEventEnum.Name.OTA_IMPORT_JOB_RESULT,
-                    OtaJobName = OtaJobImportFunctionEnum.Name.EDI_EVENTS,
-                    OtaJobStatus = OtaJobImportStatusNameEnum.Name.SUCCESS,
+                    EdiJobEventType = EdiJobImportEventEnum.Name.EDI_IMPORT_JOB_RESULT,
+                    EdiJobName = EdiJobImportFunctionEnum.Name.EDI_MAINT,
+                    EdiJobStatus = EdiJobImportStatusNameEnum.Name.SUCCESS,
                     Queried = r1.Queried + r2.Queried + r3.Queried + r4.Queried,
                     Loaded = r1.Loaded + r2.Loaded + r3.Loaded + r4.Loaded,
                     Skipped = r1.Skipped + r2.Skipped + r3.Skipped + r4.Skipped,
                     Failed = r1.Failed + r2.Failed + r3.Failed + r4.Failed
                 };
-                //AzureAppInsightsService.LogEvent(jobStatsSummarySucceeded);
+                AzureAppInsightsService.LogEvent(jobStatsSummarySucceeded);
             }
             catch (Exception ex)
             {
-                OtaImportJobStats jobStatsSummaryFailed = new()
+                EdiImportJobStats jobStatsSummaryFailed = new()
                 {
-                    OtaJobEventType = OtaJobImportEventEnum.Name.OTA_IMPORT_JOB_RESULT,
-                    OtaJobName = OtaJobImportFunctionEnum.Name.EDI_EVENTS,
-                    OtaJobStatus = OtaJobImportStatusNameEnum.Name.FAILED,
+                    EdiJobEventType = EdiJobImportEventEnum.Name.EDI_IMPORT_JOB_RESULT,
+                    EdiJobName = EdiJobImportFunctionEnum.Name.EDI_MAINT,
+                    EdiJobStatus = EdiJobImportStatusNameEnum.Name.FAILED,
                     ExceptionMessage = ex.Message,
                     Queried = r1.Queried + r2.Queried + r3.Queried + r4.Queried,
                     Loaded = r1.Loaded + r2.Loaded + r3.Loaded + r4.Loaded,
                     Skipped = r1.Skipped + r2.Skipped + r3.Skipped + r4.Skipped,
                     Failed = r1.Failed + r2.Failed + r3.Failed + r4.Failed
                 };
-                //AzureAppInsightsService.LogEvent(jobStatsSummaryFailed);
+                AzureAppInsightsService.LogEvent(jobStatsSummaryFailed);
             }
 
         }

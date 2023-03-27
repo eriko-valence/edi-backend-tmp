@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace lib_edi.Models.SendGrid
 {
-    public class DailyStatusEmailReportSendGridSettings
+    public class SendGridConnectInfo
     {
         public string ApiKey { get; set; }
         public string TemplateID { get; set; }

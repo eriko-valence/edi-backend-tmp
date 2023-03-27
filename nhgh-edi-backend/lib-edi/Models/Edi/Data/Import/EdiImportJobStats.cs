@@ -8,14 +8,14 @@ using System.Threading.Tasks;
 
 namespace lib_edi.Models.Edi.Data.Import
 {
-    public class OtaImportJobStats
+    public class EdiImportJobStats
     {
         [JsonPropertyName("job_name")]
-        public OtaJobImportFunctionEnum.Name OtaJobName { get; set; }
+        public EdiJobImportFunctionEnum.Name EdiJobName { get; set; }
         [JsonPropertyName("job_result")]
-        public OtaJobImportStatusNameEnum.Name OtaJobStatus { get; set; }
+        public EdiJobImportStatusNameEnum.Name EdiJobStatus { get; set; }
         [JsonPropertyName("job_event_type")]
-        public OtaJobImportEventEnum.Name OtaJobEventType { get; set; }
+        public EdiJobImportEventEnum.Name EdiJobEventType { get; set; }
         [JsonPropertyName("job_exception")]
         public string ExceptionMessage { get; set; }
         [JsonPropertyName("events_queried")]

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace lib_edi.Models.Enums.Edi.Data.Import
 {
-    public class OtaJobImportFunctionEnum
+    public class EdiJobImportFunctionEnum
     {
         public enum Name
         {
@@ -14,7 +14,8 @@ namespace lib_edi.Models.Enums.Edi.Data.Import
             OTA_EVENTS,
             CFD50_MFOX_EXPORT,
             EDI_EVENTS,
-            IMPORT_EVENTS
+            IMPORT_EVENTS,
+            EDI_MAINT
         }
     }
 }

@@ -23,14 +23,14 @@ namespace lib_edi.Services.Azure
     public class AzureMonitorService
     {
         //private static readonly string _logAnalyticsWorkspaceId = Environment.GetEnvironmentVariable("AZURE_MONITOR_LOG_ANALYTICS_WORKSPACE_ID_OTA");
-        private static readonly string _ediLogAnalyticsWorkspaceId = Environment.GetEnvironmentVariable("AZURE_MONITOR_LOG_ANALYTICS_WORKSPACE_ID_EDI");
+        //private static readonly string _ediLogAnalyticsWorkspaceId = Environment.GetEnvironmentVariable("AZURE_MONITOR_LOG_ANALYTICS_WORKSPACE_ID_EDI");
 
         //private static readonly string _otaQueryNumberOfHours = Environment.GetEnvironmentVariable("AZURE_MONITOR_QUERY_HOURS_OTA_APP_EVENTS");
         //private static readonly string _otaExceptionsQueryNumberOfHours = Environment.GetEnvironmentVariable("AZURE_MONITOR_QUERY_HOURS_OTA_APP_EXCEPTIONS");
-        private static readonly string _ediQueryNumberOfHours = Environment.GetEnvironmentVariable("AZURE_MONITOR_QUERY_HOURS_EDI_APP_EVENTS");
+        //private static readonly string _ediQueryNumberOfHours = Environment.GetEnvironmentVariable("AZURE_MONITOR_QUERY_HOURS_EDI_APP_EVENTS");
         //private static readonly string _dataImportsQueryNumberOfHours = Environment.GetEnvironmentVariable("AZURE_MONITOR_QUERY_HOURS_DATA_IMPORTS");
 
-        private static readonly string _ediAzureStorageUriCcdxProvider = Environment.GetEnvironmentVariable("AZURE_STORAGE_URI_EDI_CCDX_PROVIDER");
+        //private static readonly string _ediAzureStorageUriCcdxProvider = Environment.GetEnvironmentVariable("AZURE_STORAGE_URI_EDI_CCDX_PROVIDER");
 
         /// <summary>
         /// Query Azure Monitor Logs service for EDI job status records
@@ -49,7 +49,7 @@ namespace lib_edi.Services.Azure
             {
                 string query = @"StorageBlobLogs
                 | where OperationName == 'PutBlob'
-                | where Uri startswith '" + _ediAzureStorageUriCcdxProvider + @"'
+                | where Uri startswith '" + job.EdiLaw.AzureBlobUriCcdxProvider + @"'
                 | where FileName_CF != ''
                 | project BlobTimeStart = TimeGenerated, fileName = FileName_CF
                 | join kind = leftouter(
@@ -79,7 +79,7 @@ namespace lib_edi.Services.Azure
                 | extend Duration = SQLSuccessTime - BlobTimeStart
                 | project fileName, BlobTimeStart, ProviderSuccessTime, ConsumerSuccessTime, TransformSuccessTime, SQLSuccessTime, Duration";
 
-                TimeSpan queryTimeRange = TimeSpan.FromHours(Convert.ToDouble(_ediQueryNumberOfHours));
+                TimeSpan queryTimeRange = TimeSpan.FromHours(Convert.ToDouble(job.EdiLaw.QueryHours));
                 //logger.LogInfo("Initialize a new instance of Azure.Monitor.Query.LogsQueryClient", job);
                 //logger.LogInfo(" Endpoint: https://api.loganalytics.io", job);
                 //logger.LogInfo(" Credential: DefaultAzureCredential", job);
@@ -89,7 +89,7 @@ namespace lib_edi.Services.Azure
                 //logger.LogInfo(" TimeSpan (TotalHours): " + queryTimeRange.TotalHours, job);
                 //logger.LogInfo(" - Query: AppEvents", job);
                 Response<LogsQueryResult> response = await client.QueryWorkspaceAsync(
-                    _ediLogAnalyticsWorkspaceId,
+                    job.EdiLaw.WorkspaceId,
                     query,
                     new QueryTimeRange(queryTimeRange));
                 //logger.LogInfo("Received Query Response from Azure Monitor Logs service (EDI Job Status)", job);
@@ -136,7 +136,7 @@ namespace lib_edi.Services.Azure
                   TimeGenerated, fileName, pipelineEvent, pipelineStage, pipelineFailureReason, 
                   pipelineFailureType, dataLoggerType, exceptionMessage";
 
-                TimeSpan queryTimeRange = TimeSpan.FromHours(Convert.ToDouble(_ediQueryNumberOfHours));
+                TimeSpan queryTimeRange = TimeSpan.FromHours(Convert.ToDouble(job.EdiLaw.QueryHours));
                 //logger.LogInfo("Initialize a new instance of Azure.Monitor.Query.LogsQueryClient", job);
                 //logger.LogInfo(" Endpoint: https://api.loganalytics.io", job);
                 //logger.LogInfo(" Credential: DefaultAzureCredential", job);
@@ -146,7 +146,7 @@ namespace lib_edi.Services.Azure
                 //logger.LogInfo(" TimeSpan (TotalHours): " + queryTimeRange.TotalHours, job);
                 //logger.LogInfo(" - Query: AppEvents", job);
                 Response<LogsQueryResult> response = await client.QueryWorkspaceAsync(
-                    _ediLogAnalyticsWorkspaceId,
+                    job.EdiLaw.WorkspaceId,
                     query,
                     new QueryTimeRange(queryTimeRange));
                 //logger.LogInfo("Received Query Response from Azure Monitor Logs service", job);
@@ -186,7 +186,7 @@ namespace lib_edi.Services.Azure
 					| where ActivityType in~ ('ExecutePipeline')
 					| project Start, PackageName, Status, ActivityName, ActivityType, PipelineName, ErrorCode, ErrorMessage";
 
-                TimeSpan queryTimeRange = TimeSpan.FromHours(Convert.ToDouble(_ediQueryNumberOfHours));
+                TimeSpan queryTimeRange = TimeSpan.FromHours(Convert.ToDouble(job.EdiLaw.QueryHours));
                 //logger.LogInfo("Initialize a new instance of Azure.Monitor.Query.LogsQueryClient", job);
                 //logger.LogInfo(" Endpoint: https://api.loganalytics.io", job);
                 //logger.LogInfo(" Credential: DefaultAzureCredential", job);
@@ -196,7 +196,7 @@ namespace lib_edi.Services.Azure
                 //logger.LogInfo(" TimeSpan (TotalHours): " + queryTimeRange.TotalHours, job);
                 //logger.LogInfo(" - Query: AppEvents", job);
                 Response<LogsQueryResult> response = await client.QueryWorkspaceAsync(
-                    _ediLogAnalyticsWorkspaceId,
+                    job.EdiLaw.WorkspaceId,
                     query,
                     new QueryTimeRange(queryTimeRange));
                 //logger.LogInfo("Received Query Response from Azure Monitor Logs service", job);
@@ -234,7 +234,7 @@ namespace lib_edi.Services.Azure
             {
                 string query = @"AppTraces | project TimeGenerated, Message, OperationName, SeverityLevel";
 
-                TimeSpan queryTimeRange = TimeSpan.FromHours(Convert.ToDouble(_ediQueryNumberOfHours));
+                TimeSpan queryTimeRange = TimeSpan.FromHours(Convert.ToDouble(job.EdiLaw.QueryHours));
                 //logger.LogInfo("Initialize a new instance of Azure.Monitor.Query.LogsQueryClient", job);
                 //logger.LogInfo(" Endpoint: https://api.loganalytics.io", job);
                 //logger.LogInfo(" Credential: DefaultAzureCredential", job);
@@ -244,7 +244,7 @@ namespace lib_edi.Services.Azure
                 //logger.LogInfo(" TimeSpan (TotalHours): " + queryTimeRange.TotalHours, job);
                 //logger.LogInfo(" - Query: AppEvents", job);
                 Response<LogsQueryResult> response = await client.QueryWorkspaceAsync(
-                    _ediLogAnalyticsWorkspaceId,
+                    job.EdiLaw.WorkspaceId,
                     query,
                     new QueryTimeRange(queryTimeRange));
                 //logger.LogInfo("Received Query Response from Azure Monitor Logs service", job);
@@ -257,6 +257,63 @@ namespace lib_edi.Services.Azure
             catch (Exception e)
             {
                 //logger.LogError("Exception thrown while querying the workspace from azure monitor (EDI Azure function traces)", e, job);
+                //Dictionary<string, string> customProps = AzureAppInsightsService.BuildOtaExceptionPropertiesObject("AzureMonitorService", "QueryWorkspace", e);
+                //AzureAppInsightsService.LogEvent(OtaJobImportEventEnum.Name.OTA_IMPORT_EXCEPTION.ToString(), customProps);
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Query Azure Monitor Logs service for data importer job result events
+        /// </summary>
+        /// <param name="job">Object that holds import job related data (e.g., job id)</param>
+        /// <param name="logger">Import job logger object</param>
+        /// <returns>
+        /// A list of data importer job result events
+        /// </returns>
+        /// <remarks>
+        /// NHGH-2506 (2022.08.13 - 0750) Added method
+        /// </remarks>
+        public static async Task<List<DataImporterAppEvent>> QueryWorkspaceForDataImporterJobResults(EdiJobInfo job)
+        {
+            try
+            {
+                string query = @"AppEvents 
+                    | where Name in~ (""OTA_IMPORT_JOB_RESULT"") 
+                    | extend
+                        eventsLoaded = Properties.loaded, 
+                        eventsQueried = Properties.queried, 
+                        eventsFailed = Properties.failed, 
+                        eventsExcluded = Properties.excluded, 
+                        jobStatus = Properties.job_status, 
+                        jobName = Properties.job_name,
+                        jobException = Properties.job_exception_message
+                    | project TimeGenerated, eventsLoaded, eventsQueried, eventsFailed, 
+                      eventsExcluded, jobName, jobStatus, jobException";
+
+                TimeSpan queryTimeRange = TimeSpan.FromHours(Convert.ToDouble(job.EdiLaw.QueryHours));
+                //logger.LogInfo("Initialize a new instance of Azure.Monitor.Query.LogsQueryClient", job);
+                //logger.LogInfo(" Endpoint: https://api.loganalytics.io", job);
+                //logger.LogInfo(" Credential: DefaultAzureCredential", job);
+                var client = new LogsQueryClient(new DefaultAzureCredential());
+                //logger.LogInfo("Query Azure Monitor Logs service (OTA Importer Telemetry Importer)", job);
+                //logger.LogInfo(" Workspace ID: " + _logAnalyticsWorkspaceId, job);
+                //logger.LogInfo(" TimeSpan (TotalHours): " + queryTimeRange.TotalHours, job);
+                //logger.LogInfo(" - Query: AppEvents", job);
+                Response<LogsQueryResult> response = await client.QueryWorkspaceAsync(
+                    job.EdiLaw.WorkspaceId,
+                    query,
+                    new QueryTimeRange(queryTimeRange));
+                //logger.LogInfo("Received Query Response from Azure Monitor Logs service (OTA Importer Telemetry Importer)", job);
+                //logger.LogInfo(" Table Rows: " + response.Value.Table.Rows.Count, job);
+                //logger.LogInfo("Build List of data importer job telemetry entries from Azure Monitor Query Result", job);
+                List<DataImporterAppEvent> list = BuildOtaTelemetryEventsList(response.Value.Table);
+                return list;
+
+            }
+            catch (Exception)
+            {
+                //logger.LogError("Exception thrown while querying the workspace from azure monitor (EDI job status)", e, job);
                 //Dictionary<string, string> customProps = AzureAppInsightsService.BuildOtaExceptionPropertiesObject("AzureMonitorService", "QueryWorkspace", e);
                 //AzureAppInsightsService.LogEvent(OtaJobImportEventEnum.Name.OTA_IMPORT_EXCEPTION.ToString(), customProps);
                 throw;
@@ -316,7 +373,7 @@ namespace lib_edi.Services.Azure
             {
                 foreach (var row in table.Rows)
                 {
-                    DataImporterAppEvent importJobResults = new DataImporterAppEvent();
+                    DataImporterAppEvent importJobResults = new();
                     importJobResults.EventTime = row[0] != null ? ((DateTimeOffset)row[0]).DateTime : null;
                     importJobResults.EventsLoaded = ConvertStringToInteger(row[1]?.ToString());
                     importJobResults.EventsQueried = ConvertStringToInteger(row[2]?.ToString());

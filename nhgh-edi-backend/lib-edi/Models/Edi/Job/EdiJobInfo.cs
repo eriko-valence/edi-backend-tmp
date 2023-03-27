@@ -1,6 +1,7 @@
 ﻿using lib_edi.Models.Azure.LogAnalytics;
 using lib_edi.Models.Azure.Sql.Connection;
 using lib_edi.Models.Enums.Edi.Functions;
+using lib_edi.Models.SendGrid;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -23,6 +24,7 @@ namespace lib_edi.Models.Edi.Job
         public EdiFunctionsEnum.Name FunctionName { get; set; }
         public AzureSqlDbConnectInfo EdiDb { get; set; }
         public AzureLogAnalyticsInfo EdiLaw { get; set; }
+        public SendGridConnectInfo EdiSendGrid { get; set; }
         public ILogger Logger { get; set; }
     }
 }

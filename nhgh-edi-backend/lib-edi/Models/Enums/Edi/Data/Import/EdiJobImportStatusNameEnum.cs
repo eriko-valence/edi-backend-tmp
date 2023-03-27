@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace lib_edi.Models.Enums.Edi.Data.Import
 {
-    public class OtaJobImportStatusNameEnum
+    public class EdiJobImportStatusNameEnum
     {
         public enum Name
         {

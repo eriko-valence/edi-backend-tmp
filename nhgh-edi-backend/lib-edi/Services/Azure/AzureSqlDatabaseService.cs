@@ -48,9 +48,9 @@ namespace lib_edi.Services.Azure
         /// <remarks>
         /// NHGH-2490 (2022.08.15 - 1825) Added method
         /// </remarks>
-        public static async Task<OtaImportJobStats> InsertEdiJobStatusEvents(EdiJobInfo job, List<EdiJobStatusResult> list)
+        public static async Task<EdiImportJobStats> InsertEdiJobStatusEvents(EdiJobInfo job, List<EdiJobStatusResult> list)
         {
-            OtaImportJobStats jobStats = new();
+            EdiImportJobStats jobStats = new();
 
             //logger.LogInfo("insert edi job status events into database", job);
             //logger.LogInfo(" - records to load: " + list.Count, job);
@@ -146,9 +146,9 @@ namespace lib_edi.Services.Azure
         /// <remarks>
         /// NHGH-2490 (2022.08.15 - 1825) Added method
         /// </remarks>
-        public static async Task<OtaImportJobStats> InsertEdiPipelineEvents(EdiJobInfo job, List<EdiPipelineEventResult> list)
+        public static async Task<EdiImportJobStats> InsertEdiPipelineEvents(EdiJobInfo job, List<EdiPipelineEventResult> list)
         {
-            OtaImportJobStats jobStats = new();
+            EdiImportJobStats jobStats = new();
             //logger.LogInfo("insert edi job pipeline events into database", job);
             //logger.LogInfo(" - records to load: " + list.Count, job);
             jobStats.Queried = list.Count;
@@ -250,9 +250,9 @@ namespace lib_edi.Services.Azure
         /// <remarks>
         /// NHGH-2490 (2022.08.15 - 1825) Added method
         /// </remarks>
-        public static async Task<OtaImportJobStats> InsertEdiAdfActivityEvents(EdiJobInfo job, List<EdiAdfActivityResult> list)
+        public static async Task<EdiImportJobStats> InsertEdiAdfActivityEvents(EdiJobInfo job, List<EdiAdfActivityResult> list)
         {
-            OtaImportJobStats jobStats = new();
+            EdiImportJobStats jobStats = new();
             //logger.LogInfo("load edi adf pipeline activity events into database ", job);
             //logger.LogInfo(" - records to load: " + list.Count, job);
             jobStats.Queried = list.Count;
@@ -353,10 +353,10 @@ namespace lib_edi.Services.Azure
         /// <remarks>
         /// NHGH-2511 (2022.09.01 - 1340) Added method
         /// </remarks>
-        public static async Task<OtaImportJobStats> InsertEdiAzureFunctionTraceRecords(EdiJobInfo job, List<AzureFunctionTraceResult> list)
+        public static async Task<EdiImportJobStats> InsertEdiAzureFunctionTraceRecords(EdiJobInfo job, List<AzureFunctionTraceResult> list)
         {
             //Dictionary<string, string> jobStats = new();
-            OtaImportJobStats jobStats = new();
+            EdiImportJobStats jobStats = new();
             //logger.LogInfo("insert azure function trace events into sql db", job);
             //logger.LogInfo(" - records to load: " + list.Count, job);
             //jobStats.Add("total_edi_events_queried", list.Count.ToString());
@@ -368,81 +368,85 @@ namespace lib_edi.Services.Azure
 
             if (list != null)
             {
-                using (SqlConnection conn = new(job.EdiDb.ConnectionString))
+                try
                 {
-                    //logger.LogInfo("open database connection", job);
-                    conn.Open();
-
-                    //logger.LogInfo("create sql command", job);
-                    using (SqlCommand cmd = conn.CreateCommand())
+                    using (SqlConnection conn = new(job.EdiDb.ConnectionString))
                     {
-                        cmd.CommandType = CommandType.StoredProcedure;
-                        cmd.CommandText = "[telemetry].[uspCreateEdiFunctionTrace]";
-                        cmd.Parameters.Add(new SqlParameter("@EventTime", SqlDbType.DateTimeOffset));
-                        cmd.Parameters.Add(new SqlParameter("@FilePackageName", SqlDbType.VarChar));
-                        cmd.Parameters.Add(new SqlParameter("@OperationName", SqlDbType.VarChar));
-                        cmd.Parameters.Add(new SqlParameter("@SeverityLevel", SqlDbType.TinyInt));
-                        cmd.Parameters.Add(new SqlParameter("@LogMessage", SqlDbType.VarChar));
-                        cmd.Parameters.Add(new SqlParameter("@LogMessageMd5", SqlDbType.VarChar));
-                        cmd.Parameters.Add("@Result", SqlDbType.Int).Direction = ParameterDirection.Output;
+                        //logger.LogInfo("open database connection", job);
+                        conn.Open();
 
-                        //logger.LogInfo("execute sql command", job);
-                        foreach (var item in list)
+                        //logger.LogInfo("create sql command", job);
+                        using (SqlCommand cmd = conn.CreateCommand())
                         {
-                            AzureFunctionTraceResult jobResult = (AzureFunctionTraceResult)item;
-                            try
+                            cmd.CommandType = CommandType.StoredProcedure;
+                            cmd.CommandText = "[telemetry].[uspCreateEdiFunctionTrace]";
+                            cmd.Parameters.Add(new SqlParameter("@EventTime", SqlDbType.DateTimeOffset));
+                            cmd.Parameters.Add(new SqlParameter("@FilePackageName", SqlDbType.VarChar));
+                            cmd.Parameters.Add(new SqlParameter("@OperationName", SqlDbType.VarChar));
+                            cmd.Parameters.Add(new SqlParameter("@SeverityLevel", SqlDbType.TinyInt));
+                            cmd.Parameters.Add(new SqlParameter("@LogMessage", SqlDbType.VarChar));
+                            cmd.Parameters.Add(new SqlParameter("@LogMessageMd5", SqlDbType.VarChar));
+                            cmd.Parameters.Add("@Result", SqlDbType.Int).Direction = ParameterDirection.Output;
+
+                            //logger.LogInfo("execute sql command", job);
+                            foreach (var item in list)
                             {
-                                if (jobResult.FilePackageName != null)
+                                AzureFunctionTraceResult jobResult = (AzureFunctionTraceResult)item;
+                                try
                                 {
-                                    cmd.Parameters["@EventTime"].Value = dbnullable(jobResult.EventTime);
-                                    cmd.Parameters["@FilePackageName"].Value = dbnullable(jobResult.FilePackageName);
-                                    cmd.Parameters["@OperationName"].Value = dbnullable(jobResult.OperationName);
-                                    cmd.Parameters["@SeverityLevel"].Value = dbnullable(jobResult.SeverityLevel);
-                                    cmd.Parameters["@LogMessage"].Value = dbnullable(jobResult.LogMessage);
-                                    cmd.Parameters["@LogMessageMd5"].Value = jobResult.LogMessageMd5;
-                                    var rows = await cmd.ExecuteNonQueryAsync();
-                                    String resultString = cmd.Parameters["@Result"].Value.ToString();
-                                    var resultObject = cmd.Parameters["@Result"].Value;
-                                    int result = Convert.ToInt32(cmd.Parameters["@Result"].Value);
-                                    if (result == 1)
+                                    if (jobResult.FilePackageName != null)
                                     {
-                                        totalAdded++;
-                                    }
-                                    else if (result == 2)
-                                    {
-                                        totalExcluded++;
-                                    }
-                                    else if (result > 2)
-                                    {
-                                        totalErrors++;
+                                        cmd.Parameters["@EventTime"].Value = dbnullable(jobResult.EventTime);
+                                        cmd.Parameters["@FilePackageName"].Value = dbnullable(jobResult.FilePackageName);
+                                        cmd.Parameters["@OperationName"].Value = dbnullable(jobResult.OperationName);
+                                        cmd.Parameters["@SeverityLevel"].Value = dbnullable(jobResult.SeverityLevel);
+                                        cmd.Parameters["@LogMessage"].Value = dbnullable(jobResult.LogMessage);
+                                        cmd.Parameters["@LogMessageMd5"].Value = jobResult.LogMessageMd5;
+                                        var rows = await cmd.ExecuteNonQueryAsync();
+                                        String resultString = cmd.Parameters["@Result"].Value.ToString();
+                                        var resultObject = cmd.Parameters["@Result"].Value;
+                                        int result = Convert.ToInt32(cmd.Parameters["@Result"].Value);
+                                        if (result == 1)
+                                        {
+                                            totalAdded++;
+                                        }
+                                        else if (result == 2)
+                                        {
+                                            totalExcluded++;
+                                        }
+                                        else if (result > 2)
+                                        {
+                                            totalErrors++;
+                                        }
                                     }
                                 }
-                            }
-                            catch (Exception ex)
-                            {
-                                totalErrors++;
-                                //logger.LogError("exception thrown while processing sql command", ex, job);
-                                //Dictionary<string, string> customProps = AzureAppInsightsService.BuildOtaExceptionPropertiesObject("AzureSqlDatabaseService", "DataMapping", ex);
-                                //AzureAppInsightsService.LogEvent(OtaJobImportEventEnum.Name.OTA_IMPORT_EXCEPTION.ToString(), customProps);
+                                catch (Exception ex)
+                                {
+                                    totalErrors++;
+                                    //logger.LogError("exception thrown while processing sql command", ex, job);
+                                    //Dictionary<string, string> customProps = AzureAppInsightsService.BuildOtaExceptionPropertiesObject("AzureSqlDatabaseService", "DataMapping", ex);
+                                    //AzureAppInsightsService.LogEvent(OtaJobImportEventEnum.Name.OTA_IMPORT_EXCEPTION.ToString(), customProps);
+                                }
                             }
                         }
-                    }
 
-                    //logger.LogInfo("close database connection", job);
-                    conn.Close();
-                } // end connection
-                //logger.LogInfo("results (edi adf azure function)", job);
-                //logger.LogInfo("jobs ", job);
-                //logger.LogInfo(" added                    : " + totalAdded, job);
-                //logger.LogInfo(" skipped (duplicates)     : " + totalExcluded, job);
-                //logger.LogInfo(" errors                   : " + totalErrors, job);
+                        //logger.LogInfo("close database connection", job);
+                        conn.Close();
+                    } // end connection
+                      //logger.LogInfo("results (edi adf azure function)", job);
+                      //logger.LogInfo("jobs ", job);
+                      //logger.LogInfo(" added                    : " + totalAdded, job);
+                      //logger.LogInfo(" skipped (duplicates)     : " + totalExcluded, job);
+                      //logger.LogInfo(" errors                   : " + totalErrors, job);
 
-                jobStats.Loaded = totalAdded;
-                jobStats.Skipped = totalExcluded;
-                jobStats.Failed = totalErrors;
-
+                    jobStats.Loaded = totalAdded;
+                    jobStats.Skipped = totalExcluded;
+                    jobStats.Failed = totalErrors;
+                } catch (Exception)
+                {
+                    throw;
+                }
             }
-
             return jobStats;
         }
 
@@ -460,10 +464,10 @@ namespace lib_edi.Services.Azure
         /// <remarks>
         /// NHGH-2506 (2022.08.13 - 0750) Added method
         /// </remarks>
-        public static async Task<OtaImportJobStats> InsertDataImporterJobResults(OtaImportJob job, List<DataImporterAppEvent> list)
+        public static async Task<EdiImportJobStats> InsertDataImporterJobResults(EdiJobInfo job, List<DataImporterAppEvent> list)
         {
             //Dictionary<string, string> jobStats = new();
-            OtaImportJobStats jobStats = new();
+            EdiImportJobStats jobStats = new();
             //logger.LogInfo("insert data importer job results into sql db", job);
             //logger.LogInfo(" - records to load: " + list.Count, job);
             jobStats.Queried = list.Count;
@@ -474,7 +478,7 @@ namespace lib_edi.Services.Azure
 
             if (list != null)
             {
-                using (SqlConnection conn = new(job.OtaDb.ConnectionString))
+                using (SqlConnection conn = new(job.EdiDb.ConnectionString))
                 {
                     //logger.LogInfo("open database connection", job);
                     conn.Open();
@@ -483,7 +487,7 @@ namespace lib_edi.Services.Azure
                     using (SqlCommand cmd = conn.CreateCommand())
                     {
                         cmd.CommandType = CommandType.StoredProcedure;
-                        cmd.CommandText = "[telemetry].[uspCreateOtaImporterTelemetry]";
+                        cmd.CommandText = "[telemetry].[uspCreateEdiImporterResult]";
                         cmd.Parameters.Add(new SqlParameter("@EventTime", SqlDbType.DateTimeOffset));
                         cmd.Parameters.Add(new SqlParameter("@EventsLoaded", SqlDbType.Int));
                         cmd.Parameters.Add(new SqlParameter("@EventsQueried", SqlDbType.Int));
