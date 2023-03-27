@@ -554,58 +554,43 @@ namespace lib_edi.Services.Azure
 
         public static async Task<List<FailedEdiJob>> GetFailedEdiJobsFromLast24Hours(EdiJobsStatusReportInfo job)
         {
-            //logger.LogInfo("Checking Azure SQL database connection string", job);
             List<FailedEdiJob> failedEdiJobs = new List<FailedEdiJob>();
-            //logger.LogInfo("Retrieve connection string from Azure Key Vault", job);
-            //try
-            //	{
-            //logger.LogInfo("Initialize new instance of System.Data.SqlClient.SqlConnection", job);
             using (SqlConnection conn = new(job.EdiDb.ConnectionString))
-            //using (SqlConnection conn = new())
             {
-                    //logger.LogInfo("Open database connection", job);
                     conn.Open();
 
                     using (SqlCommand cmd = conn.CreateCommand())
                     {
-                        //cmd.CommandType = System.Data.CommandType.StoredProcedure;
                         cmd.CommandType = CommandType.StoredProcedure;
                         cmd.CommandText = "[telemetry].[getFailedEdiFilePackages]";
                         cmd.Parameters.Add(new SqlParameter("@StartDate", SqlDbType.DateTimeOffset));
                         cmd.Parameters.Add(new SqlParameter("@EndDate", SqlDbType.DateTimeOffset));
-                        //cmd.Parameters.Add("@Result", SqlDbType.Int).Direction = ParameterDirection.Output;
-                    //logger.LogInfo("Retrieving exported records from the database", job);
+
                     try
                         {
                             cmd.Parameters["@StartDate"].Value = DateTime.Now.AddHours(-144);
                             cmd.Parameters["@EndDate"].Value = DateTime.Now.AddHours(-2);
 
-                            using (var reader = await cmd.ExecuteReaderAsync())
-                            {
-                                DataTable dt = new DataTable();
-                                dt.Load(reader);
+                        using var reader = await cmd.ExecuteReaderAsync();
+                        DataTable dt = new();
+                        dt.Load(reader);
 
-
-
-                            for (int i = 0; i < dt.Rows.Count; i++)
-                            {
-                                FailedEdiJob failedJob = new FailedEdiJob();
-                                failedJob.FilePackageName = dt.Rows[i]["FilePackageName"].ToString();
-                                failedJob.ESER = dt.Rows[i]["ESER"].ToString();
-                                failedJob.BlobTimeStart = dt.Rows[i]["BlobTimeStart"] == DBNull.Value ? null : (DateTime?)dt.Rows[i]["BlobTimeStart"];
-                                failedJob.ProviderSuccessTime = dt.Rows[i]["ProviderSuccessTime"] == DBNull.Value ? null : (DateTime?)dt.Rows[i]["ProviderSuccessTime"];
-                                failedJob.ConsumerSuccessTime = dt.Rows[i]["ConsumerSuccessTime"] == DBNull.Value ? null : (DateTime?)dt.Rows[i]["ConsumerSuccessTime"];
-                                failedJob.TransformSuccessTime = dt.Rows[i]["TransformSuccessTime"] == DBNull.Value ? null : (DateTime?)dt.Rows[i]["TransformSuccessTime"];
-                                failedJob.SQLSuccessTime = dt.Rows[i]["SQLSuccessTime"] == DBNull.Value ? null : (DateTime?)dt.Rows[i]["SQLSuccessTime"];
-                                failedJob.DataLoggerType = dt.Rows[i]["DataLoggerType"].ToString();
-                                failedJob.PipelineFailureLocation = GetEdiPipelineFailureLocation(failedJob);
-                                failedEdiJobs.Add(failedJob);
-                            }
-                            Console.WriteLine("debug");
+                        for (int i = 0; i < dt.Rows.Count; i++)
+                        {
+                            FailedEdiJob failedJob = new FailedEdiJob();
+                            failedJob.FilePackageName = dt.Rows[i]["FilePackageName"].ToString();
+                            failedJob.ESER = dt.Rows[i]["ESER"].ToString();
+                            failedJob.BlobTimeStart = dt.Rows[i]["BlobTimeStart"] == DBNull.Value ? null : (DateTime?)dt.Rows[i]["BlobTimeStart"];
+                            failedJob.ProviderSuccessTime = dt.Rows[i]["ProviderSuccessTime"] == DBNull.Value ? null : (DateTime?)dt.Rows[i]["ProviderSuccessTime"];
+                            failedJob.ConsumerSuccessTime = dt.Rows[i]["ConsumerSuccessTime"] == DBNull.Value ? null : (DateTime?)dt.Rows[i]["ConsumerSuccessTime"];
+                            failedJob.TransformSuccessTime = dt.Rows[i]["TransformSuccessTime"] == DBNull.Value ? null : (DateTime?)dt.Rows[i]["TransformSuccessTime"];
+                            failedJob.SQLSuccessTime = dt.Rows[i]["SQLSuccessTime"] == DBNull.Value ? null : (DateTime?)dt.Rows[i]["SQLSuccessTime"];
+                            failedJob.DataLoggerType = dt.Rows[i]["DataLoggerType"].ToString();
+                            failedJob.PipelineFailureLocation = GetEdiPipelineFailureLocation(failedJob);
+                            failedEdiJobs.Add(failedJob);
                         }
-                        Console.WriteLine("debug");
-                        }
-                        catch (Exception ex)
+                    }
+                        catch (Exception)
                         {
                             throw;
                         }
@@ -613,12 +598,8 @@ namespace lib_edi.Services.Azure
 
                     conn.Close();
                 } // end connection
-
-
             return failedEdiJobs;
         }
-
-
 
         /*
         public static async Task<OtaCfd50ImportJobStatus> GetExportedMetafridgeRecords(OtaImportJob job)
