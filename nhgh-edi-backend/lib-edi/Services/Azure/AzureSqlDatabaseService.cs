@@ -2,6 +2,7 @@
 using lib_edi.Models.Azure.Sql.Connection;
 using lib_edi.Models.Azure.Sql.Query;
 using lib_edi.Models.Edi.Data.Import;
+using lib_edi.Models.Edi.Job;
 using lib_edi.Models.Edi.Job.EmailReport;
 using System;
 using System.Collections.Generic;
@@ -47,7 +48,7 @@ namespace lib_edi.Services.Azure
         /// <remarks>
         /// NHGH-2490 (2022.08.15 - 1825) Added method
         /// </remarks>
-        public static async Task<OtaImportJobStats> InsertEdiJobStatusEvents(OtaImportJob job, List<EdiJobStatusResult> list)
+        public static async Task<OtaImportJobStats> InsertEdiJobStatusEvents(EdiJobInfo job, List<EdiJobStatusResult> list)
         {
             OtaImportJobStats jobStats = new();
 
@@ -145,7 +146,7 @@ namespace lib_edi.Services.Azure
         /// <remarks>
         /// NHGH-2490 (2022.08.15 - 1825) Added method
         /// </remarks>
-        public static async Task<OtaImportJobStats> InsertEdiPipelineEvents(OtaImportJob job, List<EdiPipelineEventResult> list)
+        public static async Task<OtaImportJobStats> InsertEdiPipelineEvents(EdiJobInfo job, List<EdiPipelineEventResult> list)
         {
             OtaImportJobStats jobStats = new();
             //logger.LogInfo("insert edi job pipeline events into database", job);
@@ -249,7 +250,7 @@ namespace lib_edi.Services.Azure
         /// <remarks>
         /// NHGH-2490 (2022.08.15 - 1825) Added method
         /// </remarks>
-        public static async Task<OtaImportJobStats> InsertEdiAdfActivityEvents(OtaImportJob job, List<EdiAdfActivityResult> list)
+        public static async Task<OtaImportJobStats> InsertEdiAdfActivityEvents(EdiJobInfo job, List<EdiAdfActivityResult> list)
         {
             OtaImportJobStats jobStats = new();
             //logger.LogInfo("load edi adf pipeline activity events into database ", job);
@@ -352,7 +353,7 @@ namespace lib_edi.Services.Azure
         /// <remarks>
         /// NHGH-2511 (2022.09.01 - 1340) Added method
         /// </remarks>
-        public static async Task<OtaImportJobStats> InsertEdiAzureFunctionTraceRecords(OtaImportJob job, List<AzureFunctionTraceResult> list)
+        public static async Task<OtaImportJobStats> InsertEdiAzureFunctionTraceRecords(EdiJobInfo job, List<AzureFunctionTraceResult> list)
         {
             //Dictionary<string, string> jobStats = new();
             OtaImportJobStats jobStats = new();
@@ -552,7 +553,7 @@ namespace lib_edi.Services.Azure
             return jobStats;
         }
 
-        public static async Task<List<FailedEdiJob>> GetFailedEdiJobsFromLast24Hours(EdiJobsStatusReportInfo job)
+        public static async Task<List<FailedEdiJob>> GetFailedEdiJobsFromLast24Hours(EdiJobInfo job)
         {
             List<FailedEdiJob> failedEdiJobs = new List<FailedEdiJob>();
             using (SqlConnection conn = new(job.EdiDb.ConnectionString))

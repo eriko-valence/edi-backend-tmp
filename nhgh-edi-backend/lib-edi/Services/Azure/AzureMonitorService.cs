@@ -4,6 +4,8 @@ using Azure.Monitor.Query;
 using Azure.Monitor.Query.Models;
 using lib_edi.Models.Azure.Monitor.Query;
 using lib_edi.Models.Edi.Data.Import;
+using lib_edi.Models.Edi.Job;
+using lib_edi.Models.Edi.Job.EmailReport;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
 using System;
@@ -41,7 +43,7 @@ namespace lib_edi.Services.Azure
         /// <remarks>
         /// NHGH-2484 (2022.08.10 - 1322) Added method to populate a demo grid controller
         /// </remarks>
-        public static async Task<List<EdiJobStatusResult>> QueryWorkspaceForEdiJobsStatus(OtaImportJob job)
+        public static async Task<List<EdiJobStatusResult>> QueryWorkspaceForEdiJobsStatus(EdiJobInfo job)
         {
             try
             {
@@ -117,7 +119,7 @@ namespace lib_edi.Services.Azure
         /// <remarks>
         /// NHGH-2484 (2022.08.10 - 1322) Added method to populate a demo grid controller
         /// </remarks>
-        public static async Task<List<EdiPipelineEventResult>> QueryWorkspaceForEdiPipelineEvents(OtaImportJob job)
+        public static async Task<List<EdiPipelineEventResult>> QueryWorkspaceForEdiPipelineEvents(EdiJobInfo job)
         {
             try
             {
@@ -174,7 +176,7 @@ namespace lib_edi.Services.Azure
         /// <remarks>
         /// NHGH-2501 (2022.08.19 - 1545) Added method with primary purpose to gain access to ADF console error messages
         /// </remarks>
-        public static async Task<List<EdiAdfActivityResult>> QueryWorkspaceForEdiAdfActivityData(OtaImportJob job)
+        public static async Task<List<EdiAdfActivityResult>> QueryWorkspaceForEdiAdfActivityData(EdiJobInfo job)
         {
             try
             {
@@ -226,7 +228,7 @@ namespace lib_edi.Services.Azure
 		///   that can be displayed on the EDI dashboard file package monitoring page. Some file packages have been failing
 		///   with no explanation as to why. This trace data helps fill in the gaps. 
         /// </remarks>
-        public static async Task<List<AzureFunctionTraceResult>> QueryWorkspaceForAzureFunctionTraceData(OtaImportJob job)
+        public static async Task<List<AzureFunctionTraceResult>> QueryWorkspaceForAzureFunctionTraceData(EdiJobInfo job)
         {
             try
             {

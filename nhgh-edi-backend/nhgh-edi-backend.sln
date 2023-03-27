@@ -47,7 +47,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "fa-ccdx-consumer-varo", "fa
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "fa-adf-transform-varo", "fa-adf-transform-varo\fa-adf-transform-varo.csproj", "{536FFE09-2BAD-4709-A284-EC7FE4F7ABF8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "fa-maint", "fa-maint\fa-maint.csproj", "{228C2535-B095-4FCD-BF61-7EE819D3F22F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "fa-maint", "fa-maint\fa-maint.csproj", "{228C2535-B095-4FCD-BF61-7EE819D3F22F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

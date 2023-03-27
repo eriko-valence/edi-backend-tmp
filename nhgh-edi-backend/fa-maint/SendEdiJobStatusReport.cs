@@ -10,17 +10,19 @@ using lib_edi.Models.Azure.Sql.Query;
 using lib_edi.Models.Enums.Edi.Functions;
 using lib_edi.Models.Edi.Job.EmailReport;
 using lib_edi.Models.Azure.KeyVault;
+using lib_edi.Services.Edi;
+using lib_edi.Models.Edi.Job;
 
 namespace fa_maint
 {
-    public static class SendDailyStatusReportEmail
+    public static class SendEdiJobStatusReport
     {
         [FunctionName("send-daily-status-report-email")]
         public static async Task Run([TimerTrigger("%EDI_DAILY_STATUS_REPORT_TIMER_SCHEDULE%")] TimerInfo timerInfo, ILogger log)
         {
             string logPrefix = "- [monitor_job_status_time_trigger_function->run]: ";
             log.LogInformation($"{logPrefix} retrieve azure sql database connection information from azure key vault");
-            EdiJobsStatusReportInfo job = InitializeJob(EdiFunctionsEnum.Name.EDI_DAILY_STATUS_EMAIL_REPORT);
+            EdiJobInfo job = EdiService.InitializeMaintJobSendReport(EdiFunctionsEnum.Name.EDI_DAILY_STATUS_EMAIL_REPORT);
             log.LogInformation($"{logPrefix} get the most recent (last 24 hours) failed edi jobs from the database");
             List<FailedEdiJob> results = await AzureSqlDatabaseService.GetFailedEdiJobsFromLast24Hours(job);
             log.LogInformation($"{logPrefix} send edi daily job status email report via sendgrid");
@@ -43,23 +45,6 @@ namespace fa_maint
             return settings;
         }
 
-        public static EdiJobsStatusReportInfo InitializeJob(EdiFunctionsEnum.Name funcName)
-        {
-            EdiJobsStatusReportInfo job = new()
-            {
-                FunctionName = funcName
-            };
-            SqlDbSecretKeys sqlDbSecretKeys = new()
-            {
-                SecretNameUserId = "AzureSqlServerLoginName-Edi",
-                SecretNameUserPw = "AzureSqlServerLoginPass-Edi",
-                SecretNameDbName = "AzureSqlDatabaseName-Edi",
-                SecretNameDbServer = "AzureSqlServerName-Edi"
-            };
-            job.JobId = Guid.NewGuid();
-            job.EdiDb = AzureKeyVaultService.GetDatabaseCredentials(job.ApplicationName, sqlDbSecretKeys);
-            job.EdiDb.ConnectionString = AzureSqlDatabaseService.BuildConnectionString(job.ApplicationName, job.EdiDb); ;
-            return job;
-        }
+
     }
 }
