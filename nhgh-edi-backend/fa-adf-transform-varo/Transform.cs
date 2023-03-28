@@ -96,7 +96,7 @@ namespace fa_adf_transform_varo
                         log.LogInformation($"- {payload.FileName} - Send transformation response");
                         string blobPathFolderCurated = DataTransformService.BuildCuratedBlobFolderPath(payload.Path, verfiedLoggerType);
                         string responseBody = DataTransformService.SerializeHttpResponseBody(blobPathFolderCurated);
-                        DataTransformService.LogEmsTransformSucceededEventToAppInsights(payload.FileName, verifiedLoggerTypeEnum, log);
+                        DataTransformService.LogEmsTransformSucceededEventToAppInsights(payload.FileName, ediJob.Logger.Type, log);
                         log.LogInformation($"- {payload.FileName} - Done");
 
                         log.LogInformation($" PROCESSING SUMMARY");
