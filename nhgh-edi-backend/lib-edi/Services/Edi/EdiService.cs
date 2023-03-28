@@ -42,6 +42,18 @@ namespace lib_edi.Services.Edi
                 FunctionName = funcName,
                 EdiLaw = GetAzureLogAnalyticsInfo()
             };
+
+            SqlDbSecretKeys sqlDbSecretKeys = new()
+            {
+                SecretNameUserId = "AzureSqlServerLoginName-Edi",
+                SecretNameUserPw = "AzureSqlServerLoginPass-Edi",
+                SecretNameDbName = "AzureSqlDatabaseName-Edi",
+                SecretNameDbServer = "AzureSqlServerName-Edi"
+            };
+            job.JobId = Guid.NewGuid();
+            job.EdiDb = AzureKeyVaultService.GetDatabaseCredentials(job.ApplicationName, sqlDbSecretKeys);
+            job.EdiDb.ConnectionString = AzureSqlDatabaseService.BuildConnectionString(job.ApplicationName, job.EdiDb);
+
             return job;
         }
 

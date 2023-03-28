@@ -17,10 +17,11 @@ using lib_edi.Models.Enums.Edi.Data.Import;
 
 namespace fa_maint
 {
-    public static class SendEdiJobStatusReport
+    public static class EdiStatusEmail
     {
         [FunctionName("send-daily-status-report-email")]
         public static async Task Run([TimerTrigger("%EDI_DAILY_STATUS_REPORT_TIMER_SCHEDULE%")] TimerInfo timerInfo, ILogger log)
+        //public static async Task Run(ILogger log)
         {
             try
             {
@@ -28,23 +29,23 @@ namespace fa_maint
                 log.LogInformation($"{logPrefix} retrieve azure sql database connection information from azure key vault");
                 EdiJobInfo job = EdiService.InitializeMaintJobSendReport(EdiFunctionsEnum.Name.EDI_DAILY_STATUS_EMAIL_REPORT);
                 log.LogInformation($"{logPrefix} get the most recent (last 24 hours) failed edi jobs from the database");
-                List<FailedEdiJob> results = await AzureSqlDatabaseService.GetFailedEdiJobsFromLast24Hours(job);
+                //List<FailedEdiJob> results = await AzureSqlDatabaseService.GetFailedEdiJobsFromLast24Hours(job);
                 log.LogInformation($"{logPrefix} send edi daily job status email report via sendgrid");
-                await SendGridService.SendEdiJobFailuresEmailReport(results, EdiService.GetDailyStatusEmailReportSendGridSettings(), log);
+                //await SendGridService.SendEdiJobFailuresEmailReport(results, EdiService.GetDailyStatusEmailReportSendGridSettings(), log);
 
                 EdiImportJobStats jobStatsSummarySucceeded = new()
                 {
-                    EdiJobEventType = EdiJobImportEventEnum.Name.EDI_SEND_EMAIL_REPORT_RESULT,
+                    EdiJobEventType = EdiJobImportEventEnum.Name.EDI_STATUS_EMAIL_RESULT,
                     EdiJobName = EdiJobImportFunctionEnum.Name.EDI_MAINT,
                     EdiJobStatus = EdiJobImportStatusNameEnum.Name.SUCCESS,
                 };
-                AzureAppInsightsService.LogEvent(jobStatsSummarySucceeded);
+                //AzureAppInsightsService.LogEvent(jobStatsSummarySucceeded);
 
             } catch (Exception ex)
             {
                 EdiImportJobStats jobStatsSummaryFailed = new()
                 {
-                    EdiJobEventType = EdiJobImportEventEnum.Name.EDI_SEND_EMAIL_REPORT_RESULT,
+                    EdiJobEventType = EdiJobImportEventEnum.Name.EDI_STATUS_EMAIL_RESULT,
                     EdiJobName = EdiJobImportFunctionEnum.Name.EDI_MAINT,
                     EdiJobStatus = EdiJobImportStatusNameEnum.Name.FAILED,
                     ExceptionMessage = ex.Message

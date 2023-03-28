@@ -11,9 +11,11 @@ namespace lib_edi.Models.Enums.Edi.Data.Import
         public enum Name
         {
             UNKNOWN,
-            EDI_IMPORT_JOB_RESULT,
-            EDI_IMPORT_EXCEPTION,
-            EDI_SEND_EMAIL_REPORT_RESULT
+            EDI_IMPORTER_RESULT,
+            EDI_IMPORTER_MONITOR_RESULT,
+            EDI_IMPORTER_MONITOR,
+            EDI_IMPORTER_EXCEPTION,
+            EDI_STATUS_EMAIL_RESULT
         }
     }
 }

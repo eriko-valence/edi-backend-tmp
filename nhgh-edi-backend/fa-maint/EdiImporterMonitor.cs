@@ -10,22 +10,30 @@ using lib_edi.Models.Edi.Job;
 using lib_edi.Services.Edi;
 using lib_edi.Models.Enums.Edi.Functions;
 using lib_edi.Models.Enums.Edi.Data.Import;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Azure.WebJobs.Extensions.Http;
 
 namespace fa_maint
 {
-    public class ImportEdiJobStautsImporterResults
+    public class EdiImporterMonitor
     {
-        [FunctionName("ImportEdiJobStautsImporterResults")]
-        public async Task RunAsync([TimerTrigger("%CRON_SCHEDULE_DATA_IMPORT_TELEMEMTRY_IMPORTER%")] TimerInfo schedule, ILogger log)
+        [FunctionName("EdiImporterMonitor")]
+        public async Task RunAsync([TimerTrigger("%CRON_SCHEDULE_DATA_IMPORT_TELEMEMTRY_IMPORTER%"
+            
+            #if DEBUG
+            , RunOnStartup=true
+            #endif
+            
+            )] TimerInfo schedule, ILogger log)
         {
             // track import job results using these objects
             EdiImportJobStats r1 = new();
 
             //OtaLoggerService logger = new(log);
-            if (schedule is null)
-            {
-                throw new ArgumentNullException(nameof(schedule));
-            }
+            //if (schedule is null)
+            //{
+            //    throw new ArgumentNullException(nameof(schedule));
+            //}
 
             log.LogInformation($"[DataImportTelemetryImporter:RunAsync] Triggered at: {DateTime.Now}");
             try
@@ -43,7 +51,7 @@ namespace fa_maint
 
                 EdiImportJobStats jobStatsSummarySucceeded = new()
                 {
-                    EdiJobEventType = EdiJobImportEventEnum.Name.EDI_IMPORT_JOB_RESULT,
+                    EdiJobEventType = EdiJobImportEventEnum.Name.EDI_IMPORTER_MONITOR_RESULT,
                     EdiJobName = EdiJobImportFunctionEnum.Name.EDI_MAINT,
                     EdiJobStatus = EdiJobImportStatusNameEnum.Name.SUCCESS,
                     Queried = r1.Queried,
@@ -57,7 +65,7 @@ namespace fa_maint
             {
                 EdiImportJobStats jobStatsSummaryFailed = new()
                 {
-                    EdiJobEventType = EdiJobImportEventEnum.Name.EDI_IMPORT_JOB_RESULT,
+                    EdiJobEventType = EdiJobImportEventEnum.Name.EDI_IMPORTER_MONITOR_RESULT,
                     EdiJobName = EdiJobImportFunctionEnum.Name.EDI_MAINT,
                     EdiJobStatus = EdiJobImportStatusNameEnum.Name.FAILED,
                     ExceptionMessage = ex.Message,

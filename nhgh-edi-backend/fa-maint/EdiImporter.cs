@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Net.Http;
 using System.Threading.Tasks;
 using lib_edi.Models.Azure.Monitor.Query;
 using lib_edi.Models.Edi.Data.Import;
@@ -9,16 +10,25 @@ using lib_edi.Models.Enums.Edi.Data.Import;
 using lib_edi.Models.Enums.Edi.Functions;
 using lib_edi.Services.Azure;
 using lib_edi.Services.Edi;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Azure.WebJobs;
+using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Azure.WebJobs.Host;
 using Microsoft.Extensions.Logging;
 
 namespace fa_maint
 {
-    public class ImportEdiJobStatusResults
+    public class EdiImporter
     {
-        [FunctionName("ImportEdiJobStatusEvents")]
-        public static async Task Run([TimerTrigger("%EDI_DAILY_STATUS_REPORT_TIMER_SCHEDULE%")] TimerInfo schedule, ILogger log)
+        [FunctionName("EdiImporter")]
+        //public static async Task Run( [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequest req, ILogger log)
+        //public static async Task Run(ILogger log)
+
+        public static async Task Run([TimerTrigger("%EDI_DAILY_STATUS_REPORT_TIMER_SCHEDULE%"
+         
+            
+
+            )] TimerInfo schedule, ILogger log)
         {
             string logPrefix = "- [edi_job_status_importer->run]: ";
             log.LogInformation($"{logPrefix} Triggered at: {DateTime.Now}");
@@ -33,10 +43,10 @@ namespace fa_maint
             EdiImportJobStats r4 = new();
 
             //OtaLoggerService logger = new(log);
-            if (schedule is null)
-            {
-                throw new ArgumentNullException(nameof(schedule));
-            }
+            //if (schedule is null)
+            //{
+            //    throw new ArgumentNullException(nameof(schedule));
+            //}
 
             try
             {
@@ -89,7 +99,7 @@ namespace fa_maint
 
                 EdiImportJobStats jobStatsSummarySucceeded = new()
                 {
-                    EdiJobEventType = EdiJobImportEventEnum.Name.EDI_IMPORT_JOB_RESULT,
+                    EdiJobEventType = EdiJobImportEventEnum.Name.EDI_IMPORTER_RESULT,
                     EdiJobName = EdiJobImportFunctionEnum.Name.EDI_MAINT,
                     EdiJobStatus = EdiJobImportStatusNameEnum.Name.SUCCESS,
                     Queried = r1.Queried + r2.Queried + r3.Queried + r4.Queried,
@@ -103,7 +113,7 @@ namespace fa_maint
             {
                 EdiImportJobStats jobStatsSummaryFailed = new()
                 {
-                    EdiJobEventType = EdiJobImportEventEnum.Name.EDI_IMPORT_JOB_RESULT,
+                    EdiJobEventType = EdiJobImportEventEnum.Name.EDI_IMPORTER_RESULT,
                     EdiJobName = EdiJobImportFunctionEnum.Name.EDI_MAINT,
                     EdiJobStatus = EdiJobImportStatusNameEnum.Name.FAILED,
                     ExceptionMessage = ex.Message,

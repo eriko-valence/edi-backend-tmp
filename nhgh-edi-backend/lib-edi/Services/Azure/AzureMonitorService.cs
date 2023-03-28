@@ -279,7 +279,7 @@ namespace lib_edi.Services.Azure
             try
             {
                 string query = @"AppEvents 
-                    | where Name in~ (""OTA_IMPORT_JOB_RESULT"") 
+                    | where Name in~ (""EDI_IMPORTER_RESULT"") 
                     | extend
                         eventsLoaded = Properties.loaded, 
                         eventsQueried = Properties.queried, 
