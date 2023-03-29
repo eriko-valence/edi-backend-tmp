@@ -9,18 +9,17 @@ using System.Threading.Tasks;
 
 namespace lib_edi.Models.Edi.Data.Import
 {
-    public class EdiImportJobStats
+    public class EdiMaintJobStats
     {
-        
         [JsonIgnore]
         public EdiFunctionAppsEnum.Name EdiFunctionApp { get; set; }
 
         [JsonPropertyName("job_name")]
-        public EdiJobImportFunctionEnum.Name EdiJobName { get; set; }
+        public EdiFunctionsEnum.Name EdiJobName { get; set; }
         [JsonPropertyName("job_result")]
-        public EdiJobImportStatusNameEnum.Name EdiJobStatus { get; set; }
+        public EdiMaintJobStatusEnum.Name EdiJobStatus { get; set; }
         [JsonPropertyName("job_event_type")]
-        public EdiJobImportEventEnum.Name EdiJobEventType { get; set; }
+        public EdiMaintJobEventEnum.Name EdiJobEventType { get; set; }
         [JsonPropertyName("job_exception")]
         public string ExceptionMessage { get; set; }
         [JsonPropertyName("events_queried")]

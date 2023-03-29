@@ -11,9 +11,9 @@ namespace lib_edi.Models.Enums.Edi.Functions
         public enum Name
         {
             UNKNOWN,
-            EDI_DAILY_STATUS_EMAIL_REPORT,
-            EDI_JOB_STATUS_IMPORTER,
-            EDI_JOB_STATUS_IMPORTER_IMPORTER
+            EDI_MAINT_EMAIL_REPORT,
+            EDI_MAINT_IMPORTER,
+            EDI_MAINT_IMPORTER_MONITOR
         }
     }
 }

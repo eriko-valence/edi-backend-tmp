@@ -18,20 +18,20 @@ namespace fa_maint
     public class EdiImporterMonitor
     {
         [FunctionName("edi-maint-importer-monitor")]
-        public async Task RunAsync([TimerTrigger("%CRON_SCHEDULE_DATA_IMPORT_TELEMEMTRY_IMPORTER%"
+        public async Task RunAsync([TimerTrigger("%CRON_SCHEDULE_EDI_IMPORTER_MONITOR%"
             
-            
+            /*
             #if DEBUG
             , RunOnStartup=true
             #endif
-            
+            */
            
             
             
             )] TimerInfo schedule, ILogger log)
         {
             // track import job results using these objects
-            EdiImportJobStats r1 = new();
+            EdiMaintJobStats r1 = new();
 
             //OtaLoggerService logger = new(log);
             //if (schedule is null)
@@ -42,7 +42,7 @@ namespace fa_maint
             log.LogInformation($"[DataImportTelemetryImporter:RunAsync] Triggered at: {DateTime.Now}");
             try
             {
-                EdiJobInfo job = EdiService.InitializeMaintJobImportEvents(EdiFunctionsEnum.Name.EDI_JOB_STATUS_IMPORTER_IMPORTER);
+                EdiJobInfo job = EdiService.InitializeMaintJobImportEvents(EdiFunctionsEnum.Name.EDI_MAINT_IMPORTER_MONITOR);
                 List<DataImporterAppEvent> l1 = await AzureMonitorService.QueryWorkspaceForEdiMaintEvents(job);
                 if (l1.Count > 0)
                 {
@@ -53,12 +53,12 @@ namespace fa_maint
                     log.LogInformation($"[DataImportTelemetryImporter:RunAsync] No EDI job status records found in the Log Analytics workspace");
                 }
 
-                EdiImportJobStats jobStatsSummarySucceeded = new()
+                EdiMaintJobStats jobStatsSummarySucceeded = new()
                 {
                     EdiFunctionApp = EdiFunctionAppsEnum.Name.EDI_MAINT,
-                    EdiJobEventType = EdiJobImportEventEnum.Name.EDI_IMPORTER_MONITOR_RESULT,
-                    EdiJobName = EdiJobImportFunctionEnum.Name.EDI_MAINT_IMPORTER_MONITOR,
-                    EdiJobStatus = EdiJobImportStatusNameEnum.Name.SUCCESS,
+                    EdiJobEventType = EdiMaintJobEventEnum.Name.EDI_IMPORTER_MONITOR_RESULT,
+                    EdiJobName = EdiFunctionsEnum.Name.EDI_MAINT_IMPORTER_MONITOR,
+                    EdiJobStatus = EdiMaintJobStatusEnum.Name.SUCCESS,
                     Queried = r1.Queried,
                     Loaded = r1.Loaded,
                     Skipped = r1.Skipped,
@@ -68,12 +68,12 @@ namespace fa_maint
             }
             catch (Exception ex)
             {
-                EdiImportJobStats jobStatsSummaryFailed = new()
+                EdiMaintJobStats jobStatsSummaryFailed = new()
                 {
                     EdiFunctionApp = EdiFunctionAppsEnum.Name.EDI_MAINT,
-                    EdiJobEventType = EdiJobImportEventEnum.Name.EDI_IMPORTER_MONITOR_RESULT,
-                    EdiJobName = EdiJobImportFunctionEnum.Name.EDI_MAINT_IMPORTER_MONITOR,
-                    EdiJobStatus = EdiJobImportStatusNameEnum.Name.FAILED,
+                    EdiJobEventType = EdiMaintJobEventEnum.Name.EDI_IMPORTER_MONITOR_RESULT,
+                    EdiJobName = EdiFunctionsEnum.Name.EDI_MAINT_IMPORTER_MONITOR,
+                    EdiJobStatus = EdiMaintJobStatusEnum.Name.FAILED,
                     ExceptionMessage = ex.Message,
                     Queried = r1.Queried,
                     Loaded = r1.Loaded,

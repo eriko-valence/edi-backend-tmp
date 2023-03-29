@@ -6,16 +6,13 @@ using System.Threading.Tasks;
 
 namespace lib_edi.Models.Enums.Edi.Data.Import
 {
-    public class EdiJobImportEventEnum
+    public class EdiMaintJobStatusEnum
     {
         public enum Name
         {
             UNKNOWN,
-            EDI_IMPORTER_RESULT,
-            EDI_IMPORTER_MONITOR_RESULT,
-            EDI_IMPORTER_MONITOR,
-            EDI_IMPORTER_EXCEPTION,
-            EDI_STATUS_EMAIL_RESULT
+            FAILED,
+            SUCCESS
         }
     }
 }

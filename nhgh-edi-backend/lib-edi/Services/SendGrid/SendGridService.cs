@@ -32,6 +32,18 @@ namespace lib_edi.Services.SendGrid
             {
                 log.LogInformation($"{logPrefix} start");
 
+                List<SendGridEdiFailedJob> sendGridResultlist = new();
+
+                foreach (FailedEdiJob job in jobs)
+                {
+                    SendGridEdiFailedJob sendGridJob = new SendGridEdiFailedJob();
+                    sendGridJob.FilePackageName = job.FilePackageName;
+                    sendGridJob.PipelineFailureLocation = job.PipelineFailureLocation;
+                    sendGridJob.DataLoggerType = job.DataLoggerType;
+                    sendGridJob.BlobTimeStart = job.BlobTimeStart;
+                    sendGridResultlist.Add(sendGridJob);
+                }
+
                 if (settings != null)
                 {
                     var apiKey = settings.ApiKey;
@@ -61,10 +73,10 @@ namespace lib_edi.Services.SendGrid
                     msg.Personalizations = toEmailList;
 
                     log.LogInformation($"{logPrefix} add dynamic template data to email");
-                    var dynamicTemplateData = new EdiFailedJobsResults
+                    var dynamicTemplateData = new SendGridEdiFailedJobsResults
                     {
                         Subject = emailSubjectLine,
-                        Results = jobs,
+                        Results = sendGridResultlist,
                     };
                     string stringJsonDynamicTemplateData = JsonConvert.SerializeObject(dynamicTemplateData);
                     log.LogInformation($"{logPrefix} template data: ");

@@ -43,8 +43,9 @@ namespace lib_edi.Services.Azure
         /// <remarks>
         /// NHGH-2484 (2022.08.10 - 1322) Added method to populate a demo grid controller
         /// </remarks>
-        public static async Task<List<EdiJobStatusResult>> QueryWorkspaceForEdiJobsStatus(EdiJobInfo job)
+        public static async Task<List<EdiJobStatusResult>> QueryWorkspaceForEdiJobsStatus(EdiJobInfo job, ILogger log)
         {
+            string logPrefix = "- [azure_monitor_svc->query_law_edi_job_status]: ";
             try
             {
                 string query = @"StorageBlobLogs
@@ -101,6 +102,8 @@ namespace lib_edi.Services.Azure
             }
             catch (Exception e)
             {
+                log.LogInformation($"{logPrefix} exception: ");
+                log.LogError(e.Message);
                 //logger.LogError("Exception thrown while querying the workspace from azure monitor (EDI job status)", e, job);
                 //Dictionary<string, string> customProps = AzureAppInsightsService.BuildOtaExceptionPropertiesObject("AzureMonitorService", "QueryWorkspace", e);
                 //AzureAppInsightsService.LogEvent(OtaJobImportEventEnum.Name.OTA_IMPORT_EXCEPTION.ToString(), customProps);
@@ -132,6 +135,7 @@ namespace lib_edi.Services.Azure
                   pipelineFailureType = Properties.pipelineFailureType, 
                   dataLoggerType = Properties.dataLoggerType,
                   exceptionMessage = Properties.errorMessage
+                | where isnotnull(fileName) and isnotnull(pipelineEvent) and isnotnull(pipelineStage)
                 | project
                   TimeGenerated, fileName, pipelineEvent, pipelineStage, pipelineFailureReason, 
                   pipelineFailureType, dataLoggerType, exceptionMessage";

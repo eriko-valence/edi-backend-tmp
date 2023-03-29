@@ -333,7 +333,7 @@ namespace lib_edi.Services.Azure
             telemetryClient.TrackEvent(eventName, customProps);
         }
 
-        public static void LogEvent(EdiImportJobStats jobStats)
+        public static void LogEvent(EdiMaintJobStats jobStats)
         {
             Dictionary<string, string> customProps = new()
             {

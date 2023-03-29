@@ -7,15 +7,15 @@ using System.Threading.Tasks;
 
 namespace lib_edi.Models.SendGrid
 {
-    public class EdiFailedJobsResults
+    public class SendGridEdiFailedJobsResults
     {
-        public EdiFailedJobsResults()
+        public SendGridEdiFailedJobsResults()
         {
-            Results = new List<FailedEdiJob>();
+            Results = new List<SendGridEdiFailedJob>();
             //Errors = new List<PogoLTAppError>();
         }
 
-        public List<FailedEdiJob> Results { get; set; }
+        public List<SendGridEdiFailedJob> Results { get; set; }
         //public List<PogoLTAppError> Errors { get; set; }
         //public int TotalJobsRun { get; set; }
         //public int TotalErrors { get; set; }

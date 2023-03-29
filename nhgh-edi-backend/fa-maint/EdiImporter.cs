@@ -21,10 +21,7 @@ namespace fa_maint
     public class EdiImporter
     {
         [FunctionName("edi-maint-importer")]
-        //public static async Task Run( [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequest req, ILogger log)
-        //public static async Task Run(ILogger log)
-
-        public static async Task Run([TimerTrigger("%EDI_DAILY_STATUS_REPORT_TIMER_SCHEDULE%"
+        public static async Task Run([TimerTrigger("%CRON_SCHEDULE_EDI_IMPORTER%"
          
             /*
             #if DEBUG
@@ -34,17 +31,16 @@ namespace fa_maint
 
             )] TimerInfo schedule, ILogger log)
         {
-            string logPrefix = "- [edi_job_status_importer->run]: ";
-            log.LogInformation($"{logPrefix} Triggered at: {DateTime.Now}");
+            string logPrefix = "- [edi_importer->run]: ";
 
             log.LogInformation($"{logPrefix} retrieve azure sql database connection information from azure key vault");
             
 
             // track import job results using these objects
-            EdiImportJobStats r1 = new();
-            EdiImportJobStats r2 = new();
-            EdiImportJobStats r3 = new();
-            EdiImportJobStats r4 = new();
+            EdiMaintJobStats r1 = new();
+            EdiMaintJobStats r2 = new();
+            EdiMaintJobStats r3 = new();
+            EdiMaintJobStats r4 = new();
 
             //OtaLoggerService logger = new(log);
             //if (schedule is null)
@@ -54,74 +50,93 @@ namespace fa_maint
 
             try
             {
-                //OtaImportJob job = OtaImporterService.InitializeOtaImportJob(OtaJobImportFunctionEnum.Name.EDI_EVENTS, logger);
-                EdiJobInfo job = EdiService.InitializeMaintJobImportEvents(EdiFunctionsEnum.Name.EDI_JOB_STATUS_IMPORTER);
+                EdiJobInfo job = EdiService.InitializeMaintJobImportEvents(EdiFunctionsEnum.Name.EDI_MAINT_IMPORTER);
+                log.LogInformation($"{logPrefix} - job.edilaw.workspaceid ..............: {job.EdiLaw.WorkspaceId}");
+                log.LogInformation($"{logPrefix} - job.edilaw.azurebloburiccdxprovider .: {job.EdiLaw.AzureBlobUriCcdxProvider}");
+                log.LogInformation($"{logPrefix} - job.edilaw.queryhours ...............: {job.EdiLaw.QueryHours}");
+                log.LogInformation($"{logPrefix} - job.edidb.name ......................: {job.EdiDb.Name}");
+                log.LogInformation($"{logPrefix} - job.edidb.server ....................: {job.EdiDb.Server}");
 
-                // Query Log Analytics workspace for overall EDI job status results
-                List<EdiJobStatusResult> l1 = await AzureMonitorService.QueryWorkspaceForEdiJobsStatus(job);
+                log.LogInformation($"{logPrefix} query log analytics workspace for edi job results (high level status)");
+                List<EdiJobStatusResult> l1 = await AzureMonitorService.QueryWorkspaceForEdiJobsStatus(job, log);
                 if (l1.Count > 0)
                 {
+                    log.LogInformation($"{logPrefix} insert these edi job results (high level status) into azure sql");
                     r1 = await AzureSqlDatabaseService.InsertEdiJobStatusEvents(job, l1);
                 }
                 else
                 {
-                    log.LogInformation($"{logPrefix} No EDI job status records found in the Log Analytics workspace");
+                    log.LogInformation($"{logPrefix} no edi job status records found in the log analytics workspace");
                 }
 
-                // Query Log Analytics workspace for EDI job pipeline events
+                log.LogInformation($"{logPrefix} query log analytics workspace for edi job results (azure function app events)");
                 List<EdiPipelineEventResult> l2 = await AzureMonitorService.QueryWorkspaceForEdiPipelineEvents(job);
                 if (l2.Count > 0)
                 {
+                    log.LogInformation($"{logPrefix} insert these edi job results (azure function app events) into azure sql");
                     r2 = await AzureSqlDatabaseService.InsertEdiPipelineEvents(job, l2);
                 }
                 else
                 {
-                    log.LogInformation($"{logPrefix} No EDI pipeline records found in the Log Analytics workspace");
+                    log.LogInformation($"{logPrefix} no edi pipeline records found in the log analytics workspace");
                 }
 
-                // Query Log Analytics workspace for EDI ADF pipeline activity events
+                log.LogInformation($"{logPrefix} query log analytics workspace for edi job results (adf pipeline)");
                 List<EdiAdfActivityResult> l3 = await AzureMonitorService.QueryWorkspaceForEdiAdfActivityData(job);
                 if (l3.Count > 0)
                 {
+                    log.LogInformation($"{logPrefix} insert these edi job results (adf pipeline) into azure sql");
                     r3 = await AzureSqlDatabaseService.InsertEdiAdfActivityEvents(job, l3);
                 }
                 else
                 {
-                    log.LogInformation($"{logPrefix} No EDI ADF pipeline activity records found in the Log Analytics workspace");
+                    log.LogInformation($"{logPrefix} no edi adf pipeline activity records found in the log analytics workspace");
                 }
 
-                // Query Log Analytics workspace for EDI Azure Function trace events
+                log.LogInformation($"{logPrefix} query log analytics workspace for edi job results (azure function traces)");
                 List<AzureFunctionTraceResult> l4 = await AzureMonitorService.QueryWorkspaceForAzureFunctionTraceData(job);
                 if (l4.Count > 0)
                 {
+                    log.LogInformation($"{logPrefix} insert these edi job results (azure function traces) into azure sql");
                     r4 = await AzureSqlDatabaseService.InsertEdiAzureFunctionTraceRecords(job, l4);
                 }
                 else
                 {
-                    log.LogInformation($"{logPrefix} No EDI ADF pipeline activity records found in the Log Analytics workspace");
+                    log.LogInformation($"{logPrefix} no edi adf pipeline activity records found in the log analytics workspace");
                 }
 
-                EdiImportJobStats jobStatsSummarySucceeded = new()
+                EdiMaintJobStats results = new()
                 {
                     EdiFunctionApp = EdiFunctionAppsEnum.Name.EDI_MAINT,
-                    EdiJobEventType = EdiJobImportEventEnum.Name.EDI_IMPORTER_RESULT,
-                    EdiJobName = EdiJobImportFunctionEnum.Name.EDI_MAINT_IMPORTER,
-                    EdiJobStatus = EdiJobImportStatusNameEnum.Name.SUCCESS,
+                    EdiJobEventType = EdiMaintJobEventEnum.Name.EDI_IMPORTER_RESULT,
+                    EdiJobName = EdiFunctionsEnum.Name.EDI_MAINT_IMPORTER,
+                    EdiJobStatus = EdiMaintJobStatusEnum.Name.SUCCESS,
                     Queried = r1.Queried + r2.Queried + r3.Queried + r4.Queried,
                     Loaded = r1.Loaded + r2.Loaded + r3.Loaded + r4.Loaded,
                     Skipped = r1.Skipped + r2.Skipped + r3.Skipped + r4.Skipped,
                     Failed = r1.Failed + r2.Failed + r3.Failed + r4.Failed
                 };
-                AzureAppInsightsService.LogEvent(jobStatsSummarySucceeded);
+                log.LogInformation($"{logPrefix} overall import results");
+                log.LogInformation($"{logPrefix} - function app name ......................: {results.EdiFunctionApp}");
+                log.LogInformation($"{logPrefix} - maint job event type ...................: {results.EdiJobEventType}");
+                log.LogInformation($"{logPrefix} - maint job name .........................: {results.EdiJobName}");
+                log.LogInformation($"{logPrefix} - maint job status .......................: {results.EdiJobStatus}");
+                log.LogInformation($"{logPrefix} - total events ...........................: {results.Queried}");
+                log.LogInformation($"{logPrefix} - events loaded into db ..................: {results.Loaded}");
+                log.LogInformation($"{logPrefix} - events not loaded into db (duplicates) .: {results.Skipped}");
+                log.LogInformation($"{logPrefix} - events not loaded into db (failed) .....: {results.Failed}");
+
+                AzureAppInsightsService.LogEvent(results);
+                log.LogInformation($"{logPrefix} done");
             }
             catch (Exception ex)
             {
-                EdiImportJobStats jobStatsSummaryFailed = new()
+                EdiMaintJobStats jobStatsSummaryFailed = new()
                 {
                     EdiFunctionApp = EdiFunctionAppsEnum.Name.EDI_MAINT,
-                    EdiJobEventType = EdiJobImportEventEnum.Name.EDI_IMPORTER_RESULT,
-                    EdiJobName = EdiJobImportFunctionEnum.Name.EDI_MAINT_IMPORTER,
-                    EdiJobStatus = EdiJobImportStatusNameEnum.Name.FAILED,
+                    EdiJobEventType = EdiMaintJobEventEnum.Name.EDI_IMPORTER_RESULT,
+                    EdiJobName = EdiFunctionsEnum.Name.EDI_MAINT_IMPORTER,
+                    EdiJobStatus = EdiMaintJobStatusEnum.Name.FAILED,
                     ExceptionMessage = ex.Message,
                     Queried = r1.Queried + r2.Queried + r3.Queried + r4.Queried,
                     Loaded = r1.Loaded + r2.Loaded + r3.Loaded + r4.Loaded,

@@ -16,15 +16,15 @@ namespace lib_edi.Models.Edi.Job
         public EdiJobInfo()
         {
             EdiDb = new AzureSqlDbConnectInfo();
-            ApplicationName = "EDI Jobs Status Email Report";
+            //ApplicationName = "EDI Maintenance";
             EdiLaw = new AzureLogAnalyticsInfo();
         }
         public Guid JobId { get; set; }
-        public string ApplicationName { get; set; }
+        //public string ApplicationName { get; set; }
         public EdiFunctionsEnum.Name FunctionName { get; set; }
         public AzureSqlDbConnectInfo EdiDb { get; set; }
         public AzureLogAnalyticsInfo EdiLaw { get; set; }
         public SendGridConnectInfo EdiSendGrid { get; set; }
-        public ILogger Logger { get; set; }
+        //public ILogger Logger { get; set; }
     }
 }

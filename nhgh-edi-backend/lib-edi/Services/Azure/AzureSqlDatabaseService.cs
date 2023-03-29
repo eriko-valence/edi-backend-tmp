@@ -4,6 +4,7 @@ using lib_edi.Models.Azure.Sql.Query;
 using lib_edi.Models.Edi.Data.Import;
 using lib_edi.Models.Edi.Job;
 using lib_edi.Models.Edi.Job.EmailReport;
+using lib_edi.Models.SendGrid;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -48,9 +49,9 @@ namespace lib_edi.Services.Azure
         /// <remarks>
         /// NHGH-2490 (2022.08.15 - 1825) Added method
         /// </remarks>
-        public static async Task<EdiImportJobStats> InsertEdiJobStatusEvents(EdiJobInfo job, List<EdiJobStatusResult> list)
+        public static async Task<EdiMaintJobStats> InsertEdiJobStatusEvents(EdiJobInfo job, List<EdiJobStatusResult> list)
         {
-            EdiImportJobStats jobStats = new();
+            EdiMaintJobStats jobStats = new();
 
             //logger.LogInfo("insert edi job status events into database", job);
             //logger.LogInfo(" - records to load: " + list.Count, job);
@@ -146,9 +147,9 @@ namespace lib_edi.Services.Azure
         /// <remarks>
         /// NHGH-2490 (2022.08.15 - 1825) Added method
         /// </remarks>
-        public static async Task<EdiImportJobStats> InsertEdiPipelineEvents(EdiJobInfo job, List<EdiPipelineEventResult> list)
+        public static async Task<EdiMaintJobStats> InsertEdiPipelineEvents(EdiJobInfo job, List<EdiPipelineEventResult> list)
         {
-            EdiImportJobStats jobStats = new();
+            EdiMaintJobStats jobStats = new();
             //logger.LogInfo("insert edi job pipeline events into database", job);
             //logger.LogInfo(" - records to load: " + list.Count, job);
             jobStats.Queried = list.Count;
@@ -250,9 +251,9 @@ namespace lib_edi.Services.Azure
         /// <remarks>
         /// NHGH-2490 (2022.08.15 - 1825) Added method
         /// </remarks>
-        public static async Task<EdiImportJobStats> InsertEdiAdfActivityEvents(EdiJobInfo job, List<EdiAdfActivityResult> list)
+        public static async Task<EdiMaintJobStats> InsertEdiAdfActivityEvents(EdiJobInfo job, List<EdiAdfActivityResult> list)
         {
-            EdiImportJobStats jobStats = new();
+            EdiMaintJobStats jobStats = new();
             //logger.LogInfo("load edi adf pipeline activity events into database ", job);
             //logger.LogInfo(" - records to load: " + list.Count, job);
             jobStats.Queried = list.Count;
@@ -353,10 +354,10 @@ namespace lib_edi.Services.Azure
         /// <remarks>
         /// NHGH-2511 (2022.09.01 - 1340) Added method
         /// </remarks>
-        public static async Task<EdiImportJobStats> InsertEdiAzureFunctionTraceRecords(EdiJobInfo job, List<AzureFunctionTraceResult> list)
+        public static async Task<EdiMaintJobStats> InsertEdiAzureFunctionTraceRecords(EdiJobInfo job, List<AzureFunctionTraceResult> list)
         {
             //Dictionary<string, string> jobStats = new();
-            EdiImportJobStats jobStats = new();
+            EdiMaintJobStats jobStats = new();
             //logger.LogInfo("insert azure function trace events into sql db", job);
             //logger.LogInfo(" - records to load: " + list.Count, job);
             //jobStats.Add("total_edi_events_queried", list.Count.ToString());
@@ -464,10 +465,10 @@ namespace lib_edi.Services.Azure
         /// <remarks>
         /// NHGH-2506 (2022.08.13 - 0750) Added method
         /// </remarks>
-        public static async Task<EdiImportJobStats> InsertEdiDataImporterJobResults(EdiJobInfo job, List<DataImporterAppEvent> list)
+        public static async Task<EdiMaintJobStats> InsertEdiDataImporterJobResults(EdiJobInfo job, List<DataImporterAppEvent> list)
         {
             //Dictionary<string, string> jobStats = new();
-            EdiImportJobStats jobStats = new();
+            EdiMaintJobStats jobStats = new();
             //logger.LogInfo("insert data importer job results into sql db", job);
             //logger.LogInfo(" - records to load: " + list.Count, job);
             jobStats.Queried = list.Count;

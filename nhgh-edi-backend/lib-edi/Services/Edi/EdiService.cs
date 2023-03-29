@@ -1,5 +1,6 @@
 ﻿using lib_edi.Models.Azure.KeyVault;
 using lib_edi.Models.Azure.LogAnalytics;
+using lib_edi.Models.Azure.Sql.Connection;
 using lib_edi.Models.Edi.Job;
 using lib_edi.Models.Edi.Job.EmailReport;
 using lib_edi.Models.Enums.Edi.Functions;
@@ -29,8 +30,8 @@ namespace lib_edi.Services.Edi
                 SecretNameDbServer = "AzureSqlServerName-Edi"
             };
             job.JobId = Guid.NewGuid();
-            job.EdiDb = AzureKeyVaultService.GetDatabaseCredentials(job.ApplicationName, sqlDbSecretKeys);
-            job.EdiDb.ConnectionString = AzureSqlDatabaseService.BuildConnectionString(job.ApplicationName, job.EdiDb);
+            job.EdiDb = AzureKeyVaultService.GetDatabaseCredentials(funcName.ToString(), sqlDbSecretKeys);
+            job.EdiDb.ConnectionString = AzureSqlDatabaseService.BuildConnectionString(funcName.ToString(), job.EdiDb);
             job.EdiSendGrid = GetDailyStatusEmailReportSendGridSettings();
             return job;
         }
@@ -42,7 +43,7 @@ namespace lib_edi.Services.Edi
                 FunctionName = funcName,
                 EdiLaw = GetAzureLogAnalyticsInfo()
             };
-
+            /*
             SqlDbSecretKeys sqlDbSecretKeys = new()
             {
                 SecretNameUserId = "AzureSqlServerLoginName-Edi",
@@ -50,9 +51,11 @@ namespace lib_edi.Services.Edi
                 SecretNameDbName = "AzureSqlDatabaseName-Edi",
                 SecretNameDbServer = "AzureSqlServerName-Edi"
             };
+            */
             job.JobId = Guid.NewGuid();
-            job.EdiDb = AzureKeyVaultService.GetDatabaseCredentials(job.ApplicationName, sqlDbSecretKeys);
-            job.EdiDb.ConnectionString = AzureSqlDatabaseService.BuildConnectionString(job.ApplicationName, job.EdiDb);
+            //job.EdiDb = AzureKeyVaultService.GetDatabaseCredentials(job.ApplicationName, sqlDbSecretKeys);
+            job.EdiDb = GetDatabaseCredentials();
+            job.EdiDb.ConnectionString = AzureSqlDatabaseService.BuildConnectionString(funcName.ToString(), job.EdiDb);
 
             return job;
         }
@@ -83,9 +86,9 @@ namespace lib_edi.Services.Edi
         public static SendGridConnectInfo GetDailyStatusEmailReportSendGridSettings()
         {
             SendGridConnectInfo settings = new SendGridConnectInfo();
-            settings.ApiKey = Environment.GetEnvironmentVariable("SENDGRID_KEY");
-            settings.TemplateID = Environment.GetEnvironmentVariable("SENDGRID_JOB_MONITOR_TEMPLATE_ID");
-            settings.FromEmailAddress = Environment.GetEnvironmentVariable("SENDGRID_FROM_EMAIL_ADDRESS");
+            settings.ApiKey = Environment.GetEnvironmentVariable("EDI_SENDGRID_KEY");
+            settings.TemplateID = Environment.GetEnvironmentVariable("EDI_SENDGRID_JOB_MONITOR_TEMPLATE_ID");
+            settings.FromEmailAddress = Environment.GetEnvironmentVariable("EDI_SENDGRID_FROM_EMAIL_ADDRESS");
             settings.EmailReceipients = Environment.GetEnvironmentVariable("EDI_DAILY_STATUS_REPORT_RECEIPIENTS");
             settings.EmailSubjectLine = Environment.GetEnvironmentVariable("EDI_DAILY_STATUS_REPORT_SUBJECT_LINE");
             if (settings.ApiKey == null) { return null; }
@@ -94,6 +97,20 @@ namespace lib_edi.Services.Edi
             if (settings.EmailReceipients == null) { return null; }
             if (settings.EmailSubjectLine == null) { return null; }
             return settings;
+        }
+
+        public static AzureSqlDbConnectInfo GetDatabaseCredentials()
+        {
+            AzureSqlDbConnectInfo azureSqlDbConnectInfo = new AzureSqlDbConnectInfo();
+            azureSqlDbConnectInfo.Name = Environment.GetEnvironmentVariable("EDI_AZURE_SQL_DATABASE_NAME");
+            azureSqlDbConnectInfo.Server = Environment.GetEnvironmentVariable("EDI_AZURE_SQL_SERVER_NAME");
+            azureSqlDbConnectInfo.UserId = Environment.GetEnvironmentVariable("EDI_AZURE_SQL_USERID");
+            azureSqlDbConnectInfo.Password = Environment.GetEnvironmentVariable("EDI_AZURE_SQL_PASSWD");
+            if (azureSqlDbConnectInfo.Name == null) { return null; }
+            if (azureSqlDbConnectInfo.Server == null) { return null; }
+            if (azureSqlDbConnectInfo.UserId == null) { return null; }
+            if (azureSqlDbConnectInfo.Password == null) { return null; }
+            return azureSqlDbConnectInfo;
         }
     }
 }
