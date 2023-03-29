@@ -15,7 +15,10 @@ namespace lib_edi.Models.Enums.Edi.Data.Import
             CFD50_MFOX_EXPORT,
             EDI_EVENTS,
             IMPORT_EVENTS,
-            EDI_MAINT
+            EDI_MAINT,
+            EDI_MAINT_IMPORTER,
+            EDI_MAINT_IMPORTER_MONITOR,
+            EDI_MAINT_EMAIL_REPORT
         }
     }
 }

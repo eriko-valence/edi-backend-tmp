@@ -17,12 +17,16 @@ namespace fa_maint
 {
     public class EdiImporterMonitor
     {
-        [FunctionName("EdiImporterMonitor")]
+        [FunctionName("edi-maint-importer-monitor")]
         public async Task RunAsync([TimerTrigger("%CRON_SCHEDULE_DATA_IMPORT_TELEMEMTRY_IMPORTER%"
+            
             
             #if DEBUG
             , RunOnStartup=true
             #endif
+            
+           
+            
             
             )] TimerInfo schedule, ILogger log)
         {
@@ -39,10 +43,10 @@ namespace fa_maint
             try
             {
                 EdiJobInfo job = EdiService.InitializeMaintJobImportEvents(EdiFunctionsEnum.Name.EDI_JOB_STATUS_IMPORTER_IMPORTER);
-                List<DataImporterAppEvent> l1 = await AzureMonitorService.QueryWorkspaceForDataImporterJobResults(job);
+                List<DataImporterAppEvent> l1 = await AzureMonitorService.QueryWorkspaceForEdiMaintEvents(job);
                 if (l1.Count > 0)
                 {
-                    r1 = await AzureSqlDatabaseService.InsertDataImporterJobResults(job, l1);
+                    r1 = await AzureSqlDatabaseService.InsertEdiDataImporterJobResults(job, l1);
                 }
                 else
                 {
@@ -51,8 +55,9 @@ namespace fa_maint
 
                 EdiImportJobStats jobStatsSummarySucceeded = new()
                 {
+                    EdiFunctionApp = EdiFunctionAppsEnum.Name.EDI_MAINT,
                     EdiJobEventType = EdiJobImportEventEnum.Name.EDI_IMPORTER_MONITOR_RESULT,
-                    EdiJobName = EdiJobImportFunctionEnum.Name.EDI_MAINT,
+                    EdiJobName = EdiJobImportFunctionEnum.Name.EDI_MAINT_IMPORTER_MONITOR,
                     EdiJobStatus = EdiJobImportStatusNameEnum.Name.SUCCESS,
                     Queried = r1.Queried,
                     Loaded = r1.Loaded,
@@ -65,8 +70,9 @@ namespace fa_maint
             {
                 EdiImportJobStats jobStatsSummaryFailed = new()
                 {
+                    EdiFunctionApp = EdiFunctionAppsEnum.Name.EDI_MAINT,
                     EdiJobEventType = EdiJobImportEventEnum.Name.EDI_IMPORTER_MONITOR_RESULT,
-                    EdiJobName = EdiJobImportFunctionEnum.Name.EDI_MAINT,
+                    EdiJobName = EdiJobImportFunctionEnum.Name.EDI_MAINT_IMPORTER_MONITOR,
                     EdiJobStatus = EdiJobImportStatusNameEnum.Name.FAILED,
                     ExceptionMessage = ex.Message,
                     Queried = r1.Queried,

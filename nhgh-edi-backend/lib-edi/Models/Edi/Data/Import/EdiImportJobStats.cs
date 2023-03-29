@@ -1,4 +1,5 @@
 ﻿using lib_edi.Models.Enums.Edi.Data.Import;
+using lib_edi.Models.Enums.Edi.Functions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,6 +11,10 @@ namespace lib_edi.Models.Edi.Data.Import
 {
     public class EdiImportJobStats
     {
+        
+        [JsonIgnore]
+        public EdiFunctionAppsEnum.Name EdiFunctionApp { get; set; }
+
         [JsonPropertyName("job_name")]
         public EdiJobImportFunctionEnum.Name EdiJobName { get; set; }
         [JsonPropertyName("job_result")]

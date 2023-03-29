@@ -464,7 +464,7 @@ namespace lib_edi.Services.Azure
         /// <remarks>
         /// NHGH-2506 (2022.08.13 - 0750) Added method
         /// </remarks>
-        public static async Task<EdiImportJobStats> InsertDataImporterJobResults(EdiJobInfo job, List<DataImporterAppEvent> list)
+        public static async Task<EdiImportJobStats> InsertEdiDataImporterJobResults(EdiJobInfo job, List<DataImporterAppEvent> list)
         {
             //Dictionary<string, string> jobStats = new();
             EdiImportJobStats jobStats = new();
@@ -487,7 +487,7 @@ namespace lib_edi.Services.Azure
                     using (SqlCommand cmd = conn.CreateCommand())
                     {
                         cmd.CommandType = CommandType.StoredProcedure;
-                        cmd.CommandText = "[telemetry].[uspCreateEdiImporterResult]";
+                        cmd.CommandText = "[telemetry].[uspCreateEdiMaintEvent]";
                         cmd.Parameters.Add(new SqlParameter("@EventTime", SqlDbType.DateTimeOffset));
                         cmd.Parameters.Add(new SqlParameter("@EventsLoaded", SqlDbType.Int));
                         cmd.Parameters.Add(new SqlParameter("@EventsQueried", SqlDbType.Int));

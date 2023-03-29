@@ -352,7 +352,7 @@ namespace lib_edi.Services.Azure
                 configuration.InstrumentationKey = Environment.GetEnvironmentVariable("APPINSIGHTS_INSTRUMENTATIONKEY");
                 telemetryClient = new TelemetryClient(configuration);
             }
-            telemetryClient.TrackEvent(jobStats.EdiJobEventType.ToString(), customProps);
+            telemetryClient.TrackEvent(jobStats.EdiFunctionApp.ToString(), customProps);
 
         }
 

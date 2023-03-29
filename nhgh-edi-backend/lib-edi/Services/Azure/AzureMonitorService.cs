@@ -274,12 +274,12 @@ namespace lib_edi.Services.Azure
         /// <remarks>
         /// NHGH-2506 (2022.08.13 - 0750) Added method
         /// </remarks>
-        public static async Task<List<DataImporterAppEvent>> QueryWorkspaceForDataImporterJobResults(EdiJobInfo job)
+        public static async Task<List<DataImporterAppEvent>> QueryWorkspaceForEdiMaintEvents(EdiJobInfo job)
         {
             try
             {
                 string query = @"AppEvents 
-                    | where Name in~ (""EDI_IMPORTER_RESULT"") 
+                    | where Name in~ (""EDI_MAINT"") 
                     | extend
                         eventsLoaded = Properties.loaded, 
                         eventsQueried = Properties.queried, 

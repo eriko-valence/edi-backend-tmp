@@ -19,8 +19,16 @@ namespace fa_maint
 {
     public static class EdiStatusEmail
     {
-        [FunctionName("send-daily-status-report-email")]
-        public static async Task Run([TimerTrigger("%EDI_DAILY_STATUS_REPORT_TIMER_SCHEDULE%")] TimerInfo timerInfo, ILogger log)
+        [FunctionName("edi-maint-email-report")]
+        public static async Task Run([TimerTrigger("%EDI_DAILY_STATUS_REPORT_TIMER_SCHEDULE%"
+            
+            /*
+            #if DEBUG
+            , RunOnStartup=true
+            #endif
+            */
+           
+            )] TimerInfo timerInfo, ILogger log)
         //public static async Task Run(ILogger log)
         {
             try
@@ -35,18 +43,20 @@ namespace fa_maint
 
                 EdiImportJobStats jobStatsSummarySucceeded = new()
                 {
+                    EdiFunctionApp = EdiFunctionAppsEnum.Name.EDI_MAINT,
                     EdiJobEventType = EdiJobImportEventEnum.Name.EDI_STATUS_EMAIL_RESULT,
-                    EdiJobName = EdiJobImportFunctionEnum.Name.EDI_MAINT,
+                    EdiJobName = EdiJobImportFunctionEnum.Name.EDI_MAINT_EMAIL_REPORT,
                     EdiJobStatus = EdiJobImportStatusNameEnum.Name.SUCCESS,
                 };
-                //AzureAppInsightsService.LogEvent(jobStatsSummarySucceeded);
+                AzureAppInsightsService.LogEvent(jobStatsSummarySucceeded);
 
             } catch (Exception ex)
             {
                 EdiImportJobStats jobStatsSummaryFailed = new()
                 {
+                    EdiFunctionApp = EdiFunctionAppsEnum.Name.EDI_MAINT,
                     EdiJobEventType = EdiJobImportEventEnum.Name.EDI_STATUS_EMAIL_RESULT,
-                    EdiJobName = EdiJobImportFunctionEnum.Name.EDI_MAINT,
+                    EdiJobName = EdiJobImportFunctionEnum.Name.EDI_MAINT_EMAIL_REPORT,
                     EdiJobStatus = EdiJobImportStatusNameEnum.Name.FAILED,
                     ExceptionMessage = ex.Message
                 };

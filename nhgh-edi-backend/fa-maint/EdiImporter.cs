@@ -20,13 +20,17 @@ namespace fa_maint
 {
     public class EdiImporter
     {
-        [FunctionName("EdiImporter")]
+        [FunctionName("edi-maint-importer")]
         //public static async Task Run( [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequest req, ILogger log)
         //public static async Task Run(ILogger log)
 
         public static async Task Run([TimerTrigger("%EDI_DAILY_STATUS_REPORT_TIMER_SCHEDULE%"
          
-            
+            /*
+            #if DEBUG
+            , RunOnStartup=true
+            #endif
+            */
 
             )] TimerInfo schedule, ILogger log)
         {
@@ -99,8 +103,9 @@ namespace fa_maint
 
                 EdiImportJobStats jobStatsSummarySucceeded = new()
                 {
+                    EdiFunctionApp = EdiFunctionAppsEnum.Name.EDI_MAINT,
                     EdiJobEventType = EdiJobImportEventEnum.Name.EDI_IMPORTER_RESULT,
-                    EdiJobName = EdiJobImportFunctionEnum.Name.EDI_MAINT,
+                    EdiJobName = EdiJobImportFunctionEnum.Name.EDI_MAINT_IMPORTER,
                     EdiJobStatus = EdiJobImportStatusNameEnum.Name.SUCCESS,
                     Queried = r1.Queried + r2.Queried + r3.Queried + r4.Queried,
                     Loaded = r1.Loaded + r2.Loaded + r3.Loaded + r4.Loaded,
@@ -113,8 +118,9 @@ namespace fa_maint
             {
                 EdiImportJobStats jobStatsSummaryFailed = new()
                 {
+                    EdiFunctionApp = EdiFunctionAppsEnum.Name.EDI_MAINT,
                     EdiJobEventType = EdiJobImportEventEnum.Name.EDI_IMPORTER_RESULT,
-                    EdiJobName = EdiJobImportFunctionEnum.Name.EDI_MAINT,
+                    EdiJobName = EdiJobImportFunctionEnum.Name.EDI_MAINT_IMPORTER,
                     EdiJobStatus = EdiJobImportStatusNameEnum.Name.FAILED,
                     ExceptionMessage = ex.Message,
                     Queried = r1.Queried + r2.Queried + r3.Queried + r4.Queried,
