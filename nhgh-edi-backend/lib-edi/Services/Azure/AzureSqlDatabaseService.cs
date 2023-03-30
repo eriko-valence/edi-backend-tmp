@@ -574,8 +574,9 @@ namespace lib_edi.Services.Azure
 
                     try
                         {
-                            cmd.Parameters["@StartDate"].Value = DateTime.Now.AddHours(-144);
-                            cmd.Parameters["@EndDate"].Value = DateTime.Now.AddHours(-2);
+                        
+                        cmd.Parameters["@StartDate"].Value = job.EdiEmailReportParameters.StartDate;
+                        cmd.Parameters["@EndDate"].Value = job.EdiEmailReportParameters.EndDate;
 
                         using var reader = await cmd.ExecuteReaderAsync();
                         DataTable dt = new();
@@ -605,6 +606,50 @@ namespace lib_edi.Services.Azure
                     conn.Close();
                 } // end connection
             return failedEdiJobs;
+        }
+
+        public static async Task<OverallEdiRunStat> GetOverallEdiJobRunStats(EdiJobInfo job)
+        {
+            OverallEdiRunStat overallEdiRunStat = new OverallEdiRunStat();
+            using (SqlConnection conn = new(job.EdiDb.ConnectionString))
+            {
+                conn.Open();
+
+                using (SqlCommand cmd = conn.CreateCommand())
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.CommandText = "[telemetry].[getEdiFilePackagesOverallStats]";
+                    cmd.Parameters.Add(new SqlParameter("@StartDate", SqlDbType.DateTimeOffset));
+                    cmd.Parameters.Add(new SqlParameter("@EndDate", SqlDbType.DateTimeOffset));
+
+                    try
+                    {
+                        cmd.Parameters["@StartDate"].Value = job.EdiEmailReportParameters.StartDate;
+                        cmd.Parameters["@EndDate"].Value = job.EdiEmailReportParameters.EndDate;
+
+                        using var reader = await cmd.ExecuteReaderAsync();
+                        DataTable dt = new();
+                        dt.Load(reader);
+
+                        if (dt.Rows.Count > 0)
+                        {
+                            Console.WriteLine("debug");
+                            overallEdiRunStat.FailedConsumer = Int32.Parse(dt.Rows[0]["FailedConsumer"].ToString());
+                            overallEdiRunStat.FailedProvider = Int32.Parse(dt.Rows[0]["FailedProvider"].ToString());
+                            overallEdiRunStat.FailedTransform = Int32.Parse(dt.Rows[0]["FailedTransform"].ToString());
+                            overallEdiRunStat.FailedSqlLoad = Int32.Parse(dt.Rows[0]["FailedSqlLoad"].ToString());
+                            overallEdiRunStat.SuccessfulJobs = Int32.Parse(dt.Rows[0]["SuccessfulJobs"].ToString());
+                        }
+                    }
+                    catch (Exception)
+                    {
+                        throw;
+                    }
+                }
+
+                conn.Close();
+            } // end connection
+            return overallEdiRunStat;
         }
 
         /*

@@ -17,7 +17,7 @@ using lib_edi.Models.Enums.Edi.Data.Import;
 
 namespace fa_maint
 {
-    public static class EdiStatusEmail
+    public static class EdiEmailReport
     {
         [FunctionName("edi-maint-email-report")]
         public static async Task Run([TimerTrigger("%CRON_SCHEDULE_EDI_EMAIL_REPORT%"
@@ -38,8 +38,10 @@ namespace fa_maint
                 EdiJobInfo job = EdiService.InitializeMaintJobSendReport(EdiFunctionsEnum.Name.EDI_MAINT_EMAIL_REPORT);
                 log.LogInformation($"{logPrefix} get the most recent (last 24 hours) failed edi jobs from the database");
                 List<FailedEdiJob> results = await AzureSqlDatabaseService.GetFailedEdiJobsFromLast24Hours(job);
+                log.LogInformation($"{logPrefix} get the most recent (last 24 hours) failed edi jobs from the database");
+                OverallEdiRunStat overallStats = await AzureSqlDatabaseService.GetOverallEdiJobRunStats(job);
                 log.LogInformation($"{logPrefix} send edi daily job status email report via sendgrid");
-                await SendGridService.SendEdiJobFailuresEmailReport(results, EdiService.GetDailyStatusEmailReportSendGridSettings(), log);
+                await SendGridService.SendEdiJobFailuresEmailReport(results, overallStats, EdiService.GetDailyStatusEmailReportSendGridSettings(), log);
 
                 EdiMaintJobStats jobStatsSummarySucceeded = new()
                 {

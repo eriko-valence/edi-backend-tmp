@@ -1,4 +1,5 @@
-﻿using lib_edi.Models.Azure.KeyVault;
+﻿using Azure.Storage.Blobs.Models;
+using lib_edi.Models.Azure.KeyVault;
 using lib_edi.Models.Azure.LogAnalytics;
 using lib_edi.Models.Azure.Sql.Connection;
 using lib_edi.Models.Edi.Job;
@@ -22,17 +23,21 @@ namespace lib_edi.Services.Edi
             {
                 FunctionName = funcName
             };
-            SqlDbSecretKeys sqlDbSecretKeys = new()
-            {
-                SecretNameUserId = "AzureSqlServerLoginName-Edi",
-                SecretNameUserPw = "AzureSqlServerLoginPass-Edi",
-                SecretNameDbName = "AzureSqlDatabaseName-Edi",
-                SecretNameDbServer = "AzureSqlServerName-Edi"
-            };
-            job.JobId = Guid.NewGuid();
-            job.EdiDb = AzureKeyVaultService.GetDatabaseCredentials(funcName.ToString(), sqlDbSecretKeys);
+            /*
+                SqlDbSecretKeys sqlDbSecretKeys = new()
+                {
+                    SecretNameUserId = "AzureSqlServerLoginName-Edi",
+                    SecretNameUserPw = "AzureSqlServerLoginPass-Edi",
+                    SecretNameDbName = "AzureSqlDatabaseName-Edi",
+                    SecretNameDbServer = "AzureSqlServerName-Edi"
+                };
+                job.JobId = Guid.NewGuid();
+                job.EdiDb = AzureKeyVaultService.GetDatabaseCredentials(funcName.ToString(), sqlDbSecretKeys);
+            */
+            job.EdiDb = GetDatabaseCredentials();
             job.EdiDb.ConnectionString = AzureSqlDatabaseService.BuildConnectionString(funcName.ToString(), job.EdiDb);
             job.EdiSendGrid = GetDailyStatusEmailReportSendGridSettings();
+            job.EdiEmailReportParameters = GetEdiEmailReportParameters();
             return job;
         }
 
@@ -72,7 +77,7 @@ namespace lib_edi.Services.Edi
 
             if (queryHours != null)
             {
-                azureLogAnalyticsInfo.QueryHours = Convert.ToDouble(queryHours);
+                azureLogAnalyticsInfo.QueryHours = Convert.ToInt32(queryHours);
             }
 
             if (azureLogAnalyticsInfo.AzureBlobUriCcdxProvider == null) { return null; }
@@ -111,6 +116,31 @@ namespace lib_edi.Services.Edi
             if (azureSqlDbConnectInfo.UserId == null) { return null; }
             if (azureSqlDbConnectInfo.Password == null) { return null; }
             return azureSqlDbConnectInfo;
+        }
+
+        public static EmailReportParameters GetEdiEmailReportParameters()
+        {
+            EmailReportParameters parameters = new();
+            string queryHours = Environment.GetEnvironmentVariable("EDI_DAILY_STATUS_REPORT_QUERY_HOURS");
+
+            if (queryHours != null)
+            {
+                /*
+                 * NHGH-2855 (2023.03.30 1032) - The EDI Email Report function pulls EDI job tuntime telemetry
+                 * from the EDI Azure SQL database. It takes a few hours for this EDI job runtime telemetry to
+                 * emit to Azure Log Analytics and then Azure SQL. This queryHourOffset variable is used to
+                 * account for this delay. 
+                 */
+                int queryReportHoursOffset = 3;
+                int queryReportHours = ((Convert.ToInt32(queryHours) + queryReportHoursOffset) * -1);
+                parameters.StartDate = DateTime.Now.AddHours(queryReportHours);
+                parameters.EndDate = DateTime.Now.AddHours(queryReportHoursOffset * -1);
+            }
+
+            if (parameters.StartDate == null) { return null; }
+            if (parameters.EndDate == null) { return null; }
+
+            return parameters;
         }
     }
 }

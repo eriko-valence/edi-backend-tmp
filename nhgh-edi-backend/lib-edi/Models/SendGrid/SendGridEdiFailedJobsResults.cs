@@ -20,5 +20,6 @@ namespace lib_edi.Models.SendGrid
         //public int TotalJobsRun { get; set; }
         //public int TotalErrors { get; set; }
         public string Subject { get; set; }
+        public OverallEdiRunStat JobStats { get; set; }
     }
 }
