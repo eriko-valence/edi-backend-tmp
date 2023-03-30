@@ -55,7 +55,7 @@ namespace lib_edi.Services.SendGrid
                     log.LogInformation($"{logPrefix} initializing sendgrid client and message");
                     var client = new SendGridClient(apiKey);
                     var msg = new SendGridMessage();
-                    msg.SetFrom(new EmailAddress(fromEmailAddress, "EDI"));
+                    msg.SetFrom(new EmailAddress(fromEmailAddress, "IT Support"));
                     msg.SetTemplateId(templateId);
 
                     log.LogInformation($"{logPrefix} building email receipient list");

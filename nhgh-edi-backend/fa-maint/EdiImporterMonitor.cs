@@ -33,6 +33,8 @@ namespace fa_maint
             // track import job results using these objects
             EdiMaintJobStats r1 = new();
 
+            string logPrefix = "- [edi_importer_monitor->run]: ";
+
             //OtaLoggerService logger = new(log);
             //if (schedule is null)
             //{
@@ -42,15 +44,23 @@ namespace fa_maint
             log.LogInformation($"[DataImportTelemetryImporter:RunAsync] Triggered at: {DateTime.Now}");
             try
             {
+                log.LogInformation($"{logPrefix} retrieve azure sql and log analytics connection information");
                 EdiJobInfo job = EdiService.InitializeMaintJobImportEvents(EdiFunctionsEnum.Name.EDI_MAINT_IMPORTER_MONITOR);
+                log.LogInformation($"{logPrefix} - job.edilaw.workspaceid ..............: {job.EdiLaw.WorkspaceId}");
+                log.LogInformation($"{logPrefix} - job.edilaw.azurebloburiccdxprovider .: {job.EdiLaw.AzureBlobUriCcdxProvider}");
+                log.LogInformation($"{logPrefix} - job.edilaw.queryhours ...............: {job.EdiLaw.QueryHours}");
+                log.LogInformation($"{logPrefix} - job.edidb.name ......................: {job.EdiDb.Name}");
+                log.LogInformation($"{logPrefix} - job.edidb.server ....................: {job.EdiDb.Server}");
+                log.LogInformation($"{logPrefix} retrieve telmetry from azure log analytics");
                 List<DataImporterAppEvent> l1 = await AzureMonitorService.QueryWorkspaceForEdiMaintEvents(job);
                 if (l1.Count > 0)
                 {
+                    log.LogInformation($"{logPrefix} insert telmetry into azure sql");
                     r1 = await AzureSqlDatabaseService.InsertEdiDataImporterJobResults(job, l1);
                 }
                 else
                 {
-                    log.LogInformation($"[DataImportTelemetryImporter:RunAsync] No EDI job status records found in the Log Analytics workspace");
+                    log.LogInformation($"{logPrefix} no telmetry found in azure log analytics");
                 }
 
                 EdiMaintJobStats jobStatsSummarySucceeded = new()
@@ -64,6 +74,13 @@ namespace fa_maint
                     Skipped = r1.Skipped,
                     Failed = r1.Failed
                 };
+
+                log.LogInformation($"{logPrefix} - function app name ........: {jobStatsSummarySucceeded.EdiFunctionApp}");
+                log.LogInformation($"{logPrefix} - import results");
+                log.LogInformation($"{logPrefix}   - total telemetry events .: {jobStatsSummarySucceeded.Queried}");
+                log.LogInformation($"{logPrefix}     - loaded ...............: {jobStatsSummarySucceeded.Loaded}");
+                log.LogInformation($"{logPrefix}     - failed ...............: {jobStatsSummarySucceeded.Failed}");
+
                 AzureAppInsightsService.LogEvent(jobStatsSummarySucceeded);
             }
             catch (Exception ex)

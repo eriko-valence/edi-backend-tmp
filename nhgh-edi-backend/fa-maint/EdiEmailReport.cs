@@ -31,14 +31,22 @@ namespace fa_maint
             )] TimerInfo timerInfo, ILogger log)
         //public static async Task Run(ILogger log)
         {
+            string logPrefix = "- [edi-email-report->run]: ";
+
             try
             {
-                string logPrefix = "- [monitor_job_status_time_trigger_function->run]: ";
-                log.LogInformation($"{logPrefix} retrieve azure sql database connection information from azure key vault");
+                log.LogInformation($"{logPrefix} retrieve azure sql and sendgrid connection information");
                 EdiJobInfo job = EdiService.InitializeMaintJobSendReport(EdiFunctionsEnum.Name.EDI_MAINT_EMAIL_REPORT);
-                log.LogInformation($"{logPrefix} get the most recent (last 24 hours) failed edi jobs from the database");
+                log.LogInformation($"{logPrefix} - job.edisendgrid.templateid ..........: {job.EdiSendGrid.TemplateID}");
+                log.LogInformation($"{logPrefix} - job.edisendgrid.emailreceipients ....: {job.EdiSendGrid.EmailReceipients}");
+                log.LogInformation($"{logPrefix} - job.edisendgrid.emailsubjectline ....: {job.EdiSendGrid.EmailSubjectLine}");
+                log.LogInformation($"{logPrefix} - job.edidb.name ......................: {job.EdiDb.Name}");
+                log.LogInformation($"{logPrefix} - job.edidb.server ....................: {job.EdiDb.Server}");
+                log.LogInformation($"{logPrefix} - job.edireportparameters.startdate ...: {job.EdiEmailReportParameters.StartDate}");
+                log.LogInformation($"{logPrefix} - job.edireportparameters.enddate......: {job.EdiEmailReportParameters.EndDate}");
+                log.LogInformation($"{logPrefix} get recent edi job runtime telemetry from azure sql");
                 List<FailedEdiJob> results = await AzureSqlDatabaseService.GetFailedEdiJobsFromLast24Hours(job);
-                log.LogInformation($"{logPrefix} get the most recent (last 24 hours) failed edi jobs from the database");
+                log.LogInformation($"{logPrefix} get recent edi job runtime overall telemetry from azure sql");
                 OverallEdiRunStat overallStats = await AzureSqlDatabaseService.GetOverallEdiJobRunStats(job);
                 log.LogInformation($"{logPrefix} send edi daily job status email report via sendgrid");
                 await SendGridService.SendEdiJobFailuresEmailReport(results, overallStats, EdiService.GetDailyStatusEmailReportSendGridSettings(), log);
@@ -50,10 +58,21 @@ namespace fa_maint
                     EdiJobName = EdiFunctionsEnum.Name.EDI_MAINT_EMAIL_REPORT,
                     EdiJobStatus = EdiMaintJobStatusEnum.Name.SUCCESS,
                 };
+
+                log.LogInformation($"{logPrefix} overall job runtime stats");
+                log.LogInformation($"{logPrefix} - sucessful jobs count ....: {overallStats.SuccessfulJobs}");
+                log.LogInformation($"{logPrefix} - failed job counts");
+                log.LogInformation($"{logPrefix}   - failures at provider ..: {overallStats.FailedProvider}");
+                log.LogInformation($"{logPrefix}   - failures at consumer ..: {overallStats.FailedConsumer}");
+                log.LogInformation($"{logPrefix}   - failures at transform .: {overallStats.FailedTransform}");
+                log.LogInformation($"{logPrefix}   - failures at sql .......: {overallStats.FailedSqlLoad}");
                 AzureAppInsightsService.LogEvent(jobStatsSummarySucceeded);
+                log.LogInformation($"{logPrefix} done");
 
             } catch (Exception ex)
             {
+                log.LogInformation($"{logPrefix} exception thrown");
+                log.LogError(ex.Message);
                 EdiMaintJobStats jobStatsSummaryFailed = new()
                 {
                     EdiFunctionApp = EdiFunctionAppsEnum.Name.EDI_MAINT,
