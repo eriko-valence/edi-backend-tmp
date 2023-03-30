@@ -45,7 +45,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Archives", "Archives", "{E0
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "fa-ccdx-consumer-varo", "fa-ccdx-consumer-varo\fa-ccdx-consumer-varo.csproj", "{11A92166-8691-40EA-A374-413EB0049D8E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "fa-adf-transform-varo", "fa-adf-transform-varo\fa-adf-transform-varo.csproj", "{536FFE09-2BAD-4709-A284-EC7FE4F7ABF8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "fa-adf-transform-varo", "fa-adf-transform-varo\fa-adf-transform-varo.csproj", "{536FFE09-2BAD-4709-A284-EC7FE4F7ABF8}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "fa-maint", "fa-maint\fa-maint.csproj", "{228C2535-B095-4FCD-BF61-7EE819D3F22F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -99,6 +101,10 @@ Global
 		{536FFE09-2BAD-4709-A284-EC7FE4F7ABF8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{536FFE09-2BAD-4709-A284-EC7FE4F7ABF8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{536FFE09-2BAD-4709-A284-EC7FE4F7ABF8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{228C2535-B095-4FCD-BF61-7EE819D3F22F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{228C2535-B095-4FCD-BF61-7EE819D3F22F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{228C2535-B095-4FCD-BF61-7EE819D3F22F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{228C2535-B095-4FCD-BF61-7EE819D3F22F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -116,6 +122,7 @@ Global
 		{E0D78769-E7C6-4582-A7EF-73B80AA6700E} = {761AB3F9-AC47-4B1E-AD35-F4973212991A}
 		{11A92166-8691-40EA-A374-413EB0049D8E} = {9349330D-2771-4357-9C93-C161C31DC480}
 		{536FFE09-2BAD-4709-A284-EC7FE4F7ABF8} = {9349330D-2771-4357-9C93-C161C31DC480}
+		{228C2535-B095-4FCD-BF61-7EE819D3F22F} = {9349330D-2771-4357-9C93-C161C31DC480}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {48FE592C-9504-419F-8FC2-6D997B1FCAAA}
