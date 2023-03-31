@@ -22,10 +22,11 @@ namespace fa_maint
         [FunctionName("edi-maint-email-report")]
         public static async Task Run([TimerTrigger("%CRON_SCHEDULE_EDI_EMAIL_REPORT%"
             
-            
+            /*
             #if DEBUG
             , RunOnStartup=true
             #endif
+            */
             
            
             )] TimerInfo timerInfo, ILogger log)
