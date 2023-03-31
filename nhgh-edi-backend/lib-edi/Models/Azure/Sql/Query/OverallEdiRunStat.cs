@@ -12,8 +12,8 @@ namespace lib_edi.Models.Azure.Sql.Query
         public int FailedConsumer { get; set; }
         public int FailedTransform { get; set; }
         public int FailedSqlLoad { get; set; }
-        public int SuccessfulJobs { get; set; }
         public int TotalFailedJobs { get; set; }
+        public int SuccessfulJobs { get; set; }
         public int TotalJobs { get; set; }
     }
 }
