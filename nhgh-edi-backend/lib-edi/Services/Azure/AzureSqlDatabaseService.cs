@@ -633,12 +633,22 @@ namespace lib_edi.Services.Azure
 
                         if (dt.Rows.Count > 0)
                         {
-                            Console.WriteLine("debug");
-                            overallEdiRunStat.FailedConsumer = Int32.Parse(dt.Rows[0]["FailedConsumer"].ToString());
-                            overallEdiRunStat.FailedProvider = Int32.Parse(dt.Rows[0]["FailedProvider"].ToString());
-                            overallEdiRunStat.FailedTransform = Int32.Parse(dt.Rows[0]["FailedTransform"].ToString());
-                            overallEdiRunStat.FailedSqlLoad = Int32.Parse(dt.Rows[0]["FailedSqlLoad"].ToString());
-                            overallEdiRunStat.SuccessfulJobs = Int32.Parse(dt.Rows[0]["SuccessfulJobs"].ToString());
+                            int failedConsumer = Int32.Parse(dt.Rows[0]["FailedConsumer"].ToString());
+                            int failedProvider = Int32.Parse(dt.Rows[0]["FailedProvider"].ToString());
+                            int failedTransform = Int32.Parse(dt.Rows[0]["FailedTransform"].ToString());
+                            int failedSqlLoad = Int32.Parse(dt.Rows[0]["FailedSqlLoad"].ToString());
+                            int succesfulJobs = Int32.Parse(dt.Rows[0]["SuccessfulJobs"].ToString());
+
+                            int totalFailedJobs = (failedConsumer + failedProvider + failedTransform + failedSqlLoad);
+                            int totalJobs = (succesfulJobs + totalFailedJobs);
+
+                            overallEdiRunStat.FailedConsumer = failedConsumer;
+                            overallEdiRunStat.FailedProvider = failedProvider;
+                            overallEdiRunStat.FailedTransform = failedTransform;
+                            overallEdiRunStat.FailedSqlLoad = failedSqlLoad;
+                            overallEdiRunStat.SuccessfulJobs = succesfulJobs;
+                            overallEdiRunStat.TotalJobs = totalJobs;
+                            overallEdiRunStat.TotalFailedJobs = totalFailedJobs;
                         }
                     }
                     catch (Exception)

@@ -22,10 +22,11 @@ namespace fa_maint
         [FunctionName("edi-maint-email-report")]
         public static async Task Run([TimerTrigger("%CRON_SCHEDULE_EDI_EMAIL_REPORT%"
             
-            
+            /*
             #if DEBUG
             , RunOnStartup=true
             #endif
+            */
             
            
             )] TimerInfo timerInfo, ILogger log)
@@ -42,8 +43,8 @@ namespace fa_maint
                 log.LogInformation($"{logPrefix} - job.edisendgrid.emailsubjectline ....: {job.EdiSendGrid.EmailSubjectLine}");
                 log.LogInformation($"{logPrefix} - job.edidb.name ......................: {job.EdiDb.Name}");
                 log.LogInformation($"{logPrefix} - job.edidb.server ....................: {job.EdiDb.Server}");
-                log.LogInformation($"{logPrefix} - job.edireportparameters.startdate ...: {job.EdiEmailReportParameters.StartDate}");
-                log.LogInformation($"{logPrefix} - job.edireportparameters.enddate......: {job.EdiEmailReportParameters.EndDate}");
+                log.LogInformation($"{logPrefix} - job.query.startdate (utc) ...........: {job.EdiEmailReportParameters.StartDate}");
+                log.LogInformation($"{logPrefix} - job.query.enddate (utc)..............: {job.EdiEmailReportParameters.EndDate}");
                 log.LogInformation($"{logPrefix} get recent edi job runtime telemetry from azure sql");
                 List<FailedEdiJob> results = await AzureSqlDatabaseService.GetFailedEdiJobsFromLast24Hours(job);
                 log.LogInformation($"{logPrefix} get recent edi job runtime overall telemetry from azure sql");
@@ -60,12 +61,13 @@ namespace fa_maint
                 };
 
                 log.LogInformation($"{logPrefix} overall job runtime stats");
-                log.LogInformation($"{logPrefix} - sucessful jobs count ....: {overallStats.SuccessfulJobs}");
-                log.LogInformation($"{logPrefix} - failed job counts");
-                log.LogInformation($"{logPrefix}   - failures at provider ..: {overallStats.FailedProvider}");
-                log.LogInformation($"{logPrefix}   - failures at consumer ..: {overallStats.FailedConsumer}");
-                log.LogInformation($"{logPrefix}   - failures at transform .: {overallStats.FailedTransform}");
-                log.LogInformation($"{logPrefix}   - failures at sql .......: {overallStats.FailedSqlLoad}");
+                log.LogInformation($"{logPrefix} - total jobs count ........: {overallStats.TotalJobs}");
+                log.LogInformation($"{logPrefix}   - sucessful jobs count ....: {overallStats.SuccessfulJobs}");
+                log.LogInformation($"{logPrefix}   - failed job counts .......: {overallStats.TotalFailedJobs}");
+                log.LogInformation($"{logPrefix}     - failures at provider ..: {overallStats.FailedProvider}");
+                log.LogInformation($"{logPrefix}     - failures at consumer ..: {overallStats.FailedConsumer}");
+                log.LogInformation($"{logPrefix}     - failures at transform .: {overallStats.FailedTransform}");
+                log.LogInformation($"{logPrefix}     - failures at sql .......: {overallStats.FailedSqlLoad}");
                 AzureAppInsightsService.LogEvent(jobStatsSummarySucceeded);
                 log.LogInformation($"{logPrefix} done");
 
