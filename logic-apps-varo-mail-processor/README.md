@@ -1,71 +1,83 @@
-# DX Mail Processor
+# Varo DX Mail Processor
 
-This mail processor moves data from a gmail inbox to the CCDX
+This mail processor moves Varo collected files from a gmail inbox to CCDX
 
-# Two Azure Function Apps
-  * This project contains two Azure function apps
-    * mail compressor ([README](../fa-mail-compressor-varo/README.md))
-	  * Scope:
-	    * Builds and compresses tarball packages from the gmail attachments
-		* Returns these compressed tarball packages in http response body as base64 strings
-	  * Environment: 
-		* Azure function runtime (FUNCTIONS_EXTENSION_VERSION): ~4
-		* Azure function worker runtime (FUNCTIONS_WORKER_RUNTIME): dotnet
-		* Azure functions core tools: ~4
-	* 
-	* functions-node
-	  * Scope:
-	    * Moves gmail attachment content to CCDX using the data streaming endpoint
-	  *	Environment
-		* Azure function runtime (FUNCTIONS_EXTENSION_VERSION): ~4
-		* Azure function worker runtime (FUNCTIONS_WORKER_RUNTIME): node
-		* Azure function node default version (WEBSITE_NODE_DEFAULT_VERSION): 18
-		* Azure functions core tools: ~4
+# Overview
 
-# Create an Azure Function app (.NET)
+## Azure Functions
+
+This project contains two Azure function apps
+
+* [varo mail compressor](../fa-mail-compressor-varo/README.md)
+  * Scope:
+	* Builds and compresses tarball containing Varo collected files (gmail attachments)
+	* Returns base64 encoded tarball (report package) in http response body
+* [varo ccdx provider](../fa-ccdx-provider-varo/README.md)
+  * Scope:
+	* Receives base64 encoded tarball (report package) in http request body
+	* Publishes report package to CCDX using the data streaming endpoint
+
+## Logic Apps Solutions
+
+This Logic Apps solution moves Varo collected log files from Gmail to CCDX using the two Azure Functions defined above
+
+* [logic-apps-varo-mail-processor](README.md)
+  * Scope:
+    * New Gmail message (Varo generated report) triggers this solution
+	* Varo collected report files (gmail attachments) are packaged into a compressed tarball
+	* Receives base64 encoded tarball (report package) in http request body
+	* Publishes report package tarball to CCDX using the data streaming endpoint
+
+# Build Azure Resources
+
+## Create CCDX Provider Azure Function app (.NET)
   * Login to the Azure portal
-  * Create a new Azure Function app
-    * Function app name: `fa-dx-mail-proc-net-dev`
+  * Create a new Azure Function app (ccdx provider)
+    * Function app name: `fa-ccdx-provider-varo-dev`
     * Runtime stack: `.NET`
     * Version: `6`
     * Region: `US West 2`
     * Operating System: `Windows`
-    * Plan type: `Consumption`
-
-# Create an Azure Function app (Node.js)
+    * App Service Plan: `asp-edi-dev (B1: 1)`
+	
+## Create Mail Compressor Azure Function app (.NET)
   * Login to the Azure portal
-  * Create a new Azure Function app
-    * Function app name: `fa-dx-mail-proc-node-dev`
-    * Runtime stack: `Node.js`
-    * Version: `18 LTS`
+  * Create a new Azure Function app (ccdx provider)
+    * Function app name: `fa-mail-compressor-varo-dev`
+    * Runtime stack: `.NET`
+    * Version: `6`
     * Region: `US West 2`
     * Operating System: `Windows`
-    * Plan type: `Consumption`
+    * App Service Plan: `asp-edi-dev (B1: 1)`
 
-# Create an Azure Logic Apps
+## Create Azure Logic Apps Solution
   * Login to the Azure portal
   * Create a new Azure Logics app
     * Logic app name: `la-dx-varo-mail-proc-dev`
     * Region: `US West 2`
     * Plan type: `Consumption`
     * Zone redundancy: `Disabled`
-
-# Deploy Functions to Azure (Node.js)
-  * Open Visual Studio Code
-  * Open the project `functions-node` from the github repo
-  * Select the local project
-  * Select Deploy...
-  * Select Deploy to Function App
-  * Select the Azure function app `fa-dx-mail-proc-node-dev`
-  
-Note: Node has two module systems: ES Modules (ESM) and CommonJS. The latest version (3x) of module `node-fetch` is only compatible with ESM. This project uses CommonJS. So `node-fetch` must be installed using 2x: `npm install node-fetch@2`
+  * Create the Gmail connection
   
 # Deploy Functions to Azure (.NET)
   * Open Visual Studio
   * Open the project `functions-net` from the github repo
   * Publish to the Azure function app `fa-dx-mail-proc-net-dev`
 
-# Create the Gmail connection
+# Create the Gmail connection (Use default shared application)
+
+Important: This connection type ONLY works with Gmail workspace accounts. Withou it, the Gmail connection cannot be linked Logic App Azure Function operations. 
+
+  * Configure Gmail connection
+  * Connection name: `gmail`
+  * Authentication type: `Use default shared application`
+  * Select the Gmail workspace account to login. 
+  * Give Azure AppService Logic Apps permissions to 'Read, compose, send, and permanently delete all your email from Gmail'
+
+# Create the Gmail connection (Bring your own application)
+
+Note: This is not recommended as requires a Google security review. Without the Google security review, the Gmail refresh tokens expire in seven days. 
+
   * Configure Gmail connection
   * Connection name: `gmail`
   * Authentication type: `Bring your own application`
