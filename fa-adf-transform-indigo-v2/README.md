@@ -1,6 +1,6 @@
 # OVERVIEW
 
-This EMS Data & Integration (EDI) Azure Data Factory (ADF) transformation Azure function app transforms EMS file package content into curated output. 
+This EMS Data & Integration (EDI) Azure Data Factory (ADF) transformation Azure function app transforms USBDG file package content into curated output. 
 
 # CONFIGURATION
 
