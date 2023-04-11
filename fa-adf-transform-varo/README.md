@@ -24,7 +24,7 @@ This EMS Data & Integration (EDI) Azure Data Factory (ADF) transformation Azure 
   
 # DEPLOYMENT
 - [ ]  Manual zip push
-  = Download the publishing profile from the Azure portal
+  - Download the publishing profile from the Azure portal
   - Open Visual Studio
   - Right click on function app project
   - Select 'Publish..."
