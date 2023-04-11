@@ -1,17 +1,18 @@
 # DX Mail Processor
 
-The mail processor moves data from an gmail inbox to the CCDX
+This mail processor moves data from a gmail inbox to the CCDX
 
 # Two Azure Function Apps
   * This project contains two Azure function apps
-    * functions-net
+    * mail compressor ([README](../fa-mail-compressor-varo../README.md))
 	  * Scope:
 	    * Builds and compresses tarball packages from the gmail attachments
-		* Sends these compressed tarball packages to CCDX using the files endpoint. 
+		* Returns these compressed tarball packages in http response body as base64 strings
 	  * Environment: 
 		* Azure function runtime (FUNCTIONS_EXTENSION_VERSION): ~4
 		* Azure function worker runtime (FUNCTIONS_WORKER_RUNTIME): dotnet
 		* Azure functions core tools: ~4
+	* 
 	* functions-node
 	  * Scope:
 	    * Moves gmail attachment content to CCDX using the data streaming endpoint
