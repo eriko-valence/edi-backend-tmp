@@ -57,14 +57,34 @@ This Logic Apps solution moves Varo collected log files from Gmail to CCDX using
     * Region: `US West 2`
     * Plan type: `Consumption`
     * Zone redundancy: `Disabled`
-  * Create the Gmail connection ([See](#create-the-gmail-connection-use-default-shared-application))
-  
-# Deploy Functions to Azure (.NET)
-  * Open Visual Studio
-  * Open the project `functions-net` from the github repo
-  * Publish to the Azure function app `fa-dx-mail-proc-net-dev`
+  * Create the Gmail connection ([Use default shared application](#create-the-gmail-connection-use-default-shared-application))
 
-# Create the Gmail connection (Use default shared application)
+# Deploy Code to Azure Resources
+
+## Azure Functions
+
+For each Azure Function... 
+
+- [ ]  Manual zip push
+  - Download the publishing profile from the Azure portal
+  - Open Visual Studio
+  - Right click on function app project
+  - Select 'Publish..."
+  - Select the publishing profile
+  - Select 'Publish' button
+  
+## Azure Logic Apps Workflow
+
+Note: This section needs to be ironed out. 
+
+  * Login to the Azure portal
+  * Select the newly created Azure Logics app
+  * Select Logic app code view
+  * Copy in the json from logic_app_code.json
+
+# Gmail Connection Types
+
+## Create the Gmail connection (Use default shared application)
 
 Important: This connection type ONLY works with Gmail workspace accounts. Withou it, the Gmail connection cannot be linked Logic App Azure Function operations. 
 
@@ -74,7 +94,7 @@ Important: This connection type ONLY works with Gmail workspace accounts. Withou
   * Select the Gmail workspace account to login. 
   * Give Azure AppService Logic Apps permissions to 'Read, compose, send, and permanently delete all your email from Gmail'
 
-# Create the Gmail connection (Bring your own application)
+## Create the Gmail connection (Bring your own application)
 
 Note: This is not recommended as requires a Google security review. Without the Google security review, the Gmail refresh tokens expire in seven days. 
 
@@ -99,15 +119,11 @@ Note: This is not recommended as requires a Google security review. Without the 
 
   * Note: The new Gmail connection will show up under API Connections.
 
-# Build out Azure Logic Apps workflow
-  * Login to the Azure portal
-  * Select the newly created Azure Logics app
-  * Select Logic app code view
-  * Copy the json from github and paste between "schema" and "triggers"
-    * Json file: la-dx-mail-proc-dev.json
-  * The function ids will need to be updated
+# Google Oauth Client App Setup
 
-# Create an OAuth Client Application in Google
+Note: This step is ONLY required if using the [Bring your own application](#create-the-gmail-connection-use-default-shared-application) Gmail connection type
+
+## Create an OAuth Client Application in Google
 
 * Login to the Google Cloud Platform (https://console.cloud.google.com/)
 * Create a new project
@@ -139,7 +155,7 @@ Note: This is not recommended as requires a Google security review. Without the 
     * Select the Gmail API
     * Select Enable
 
-# Gmail Connector Errors
+## Gmail Connector Errors
 
   * "Failed to save logic app logic-app-ccdx-mail-processor. The operation on workflow 'logic-app-ccdx-mail-processor' cannot be completed because it contains operations 'Function' which are not compatible with the Gmail connector. Please see https://aka.ms/la-gmaildocs for more information."
     * Cause: The Logic Apps Gmail connector uses the authentication type `Use default shared application`
@@ -148,7 +164,9 @@ Note: This is not recommended as requires a Google security review. Without the 
 If you are a developer of azure-apim.net, see error details.
 Error 403: access_denied"
     * Cause: tester gmail account is not approved
-    * Resolution: add tester gmail account (see "Create an OAuth Client Application in Google" above)
+    * Resolution: 
+	  * 1.) add tester gmail account (see "Create an OAuth Client Application in Google" above) OR
+	  * 2.) use a Gmail workspace account (this is the preferred option)
   * "Please check your account info and/or permissions and try again. Details: Gmail API has not been used in project 616947808018 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/gmail.googleapis.com/overview?project=616947808018 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry. clientRequestId: f8ad9b3e-6002-4698-903f-e60d448aa15c More diagnostic information: x-ms-client-request-id is '8638DD25-097F-4820-AB5A-BEAD762D8D5C'."
     * Cause: Gmail API not enabled
     * Resolution: Enable Gmail API (see "Create an OAuth Client Application in Google" above)
