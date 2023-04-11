@@ -57,7 +57,7 @@ This Logic Apps solution moves Varo collected log files from Gmail to CCDX using
     * Region: `US West 2`
     * Plan type: `Consumption`
     * Zone redundancy: `Disabled`
-  * Create the Gmail connection
+  * Create the Gmail connection ([See](#create-the-gmail-connection-use-default-shared-application))
   
 # Deploy Functions to Azure (.NET)
   * Open Visual Studio
