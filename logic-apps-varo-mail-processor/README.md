@@ -4,7 +4,7 @@ This mail processor moves data from a gmail inbox to the CCDX
 
 # Two Azure Function Apps
   * This project contains two Azure function apps
-    * mail compressor ([README](../fa-mail-compressor-varo../README.md))
+    * mail compressor ([README](../fa-mail-compressor-varo/README.md))
 	  * Scope:
 	    * Builds and compresses tarball packages from the gmail attachments
 		* Returns these compressed tarball packages in http response body as base64 strings
