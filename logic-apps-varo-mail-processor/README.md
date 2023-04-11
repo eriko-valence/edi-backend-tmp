@@ -96,7 +96,7 @@ Important: This connection type ONLY works with Gmail workspace accounts. Withou
 
 ## Create the Gmail connection (Bring your own application)
 
-Note: This is not recommended as requires a Google security review. Without the Google security review, the Gmail refresh tokens expire in seven days. 
+Note: This is not recommended as it requires a Google security review. Without the Google security review, the Gmail refresh tokens expire in seven days. 
 
   * Configure Gmail connection
   * Connection name: `gmail`
