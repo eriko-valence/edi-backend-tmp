@@ -4,6 +4,11 @@ This EMS Data & Integration (EDI) CCDX Consumer Azure function pulls file packag
 
 # CONFIGURATION
 
+- [ ] Two configuration variables are hard coded:
+
+  - const string Broker = "pkc-41973.westus2.azure.confluent.cloud:9092";
+  - const string Topic = "dx.destination.example";
+
 - [ ]  Add these application settings
   - APPINSIGHTS_INSTRUMENTATIONKEY
     - Value: `*******`
@@ -15,12 +20,6 @@ This EMS Data & Integration (EDI) CCDX Consumer Azure function pulls file packag
     - Value: `DefaultEndpointsProtocol=https;AccountName=adlsedidev;...`
   - CCDX_AZURE_STORAGE_BLOB_CONTAINER_NAME
     - Value: `raw-ccdx-consumer`
-  - CCDX_PUBLISHER_HEADER_CE_TYPE_CFD50
-    - Value: `org.nhgh.cfd50.report.dev`
-  - CCDX_PUBLISHER_HEADER_CE_TYPE_INDIGO_V2
-    - Value: `org.nhgh.indigo_v2.report.dev`
-  - CCDX_PUBLISHER_HEADER_CE_TYPE_USBDG
-    - Value: `org.nhgh.usbdg.report.dev`
   - KAFKA_GROUP_ID
     - Value: `dx.consumer.edimailproc.dev`
   - KAFKA_TRIGGER_SASL_PASSWORD
