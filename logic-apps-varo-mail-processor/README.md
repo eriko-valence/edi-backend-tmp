@@ -1,0 +1,169 @@
+# DX Mail Processor
+
+The mail processor moves data from an gmail inbox to the CCDX
+
+# Two Azure Function Apps
+  * This project contains two Azure function apps
+    * functions-net
+	  * Scope:
+	    * Builds and compresses tarball packages from the gmail attachments
+		* Sends these compressed tarball packages to CCDX using the files endpoint. 
+	  * Environment: 
+		* Azure function runtime (FUNCTIONS_EXTENSION_VERSION): ~4
+		* Azure function worker runtime (FUNCTIONS_WORKER_RUNTIME): dotnet
+		* Azure functions core tools: ~4
+	* functions-node
+	  * Scope:
+	    * Moves gmail attachment content to CCDX using the data streaming endpoint
+	  *	Environment
+		* Azure function runtime (FUNCTIONS_EXTENSION_VERSION): ~4
+		* Azure function worker runtime (FUNCTIONS_WORKER_RUNTIME): node
+		* Azure function node default version (WEBSITE_NODE_DEFAULT_VERSION): 18
+		* Azure functions core tools: ~4
+
+# Create an Azure Function app (.NET)
+  * Login to the Azure portal
+  * Create a new Azure Function app
+    * Function app name: `fa-dx-mail-proc-net-dev`
+    * Runtime stack: `.NET`
+    * Version: `6`
+    * Region: `US West 2`
+    * Operating System: `Windows`
+    * Plan type: `Consumption`
+
+# Create an Azure Function app (Node.js)
+  * Login to the Azure portal
+  * Create a new Azure Function app
+    * Function app name: `fa-dx-mail-proc-node-dev`
+    * Runtime stack: `Node.js`
+    * Version: `18 LTS`
+    * Region: `US West 2`
+    * Operating System: `Windows`
+    * Plan type: `Consumption`
+
+# Create an Azure Logic Apps
+  * Login to the Azure portal
+  * Create a new Azure Logics app
+    * Logic app name: `la-dx-varo-mail-proc-dev`
+    * Region: `US West 2`
+    * Plan type: `Consumption`
+    * Zone redundancy: `Disabled`
+
+# Deploy Functions to Azure (Node.js)
+  * Open Visual Studio Code
+  * Open the project `functions-node` from the github repo
+  * Select the local project
+  * Select Deploy...
+  * Select Deploy to Function App
+  * Select the Azure function app `fa-dx-mail-proc-node-dev`
+  
+Note: Node has two module systems: ES Modules (ESM) and CommonJS. The latest version (3x) of module `node-fetch` is only compatible with ESM. This project uses CommonJS. So `node-fetch` must be installed using 2x: `npm install node-fetch@2`
+  
+# Deploy Functions to Azure (.NET)
+  * Open Visual Studio
+  * Open the project `functions-net` from the github repo
+  * Publish to the Azure function app `fa-dx-mail-proc-net-dev`
+
+# Create the Gmail connection
+  * Configure Gmail connection
+  * Connection name: `gmail`
+  * Authentication type: `Bring your own application`
+    * Client ID: (see "Create an OAuth Client Application in Google")
+    * Client Secret: (see "Create an OAuth Client Application in Google")
+  * Select Sign In
+    * Select Continue at the Google hasn't verified your app screen
+    * Select the Gmail permissions box
+  * Login to the Azure portal
+  * Select the newly created Azure Logics app
+  * Select Logic app designer
+  * Select Blank Logic App template
+  * Search for the Gmail connector
+  * Select Gmail
+  * Select the When new email arrives trigger
+  * Select INBOX label
+  * Select Yes for Include Attachments
+  * Configure check interval to be 15 seconds
+
+  * Note: The new Gmail connection will show up under API Connections.
+
+# Build out Azure Logic Apps workflow
+  * Login to the Azure portal
+  * Select the newly created Azure Logics app
+  * Select Logic app code view
+  * Copy the json from github and paste between "schema" and "triggers"
+    * Json file: la-dx-mail-proc-dev.json
+  * The function ids will need to be updated
+
+# Create an OAuth Client Application in Google
+
+* Login to the Google Cloud Platform (https://console.cloud.google.com/)
+* Create a new project
+  * Name: `DX Mail Processor - Dev`
+* Select the Dashboard link
+* Select Go to APIs overview
+* Select Credentials
+* Select Configure Consent Screen
+  * User Type: `External`
+  * App Name: `DX Mail Processor - Dev`
+  * Authorized domain: `azure-apim.net`
+  * Select Add or Remove Scopes
+    * Add this scope under Manually add scopes: `https://mail.google.com/`
+      * Select ADD TO TABLE
+      * Select UPDATE
+      * Select SAVE AND CONTINUE
+  * Add the applicable test users
+  * Select BACK TO DASHBOARD from the Summary screen
+* Select Credentials under APIs and Services
+  * Select +CREATE CREDENTIALS
+    * Select OAuth client ID
+      * Application type: `Web application`
+      * Name: `Web Client - DX Mail Processor - Dev`
+      * Authorized redirect URIs: `https://global.consent.azure-apim.net/redirect/gmail`
+      * Select CREATE
+* Select Enabled APIs and Servivces under APIs and Services
+  * Select +ENABLED APIS AND SERVICES
+    * Search for Gmail API
+    * Select the Gmail API
+    * Select Enable
+
+# Gmail Connector Errors
+
+  * "Failed to save logic app logic-app-ccdx-mail-processor. The operation on workflow 'logic-app-ccdx-mail-processor' cannot be completed because it contains operations 'Function' which are not compatible with the Gmail connector. Please see https://aka.ms/la-gmaildocs for more information."
+    * Cause: The Logic Apps Gmail connector uses the authentication type `Use default shared application`
+    * Resolution: Use the `Bring your own application` authentication type. This requires creating an Google OAuth client app (see above)
+  * "azure-apim.net has not completed the Google verification process. The app is currently being tested, and can only be accessed by developer-approved testers. If you think you should have access, contact the developer.
+If you are a developer of azure-apim.net, see error details.
+Error 403: access_denied"
+    * Cause: tester gmail account is not approved
+    * Resolution: add tester gmail account (see "Create an OAuth Client Application in Google" above)
+  * "Please check your account info and/or permissions and try again. Details: Gmail API has not been used in project 616947808018 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/gmail.googleapis.com/overview?project=616947808018 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry. clientRequestId: f8ad9b3e-6002-4698-903f-e60d448aa15c More diagnostic information: x-ms-client-request-id is '8638DD25-097F-4820-AB5A-BEAD762D8D5C'."
+    * Cause: Gmail API not enabled
+    * Resolution: Enable Gmail API (see "Create an OAuth Client Application in Google" above)
+  * "Error 400: redirect_uri_mismatch. You can't sign in to this app because it doesn't comply with Google's Oauth 2.0 policy. If you're the app developer, register the redirect URI in the Google Cloud Console. Request details: redirect_uri=https://global.consent.azure-apim.net/redirect/gmail"
+    * Cause: Missing redirect URI
+    * Resolution: Add the redirect URI (see "Create an OAuth Client Application in Google" above)
+
+
+
+
+
+
+
+
+
+
+
+# OVERVIEW
+
+EDI Varo mail processing logic apps solution
+
+# FILES
+
+- logic_app_code.JSON
+
+# DEPLOYMENT
+
+- Login to the Azure portal
+- Navigate to 'Logic Apps'
+- Select `la-dx-varo-mail-proc-dev`
+- 
