@@ -32,17 +32,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "fa-ccdx-provider-varo", "fa
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "fa-mail-compressor-varo", "fa-mail-compressor-varo\fa-mail-compressor-varo.csproj", "{7A3F2376-9B78-478C-9953-92E9F06BD739}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Workflows", "Workflows", "{761AB3F9-AC47-4B1E-AD35-F4973212991A}"
-	ProjectSection(SolutionItems) = preProject
-		logic_app_code.json = logic_app_code.json
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Archives", "Archives", "{E0D78769-E7C6-4582-A7EF-73B80AA6700E}"
-	ProjectSection(SolutionItems) = preProject
-		logic_app_code_20230130.json = logic_app_code_20230130.json
-		logic_app_code_20230209.json = logic_app_code_20230209.json
-	EndProjectSection
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "fa-ccdx-consumer-varo", "fa-ccdx-consumer-varo\fa-ccdx-consumer-varo.csproj", "{11A92166-8691-40EA-A374-413EB0049D8E}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "fa-adf-transform-varo", "fa-adf-transform-varo\fa-adf-transform-varo.csproj", "{536FFE09-2BAD-4709-A284-EC7FE4F7ABF8}"
@@ -121,7 +110,6 @@ Global
 		{CD0EA6E2-B06D-45F5-AC42-AD9D6717E84A} = {1D20F52A-98B4-4E3F-889C-DC63F8356BF1}
 		{DD1AEA14-4C53-4AF1-B73A-797B4D2F48BE} = {D7A1F5FE-12F5-4FD7-8391-3CDA91C2B357}
 		{7A3F2376-9B78-478C-9953-92E9F06BD739} = {D7A1F5FE-12F5-4FD7-8391-3CDA91C2B357}
-		{E0D78769-E7C6-4582-A7EF-73B80AA6700E} = {761AB3F9-AC47-4B1E-AD35-F4973212991A}
 		{11A92166-8691-40EA-A374-413EB0049D8E} = {D7A1F5FE-12F5-4FD7-8391-3CDA91C2B357}
 		{536FFE09-2BAD-4709-A284-EC7FE4F7ABF8} = {D7A1F5FE-12F5-4FD7-8391-3CDA91C2B357}
 		{228C2535-B095-4FCD-BF61-7EE819D3F22F} = {9349330D-2771-4357-9C93-C161C31DC480}
