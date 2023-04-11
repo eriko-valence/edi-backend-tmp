@@ -1,6 +1,6 @@
 # OVERVIEW
 
-This EMS Data & Integration (EDI) CCDX Provider Azure function pulls file packages from the Azure blob storage container `raw-ccdx-provider` to publishes to CCDX. 
+This EMS Data & Integration (EDI) CCDX Provider Azure function to publishes base64 encoded content (http request body) to CCDX. 
 
 # CONFIGURATION
 
