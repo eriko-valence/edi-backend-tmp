@@ -4,11 +4,6 @@ This EMS Data & Integration (EDI) CCDX Provider Azure function to publishes base
 
 # CONFIGURATION
 
-- [ ] Two configuration variables are hard coded:
-
-  - const string Broker = "pkc-41973.westus2.azure.confluent.cloud:9092";
-  - const string Topic = "dx.destination.example";
-
 - [ ]  Add these application settings
   - APPINSIGHTS_INSTRUMENTATIONKEY
     - Value: `******`
