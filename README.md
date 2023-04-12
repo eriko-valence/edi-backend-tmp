@@ -11,21 +11,21 @@
 
 ### Logic App Workflows
 
-* [Mail Processor](logic-apps-varo-mail-processor/README.md)
+* [Varo Mail Processor](logic-apps-varo-mail-processor/README.md)
 
 ## USBDG
 
 ### Azure Functions
 
-* [CCDX Provider](fa-ccdx-provider/README.md)
-* [CCDX Consumer](fa-ccdx-consumer/README.md)
-* [Transformer](fa-adf-transform-indigo-v2-varo/README.md)
+* [USBDG CCDX Provider](fa-ccdx-provider/README.md)
+* [USBDG CCDX Consumer](fa-ccdx-consumer/README.md)
+* [USBDG Transformer](fa-adf-transform-indigo-v2-varo/README.md)
 
 ## Shared
 
 ### Azure Functions
 
-* [Maintenance](fa-maint/README.md)
+* [EDI Maintenance](fa-maint/README.md)
 
 ### Databases
 
