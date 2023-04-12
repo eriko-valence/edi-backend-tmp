@@ -4,6 +4,8 @@
 
 ### Azure Functions
 
+[varo ccdx provider](fa-ccdx-provider-varo/README.md)
+
 ### Logic App Workflows
 
 ## USBDG
