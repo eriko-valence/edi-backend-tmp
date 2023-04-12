@@ -12,6 +12,8 @@
 
 ## Shared
 
+### Azure Functions
+
 ### Databases
 
 ### Libraries
