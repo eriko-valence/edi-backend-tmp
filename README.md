@@ -4,6 +4,18 @@
 
 * EMS - Equipment Monitoring System
 * EMD - Equipment Monitoring Device
+  * Examples
+    * USBDG, Varo
+* ABST - Absolute timestamp of EMD when the file is created on the EMD filesystem
+  * Source
+    * EMD Report Metadata Filenames
+	  * Examples
+		* Varo: 20230321T141414Z_03b00274630501120363837_reports.tar.gz
+		* USBDG: 40A36BCA7463_20230412T230639Z_002200265547501820383131_reports.tar.gz
+	
+
+* EMS - Equipment Monitoring System
+* EMD - Equipment Monitoring Device
   * Examples: USBDG, Varo
 * ABST - Absolute timestamp of EMD when the file is created on the EMD filesystem
   * Source: EMD Report Metadata Filenames
