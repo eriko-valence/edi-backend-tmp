@@ -5,12 +5,14 @@ A data platform that supports data ingestion, transformation, storage/loading, a
 * New Horizons USB Datagrabber (USBDG) device metadata
 * EMS-like loggers. Examples: New Horizons Indigo v2 logger, New Horizons Stationary Logger
 
+The components of this platform are listed [here](#components). 
+
 ## Terminology
 
 ### General
 
-* EMS - Equipment Monitoring System
-* EMD - Equipment Monitoring Device
+* **EMS** - Equipment Monitoring System
+* **EMD** - Equipment Monitoring Device
 
 ### Timestamps
 
