@@ -4,14 +4,11 @@
 
 ### Source Control
 
-Schema changes are authored against the EDI Azure SQL development database. CI/CD is not currently used. Instead, the Schema Compare feature in Visual Studio is used to update changes into this `db-edi` Github repository and push to production. 
-
-* https://learn.microsoft.com/en-us/azure/data-factory/source-control 
-
+Schema changes are authored against the EDI Azure SQL development database. CI/CD is not currently used. Instead, the Schema Compare feature in Visual Studio is manually run to update changes into this `db-edi` Github repository and pushed to production. 
 
 ### Github Updates
 
-Use these steps tach time changes are made to the ADF EDI staging environment:
+Use these steps tach time changes are made to the EDI Azure SQL staging environment:
 
 * Open `nhgh-edi-backend` in Visual Studio 
 * Right click on the `db-edi` project and select 'Schema Compare...' 
