@@ -105,11 +105,10 @@ namespace fa_ccdx_consumer
 					string ceSubject = GetKeyValueString(headers, "ce_subject");
 					string ceType = GetKeyValueString(headers, "ce_type");
 					reportFileName = Path.GetFileName(ceSubject);
-					
+
                     string blobName = CcdxService.BuildRawCcdxConsumerBlobPath(ceSubject, ceType);
                     string deviceType = CcdxService.GetLoggerTypeFromCeHeader(ceType);
                     string emdType = CcdxService.GetLoggerTypeFromCeHeader(headers["ce_type"]);
-                    string dxEmail = GetKeyValueString(headers, "dx-ext-email");
                     string ceId = GetKeyValueString(headers, "ce_id");
                     string ceTime = GetKeyValueString(headers, "ce_time");
 
