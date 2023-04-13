@@ -77,32 +77,42 @@ namespace fa_ccdx_consumer
                           SslCaLocation = "cacert.pem"),
                           ] KafkaEventData<string,byte[]>[] events, ILogger log)
         {
-            string reportFileName = null;
-            //PipelineEvent pipelineEvent;
+			// NHGH-2898 20230413 1542 variables need to be global to support uploading a failed report package to the error/holding blob container
+			string reportFileName = null;
+			byte[] eventValue = null;
+			string blobErrorContainerName = "";
+			string storageAccountConnectionString = null;
 
-            try
+			try
             {
                 log.LogInformation($"- [ccdx-consumer-varo->run]: Received {events.Length} telemetry file(s) from cold chain data interchange (CCDX) Kafka topic");
-                foreach (KafkaEventData<string, byte[]> eventData in events)
+				storageAccountConnectionString = Environment.GetEnvironmentVariable("CCDX_AZURE_STORAGE_ACCOUNT_CONNECTION_STRING");
+				blobErrorContainerName = Environment.GetEnvironmentVariable("AZURE_STORAGE_BLOB_CONTAINER_NAME_ERROR");
+
+				foreach (KafkaEventData<string, byte[]> eventData in events)
                 {
-                    /* Pull headers from incoming event message */
-                    Dictionary<string, string> headers = new Dictionary<string, string>();
+					// NHGH-2898 20230413 1518 capture the event data if report package fails and needs to be uploaded to the error blob container
+					eventValue = eventData.Value;
+
+					/* Pull headers from incoming event message */
+					Dictionary<string, string> headers = new Dictionary<string, string>();
                     foreach (var header in eventData.Headers)
                     {
                         headers.Add(header.Key, GetHeaderValueAsString(header));
                     }
 
-                    string ceType = GetKeyValueString(headers, "ce_type");
-                    string emdType = CcdxService.GetLoggerTypeFromCeHeader(headers["ce_type"]);
-                    string ceSubject = GetKeyValueString(headers, "ce_subject");
+					// NHGH-2898 20230413 1518 report name should be catpured early so a failed report package can be uploaded to the error blob container
+					string ceSubject = GetKeyValueString(headers, "ce_subject");
+					string ceType = GetKeyValueString(headers, "ce_type");
+					reportFileName = Path.GetFileName(ceSubject);
+
+					string emdType = CcdxService.GetLoggerTypeFromCeHeader(headers["ce_type"]);
                     string dxEmail = GetKeyValueString(headers, "dx-ext-email");
                     string ceId = GetKeyValueString(headers, "ce_id");
                     string ceTime = GetKeyValueString(headers, "ce_time");
-                    //log.LogInformation($"- [ccdx-consumer-varo->run]: CE Type: {ceType}");
 
                     /* Only process packages generated from a Varo EMD */
                     if (VaroDataProcessorService.IsReportPackageSupported(ceType, dxEmail))
-                    //if (VaroDataProcessorService.IsVaroEmd(emdType))
                     {
                         log.LogInformation($"- [ccdx-consumer-varo->run]: Is '{ceType}' a supported cold chain file package? Yes. ");
                         log.LogInformation($"- [ccdx-consumer-varo->run]: Confirmed. Content is cold chain telemetry. Proceed with processing.");
@@ -127,7 +137,7 @@ namespace fa_ccdx_consumer
 
                                 log.LogInformation($"- [ccdx-consumer-varo->run]: Confirmed. Attached cce telemetry file found. Proceed with processing.");
                                 blobContainerName = Environment.GetEnvironmentVariable("CCDX_AZURE_STORAGE_BLOB_CONTAINER_NAME");
-                                string storageAccountConnectionString = Environment.GetEnvironmentVariable("CCDX_AZURE_STORAGE_ACCOUNT_CONNECTION_STRING");
+                                //string storageAccountConnectionString = Environment.GetEnvironmentVariable("CCDX_AZURE_STORAGE_ACCOUNT_CONNECTION_STRING");
                                 CcdxService.LogCcdxConsumerStartedEventToAppInsights(reportFileName, log);
                                 log.LogInformation($"- [ccdx-consumer-varo->run]: Build the azure storage blob path to be used for uploading the cce telemetry file");
                                 blobName = CcdxService.BuildRawCcdxConsumerBlobPath(ceSubject, ceType);
@@ -172,7 +182,17 @@ namespace fa_ccdx_consumer
             {
                 string errorCode = "743B";
                 string errorMessage = EdiErrorsService.BuildExceptionMessageString(e, errorCode, EdiErrorsService.BuildErrorVariableArrayList());
-                CcdxService.LogCcdxConsumerErrorEventToAppInsights(reportFileName, log, e, errorCode);
+
+				if (reportFileName != null && reportFileName != "" && storageAccountConnectionString != null)
+				{
+					if (blobErrorContainerName != null && eventValue.Length > 0)
+					{
+						log.LogInformation($"- [ccdx-consumer->run]: Upload report package {reportFileName} to error container {blobErrorContainerName}: ");
+						await AzureStorageBlobService.UploadBlobToContainerUsingSdk(eventValue, storageAccountConnectionString, blobErrorContainerName, reportFileName);
+					}
+				}
+
+				CcdxService.LogCcdxConsumerErrorEventToAppInsights(reportFileName, log, e, errorCode);
                 log.LogError("There was an exception while consuming a message from the Kafka topic");
                 log.LogError(e, errorMessage);
             }
