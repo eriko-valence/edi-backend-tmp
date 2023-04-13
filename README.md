@@ -29,7 +29,7 @@
 		  "RTCW": "PT0S"
 		}
 	]
-  ```
+    ```
   * Definitions
     * ABST - Absolute timestamp determined by the EMD device at the point when a logger is mounted via USB
 	* RELT - Represents relative time (ISO 8601 duration format) determined by the logger at the point when it is mounted by an EMD device via USB. The relative time/duration value is the time elapsed since the logger was manufactured and activated/commissioned (likely at the factory).
