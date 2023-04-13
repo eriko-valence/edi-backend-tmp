@@ -1,5 +1,10 @@
 # EMS Data &amp; Integration (EDI)
 
+A data platform that supports data ingestion, transformation, storage/loading, and visualization for a variety of data sets, including:
+
+* New Horizons USB Datagrabber (USBDG) device metadata
+* EMS-like loggers. Examples: New Horizons Indigo v2 logger, New Horizons Stationary Logger
+
 ## Terminology
 
 ### General
