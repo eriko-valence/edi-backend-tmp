@@ -1,6 +1,6 @@
 # OVERVIEW
 
-This EMS Data & Integration (EDI) CCDX Provider Azure function to publishes base64 encoded content (http request body) to CCDX. 
+This EDI Azure function app receives base64 encoded content from an http request body and publishes to CCDX. It is integrated into the [Varo Mail Processor Logic Apps workflow](logic-apps-varo-mail-processor/README.md). 
 
 # CONFIGURATION
 
