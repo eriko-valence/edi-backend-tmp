@@ -14,7 +14,7 @@
     * Varo: 03b00274630501120363837_20230321T141414Z.json
     * USBDG: 40A36BCA7463_20230413T160744Z_report.json
   * Definitions
-    * ABST - Absolute timestamp of EMD when the file is created on the EMD filesystem
+    * **ABST** - Absolute timestamp of EMD when the file is created on the EMD filesystem
   * Notes:
     * EMD timestamp source for USBDG and CFD50 is whatever it thinks is the absolute time (usually determined using cellular, but could be wifi)
     * EMD timestamp source for Varo is whatever the phone thinks is absolute time
@@ -30,8 +30,8 @@
 	]
     ```
   * Definitions
-    * ABST - Absolute timestamp determined by the EMD device at the point when a logger is mounted via USB
-	* RELT - Represents relative time (ISO 8601 duration format) determined by the logger at the point when it is mounted by an EMD device via USB. The relative time/duration value is the time elapsed since the logger was manufactured and activated/commissioned (likely at the factory).
+    * **ABST** - Absolute timestamp determined by the EMD device at the point when a logger is mounted via USB
+	* **RELT** - Represents relative time (ISO 8601 duration format) determined by the logger at the point when it is mounted by an EMD device via USB. The relative time/duration value is the time elapsed since the logger was manufactured and activated/commissioned (likely at the factory).
   * Notes
     * The ABST and RELT values from the metadata can be used as a “point in time reference” association between the two timestamps for transformation purposes if needed.
 	* The logger has a 7 to 10 year battery backup for the real time clock. 
