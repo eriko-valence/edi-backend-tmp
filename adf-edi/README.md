@@ -8,11 +8,11 @@ By default, Azure Data Factory is setup to author directly against the ADF servi
 
 * https://learn.microsoft.com/en-us/azure/data-factory/source-control 
 
-As CI/CD is not setup for EDI ADF, the scope of this Github repository folder is to store manual backups. See "Manual Backups" below. Code deployments are also manually done. See "Manual Deployments". 
+As CI/CD is not setup for EDI ADF, the scope of this Github repository folder is strictly for storing manual backups. See "Manual Backups" below. Code deployments are also manual. See "Manual Deployments". 
 
 ### Manual Backups
 
-Use these steps tach time changes are made to the ADF EDI staging environment:
+Use these steps each time changes are made to the ADF EDI staging environment:
 
 * Launch Azure Data Factory Studio from the Azure portal
 * Select the Author icon (pencil) on the left navigation panel
@@ -23,7 +23,7 @@ Use these steps tach time changes are made to the ADF EDI staging environment:
 
 ### Manual Deployments
 
-CI/CD is not setup for EDI ADF. To move pipeline changes from the ADF staging environment to production:
+CI/CD is not setup for EDI ADF. To move pipeline changes from staging to production:
 
 * Launch Azure Data Factory Studio from the Azure portal (production environment)
 * Open the JSON representation of each ADF object by
