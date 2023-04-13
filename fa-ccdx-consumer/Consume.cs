@@ -143,7 +143,6 @@ namespace fa_ccdx_consumer
                                 log.LogInformation($"  # - CEType: {ceType}");
                                 log.LogInformation($"  # - CESubject: {reportFileName}");
                                 log.LogInformation($"  # - CETime: {ceTime}");
-                                log.LogInformation($"  # - DxEmail: {dxEmail}");
                                 log.LogInformation($"  ##########################################################################");
                                 log.LogInformation($"- [ccdx-consumer->run]: Done");
                             } else
