@@ -50,25 +50,25 @@ Components of this platform are listed [here](#components).
 
 | Resource Type  | Resource |
 | ------------- | ------------- |
-| Azure Functions  | [Varo CCDX Provider](fa-ccdx-provider-varo/README.md) |
-| Azure Functions  | [Varo CCDX Consumer](fa-ccdx-consumer-varo/README.md)  |
-| Azure Functions  | [Varo Mail Compressor](fa-mail-compressor-varo/README.md)  |
-| Azure Functions  | [Varo Transformer](fa-adf-transform-varo/README.md)  |
-| Azure Logic Apps  | [Varo Mail Processor](logic-apps-varo-mail-processor/README.md)  |
+| Azure Function  | [Varo CCDX Provider](fa-ccdx-provider-varo/README.md) |
+| Azure Function  | [Varo CCDX Consumer](fa-ccdx-consumer-varo/README.md)  |
+| Azure Function  | [Varo Mail Compressor](fa-mail-compressor-varo/README.md)  |
+| Azure Function  | [Varo Transformer](fa-adf-transform-varo/README.md)  |
+| Azure Logic App  | [Varo Mail Processor](logic-apps-varo-mail-processor/README.md)  |
 
 ### USBDG
 
 | Resource Type  | Resource |
 | ------------- | ------------- |
-| Azure Functions  | [USBDG CCDX Provider](fa-ccdx-provider/README.md) |
-| Azure Functions  | [USBDG CCDX Consumer](fa-ccdx-consumer/README.md)  |
-| Azure Functions  | [USBDG Transformer](fa-adf-transform-indigo-v2-varo/README.md)  |
+| Azure Function  | [USBDG CCDX Provider](fa-ccdx-provider/README.md) |
+| Azure Function  | [USBDG CCDX Consumer](fa-ccdx-consumer/README.md)  |
+| Azure Function  | [USBDG Transformer](fa-adf-transform-indigo-v2-varo/README.md)  |
 
 ### Shared
 
 | Resource Type  | Resource |
 | ------------- | ------------- |
-| Azure Functions  | [EDI Maintenance](fa-maint/README.md) |
+| Azure Function  | [EDI Maintenance](fa-maint/README.md) |
 | Azure SQL  | [EDI Database](db-edi/README.md)  |
 | .NET Library  | [EDI Libraries](lib-edi/README.md)  |
 | Azure Data Factory | [EDI ADF](adf-edi/README.md) |
