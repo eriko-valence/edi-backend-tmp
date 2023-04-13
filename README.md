@@ -48,6 +48,14 @@ Components of this platform are listed [here](#components).
 
 ### Varo
 
+| Resource Type  | Link |
+| ------------- | ------------- |
+| Azure Functions  | [Varo CCDX Provider](fa-ccdx-provider-varo/README.md) |
+| Azure Functions  | [Varo CCDX Consumer](fa-ccdx-consumer-varo/README.md)  |
+| Azure Functions  | [Varo Mail Compressor](fa-mail-compressor-varo/README.md)  |
+| Azure Functions  | [Varo Transformer](fa-adf-transform-varo/README.md)  |
+
+
 #### Azure Functions
 
 * [Varo CCDX Provider](fa-ccdx-provider-varo/README.md)
