@@ -77,60 +77,57 @@ namespace fa_ccdx_consumer
                           SslCaLocation = "cacert.pem"),
                           ] KafkaEventData<string,byte[]>[] events, ILogger log)
         {
+            // NHGH-2898 20230413 1518 variables need to be global to support uploading a failed report package to the error/holding blob container
             string reportFileName = null;
-            //PipelineEvent pipelineEvent;
+            byte[] eventValue = null;
+			string blobErrorContainerName = "";
+			string storageAccountConnectionString = null;
 
-            try
+			try
             {
                 log.LogInformation($"- [ccdx-consumer->run]: Received {events.Length} telemetry file(s) from cold chain data interchange (CCDX) Kafka topic");
-                /* Validate the 'ce-type' env variables exist - they are needed for determing if the event message gets processed */
-                CcdxService.ValidateCcdxConsumerCeTypeEnvVariables(log);
-                foreach (KafkaEventData<string, byte[]> eventData in events)
+				storageAccountConnectionString = Environment.GetEnvironmentVariable("CCDX_AZURE_STORAGE_ACCOUNT_CONNECTION_STRING");
+				blobErrorContainerName = Environment.GetEnvironmentVariable("AZURE_STORAGE_BLOB_CONTAINER_NAME_ERROR");
+
+				foreach (KafkaEventData<string, byte[]> eventData in events)
                 {
-                    /* Pull headers from incoming event message */
-                    Dictionary<string, string> headers = new Dictionary<string, string>();
+					// NHGH-2898 20230413 1518 capture the event data if report package fails and needs to be uploaded to the error blob container
+					eventValue = eventData.Value;
+
+					/* Pull headers from incoming event message */
+					Dictionary<string, string> headers = new Dictionary<string, string>();
                     foreach (var header in eventData.Headers)
                     {
                         headers.Add(header.Key, GetHeaderValueAsString(header));
                     }
 
-                    string deviceType = CcdxService.GetLoggerTypeFromCeHeader(headers["ce_type"]);
-
-                    string ceType = GetKeyValueString(headers, "ce_type");
+					// NHGH-2898 20230413 1518 report name should be catpured early so a failed report package can be uploaded to the error blob container
+					string ceSubject = GetKeyValueString(headers, "ce_subject");
+					string ceType = GetKeyValueString(headers, "ce_type");
+					reportFileName = Path.GetFileName(ceSubject);
+					
+                    string blobName = CcdxService.BuildRawCcdxConsumerBlobPath(ceSubject, ceType);
+                    string deviceType = CcdxService.GetLoggerTypeFromCeHeader(ceType);
                     string emdType = CcdxService.GetLoggerTypeFromCeHeader(headers["ce_type"]);
-                    string ceSubject = GetKeyValueString(headers, "ce_subject");
                     string dxEmail = GetKeyValueString(headers, "dx-ext-email");
                     string ceId = GetKeyValueString(headers, "ce_id");
                     string ceTime = GetKeyValueString(headers, "ce_time");
 
-                    //log.LogInformation($"- [ccdx-consumer->run]: Detected device type: {deviceType}");
-
-
-                    /* Only process messages that are known to this consumer */
-                    //if (CcdxService.ValidateCeTypeHeader(headers["ce_type"]))
-                    if (EmsService.ValidateCceDeviceType(deviceType))
+					/* Only process messages that are known to this consumer */
+					if (EmsService.ValidateCceDeviceType(deviceType))
                     {
                         log.LogInformation($"- [ccdx-consumer->run]: Is '{headers["ce_type"]}' a supported cold chain file package? Yes. ");
                         log.LogInformation($"- [ccdx-consumer->run]: Confirmed. Content is cold chain telemetry. Proceed with processing.");
-
-                        string blobContainerName = "";
-                        //Dictionary<string, string> customProps = null;
                         log.LogInformation($"- [ccdx-consumer->run]: Does this supported cold chain telemetry message have an attached file?");
                         if (headers.ContainsKey("ce_subject"))
                         {
                             log.LogInformation($"- [ccdx-consumer->run]: Building raw ccdx raw consumer blob path.");
                             if (UsbdgDataProcessorService.IsThisUsbdgGeneratedPackageName(ceId))
-                            //if (CcdxService.IsPathExtensionSupported(blobName))
                             {
-                                string blobName = CcdxService.BuildRawCcdxConsumerBlobPath(GetKeyValueString(headers, "ce_subject"), GetKeyValueString(headers, "ce_type"));
-                                reportFileName = Path.GetFileName(GetKeyValueString(headers, "ce_subject"));
                                 log.LogInformation($"- [ccdx-consumer->run]: Validate incoming blob file extension");
-                                //string fileExtension = Path.GetExtension(blobName);
-                                //log.LogInformation($"- [ccdx-consumer->run]: File extension: {fileExtension}");
                                 log.LogInformation($"- [ccdx-consumer->run]: Confirmed. Attached cce telemetry file found. Proceed with processing.");
-                                blobContainerName = Environment.GetEnvironmentVariable("CCDX_AZURE_STORAGE_BLOB_CONTAINER_NAME");
-                                string storageAccountConnectionString = Environment.GetEnvironmentVariable("CCDX_AZURE_STORAGE_ACCOUNT_CONNECTION_STRING");
-                                CcdxService.LogCcdxConsumerStartedEventToAppInsights(reportFileName, log);
+								string blobContainerName = Environment.GetEnvironmentVariable("CCDX_AZURE_STORAGE_BLOB_CONTAINER_NAME");
+								CcdxService.LogCcdxConsumerStartedEventToAppInsights(reportFileName, log);
                                 log.LogInformation($"- [ccdx-consumer->run]: Build the azure storage blob path to be used for uploading the cce telemetry file");
                                 blobName = CcdxService.BuildRawCcdxConsumerBlobPath(GetKeyValueString(headers, "ce_subject"), GetKeyValueString(headers, "ce_type"));
                                 log.LogInformation($"- [ccdx-consumer->run]: Preparing to upload blob {blobName} to container {blobContainerName}: ");
@@ -144,7 +141,7 @@ namespace fa_ccdx_consumer
                                 log.LogInformation($"  # - EmdType: {emdType}");
                                 log.LogInformation($"  # - CEId: {ceId}");
                                 log.LogInformation($"  # - CEType: {ceType}");
-                                log.LogInformation($"  # - CESubject: {ceSubject}");
+                                log.LogInformation($"  # - CESubject: {reportFileName}");
                                 log.LogInformation($"  # - CETime: {ceTime}");
                                 log.LogInformation($"  # - DxEmail: {dxEmail}");
                                 log.LogInformation($"  ##########################################################################");
@@ -152,19 +149,16 @@ namespace fa_ccdx_consumer
                             } else
                             {
                                 log.LogError($"- [ccdx-consumer->run]: Report package {ceId} is not from a USBDG EMD");
-                                //CcdxService.LogCcdxConsumerUnsupportedAttachmentExtensionEventToAppInsights(reportFileName, log);
                             }
                         }
                         else
                         {
                             log.LogError($"- [ccdx-consumer->run]: Email report package event is missing the ce-subject header");
-                            //CcdxService.LogCcdxConsumerMissingSubjectHeaderEventToAppInsights(reportFileName, log);
                         }
                     }
                     else
                     {
                         log.LogInformation($"- [ccdx-consumer->run]: Is '{headers["ce_type"]}' a supported cold chain file package? No. ");
-                        //Filter out these telemetry messages as they are not supported by this consumer
                     }
                 }
             }
@@ -172,7 +166,16 @@ namespace fa_ccdx_consumer
             {
                 string errorCode = "743B";
                 string errorMessage = EdiErrorsService.BuildExceptionMessageString(e, errorCode, EdiErrorsService.BuildErrorVariableArrayList());
-                CcdxService.LogCcdxConsumerErrorEventToAppInsights(reportFileName, log, e, errorCode);
+				if (reportFileName != null && reportFileName != "" && storageAccountConnectionString != null)
+                {
+					if (blobErrorContainerName != null && eventValue.Length > 0)
+                    {
+						log.LogInformation($"- [ccdx-consumer->run]: Upload report package {reportFileName} to error container {blobErrorContainerName}: ");
+						await AzureStorageBlobService.UploadBlobToContainerUsingSdk(eventValue, storageAccountConnectionString, blobErrorContainerName, reportFileName);
+					}
+                }
+
+				CcdxService.LogCcdxConsumerErrorEventToAppInsights(reportFileName, log, e, errorCode);
                 log.LogError("There was an exception while consuming a message from the Kafka topic");
                 log.LogError(e, errorMessage);
             }
