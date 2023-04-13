@@ -1,6 +1,6 @@
 # OVERVIEW
 
-This EMS Data & Integration (EDI) CCDX Provider Azure function publishes USBDG collected report packages in blob container `raw-ccdx-provider` to CCDX. 
+This EDI Azure function app proccesses incoming USBDG collected report packages in blob container (`raw-ccdx-provider`) and publishes to CCDX. 
 
 # CONFIGURATION
 
