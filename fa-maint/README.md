@@ -2,7 +2,7 @@
 
 ## EDI Job Import
 
-EMS Data & Integration (EDI) emits job telemetry to Azure Log Analytics Workspace (LAW) (via App Insights). Telemetry comes from Azure function (app events and traces), Azure blob (report package put events), and Azure Data Factory pipeline execution status events). This EDI Job Import function pulls this telemetry from LAW and into Azure SQL. 
+EDI components emit job telemetry to Azure Log Analytics Workspace (LAW) (via App Insights). Telemetry comes from Azure function (app events and traces), Azure blob (report package put events), and Azure Data Factory pipeline execution status events). This EDI Job Import function queries this telemetry from LAW and inserts into Azure SQL. 
 
 ## EDI Job Import Monitor
 
