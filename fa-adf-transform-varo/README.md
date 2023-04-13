@@ -1,6 +1,6 @@
 # OVERVIEW
 
-This EMS Data & Integration (EDI) Azure Data Factory (ADF) transformation Azure function app transforms Varo collected file package content into curated output. 
+This EDI Azure function app transforms Varo collected file packages into curated output.
 
 # CONFIGURATION
 
@@ -28,5 +28,5 @@ This EMS Data & Integration (EDI) Azure Data Factory (ADF) transformation Azure 
   - Open Visual Studio
   - Right click on function app project
   - Select 'Publish..."
-  - Select the publishing profile (e.g., fa-maint-dev - Zip Deploy.pubxml)
+  - Select the publishing profile
   - Select 'Publish' button
