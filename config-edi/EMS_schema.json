@@ -1,0 +1,1019 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "http://example.com/example.json",
+    "type": "object",
+    "title": "Root EMS data record schema",
+    "description": "The scope of this schema is all data objects defined per WHO/PQS specification E006/DS01.",
+    "additionalProperties": true,
+    "required": [
+        "records"
+    ],
+    "properties": {
+        "records": {
+            "type": "array",
+            "title": "Records array",
+            "description": "Contains objects representing collection events",
+            "additionalItems": true,
+            "items": [
+                {
+                    "type": "object",
+                    "required": [
+                        "RELT",
+                        "RTCW"
+                    ],
+                    "properties": {
+                        "ABST": {
+                            "type": [
+                                "string",
+                                "null"
+                            ],
+                            "title": "Absolute time in UTC",
+                            "description": "Absolute time measured in UTC",
+                            "examples": [
+                                "20200115T040554Z"
+                            ]
+                        },
+                        "ACAT": {
+                            "type": [
+                                "string",
+                                "null"
+                            ],
+                            "title": "Appliance PQS device type",
+                            "description": "PQS device type or category",
+                            "examples": [
+                                "RF03"
+                            ]
+                        },
+                        "ACCD": {
+                            "type": [
+                                "number",
+                                "null"
+                            ],
+                            "title": "AC current drawn by the appliance",
+                            "description": "Average AC current being drawn from supply by the operation of the appliance within each 15 minute period. Average value of raw samples collected at no greater than 10 second intervals.",
+                            "examples": [
+                                1.62
+                            ],
+                            "minimum": 0.01,
+                            "maximum": 49.99
+                        },
+                        "ACSV": {
+                            "type": [
+                                "number",
+                                "null"
+                            ],
+                            "title": "AC supply voltage to the appliance",
+                            "description": "Average AC supply voltage to appliance within each 15 minute period. Average value of raw samples collected at no greater than 10 second intervals.",
+                            "examples": [
+                                235.3
+                            ],
+                            "minimum": 0,
+                            "maximum": 600
+                        },
+                        "ADOP": {
+                            "type": [
+                                "string",
+                                "null"
+                            ],
+                            "title": "Appliance date of production",
+                            "description": "Date of manufacture",
+                            "examples": [
+                                "2020-12-01"
+                            ]
+                        },
+                        "AID": {
+                            "type": [
+                                "string",
+                                "null"
+                            ],
+                            "title": "Appliance identifier",
+                            "description": "Identifier for program asset tracking",
+                            "examples": [
+                                "123456ABCDE"
+                            ]
+                        },
+                        "ALRM": {
+                            "type": [
+                                "string",
+                                "null"
+                            ],
+                            "title": "Alarm condition",
+                            "description": "Presence of defined alarm conditions",
+                            "examples": [
+                                "HEAT"
+                            ]
+                        },
+                        "AMFR": {
+                            "type": [
+                                "string",
+                                "null"
+                            ],
+                            "title": "Appliance manufacturer",
+                            "description": "Manufacturer name",
+                            "examples": [
+                                "Company1234 Inc"
+                            ]
+                        },
+                        "AMOD": {
+                            "type": [
+                                "string",
+                                "null"
+                            ],
+                            "title": "Appliance model",
+                            "description": "Manufacturer model number",
+                            "examples": [
+                                "FRIDGE-12345"
+                            ]
+                        },
+                        "APQS": {
+                            "type": [
+                                "string",
+                                "null"
+                            ],
+                            "title": "Appliance PQS code",
+                            "description": "PQS code (E00X/XXX)",
+                            "examples": [
+                                "E003/123"
+                            ]
+                        },
+                        "ASER": {
+                            "type": [
+                                "string",
+                                "null"
+                            ],
+                            "title": "Appliance manufacturer serial number",
+                            "description": "Manufacturer serial number",
+                            "examples": [
+                                "1234asdf98jxzy"
+                            ]
+                        },
+                        "BEMD": {
+                            "type": [
+                                "number",
+                                "null"
+                            ],
+                            "title": "EMD battery remaining",
+                            "description": "Estimated number of days of battery life remaining",
+                            "examples": [
+                                14.3
+                            ],
+                            "minimum": 0,
+                            "maximum": 9999.9
+                        },
+                        "BLOG": {
+                            "type": [
+                                "number",
+                                "null"
+                            ],
+                            "title": "Logger battery remaining",
+                            "description": "Estimated number of days of battery life remaining",
+                            "examples": [
+                                367.4
+                            ],
+                            "minimum": 0,
+                            "maximum": 9999.9
+                        },
+                        "CDAT": {
+                            "type": [
+                                "string",
+                                "null"
+                            ],
+                            "title": "Compressor Electronic Unit production date",
+                            "description": "Compressor electronic unit admin information",
+                            "examples": [
+                                "2021-06-01"
+                            ]
+                        },
+                        "CDAT2": {
+                            "type": [
+                                "string",
+                                "null"
+                            ],
+                            "title": "Secondary Compressor Electronic Unit production date",
+                            "description": "Compressor electronic unit admin information",
+                            "examples": [
+                                "2021-06-01"
+                            ]
+                        },
+                        "CID": {
+                            "type": [
+                                "string",
+                                "null"
+                            ],
+                            "title": "Country ID",
+                            "description": "Country where monitored appliance is located",
+                            "examples": [
+                                "US"
+                            ]
+                        },
+                        "CMPR": {
+                            "type": [
+                                "number",
+                                "null"
+                            ],
+                            "title": "Compressor runtime",
+                            "description": "Total duration compressor operated within each 15 minute period measured in minutes",
+                            "examples": [
+                                7
+                            ],
+                            "minimum": 0,
+                            "maximum": 15
+                        },
+                        "CMPR2": {
+                            "type": [
+                                "number",
+                                "null"
+                            ],
+                            "title": "Secondary Compressor runtime",
+                            "description": "Total duration compressor operated within each 15 minute period measured in minutes",
+                            "examples": [
+                                7
+                            ],
+                            "minimum": 0,
+                            "maximum": 15
+                        },
+                        "CMPS": {
+                            "type": [
+                                "number",
+                                "null"
+                            ],
+                            "title": "Compressor speed",
+                            "description": "Maximum operating speed of the compressor in revolutions per minute within each 15-minute period based on samples collected at no greater than 10 second intervals",
+                            "examples": [
+                                2835
+                            ],
+                            "minimum": 0,
+                            "maximum": 20000
+                        },
+                        "CMPS2": {
+                            "type": [
+                                "number",
+                                "null"
+                            ],
+                            "title": "Secondary compressor speed",
+                            "description": "Maximum operating speed of the compressor in revolutions per minute within each 15-minute period based on samples collected at no greater than 10 second intervals",
+                            "examples": [
+                                2835
+                            ],
+                            "minimum": 0,
+                            "maximum": 20000
+                        },
+                        "CNAM": {
+                            "type": [
+                                "string",
+                                "null"
+                            ],
+                            "title": "Compressor Electronic Unit Manufacturer",
+                            "description": "Compressor electronic unit admin information",
+                            "examples": [
+                                "Vendor_Name"
+                            ]
+                        },
+                        "CNAM2": {
+                            "type": [
+                                "string",
+                                "null"
+                            ],
+                            "title": "Secondary Compressor Electronic Unit Manufacturer",
+                            "description": "Compressor electronic unit admin information",
+                            "examples": [
+                                "Vendor_Name"
+                            ]
+                        },
+                        "CSER": {
+                            "type": [
+                                "string",
+                                "null"
+                            ],
+                            "title": "Compressor Electronic Unit Product Code",
+                            "description": "Compressor electronic unit admin information",
+                            "examples": [
+                                "COMP34567"
+                            ]
+                        },
+                        "CSER2": {
+                            "type": [
+                                "string",
+                                "null"
+                            ],
+                            "title": "Secondary Compressor Electronic Unit Product Code",
+                            "description": "Compressor electronic unit admin information",
+                            "examples": [
+                                "COMP34567"
+                            ]
+                        },
+                        "CSOF": {
+                            "type": [
+                                "string",
+                                "null"
+                            ],
+                            "title": "Compressor Electronic Unit Software version",
+                            "description": "Compressor electronic unit admin information",
+                            "examples": [
+                                "v01.02.004"
+                            ]
+                        },
+                        "CSOF2": {
+                            "type": [
+                                "string",
+                                "null"
+                            ],
+                            "title": "Secondary Compressor Electronic Unit Software version",
+                            "description": "Compressor electronic unit admin information",
+                            "examples": [
+                                "v01.02.004"
+                            ]
+                        },
+                        "DCCD": {
+                            "type": [
+                                "number",
+                                "null"
+                            ],
+                            "title": "DC current drawn by the appliance",
+                            "description": "Average DC current being drawn from supply by the operation of the appliance within each 15 minute period. Average value of raw samples collected at no greater than 10 second intervals.",
+                            "examples": [
+                                3.8
+                            ],
+                            "minimum": 0,
+                            "maximum": 99.9
+                        },
+                        "DCSV": {
+                            "type": [
+                                "number",
+                                "null"
+                            ],
+                            "title": "DC supply voltage to the appliance",
+                            "description": "Average DC supply voltage to appliance within each 15 minute period. Average value of raw samples collected at no greater than 10 second intervals.",
+                            "examples": [
+                                19.2
+                            ],
+                            "minimum": 0,
+                            "maximum": 999.9
+                        },
+                        "DNAM": {
+                            "type": [
+                                "string",
+                                "null"
+                            ],
+                            "title": "District Name",
+                            "description": "Name of district where device is located",
+                            "examples": [
+                                "Capitol Hill"
+                            ]
+                        },
+                        "DORF": {
+                            "type": [
+                                "number",
+                                "null"
+                            ],
+                            "title": "Door/lid opening (freezer/other compartment)",
+                            "description": "Total duration freezer compartment or other compartment door was opened within each 15 minute period measured in seconds",
+                            "examples": [
+                                223
+                            ],
+                            "minimum": 0,
+                            "maximum": 86500
+                        },
+                        "DORV": {
+                            "type": [
+                                "number",
+                                "null"
+                            ],
+                            "title": "Door/lid opening (vaccine compartment)",
+                            "description": "Total duration vaccine compartment door was opened within each 15 minute period measured in seconds",
+                            "examples": [
+                                467
+                            ],
+                            "minimum": 0,
+                            "maximum": 86500
+                        },
+                        "EDOP": {
+                            "type": [
+                                "string",
+                                "null"
+                            ],
+                            "title": "EMD date of production",
+                            "description": "Date of manufacture",
+                            "examples": [
+                                "2021-06-01"
+                            ]
+                        },
+                        "EERR": {
+                            "type": [
+                                "string",
+                                "null"
+                            ],
+                            "title": "EMD EMD Error Codes",
+                            "description": "Alphanumeric codes corresponding to conditions that may impair normal operation of the Logger (e.g. broken or disconnected sensors, self-test failure)",
+                            "examples": [
+                                "abcde"
+                            ]
+                        },
+                        "EID": {
+                            "type": [
+                                "string",
+                                "null"
+                            ],
+                            "title": "EMD identifier",
+                            "description": "Identifier for program asset tracking",
+                            "examples": [
+                                "845858KJLHJ"
+                            ]
+                        },
+                        "EMFR": {
+                            "type": [
+                                "string",
+                                "null"
+                            ],
+                            "title": "EMD manufacturer",
+                            "description": "Manufacturer name",
+                            "examples": [
+                                "EMD_Name"
+                            ]
+                        },
+                        "EMOD": {
+                            "type": [
+                                "string",
+                                "null"
+                            ],
+                            "title": "EMD model",
+                            "description": "Manufacturer model number",
+                            "examples": [
+                                "EMD-ModelNo"
+                            ]
+                        },
+                        "EMSV": {
+                            "type": [
+                                "string",
+                                "null"
+                            ],
+                            "title": "EMD software version",
+                            "description": "Version number of EMD software/firmware installed",
+                            "examples": [
+                                "v01.02.123"
+                            ]
+                        },
+                        "EPQS": {
+                            "type": [
+                                "string",
+                                "null"
+                            ],
+                            "title": "EMD PQS code",
+                            "description": "PQS code (E00X/XXX)",
+                            "examples": [
+                                "E006/999"
+                            ]
+                        },
+                        "ESER": {
+                            "type": [
+                                "string",
+                                "null"
+                            ],
+                            "title": "EMD serial number",
+                            "description": "Manufacturer serial number",
+                            "examples": [
+                                "EMD-SerialNum"
+                            ]
+                        },
+                        "FANS": {
+                            "type": [
+                                "number",
+                                "null"
+                            ],
+                            "title": "Fan speed",
+                            "description": "Min. 0% / Max. 100% speed",
+                            "examples": [
+                                68.6
+                            ],
+                            "minimum": 0,
+                            "maximum": 100
+                        },
+                        "FID": {
+                            "type": [
+                                "string",
+                                "null"
+                            ],
+                            "title": "Facility ID",
+                            "description": "Facility where monitored appliance is located",
+                            "examples": [
+                                "Facility-West"
+                            ]
+                        },
+                        "FNAM": {
+                            "type": [
+                                "string",
+                                "null"
+                            ],
+                            "title": "Facility Name",
+                            "description": "Name of facility where device is located",
+                            "examples": [
+                                "Capitol HC"
+                            ]
+                        },
+                        "HAMB": {
+                            "type": [
+                                "number",
+                                "null"
+                            ],
+                            "title": "Ambient relative humidity",
+                            "description": "RH%",
+                            "examples": [
+                                59.8
+                            ],
+                            "minimum": 0,
+                            "maximum": 100
+                        },
+                        "HCOM": {
+                            "type": [
+                                "number",
+                                "null"
+                            ],
+                            "title": "Compartment relative humidity",
+                            "description": "RH%",
+                            "examples": [
+                                98.2
+                            ],
+                            "minimum": 0,
+                            "maximum": 100
+                        },
+                        "HOLD": {
+                            "type": [
+                                "number",
+                                "null"
+                            ],
+                            "title": "Holdover autonomy or independence time",
+                            "description": "estimated time in days during which all points in the vaccine compartment remain between +2C and +8C if supply power disconnected",
+                            "examples": [
+                                7.3
+                            ],
+                            "minimum": 0,
+                            "maximum": 999.9
+                        },
+                        "IDRF": {
+                            "type": [
+                                "number",
+                                "null"
+                            ],
+                            "title": "Instantaneous door/lid opening (freezer compartment)",
+                            "description": "Total duration in the last 15-minute period the freezer compartment door has been open at time of USB mount",
+                            "examples": [
+                                812
+                            ],
+                            "minimum": 0,
+                            "maximum": 86500
+                        },
+                        "IDRV": {
+                            "type": [
+                                "number",
+                                "null"
+                            ],
+                            "title": "Instantaneous door/lid opening (vaccine compartment)",
+                            "description": "Total duration in the last 15-minute period the vaccine compartment door has been open at time of USB mount",
+                            "examples": [
+                                812
+                            ],
+                            "minimum": 0,
+                            "maximum": 86500
+                        },
+                        "LACC": {
+                            "type": [
+                                "number",
+                                "null"
+                            ],
+                            "title": "Location accuracy (in meters)",
+                            "description": "Accuracy of location information, in meters",
+                            "examples": [
+                                38.8
+                            ],
+                            "minimum": 0,
+                            "maximum": 999.9
+                        },
+                        "LAT": {
+                            "type": [
+                                "number",
+                                "null"
+                            ],
+                            "title": "Location / GIS Coordinates / Latitude",
+                            "description": "Physical location of asset",
+                            "examples": [
+                                38.88612
+                            ],
+                            "minimum": -90,
+                            "maximum": 90
+                        },
+                        "LDOP": {
+                            "type": [
+                                "string",
+                                "null"
+                            ],
+                            "title": "Logger date of production",
+                            "description": "Date of manufacture",
+                            "examples": [
+                                "2021-08-15"
+                            ]
+                        },
+                        "LERR": {
+                            "type": [
+                                "string",
+                                "null"
+                            ],
+                            "title": "Logger Error Codes",
+                            "description": "Alphanumeric codes corresponding to conditions that may impair normal operation of the Logger (e.g. broken or disconnected sensors, self-test failure)",
+                            "examples": [
+                                "abcde"
+                            ]
+                        },
+                        "LID": {
+                            "type": [
+                                "string",
+                                "null"
+                            ],
+                            "title": "Logger identifier",
+                            "description": "Identifier for program asset tracking",
+                            "examples": [
+                                "789032QEWRE"
+                            ]
+                        },
+                        "LMFR": {
+                            "type": [
+                                "string",
+                                "null"
+                            ],
+                            "title": "Logger manufacturer",
+                            "description": "Manufacturer name",
+                            "examples": [
+                                "Logger_Co"
+                            ]
+                        },
+                        "LMOD": {
+                            "type": [
+                                "string",
+                                "null"
+                            ],
+                            "title": "Logger model",
+                            "description": "Manufacturer model number",
+                            "examples": [
+                                "Logger_Model"
+                            ]
+                        },
+                        "LNG": {
+                            "type": [
+                                "number",
+                                "null"
+                            ],
+                            "title": "Location / GIS Coordinates / Longitude",
+                            "description": "Physical location of asset",
+                            "examples": [
+                                -77.00513
+                            ],
+                            "minimum": -180,
+                            "maximum": 180
+                        },
+                        "LPQS": {
+                            "type": [
+                                "string",
+                                "null"
+                            ],
+                            "title": "Logger PQS code",
+                            "description": "PQS code (E00X/XXX)",
+                            "examples": [
+                                "E006/998"
+                            ]
+                        },
+                        "LSER": {
+                            "type": [
+                                "string",
+                                "null"
+                            ],
+                            "title": "Logger serial number",
+                            "description": "Manufacturer serial number",
+                            "examples": [
+                                "log4567890asdf"
+                            ]
+                        },
+                        "LSV": {
+                            "type": [
+                                "string",
+                                "null"
+                            ],
+                            "title": "Logger software version",
+                            "description": "Version number of Logger software/firmware installed",
+                            "examples": [
+                                "v01.02.008"
+                            ]
+                        },
+                        "MSW": {
+                            "type": [
+                                "number",
+                                "null"
+                            ],
+                            "title": "Main ON/OFF switch",
+                            "description": "OFF (0) / ON (1) of main control switch of appliance",
+                            "examples": [
+                                1
+                            ]
+                        },
+                        "RELT": {
+                            "type": "string",
+                            "title": "Relative Time",
+                            "description": "Time since start of relative time keeping at PT0S",
+                            "examples": [
+                                "P3DT12H5M32S"
+                            ]
+                        },
+                        "RNAM": {
+                            "type": [
+                                "string",
+                                "null"
+                            ],
+                            "title": "Region Name",
+                            "description": "Name of region where device is located",
+                            "examples": [
+                                "Washington DC"
+                            ]
+                        },
+                        "RTCW": {
+                            "type": "string",
+                            "title": "Brownout Recovery Time",
+                            "description": "Relative timestamp of when logger timer started its most recent continuous operation",
+                            "examples": [
+                                "PT0S"
+                            ]
+                        },
+                        "SIGN": {
+                            "type": [
+                                "string",
+                                "null"
+                            ],
+                            "title": "File Integrity check",
+                            "description": "Integrity check on file contents; could be CRC hash or signature",
+                            "examples": [
+                                "asdfjasdh74734asdf=="
+                            ]
+                        },
+                        "SVA": {
+                            "type": [
+                                "number",
+                                "null"
+                            ],
+                            "title": "AC Supply voltage availability",
+                            "description": "Data indicating the number of seconds within each 15-minute period when the AC voltage is within acceptable bounds to operate the appliance",
+                            "examples": [
+                                510
+                            ],
+                            "minimum": 0,
+                            "maximum": 950
+                        },
+                        "TAMB": {
+                            "type": [
+                                "number",
+                                "null"
+                            ],
+                            "title": "Ambient temperature",
+                            "description": "Temperature of the immediate appliance surroundings; should not be affected by appliance operation",
+                            "examples": [
+                                21
+                            ],
+                            "minimum": -55,
+                            "maximum": 60
+                        },
+                        "TCON": {
+                            "type": [
+                                "number",
+                                "null"
+                            ],
+                            "title": "Condenser temperature",
+                            "description": "Temperature of the condenser",
+                            "examples": [
+                                "101.50.3"
+                            ],
+                            "minimum": -55,
+                            "maximum": 150
+                        },
+                        "TCON2": {
+                            "type": [
+                                "number",
+                                "null"
+                            ],
+                            "title": "Secondary Condenser temperature",
+                            "description": "Temperature of the condenser",
+                            "examples": [
+                                "101.50.3"
+                            ],
+                            "minimum": -55,
+                            "maximum": 150
+                        },
+                        "TFRZ": {
+                            "type": [
+                                "number",
+                                "null"
+                            ],
+                            "title": "Thermostat temperature (Freezer Compartment)",
+                            "description": "Additional temperature sensor",
+                            "examples": [
+                                -4.5
+                            ],
+                            "minimum": -99.9,
+                            "maximum": 60
+                        },
+                        "TPCB": {
+                            "type": [
+                                "number",
+                                "null"
+                            ],
+                            "title": "Compressor Electronic Unit temperature",
+                            "description": "Temperature of Compressor Electronic Unit",
+                            "examples": [
+                                35.2
+                            ],
+                            "minimum": -55,
+                            "maximum": 150
+                        },
+                        "TPCB2": {
+                            "type": [
+                                "number",
+                                "null"
+                            ],
+                            "title": "Secondary Compressor Electronic Unit temperature",
+                            "description": "Temperature of Compressor Electronic Unit",
+                            "examples": [
+                                35.2
+                            ],
+                            "minimum": -55,
+                            "maximum": 150
+                        },
+                        "TVC": {
+                            "type": [
+                                "number",
+                                "null"
+                            ],
+                            "title": "Thermostat temperature (Vaccine Compartment)",
+                            "description": "Temperature sensor located in coldest location of storage compartment",
+                            "examples": [
+                                3.2
+                            ],
+                            "minimum": -55,
+                            "maximum": 60
+                        }
+                    }
+                }
+            ]
+        }
+    },
+    "examples": [
+        {
+            "records": [
+                {
+                    "ABST": "20200115T040554Z",
+                    "ACAT": "RF03",
+                    "ACCD": 1.62,
+                    "ACSV": 235.3,
+                    "ADOP": "2020-12-01",
+                    "AID": "123456ABCDE",
+                    "ALRM": "HEAT",
+                    "AMFR": "Company1234 Inc",
+                    "AMOD": "FRIDGE-12345",
+                    "APQS": "E003/123",
+                    "ASER": "1234asdf98jxzy",
+                    "BEMD": 14.3,
+                    "BLOG": 367.4,
+                    "CDAT": "2021-06-01",
+                    "CDAT2": "2021-06-01",
+                    "CID": "US",
+                    "CMPR": 7,
+                    "CMPR2": 7,
+                    "CMPS": 2835,
+                    "CMPS2": 2835,
+                    "CNAM": "Vendor_Name",
+                    "CNAM2": "Vendor_Name",
+                    "CSER": "COMP34567",
+                    "CSER2": "COMP34567",
+                    "CSOF": "v01.02.004",
+                    "CSOF2": "v01.02.004",
+                    "DCCD": 3.8,
+                    "DCSV": 19.2,
+                    "DNAM": "Capitol Hill",
+                    "DORF": 223,
+                    "DORV": 467,
+                    "EDOP": "2021-06-01",
+                    "EERR": "abcde",
+                    "EID": "845858KJLHJ",
+                    "EMFR": "EMD_Name",
+                    "EMOD": "EMD-ModelNo",
+                    "EMSV": "v01.02.123",
+                    "EPQS": "E006/999",
+                    "ESER": "EMD-SerialNum",
+                    "FANS": 68.6,
+                    "FID": "Facility-West",
+                    "FNAM": "Capitol HC",
+                    "HAMB": 59.8,
+                    "HCOM": 98.2,
+                    "HOLD": 7.3,
+                    "IDRF": 812,
+                    "IDRV": 812,
+                    "LACC": 38.8,
+                    "LAT": 38.88612,
+                    "LDOP": "2021-08-15",
+                    "LERR": "abcde",
+                    "LID": "789032QEWRE",
+                    "LMFR": "Logger_Co",
+                    "LMOD": "Logger_Model",
+                    "LNG": -77.00513,
+                    "LPQS": "E006/998",
+                    "LSER": "log4567890asdf",
+                    "LSV": "v01.02.008",
+                    "MSW": 1,
+                    "RELT": "P3DT12H5M32S",
+                    "RNAM": "Washington DC",
+                    "RTCW": "PT0S",
+                    "SIGN": "asdfjasdh74734asdf==",
+                    "SVA": 510,
+                    "TAMB": 21,
+                    "TCON": "101.50.3",
+                    "TCON2": "101.50.3",
+                    "TFRZ": -4.5,
+                    "TPCB": 35.2,
+                    "TPCB2": 35.2,
+                    "TVC": 3.2
+                }
+            ]
+        },
+        {
+            "ABST": "20200115T040554Z",
+            "ACAT": "RF03",
+            "ADOP": "2020-12-01",
+            "AID": "123456ABCDE",
+            "AMFR": "Company1234 Inc",
+            "AMOD": "FRIDGE-12345",
+            "APQS": "E003/123",
+            "ASER": "1234asdf98jxzy",
+            "CDAT": "2021-06-01",
+            "CDAT2": "2021-06-01",
+            "CID": "US",
+            "CNAM": "Vendor_Name",
+            "CNAM2": "Vendor_Name",
+            "CSER": "COMP34567",
+            "CSER2": "COMP34567",
+            "CSOF": "v01.02.004",
+            "CSOF2": "v01.02.004",
+            "DNAM": "Capitol Hill",
+            "EDOP": "2021-06-01",
+            "EID": "845858KJLHJ",
+            "EMFR": "EMD_Name",
+            "EMOD": "EMD-ModelNo",
+            "EMSV": "v01.02.123",
+            "EPQS": "E006/999",
+            "ESER": "EMD-SerialNum",
+            "FID": "Facility-West",
+            "FNAM": "Capitol HC",
+            "LDOP": "2021-08-15",
+            "LID": "789032QEWRE",
+            "LMFR": "Logger_Co",
+            "LMOD": "Logger_Model",
+            "LPQS": "E006/998",
+            "LSER": "log4567890asdf",
+            "LSV": "v01.02.008",
+            "RNAM": "Washington DC",
+            "SIGN": "asdfjasdh74734asdf==",
+            "records": [
+                {
+                    "ACCD": 1.62,
+                    "ACSV": 235.3,
+                    "ALRM": "HEAT",
+                    "BEMD": 14.3,
+                    "BLOG": 367.4,
+                    "CMPR": 7,
+                    "CMPR2": 7,
+                    "CMPS": 2835,
+                    "CMPS2": 2835,
+                    "DCCD": 3.8,
+                    "DCSV": 19.2,
+                    "DORF": 223,
+                    "DORV": 467,
+                    "EERR": "abcde",
+                    "FANS": 68.6,
+                    "HAMB": 59.8,
+                    "HCOM": 98.2,
+                    "HOLD": 7.3,
+                    "IDRF": 812,
+                    "IDRV": 812,
+                    "LACC": 38.8,
+                    "LAT": 38.88612,
+                    "LERR": "abcde",
+                    "LNG": -77.00513,
+                    "MSW": 1,
+                    "RELT": "P3DT12H5M32S",
+                    "RTCW": "PT0S",
+                    "SVA": 510,
+                    "TAMB": 21,
+                    "TCON": "101.50.3",
+                    "TCON2": "101.50.3",
+                    "TFRZ": -4.5,
+                    "TPCB": 35.2,
+                    "TPCB2": 35.2,
+                    "TVC": 3.2
+                }
+            ]
+        }
+    ]
+}

@@ -1,6 +1,6 @@
 # OVERVIEW
 
-This EDI Azure function app transforms USBDG collected file packages into curated output. 
+This EDI Azure function app transforms Varo collected file packages into curated output.
 
 # CONFIGURATION
 

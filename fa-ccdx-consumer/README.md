@@ -1,10 +1,46 @@
-# fa-ccdx-consumer
-## Onboarding
+# OVERVIEW
+
+This EDI Azure function app pulls USBDG collected file packages from CCDX and uploads to an Azure blob storage container (`raw-ccdx-consumer`). 
+
+# CONFIGURATION
+
+- [ ] Two configuration variables are hard coded:
+
+  - const string Broker = "pkc-41973.westus2.azure.confluent.cloud:9092";
+  - const string Topic = "dx.destination.example";
+
+- [ ]  Add these application settings
+  - APPINSIGHTS_INSTRUMENTATIONKEY
+    - Value: `*******`
+  - APPLICATIONINSIGHTS_CONNECTION_STRING
+    - Value: `InstrumentationKey=******`
+  - AzureWebJobsStorage
+    - Value: `DefaultEndpointsProtocol=https;AccountName=saoperationallogsdev;...`
+  - CCDX_AZURE_STORAGE_ACCOUNT_CONNECTION_STRING
+    - Value: `DefaultEndpointsProtocol=https;AccountName=adlsedidev;...`
+  - CCDX_AZURE_STORAGE_BLOB_CONTAINER_NAME
+    - Value: `raw-ccdx-consumer`
+  - KAFKA_GROUP_ID
+    - Value: `dx.consumer.example.valence-dev`
+  - KAFKA_TRIGGER_SASL_PASSWORD
+    - Value: `BXp***********`
+  - KAFKA_TRIGGER_SASL_USERNAME
+    - Value: `DZ24**********`
+  
+# DEPLOYMENT
+- [ ]  Manual zip push
+  - Download the publishing profile from the Azure portal
+  - Open Visual Studio
+  - Right click on function app project
+  - Select 'Publish..."
+  - Select the publishing profile
+  - Select 'Publish' button
+
+# CCDX ONBOARDING
 - https://valencegroup.atlassian.net/browse/NHGH-703
-### Production
-- Account information: https://valencegroup.atlassian.net/browse/NHGH-703
-- Data Interchange onboarding steps: https://www.cold-chain-data.com/resources/telemetry-consumer
-### Steps
+- https://www.cold-chain-data.com/resources/telemetry-consumer
+
+## Steps
 - Request the creation of a new Telemetry Consumer
 - Configure the fa-ccdx-consumer app to consume telemetry data from the Data Interchange
   - Update the following constant variables in Consumer.cs (provided from the Data Interchange adminstrator)
@@ -20,6 +56,3 @@
 	- KAFKA_TOPIC (topic) (e.g., "dx.destination.edidata")
   - Add the following blob container application settings
     - CCDX_AZURE_STORAGE_BLOB_CONTAINER_NAME (e.g., "raw-ccdx-consumer")
-  - Add the supported log types application settings
-    - CCDX_PUBLISHER_HEADER_CE_TYPE_CFD50 (e.g., "org.nhgh.cfd50.report.dev.local")
-	- CCDX_PUBLISHER_HEADER_CE_TYPE_INDIGO_V2 (e.g., "org.nhgh.indigo_v2.report.dev.local")
