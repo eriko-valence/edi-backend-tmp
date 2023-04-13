@@ -35,37 +35,39 @@ namespace fa_ccdx_consumer
         const string Broker = "pkc-41973.westus2.azure.confluent.cloud:9092";
         const string Topic = "dx.destination.example";
 
-        // PROD
-        //const string Broker = "pkc-41973.westus2.azure.confluent.cloud:9092";
-        //const string Topic = "dx.destination.edidata";
+		// PROD
+		//const string Broker = "pkc-41973.westus2.azure.confluent.cloud:9092";
+		//const string Topic = "dx.destination.edidata";
 
-        /// <summary>
-        /// Kafka triggered azure function that consumes messages from a cold chain data interchange (CCDX) Kafka topic and loads them into 
-        /// an Azure storage blob container monitored by an Azure Data Factory (ADF) Equipment Monitoring System (EMS) ETL pipeline. 
-        /// </summary>
-        /// <param name="Broker">Kafka broker</param>
-        /// <param name="Topic">Kafka topic</param>
-        /// <param name="Username">Kafka SASL username</param>
-        /// <param name="Password">Kafka SASL password</param>
-        /// <param name="Protocol">Kafka broker protocol</param>
-        /// <param name="AuthenticationMode">Kafka broker authentication mode</param>
-        /// <param name="ConsumerGroup">Kafka consumer group</param>
-        /// <param name="events">Kafka message data</param>
-        /// <param name="log">Microsoft logging object</param>
-        /// <remarks>
-        /// - Kafka Extension has two modes. One is Single Mode, and the other is Batch mode. This Azure function uses batch mode 
-        /// as the KafkaEventData parameter is array. 
-        /// - Kafka Extension has a Kafka Listener that consumes messages from the broker. It reads messages ever SubscriberInternalInSecond.
-        /// - Kafka Lister doesn’t execute functions. Instead, send its messages to the channel. The channel is a buffer between Kafka 
-        /// Listener and Functions. Channel can keep the number of messages that is maxBatchSize * ExecutorChannelCapacity. 
-        /// ExecutorChannelCapacity is one by default. If you increase the value, you can increase the buffer size. Function read the 
-        /// messages from 1 or maxBatchSize according to the Mode, execute a function. Once the channel reaches the limit, Kafka Listener 
-        /// stops consuming. ChannelFullRetryIntervalInMsis the time (ms) to retry to write channel.
-        /// - Marking an offset as consumed is called committing an offset. In Kafka, we record offset commits by writing to an internal 
-        /// Kafka topic called the offsets topic. A message is considered consumed only when its offset is committed to the offsets 
-        /// topic. 
-        /// </remarks>
-        [FunctionName("ccdx-consumer")]
+		const string logPrefix = "- [ccdx-consumer-usbdg]:";
+
+		/// <summary>
+		/// Kafka triggered azure function that consumes messages from a cold chain data interchange (CCDX) Kafka topic and loads them into 
+		/// an Azure storage blob container monitored by an Azure Data Factory (ADF) Equipment Monitoring System (EMS) ETL pipeline. 
+		/// </summary>
+		/// <param name="Broker">Kafka broker</param>
+		/// <param name="Topic">Kafka topic</param>
+		/// <param name="Username">Kafka SASL username</param>
+		/// <param name="Password">Kafka SASL password</param>
+		/// <param name="Protocol">Kafka broker protocol</param>
+		/// <param name="AuthenticationMode">Kafka broker authentication mode</param>
+		/// <param name="ConsumerGroup">Kafka consumer group</param>
+		/// <param name="events">Kafka message data</param>
+		/// <param name="log">Microsoft logging object</param>
+		/// <remarks>
+		/// - Kafka Extension has two modes. One is Single Mode, and the other is Batch mode. This Azure function uses batch mode 
+		/// as the KafkaEventData parameter is array. 
+		/// - Kafka Extension has a Kafka Listener that consumes messages from the broker. It reads messages ever SubscriberInternalInSecond.
+		/// - Kafka Lister doesn’t execute functions. Instead, send its messages to the channel. The channel is a buffer between Kafka 
+		/// Listener and Functions. Channel can keep the number of messages that is maxBatchSize * ExecutorChannelCapacity. 
+		/// ExecutorChannelCapacity is one by default. If you increase the value, you can increase the buffer size. Function read the 
+		/// messages from 1 or maxBatchSize according to the Mode, execute a function. Once the channel reaches the limit, Kafka Listener 
+		/// stops consuming. ChannelFullRetryIntervalInMsis the time (ms) to retry to write channel.
+		/// - Marking an offset as consumed is called committing an offset. In Kafka, we record offset commits by writing to an internal 
+		/// Kafka topic called the offsets topic. A message is considered consumed only when its offset is committed to the offsets 
+		/// topic. 
+		/// </remarks>
+		[FunctionName("ccdx-consumer")]
         public static async Task Run(
             [KafkaTrigger(Broker,
                           Topic,
@@ -85,7 +87,7 @@ namespace fa_ccdx_consumer
 
 			try
             {
-                log.LogInformation($"- [ccdx-consumer->run]: Received {events.Length} telemetry file(s) from cold chain data interchange (CCDX) Kafka topic");
+                log.LogInformation($"{logPrefix} Received {events.Length} telemetry file(s) from cold chain data interchange (CCDX) Kafka topic");
 				storageAccountConnectionString = Environment.GetEnvironmentVariable("CCDX_AZURE_STORAGE_ACCOUNT_CONNECTION_STRING");
 				blobErrorContainerName = Environment.GetEnvironmentVariable("AZURE_STORAGE_BLOB_CONTAINER_NAME_ERROR");
 
@@ -115,26 +117,26 @@ namespace fa_ccdx_consumer
 					/* Only process messages that are known to this consumer */
 					if (EmsService.ValidateCceDeviceType(deviceType))
                     {
-                        log.LogInformation($"- [ccdx-consumer->run]: Is '{headers["ce_type"]}' a supported cold chain file package? Yes. ");
-                        log.LogInformation($"- [ccdx-consumer->run]: Confirmed. Content is cold chain telemetry. Proceed with processing.");
-                        log.LogInformation($"- [ccdx-consumer->run]: Does this supported cold chain telemetry message have an attached file?");
+                        log.LogInformation($"{logPrefix} Is '{headers["ce_type"]}' a supported cold chain file package? Yes. ");
+                        log.LogInformation($"{logPrefix} Confirmed. Content is cold chain telemetry. Proceed with processing.");
+                        log.LogInformation($"{logPrefix} Does this supported cold chain telemetry message have an attached file?");
                         if (headers.ContainsKey("ce_subject"))
                         {
-                            log.LogInformation($"- [ccdx-consumer->run]: Building raw ccdx raw consumer blob path.");
+                            log.LogInformation($"{logPrefix} Building raw ccdx raw consumer blob path.");
                             if (UsbdgDataProcessorService.IsThisUsbdgGeneratedPackageName(ceId))
                             {
-                                log.LogInformation($"- [ccdx-consumer->run]: Validate incoming blob file extension");
-                                log.LogInformation($"- [ccdx-consumer->run]: Confirmed. Attached cce telemetry file found. Proceed with processing.");
+                                log.LogInformation($"{logPrefix} Validate incoming blob file extension");
+                                log.LogInformation($"{logPrefix} Confirmed. Attached cce telemetry file found. Proceed with processing.");
 								string blobContainerName = Environment.GetEnvironmentVariable("CCDX_AZURE_STORAGE_BLOB_CONTAINER_NAME");
 								CcdxService.LogCcdxConsumerStartedEventToAppInsights(reportFileName, log);
-                                log.LogInformation($"- [ccdx-consumer->run]: Build the azure storage blob path to be used for uploading the cce telemetry file");
+                                log.LogInformation($"{logPrefix} Build the azure storage blob path to be used for uploading the cce telemetry file");
                                 blobName = CcdxService.BuildRawCcdxConsumerBlobPath(GetKeyValueString(headers, "ce_subject"), GetKeyValueString(headers, "ce_type"));
-                                log.LogInformation($"- [ccdx-consumer->run]: Preparing to upload blob {blobName} to container {blobContainerName}: ");
+                                log.LogInformation($"{logPrefix} Preparing to upload blob {blobName} to container {blobContainerName}: ");
                                 await AzureStorageBlobService.UploadBlobToContainerUsingSdk(eventData.Value, storageAccountConnectionString, blobContainerName, blobName);
-                                log.LogInformation($"- [ccdx-consumer->run]: Uploading blob {blobName} to container {blobContainerName}");
+                                log.LogInformation($"{logPrefix} Uploading blob {blobName} to container {blobContainerName}");
                                 CcdxService.LogCcdxConsumerSuccessEventToAppInsights(reportFileName, log);
 
-                                log.LogInformation($"- [ccdx-consumer->run]: Debug");
+                                log.LogInformation($"{logPrefix} Debug");
                                 log.LogInformation($"  ##########################################################################");
                                 log.LogInformation($"  # - Package: {reportFileName}");
                                 log.LogInformation($"  # - EmdType: {emdType}");
@@ -143,20 +145,20 @@ namespace fa_ccdx_consumer
                                 log.LogInformation($"  # - CESubject: {reportFileName}");
                                 log.LogInformation($"  # - CETime: {ceTime}");
                                 log.LogInformation($"  ##########################################################################");
-                                log.LogInformation($"- [ccdx-consumer->run]: Done");
+                                log.LogInformation($"{logPrefix} Done");
                             } else
                             {
-                                log.LogError($"- [ccdx-consumer->run]: Report package {ceId} is not from a USBDG EMD");
+                                log.LogError($"{logPrefix} Report package {ceId} is not from a USBDG EMD");
                             }
                         }
                         else
                         {
-                            log.LogError($"- [ccdx-consumer->run]: Email report package event is missing the ce-subject header");
+                            log.LogError($"{logPrefix} Email report package event is missing the ce-subject header");
                         }
                     }
                     else
                     {
-                        log.LogInformation($"- [ccdx-consumer->run]: Is '{headers["ce_type"]}' a supported cold chain file package? No. ");
+                        log.LogInformation($"{logPrefix} Is '{headers["ce_type"]}' a supported cold chain file package? No. ");
                     }
                 }
             }
@@ -168,13 +170,13 @@ namespace fa_ccdx_consumer
                 {
 					if (blobErrorContainerName != null && eventValue.Length > 0)
                     {
-						log.LogInformation($"- [ccdx-consumer->run]: Upload report package {reportFileName} to error container {blobErrorContainerName}: ");
+						log.LogInformation($"{logPrefix} Upload report package {reportFileName} to error container {blobErrorContainerName}: ");
 						await AzureStorageBlobService.UploadBlobToContainerUsingSdk(eventValue, storageAccountConnectionString, blobErrorContainerName, reportFileName);
 					}
                 }
 
 				CcdxService.LogCcdxConsumerErrorEventToAppInsights(reportFileName, log, e, errorCode);
-                log.LogError("There was an exception while consuming a message from the Kafka topic");
+                log.LogError($"{logPrefix} There was an exception while consuming a message from the Kafka topic");
                 log.LogError(e, errorMessage);
             }
         }
@@ -209,7 +211,7 @@ namespace fa_ccdx_consumer
                 }
             }
 
-            log.LogDebug($"- [ccdx-consumer->run]: ce-id; {ceId}; ce-type; {ceType}; ce-time; {ceTime}; ems-blob-name; {ceSubject}");
+            log.LogDebug($"{logPrefix} ce-id; {ceId}; ce-type; {ceType}; ce-time; {ceTime}; ems-blob-name; {ceSubject}");
         }
 
         public static String GetHeaderValueAsString(IKafkaEventDataHeader header)
