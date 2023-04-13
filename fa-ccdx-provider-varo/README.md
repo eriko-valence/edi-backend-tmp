@@ -1,6 +1,6 @@
 # OVERVIEW
 
-This EDI Azure function app receives base64 encoded content from an http request body and publishes to CCDX. It is integrated into the [Varo Mail Processor Logic Apps workflow](logic-apps-varo-mail-processor/README.md). 
+This EDI Azure function app receives base64 encoded content from an http request body and publishes to CCDX. It is integrated into the [Varo Mail Processor Logic Apps workflow](../logic-apps-varo-mail-processor/README.md). 
 
 # CONFIGURATION
 
