@@ -56,29 +56,13 @@ Components of this platform are listed [here](#components).
 | Azure Functions  | [Varo Transformer](fa-adf-transform-varo/README.md)  |
 | Azure Logic Apps  | [Varo Mail Processor](logic-apps-varo-mail-processor/README.md)  |
 
-
-#### Azure Functions
-
-* [Varo CCDX Provider](fa-ccdx-provider-varo/README.md)
-* [Varo CCDX Consumer](fa-ccdx-consumer-varo/README.md)
-* [Varo Mail Compressor](fa-mail-compressor-varo/README.md)
-* [Varo Transformer](fa-adf-transform-varo/README.md)
-
-#### Logic App Workflows
-
-* 
-
 ### USBDG
-
-#### Azure Functions
 
 | Resource Type  | Resource |
 | ------------- | ------------- |
 | Azure Functions  | [USBDG CCDX Provider](fa-ccdx-provider/README.md) |
 | Azure Functions  | [USBDG CCDX Consumer](fa-ccdx-consumer/README.md)  |
 | Azure Functions  | [USBDG Transformer](fa-adf-transform-indigo-v2-varo/README.md)  |
-
-
 
 ### Shared
 
@@ -88,4 +72,3 @@ Components of this platform are listed [here](#components).
 | Azure SQL  | [EDI Database](db-edi/README.md)  |
 | .NET Library  | [EDI Libraries](lib-edi/README.md)  |
 | Azure Data Factory | [EDI ADF](adf-edi/README.md) |
-
