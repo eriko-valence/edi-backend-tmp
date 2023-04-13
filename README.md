@@ -20,7 +20,6 @@
     * EMD timestamp source for Varo is whatever the phone thinks is absolute time
 * Source: USBDG Report Metadata Records Array
   * Examples
-  
     ```
     "records": [
 		{
