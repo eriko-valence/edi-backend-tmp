@@ -42,41 +42,43 @@ A data platform that supports data ingestion, transformation, storage/loading, a
 	* The logger has a 7 to 10 year battery backup for the real time clock. 
 	* A USBDG EMD uses a local state file to read from to populate the USBDG metadata file. For brand new USBDG EMDs (at the first logger connection time), this local state file does not exist. In this case null values will be present in the metadata file and ABST and RELT are pulled from the SYNC file name in the cloud for transformation purposes.
   
-## Varo
+## Components
 
-### Azure Functions
+### Varo
+
+#### Azure Functions
 
 * [Varo CCDX Provider](fa-ccdx-provider-varo/README.md)
 * [Varo CCDX Consumer](fa-ccdx-consumer-varo/README.md)
 * [Varo Mail Compressor](fa-mail-compressor-varo/README.md)
 * [Varo Transformer](fa-adf-transform-varo/README.md)
 
-### Logic App Workflows
+#### Logic App Workflows
 
 * [Varo Mail Processor](logic-apps-varo-mail-processor/README.md)
 
-## USBDG
+### USBDG
 
-### Azure Functions
+#### Azure Functions
 
 * [USBDG CCDX Provider](fa-ccdx-provider/README.md)
 * [USBDG CCDX Consumer](fa-ccdx-consumer/README.md)
 * [USBDG Transformer](fa-adf-transform-indigo-v2-varo/README.md)
 
-## Shared
+### Shared
 
-### Azure Functions
+#### Azure Functions
 
 * [EDI Maintenance](fa-maint/README.md)
 
-### Databases
+#### Databases
 
 * [EDI Database](db-edi/README.md)
 
-### Libraries
+#### Libraries
 
 * [EDI Libraries](lib-edi/README.md)
 
-### Azure Data Factories
+#### Azure Data Factories
 
 * [EDI ADF](adf-edi/README.md)
