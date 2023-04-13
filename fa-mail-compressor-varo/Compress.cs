@@ -19,7 +19,7 @@ namespace fa_mail_compressor_varo
 {
     public static class Compress
     {
-		const string logPrefix = "- [varo-compressor]:";
+		const string logPrefix = "- [varo-mail-compressor]:";
 
 		[FunctionName("compress-report")]
         public static async Task<HttpResponseMessage> Run(
