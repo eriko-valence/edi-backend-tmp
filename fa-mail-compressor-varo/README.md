@@ -1,6 +1,6 @@
 # OVERVIEW
 
-This EDI Azure function app packages and compresses Varo collected email attachments (base64 encoded strings in http request body). The compressed report package is included in the http response body as a base64 encoded string. This function app is integrated into the [Varo Mail Processor Logic Apps workflow](logic-apps-varo-mail-processor/README.md). 
+This EDI Azure function app packages and compresses Varo collected email attachments (base64 encoded strings in http request body). The compressed report package is included in the http response body as a base64 encoded string. This function app is integrated into the [Varo Mail Processor Logic Apps workflow](../logic-apps-varo-mail-processor/README.md). 
 
 # CONFIGURATION
 
