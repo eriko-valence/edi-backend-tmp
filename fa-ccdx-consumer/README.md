@@ -1,6 +1,6 @@
 # OVERVIEW
 
-This EMS Data & Integration (EDI) CCDX Consumer Azure function pulls USBDG file packages from CCDX and uploads to Azure blob storage container `raw-ccdx-consumer`. 
+This EDI Azure function app pulls USBDG collected file packages from CCDX and uploads to an Azure blob storage container (`raw-ccdx-consumer`). 
 
 # CONFIGURATION
 
