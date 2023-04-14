@@ -29,7 +29,7 @@ namespace fa_mail_compressor_varo
 
             try
             {
-                log.LogTrace($"{logPrefix} http trigger function received a compression request.");
+                log.LogInformation($"{logPrefix} http trigger function received a compression request.");
                 
                 // NHGH-2799 2023-02-09 1420 Identify the attachments to place into the tarball 
                 List<int> attachmentsToCompress = new();
@@ -42,7 +42,7 @@ namespace fa_mail_compressor_varo
 
                 if (outputPackageName != null)
                 {
-                    log.LogTrace($"{logPrefix} identify email attachments to be inserted into the Varo file package");
+                    log.LogInformation($"{logPrefix} identify email attachments to be inserted into the Varo file package");
                     if (attachments != null)
                     {
                         int i = 0;
@@ -61,9 +61,9 @@ namespace fa_mail_compressor_varo
                         }
                     }
 
-                    log.LogTrace($"{logPrefix} attachments identified: {attachmentsToCompress.Count}");
+                    log.LogInformation($"{logPrefix} attachments identified: {attachmentsToCompress.Count}");
 
-                    log.LogTrace($"{logPrefix} build and compress the Varo file package");
+                    log.LogInformation($"{logPrefix} build and compress the Varo file package");
                     using MemoryStream outputStream = new();
                     using (GZipOutputStream gzoStream = new(outputStream))
                     {
@@ -92,7 +92,7 @@ namespace fa_mail_compressor_varo
                     outputStream.Flush();
                     outputStream.Position = 0;
 
-                    log.LogTrace($"{logPrefix} returned base64 encoded string of compressed Varo file package");
+                    log.LogInformation($"{logPrefix} returned base64 encoded string of compressed Varo file package");
                     string compressedOutputBase64String = Convert.ToBase64String(outputStream.ToArray());
                     var returnObject = new { name = outputPackageName, content = compressedOutputBase64String };
 
@@ -103,7 +103,7 @@ namespace fa_mail_compressor_varo
                         Content = new StringContent(JsonConvert.SerializeObject(returnObject, Formatting.Indented), Encoding.UTF8, "application/json")
                     };
 
-                    log.LogTrace($"{logPrefix} sent successful http response");
+                    log.LogInformation($"{logPrefix} sent successful http response");
                     return httpResponseMessage;
                 } else
                 {
