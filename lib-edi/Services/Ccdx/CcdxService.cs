@@ -651,6 +651,7 @@ namespace lib_edi.Services.Ccdx
 
 		public static void ValidateCcdxConsumerCeTypeEnvVariables(ILogger log)
 		{
+			string logPrefix = "- [ccdx-service->validate-env-vars]";
 			string envVarCeTypeUsbdgDataDim = "CCDX_PUBLISHER_HEADER_CE_TYPE_USBDG";
 			string envVarCeTypeCfd50 = "CCDX_PUBLISHER_HEADER_CE_TYPE_CFD50";
 			string envVarCeTypeIndigoV2 = "CCDX_PUBLISHER_HEADER_CE_TYPE_INDIGO_V2";
@@ -659,18 +660,18 @@ namespace lib_edi.Services.Ccdx
 			if (Environment.GetEnvironmentVariable(envVarCeTypeUsbdgDataDim) == null)
 			{
 				string errorMessage = EdiErrorsService.BuildExceptionMessageString(null, errorCode, EdiErrorsService.BuildErrorVariableArrayList(envVarCeTypeUsbdgDataDim));
-				log.LogError($"- [ccdx-consumer->run]: {errorMessage}");
+				log.LogError($"{logPrefix} {errorMessage}");
 				throw new Exception(errorMessage);
 			}
 			else if (Environment.GetEnvironmentVariable(envVarCeTypeCfd50) == null)
 			{
 				string errorMessage = EdiErrorsService.BuildExceptionMessageString(null, errorCode, EdiErrorsService.BuildErrorVariableArrayList(envVarCeTypeCfd50));
-				log.LogError($"- [ccdx-consumer->run]: {errorMessage}");
+				log.LogError($"{logPrefix} {errorMessage}");
 				throw new Exception(errorMessage);
 			} else if (Environment.GetEnvironmentVariable(envVarCeTypeIndigoV2) == null)
 			{
 				string errorMessage = EdiErrorsService.BuildExceptionMessageString(null, errorCode, EdiErrorsService.BuildErrorVariableArrayList(envVarCeTypeIndigoV2));
-				log.LogError($"- [ccdx-consumer->run]: {errorMessage}");
+				log.LogError($"{logPrefix} {errorMessage}");
 				throw new Exception(errorMessage);
 			}
 		}
