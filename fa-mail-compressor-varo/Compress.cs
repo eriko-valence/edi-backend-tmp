@@ -19,7 +19,9 @@ namespace fa_mail_compressor_varo
 {
     public static class Compress
     {
-        [FunctionName("compress-report")]
+		const string logPrefix = "- [varo-mail-compressor]:";
+
+		[FunctionName("compress-report")]
         public static async Task<HttpResponseMessage> Run(
             [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequest req,
             ILogger log)
@@ -27,7 +29,7 @@ namespace fa_mail_compressor_varo
 
             try
             {
-                log.LogTrace("http trigger function received a compression request.");
+                log.LogInformation($"{logPrefix} http trigger function received a compression request.");
                 
                 // NHGH-2799 2023-02-09 1420 Identify the attachments to place into the tarball 
                 List<int> attachmentsToCompress = new();
@@ -40,7 +42,7 @@ namespace fa_mail_compressor_varo
 
                 if (outputPackageName != null)
                 {
-                    log.LogTrace("identify email attachments to be inserted into the Varo file package");
+                    log.LogInformation($"{logPrefix} identify email attachments to be inserted into the Varo file package");
                     if (attachments != null)
                     {
                         int i = 0;
@@ -59,9 +61,9 @@ namespace fa_mail_compressor_varo
                         }
                     }
 
-                    log.LogTrace($"  - attachments identified: {attachmentsToCompress.Count}");
+                    log.LogInformation($"{logPrefix} attachments identified: {attachmentsToCompress.Count}");
 
-                    log.LogTrace("build and compress the Varo file package");
+                    log.LogInformation($"{logPrefix} build and compress the Varo file package");
                     using MemoryStream outputStream = new();
                     using (GZipOutputStream gzoStream = new(outputStream))
                     {
@@ -90,7 +92,7 @@ namespace fa_mail_compressor_varo
                     outputStream.Flush();
                     outputStream.Position = 0;
 
-                    log.LogTrace("returned base64 encoded string of compressed Varo file package");
+                    log.LogInformation($"{logPrefix} returned base64 encoded string of compressed Varo file package");
                     string compressedOutputBase64String = Convert.ToBase64String(outputStream.ToArray());
                     var returnObject = new { name = outputPackageName, content = compressedOutputBase64String };
 
@@ -101,11 +103,11 @@ namespace fa_mail_compressor_varo
                         Content = new StringContent(JsonConvert.SerializeObject(returnObject, Formatting.Indented), Encoding.UTF8, "application/json")
                     };
 
-                    log.LogTrace("sent successful http response");
+                    log.LogInformation($"{logPrefix} sent successful http response");
                     return httpResponseMessage;
                 } else
                 {
-                    log.LogError("unable to build a Varo package file name");
+                    log.LogError($"{logPrefix} unable to build a Varo package file name");
                     HttpResponseMessage httpResponseMessage = new HttpResponseMessage()
                     {
                         StatusCode = System.Net.HttpStatusCode.InternalServerError
@@ -115,8 +117,8 @@ namespace fa_mail_compressor_varo
             }
             catch (Exception e)
             {
-                log.LogError("Something went wrong while compressing the Varo package file name");
-                log.LogError("Exception: " + e.Message);
+                log.LogError($"{logPrefix} something went wrong while compressing the Varo package file name");
+                log.LogError($"{logPrefix} exception: " + e.Message);
                 HttpResponseMessage httpResponseMessage = new HttpResponseMessage()
                 {
                     StatusCode = System.Net.HttpStatusCode.InternalServerError
