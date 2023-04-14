@@ -84,6 +84,9 @@ namespace fa_ccdx_consumer
 			byte[] eventValue = null;
 			string blobErrorContainerName = "";
 			string storageAccountConnectionString = null;
+            string ceType = null;
+            string dxEmail = null;
+
 
 			try
             {
@@ -105,13 +108,16 @@ namespace fa_ccdx_consumer
 
 					// NHGH-2898 20230413 1518 report name should be catpured early so a failed report package can be uploaded to the error blob container
 					string ceSubject = GetKeyValueString(headers, "ce_subject");
-					string ceType = GetKeyValueString(headers, "ce_type");
+					ceType = GetKeyValueString(headers, "ce_type");
 					reportFileName = Path.GetFileName(ceSubject);
+					dxEmail = GetKeyValueString(headers, "dx-ext-email");
+					log.LogInformation($"{logPrefix} Start processing event attachment {reportFileName} ");
 
 					string emdType = CcdxService.GetLoggerTypeFromCeHeader(headers["ce_type"]);
-                    string dxEmail = GetKeyValueString(headers, "dx-ext-email");
                     string ceId = GetKeyValueString(headers, "ce_id");
                     string ceTime = GetKeyValueString(headers, "ce_time");
+
+                    //CcdxService.ValidateCcdxConsumerCeTypeEnvVariables(log);
 
                     /* Only process packages generated from a Varo EMD */
                     if (VaroDataProcessorService.IsReportPackageSupported(ceType, dxEmail))
@@ -186,18 +192,23 @@ namespace fa_ccdx_consumer
                 string errorCode = "743B";
                 string errorMessage = EdiErrorsService.BuildExceptionMessageString(e, errorCode, EdiErrorsService.BuildErrorVariableArrayList());
 
-				if (reportFileName != null && reportFileName != "" && storageAccountConnectionString != null)
-				{
-					if (blobErrorContainerName != null && eventValue.Length > 0)
-					{
-						log.LogInformation($"{logPrefix}: Upload report package {reportFileName} to error container {blobErrorContainerName}: ");
-						await AzureStorageBlobService.UploadBlobToContainerUsingSdk(eventValue, storageAccountConnectionString, blobErrorContainerName, reportFileName);
+                if (reportFileName != null && reportFileName != "")
+                {
+					if (VaroDataProcessorService.IsReportPackageSupported(ceType, dxEmail))
+                    {
+						if (VaroDataProcessorService.IsThisVaroGeneratedPackageName(reportFileName))
+						{
+							if (blobErrorContainerName != null && eventValue.Length > 0)
+							{
+								log.LogInformation($"{logPrefix} Upload report package {reportFileName} to error container {blobErrorContainerName}: ");
+								await AzureStorageBlobService.UploadBlobToContainerUsingSdk(eventValue, storageAccountConnectionString, blobErrorContainerName, reportFileName);
+							}
+							CcdxService.LogCcdxConsumerErrorEventToAppInsights(reportFileName, log, e, errorCode);
+							log.LogError($"{logPrefix} There was an exception while consuming report package {reportFileName} from the Kafka topic");
+							log.LogError(e, errorMessage);
+						}
 					}
 				}
-
-				CcdxService.LogCcdxConsumerErrorEventToAppInsights(reportFileName, log, e, errorCode);
-                log.LogError("There was an exception while consuming a message from the Kafka topic");
-                log.LogError(e, errorMessage);
             }
         }
 

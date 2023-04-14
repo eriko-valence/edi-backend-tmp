@@ -107,12 +107,15 @@ namespace fa_ccdx_consumer
 					string ceSubject = GetKeyValueString(headers, "ce_subject");
 					string ceType = GetKeyValueString(headers, "ce_type");
 					reportFileName = Path.GetFileName(ceSubject);
+					log.LogInformation($"{logPrefix} Start processing event attachment {reportFileName} ");
 
-                    string blobName = CcdxService.BuildRawCcdxConsumerBlobPath(ceSubject, ceType);
+					string blobName = CcdxService.BuildRawCcdxConsumerBlobPath(ceSubject, ceType);
                     string deviceType = CcdxService.GetLoggerTypeFromCeHeader(ceType);
                     string emdType = CcdxService.GetLoggerTypeFromCeHeader(headers["ce_type"]);
                     string ceId = GetKeyValueString(headers, "ce_id");
                     string ceTime = GetKeyValueString(headers, "ce_time");
+
+					//CcdxService.ValidateCcdxConsumerCeTypeEnvVariables(log);
 
 					/* Only process messages that are known to this consumer */
 					if (EmsService.ValidateCceDeviceType(deviceType))
@@ -166,19 +169,22 @@ namespace fa_ccdx_consumer
             {
                 string errorCode = "743B";
                 string errorMessage = EdiErrorsService.BuildExceptionMessageString(e, errorCode, EdiErrorsService.BuildErrorVariableArrayList());
-				if (reportFileName != null && reportFileName != "" && storageAccountConnectionString != null)
-                {
-					if (blobErrorContainerName != null && eventValue.Length > 0)
-                    {
-						log.LogInformation($"{logPrefix} Upload report package {reportFileName} to error container {blobErrorContainerName}: ");
-						await AzureStorageBlobService.UploadBlobToContainerUsingSdk(eventValue, storageAccountConnectionString, blobErrorContainerName, reportFileName);
+				
+				if (reportFileName != null && reportFileName != "")
+				{
+					if (VaroDataProcessorService.IsThisVaroGeneratedPackageName(reportFileName))
+					{
+						if (blobErrorContainerName != null && eventValue.Length > 0)
+						{
+							log.LogInformation($"{logPrefix} Upload report package {reportFileName} to error container {blobErrorContainerName}: ");
+							await AzureStorageBlobService.UploadBlobToContainerUsingSdk(eventValue, storageAccountConnectionString, blobErrorContainerName, reportFileName);
+						}
+						CcdxService.LogCcdxConsumerErrorEventToAppInsights(reportFileName, log, e, errorCode);
+						log.LogError($"{logPrefix} There was an exception while consuming report package {reportFileName} from the Kafka topic");
+						log.LogError(e, errorMessage);
 					}
-                }
-
-				CcdxService.LogCcdxConsumerErrorEventToAppInsights(reportFileName, log, e, errorCode);
-                log.LogError($"{logPrefix} There was an exception while consuming a message from the Kafka topic");
-                log.LogError(e, errorMessage);
-            }
+				}
+			}
         }
 
         public static void WriteHeadersToLogFile(KafkaEventData<string, byte[]> eventData, ILogger log)
