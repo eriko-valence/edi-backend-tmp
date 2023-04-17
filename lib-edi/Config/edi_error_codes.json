@@ -423,7 +423,7 @@
 		"NAJW": {
 			"error-code": "NAJW",
 			"error-message": "Received http status code {0} when attempting to put {1} into {2}",
-			"error-source": "CCDX Varo Provider",
+			"error-source": "Varo CCDX Provider",
 			"error-mitigation": null
 		}
 	}

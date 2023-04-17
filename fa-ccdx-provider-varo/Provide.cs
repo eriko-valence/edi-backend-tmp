@@ -65,8 +65,6 @@ namespace fa_ccdx_provider_varo
 					log.LogInformation($"{logPrefix} Entry into the data interchange was successful");
 					log.LogInformation($"{logPrefix} Track ccdx provider success event (app insights)");
 					CcdxService.LogCcdxProviderSuccessEventToAppInsights(packageName, log);
-					//log.LogInformation($"{logPrefix} Cleaning up .... deleting telemetry file {ccBlobInputName}");
-					//await AzureStorageBlobService.DeleteBlob(storageConnectionString, inputContainerName, ccBlobInputName);
 					log.LogInformation($"{logPrefix} DONE");
 				} else
                 {

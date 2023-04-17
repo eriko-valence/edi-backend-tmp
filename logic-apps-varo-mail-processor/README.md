@@ -56,6 +56,8 @@ This Logic Apps solution moves Varo collected log files from Gmail to CCDX using
     * Logic app name: `la-dx-varo-mail-proc-dev`
     * Region: `US West 2`
     * Plan type: `Consumption`
+    * Enable log analytics: Yes
+    * Log App Name: `law-edi-dev`
     * Zone redundancy: `Disabled`
   * Create the Gmail connection ([Use default shared application](#create-the-gmail-connection-use-default-shared-application))
 
