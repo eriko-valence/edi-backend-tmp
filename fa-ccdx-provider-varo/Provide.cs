@@ -12,6 +12,9 @@ using System.Net;
 using System.Text;
 using lib_edi.Services.System.Net;
 using lib_edi.Services.Ccdx;
+using lib_edi.Services.Azure;
+using lib_edi.Services.Errors;
+using lib_edi.Services.System.IO;
 
 namespace fa_ccdx_provider_varo
 {
@@ -22,9 +25,12 @@ namespace fa_ccdx_provider_varo
             [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequest req,
             ILogger log)
         {
-            try
+            string logPrefix = "- [ccdx-provider-varo->run]:";
+            string packageName = null;
+            byte[] contentBytes = null;
+			try
             {
-                log.LogInformation($"- [ccdx-provider->run]: Extracted logger type: http trigger function processed a publishing request.");
+                log.LogInformation($"{logPrefix} Extracted logger type: http trigger function processed a publishing request.");
 
                 // NHGH-2799 2022-02-09 1418 Using these temporary package related variables until requirements are defined
                 string emdType = Environment.GetEnvironmentVariable("EMD_TYPE");
@@ -33,40 +39,76 @@ namespace fa_ccdx_provider_varo
                 
                 string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
                 dynamic data = JsonConvert.DeserializeObject(requestBody);
-                log.LogInformation($"- [ccdx-provider->run]: Retrieve base64 encoded content for publishing to ccdx.");
+                log.LogInformation($"{logPrefix} Retrieve base64 encoded content for publishing to ccdx.");
 
-                string packageName = data?.name;
+                packageName = data?.name;
                 string fullPackageName = $"{emdType}/{dateString}/{packageName}";
                 string compressedContentBase64 = data?.content;
-                byte[] contentBytes = Convert.FromBase64String(compressedContentBase64);
+                contentBytes = Convert.FromBase64String(compressedContentBase64);
                 MemoryStream stream = new MemoryStream(contentBytes);
-
-                log.LogInformation($"- [ccdx-provider->run]: Build multipart form data data content.");
-
+                
+                log.LogInformation($"{logPrefix}: Build multipart form data data content.");
                 MultipartFormDataContent multipartFormDataByteArrayContent = HttpService.BuildMultipartFormDataByteArrayContent(stream, "file", fullPackageName);
-                log.LogInformation($"- [ccdx-provider->run]: Build ccdx request headers.");
-
+                
+                log.LogInformation($"{logPrefix}: Build interchange request headers.");
                 HttpRequestMessage requestMessage = CcdxService.BuildCcdxHttpMultipartFormDataRequestMessage(multipartFormDataByteArrayContent, fullPackageName, log);
-                log.LogInformation($"- [ccdx-provider->run]: Send package to ccdx.");
+                
+                log.LogInformation($"{logPrefix}: Sending package into the interchange.");
+                HttpStatusCode httpStatusCode = HttpStatusCode.BadGateway;
 
-                HttpStatusCode httpStatusCode = await HttpService.SendHttpRequestMessage(requestMessage);
+                if (httpStatusCode == HttpStatusCode.OK )
+                {
+					// NHGH-414 2021.09.21 
+					// Message got put on a highly durable topic. A 200 indicates successful entry into the data interchange. 
+					// However, the consumer downstream might not be able to handle a message of that size. 
+					// Consumer would own decision to reconfigure consumer to handle larger payload or jost not accept larger payloads.
+					log.LogInformation($"{logPrefix} Entry into the data interchange was successful");
+					log.LogInformation($"{logPrefix} Track ccdx provider success event (app insights)");
+					CcdxService.LogCcdxProviderSuccessEventToAppInsights(packageName, log);
+					//log.LogInformation($"{logPrefix} Cleaning up .... deleting telemetry file {ccBlobInputName}");
+					//await AzureStorageBlobService.DeleteBlob(storageConnectionString, inputContainerName, ccBlobInputName);
+					log.LogInformation($"{logPrefix} DONE");
+				} else
+                {
+					string errorCode = "NAJW";
+					log.LogError($"{logPrefix} Received http error {httpStatusCode} while uploading {packageName} to the interchange");
+					log.LogInformation($"{logPrefix} Track ccdx provider failed event (app insights)");
+					CcdxService.LogCcdxProviderFailedEventToAppInsights(packageName, log);
+					log.LogInformation($"{logPrefix} Log error message");
+					string storageAccountConnectionString = Environment.GetEnvironmentVariable("AZURE_STORAGE_INPUT_CONNECTION_STRING");
+					string ccdxEndpoint = Environment.GetEnvironmentVariable("CCDX_HEADERS:MULTIPART_FORM_DATA_FILE_ENDPOINT");
+					string errorString = EdiErrorsService.BuildExceptionMessageString(null, errorCode, EdiErrorsService.BuildErrorVariableArrayList(httpStatusCode.ToString(), packageName, ccdxEndpoint));
+					log.LogError($"{logPrefix} Message: {errorString}");
+					string blobContainerName = Environment.GetEnvironmentVariable("AZURE_STORAGE_BLOB_CONTAINER_NAME_HOLDING");
+					
+					// Scope of holding container: To be used only for situations with CCDX transmission.
+					log.LogInformation($"{logPrefix} Move failed telemetry file {packageName} to holding container {blobContainerName} for further investigation");
+					// EDI architecture: "Container where files are placed when there is a problem sending to CCDX via the provider. Examples 
+					// includes files that are too large (>5MB), or when the backend has a problem such as Kafka brokers unavailable. This 
+					// condition is typically indicated by a 5xx HTTP response from the CCDX POST by the provider. The purpose of this container 
+					// is to allow for further analysis and troubleshooting. No retry logic is currently implemented for files in this container, 
+					// but may be added in the future."
+					await AzureStorageBlobService.UploadBlobToContainerUsingSdk(contentBytes, storageAccountConnectionString, blobContainerName, packageName);
+					log.LogInformation($"{logPrefix} Confirmed. Telemetry file {packageName} moved to container {blobContainerName}");
+					log.LogInformation($"{logPrefix} DONE");
+				}
 
-                var returnObject = new { publishedPackage = fullPackageName };
+				var returnObject = new { publishedPackage = fullPackageName };
                 HttpResponseMessage httpResponseMessage;
                 httpResponseMessage = new HttpResponseMessage()
                 {
                     StatusCode = System.Net.HttpStatusCode.OK,
                     Content = new StringContent(JsonConvert.SerializeObject(returnObject, Formatting.Indented), Encoding.UTF8, "application/json")
                 };
-                log.LogInformation($"- [ccdx-provider->run]: Sent successful http response.");
+                log.LogInformation($"{logPrefix}: Package successfully entered into the interchange.");
 
                 return httpResponseMessage;
 
             }
             catch (Exception e)
             {
-                log.LogError("Something went wrong while publishing the tarball to ccdx");
-                log.LogError("Exception: " + e.Message);
+                log.LogError($"{logPrefix} Something went wrong while publishing the tarball to ccdx");
+                log.LogError($"{logPrefix} Exception: " + e.Message);
                 HttpResponseMessage httpResponseMessage = new()
                 {
                     StatusCode = System.Net.HttpStatusCode.InternalServerError

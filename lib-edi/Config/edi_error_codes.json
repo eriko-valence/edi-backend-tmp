@@ -419,6 +419,12 @@
 			"error-message": "Varo report metadata file not found in report package",
 			"error-source": "Varo Data Processor",
 			"error-mitigation": null
+		},
+		"NAJW": {
+			"error-code": "NAJW",
+			"error-message": "Received http status code {0} when attempting to put {1} into {2}",
+			"error-source": "CCDX Varo Provider",
+			"error-mitigation": null
 		}
 	}
 }
