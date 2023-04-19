@@ -425,6 +425,18 @@
 			"error-message": "Received http status code {0} when attempting to put {1} into {2}",
 			"error-source": "Varo CCDX Provider",
 			"error-mitigation": null
+		},
+		"IWNE": {
+			"error-code": "IWNE",
+			"error-message": "An exception was thrown while processing log {0}",
+			"error-source": "CCDX Varo Provider",
+			"error-mitigation": null
+		},
+		"THLB": {
+			"error-code": "THLB",
+			"error-message": "An exception was thrown while processing log {0}",
+			"error-source": "Varo Mail Processor",
+			"error-mitigation": null
 		}
 	}
 }

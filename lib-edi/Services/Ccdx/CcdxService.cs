@@ -378,15 +378,15 @@ namespace lib_edi.Services.Ccdx
 		/// </summary>
 		/// <param name="reportFileName">Name of Cold chain telemetry file that triggered the CCDX Providerr</param>
 		/// <param name="log">Microsoft extension logger</param>
-		public static void LogCcdxProviderStartedEventToAppInsights(string reportFileName, ILogger log)
+		public static void LogCcdxProviderStartedEventToAppInsights(string reportFileName, PipelineStageEnum.Name stageName, ILogger log)
 		{
 			//Log trigger event to app insights
 			PipelineEvent pipelineEvent = new PipelineEvent();
 			pipelineEvent.EventName = PipelineEventEnum.Name.STARTED;
-			pipelineEvent.StageName = PipelineStageEnum.Name.CCDX_PROVIDER;
+			pipelineEvent.StageName = stageName;
 			pipelineEvent.ReportFileName = reportFileName ?? "";
 			Dictionary<string, string> customProps = AzureAppInsightsService.BuildCustomPropertiesObject(pipelineEvent);
-			AzureAppInsightsService.LogEntry(PipelineStageEnum.Name.CCDX_PROVIDER, customProps, log);
+			AzureAppInsightsService.LogEntry(stageName, customProps, log);
 		}
 
 		/// <summary>
@@ -394,14 +394,14 @@ namespace lib_edi.Services.Ccdx
 		/// </summary>
 		/// <param name="reportFileName">Name of Cold chain telemetry file that triggered the CCDX Provider</param>
 		/// <param name="log">Microsoft extension logger</param>
-		public static void LogCcdxProviderSuccessEventToAppInsights(string reportFileName, ILogger log)
+		public static void LogCcdxProviderSuccessEventToAppInsights(string reportFileName, PipelineStageEnum.Name stageName, ILogger log)
 		{
 			PipelineEvent pipelineEvent = new PipelineEvent();
 			pipelineEvent.EventName = PipelineEventEnum.Name.SUCCEEDED;
-			pipelineEvent.StageName = PipelineStageEnum.Name.CCDX_PROVIDER;
+			pipelineEvent.StageName = stageName;
 			pipelineEvent.ReportFileName = reportFileName ?? "";
 			Dictionary<string, string> customPropsEnd = AzureAppInsightsService.BuildCustomPropertiesObject(pipelineEvent);
-			AzureAppInsightsService.LogEntry(PipelineStageEnum.Name.CCDX_PROVIDER, customPropsEnd, log);
+			AzureAppInsightsService.LogEntry(stageName, customPropsEnd, log);
 		}
 
 		/// <summary>
@@ -409,18 +409,18 @@ namespace lib_edi.Services.Ccdx
 		/// </summary>
 		/// <param name="reportFileName">Name of Cold chain telemetry file that triggered the CCDX Provider</param>
 		/// <param name="log">Microsoft extension logger</param>
-		public static void LogCcdxProviderFailedEventToAppInsights(string reportFileName, ILogger log)
+		public static void LogCcdxProviderFailedEventToAppInsights(string reportFileName, PipelineStageEnum.Name stageName, ILogger log)
 		{
 
 			PipelineEvent pipelineEvent = new PipelineEvent();
 			pipelineEvent.EventName = PipelineEventEnum.Name.FAILED;
-			pipelineEvent.StageName = PipelineStageEnum.Name.CCDX_PROVIDER;
+			pipelineEvent.StageName = stageName;
 			pipelineEvent.PipelineFailureType = PipelineFailureTypeEnum.Name.ERROR;
 			pipelineEvent.PipelineFailureReason = PipelineFailureReasonEnum.Name.HTTP_STATUS_CODE_ERROR;
 			pipelineEvent.ReportFileName = reportFileName ?? "";
 
 			Dictionary<string, string> customProps = AzureAppInsightsService.BuildCustomPropertiesObject(pipelineEvent);
-			AzureAppInsightsService.LogEntry(PipelineStageEnum.Name.CCDX_PROVIDER, customProps, log);
+			AzureAppInsightsService.LogEntry(stageName, customProps, log);
 		}
 
 		/// <summary>
@@ -428,17 +428,17 @@ namespace lib_edi.Services.Ccdx
 		/// </summary>
 		/// <param name="reportFileName">Name of Cold chain telemetry file that triggered the CCDX Provider</param>
 		/// <param name="log">Microsoft extension logger</param>
-		public static void LogCcdxProviderUnsupportedLoggerEventToAppInsights(string reportFileName, string loggerType, ILogger log)
+		public static void LogCcdxProviderUnsupportedLoggerEventToAppInsights(string reportFileName, PipelineStageEnum.Name stageName, string loggerType, ILogger log)
 		{
 			PipelineEvent pipelineEvent = new PipelineEvent();
 			pipelineEvent.EventName = PipelineEventEnum.Name.FAILED;
-			pipelineEvent.StageName = PipelineStageEnum.Name.CCDX_PROVIDER;
+			pipelineEvent.StageName = stageName;
 			pipelineEvent.PipelineFailureType = PipelineFailureTypeEnum.Name.VALIDATION;
 			pipelineEvent.PipelineFailureReason = PipelineFailureReasonEnum.Name.UNSUPPORTED_DATA_LOGGER;
 			pipelineEvent.ReportFileName = reportFileName ?? "";
 			pipelineEvent.ErrorMessage = $"Unsupported logger type '{loggerType}'";
 			Dictionary<string, string> customProps = AzureAppInsightsService.BuildCustomPropertiesObject(pipelineEvent);
-			AzureAppInsightsService.LogEntry(PipelineStageEnum.Name.CCDX_PROVIDER, customProps, log);
+			AzureAppInsightsService.LogEntry(stageName, customProps, log);
 		}
 
 		/// <summary>
@@ -448,12 +448,12 @@ namespace lib_edi.Services.Ccdx
 		/// <param name="log">Microsoft extension logger</param>
 		/// <param name="e">Exception object</param>
 		/// <param name="errorCode">Error code</param>
-		public static void LogCcdxProviderErrorEventToAppInsights(string reportFileName, ILogger log, Exception e, string errorCode)
+		public static void LogCcdxProviderErrorEventToAppInsights(string reportFileName, PipelineStageEnum.Name stageName, ILogger log, Exception e, string errorCode)
 		{
 			string errorMessage = EdiErrorsService.BuildExceptionMessageString(e, errorCode, EdiErrorsService.BuildErrorVariableArrayList(reportFileName));
 			PipelineEvent pipelineEvent = new PipelineEvent();
 			pipelineEvent.EventName = PipelineEventEnum.Name.FAILED;
-			pipelineEvent.StageName = PipelineStageEnum.Name.CCDX_PROVIDER;
+			pipelineEvent.StageName = stageName;
 			pipelineEvent.PipelineFailureType = PipelineFailureTypeEnum.Name.ERROR;
 			pipelineEvent.PipelineFailureReason = PipelineFailureReasonEnum.Name.UNKNOWN_EXCEPTION;
 			pipelineEvent.ReportFileName = reportFileName ?? "";
@@ -462,7 +462,7 @@ namespace lib_edi.Services.Ccdx
 			pipelineEvent.ExceptionMessage = e.Message;
 			pipelineEvent.ExceptionInnerMessage = EdiErrorsService.GetInnerException(e);
 			Dictionary<string, string> customProps = AzureAppInsightsService.BuildCustomPropertiesObject(pipelineEvent);
-			AzureAppInsightsService.LogEntry(PipelineStageEnum.Name.CCDX_PROVIDER, customProps, log);
+			AzureAppInsightsService.LogEntry(stageName, customProps, log);
 		}
 
 		/// <summary>
@@ -470,14 +470,89 @@ namespace lib_edi.Services.Ccdx
 		/// </summary>
 		/// <param name="reportFileName">Name of Cold chain telemetry file pulled from CCDX Kafka topic</param>
 		/// <param name="log">Microsoft extension logger</param>
-		public static void LogCcdxConsumerStartedEventToAppInsights(string reportFileName, ILogger log)
+		public static void LogCcdxConsumerStartedEventToAppInsights(string reportFileName, PipelineStageEnum.Name stageName, ILogger log)
 		{
 			PipelineEvent pipelineEvent = new PipelineEvent();
 			pipelineEvent.EventName = PipelineEventEnum.Name.STARTED;
-			pipelineEvent.StageName = PipelineStageEnum.Name.CCDX_CONSUMER;
+			pipelineEvent.StageName = stageName;
 			pipelineEvent.ReportFileName = reportFileName ?? "";
 			Dictionary<string, string> customProps = AzureAppInsightsService.BuildCustomPropertiesObject(pipelineEvent);
-			AzureAppInsightsService.LogEntry(PipelineStageEnum.Name.CCDX_CONSUMER, customProps, log);
+			AzureAppInsightsService.LogEntry(stageName, customProps, log);
+		}
+
+		/// <summary>
+		/// Sends Mail compressor started event to App Insight
+		/// </summary>
+		/// <param name="reportFileName">report package name</param>
+		/// <param name="log">Microsoft extension logger</param>
+		public static void LogMailCompressorStartedEventToAppInsights(string reportFileName, PipelineStageEnum.Name stageName, ILogger log)
+		{
+			PipelineEvent pipelineEvent = new PipelineEvent();
+			pipelineEvent.EventName = PipelineEventEnum.Name.STARTED;
+			pipelineEvent.StageName = stageName;
+			pipelineEvent.ReportFileName = reportFileName ?? "";
+			Dictionary<string, string> customProps = AzureAppInsightsService.BuildCustomPropertiesObject(pipelineEvent);
+			AzureAppInsightsService.LogEntry(stageName, customProps, log);
+		}
+
+		/// <summary>
+		/// Sends Mail compressor succeeded event to App Insight
+		/// </summary>
+		/// <param name="reportFileName">Report package name</param>
+		/// <param name="log">Microsoft extension logger</param>
+		public static void LogMailCompressorSuccessEventToAppInsights(string reportFileName, PipelineStageEnum.Name stageName, ILogger log)
+		{
+			PipelineEvent pipelineEvent = new PipelineEvent();
+			pipelineEvent.EventName = PipelineEventEnum.Name.SUCCEEDED;
+			pipelineEvent.StageName = stageName;
+			pipelineEvent.ReportFileName = reportFileName ?? "";
+			Dictionary<string, string> customProp = AzureAppInsightsService.BuildCustomPropertiesObject(pipelineEvent);
+			AzureAppInsightsService.LogEntry(stageName, customProp, log);
+		}
+
+		/// <summary>
+		/// Sends Mail compressor failed event to App Insight
+		/// </summary>
+		/// <param name="reportFileName">Report package name</param>
+		/// <param name="log">Microsoft extension logger</param>
+		public static void LogMailCompressorUnknownReportPackageToAppInsights(string reportFileName, PipelineStageEnum.Name stageName, ILogger log)
+		{
+			PipelineEvent pipelineEvent = new PipelineEvent();
+			pipelineEvent.EventName = PipelineEventEnum.Name.FAILED;
+			pipelineEvent.StageName = stageName;
+			pipelineEvent.PipelineFailureType = PipelineFailureTypeEnum.Name.VALIDATION;
+			pipelineEvent.PipelineFailureReason = PipelineFailureReasonEnum.Name.UNKNOWN_REPORT_PACKAGE;
+			pipelineEvent.ReportFileName = reportFileName ?? "";
+			//pipelineEvent.ErrorMessage = $"Unsupported logger type '{loggerType}'";
+			Dictionary<string, string> customProps = AzureAppInsightsService.BuildCustomPropertiesObject(pipelineEvent);
+			AzureAppInsightsService.LogEntry(stageName, customProps, log);
+		}
+
+		/// <summary>
+		/// Sends Mail compressor error event to App Insight
+		/// </summary>
+		/// <param name="reportFileName">Report package name</param>
+		/// <param name="log">Microsoft extension logger</param>
+		/// <param name="e">Exception object</param>
+		/// <param name="errorCode">Error code</param>
+		public static void LogMailCompressorErrorEventToAppInsights(string reportFileName, PipelineStageEnum.Name stageName, ILogger log, Exception e, string errorCode)
+		{
+			string errorMessage = EdiErrorsService.BuildExceptionMessageString(e, errorCode, EdiErrorsService.BuildErrorVariableArrayList(reportFileName));
+			PipelineEvent pipelineEvent = new PipelineEvent();
+			pipelineEvent.EventName = PipelineEventEnum.Name.FAILED;
+			pipelineEvent.StageName = stageName;
+			pipelineEvent.PipelineFailureType = PipelineFailureTypeEnum.Name.ERROR;
+			pipelineEvent.PipelineFailureReason = PipelineFailureReasonEnum.Name.UNKNOWN_EXCEPTION;
+			pipelineEvent.ReportFileName = reportFileName ?? "";
+			pipelineEvent.ErrorCode = errorCode;
+			pipelineEvent.ErrorMessage = errorMessage;
+			if (e != null)
+			{
+				pipelineEvent.ExceptionMessage = e.Message;
+				pipelineEvent.ExceptionInnerMessage = EdiErrorsService.GetInnerException(e);
+			}
+			Dictionary<string, string> customProps = AzureAppInsightsService.BuildCustomPropertiesObject(pipelineEvent);
+			AzureAppInsightsService.LogEntry(stageName, customProps, log);
 		}
 
 		/// <summary>
@@ -485,14 +560,14 @@ namespace lib_edi.Services.Ccdx
 		/// </summary>
 		/// <param name="reportFileName">Name of Cold chain telemetry file pulled from CCDX Kafka topic</param>
 		/// <param name="log">Microsoft extension logger</param>
-		public static void LogCcdxConsumerSuccessEventToAppInsights(string reportFileName, ILogger log)
+		public static void LogCcdxConsumerSuccessEventToAppInsights(string reportFileName, PipelineStageEnum.Name stageName, ILogger log)
 		{
 			PipelineEvent pipelineEvent = new PipelineEvent();
 			pipelineEvent.EventName = PipelineEventEnum.Name.SUCCEEDED;
-			pipelineEvent.StageName = PipelineStageEnum.Name.CCDX_CONSUMER;
+			pipelineEvent.StageName = stageName;
 			pipelineEvent.ReportFileName = reportFileName ?? "";
 			Dictionary<string, string> customProp = AzureAppInsightsService.BuildCustomPropertiesObject(pipelineEvent);
-			AzureAppInsightsService.LogEntry(PipelineStageEnum.Name.CCDX_CONSUMER, customProp, log);
+			AzureAppInsightsService.LogEntry(stageName, customProp, log);
 		}
 
 		/// <summary>
@@ -553,12 +628,12 @@ namespace lib_edi.Services.Ccdx
 		/// <param name="log">Microsoft extension logger</param>
 		/// <param name="e">Exception object</param>
 		/// <param name="errorCode">Error code</param>
-		public static void LogCcdxConsumerErrorEventToAppInsights(string reportFileName, ILogger log, Exception e, string errorCode)
+		public static void LogCcdxConsumerErrorEventToAppInsights(string reportFileName, PipelineStageEnum.Name stageName, ILogger log, Exception e, string errorCode)
 		{
 			string errorMessage = EdiErrorsService.BuildExceptionMessageString(e, errorCode, EdiErrorsService.BuildErrorVariableArrayList(reportFileName));
 			PipelineEvent pipelineEvent = new PipelineEvent();
 			pipelineEvent.EventName = PipelineEventEnum.Name.FAILED;
-			pipelineEvent.StageName = PipelineStageEnum.Name.CCDX_CONSUMER;
+			pipelineEvent.StageName = stageName;
 			pipelineEvent.PipelineFailureType = PipelineFailureTypeEnum.Name.ERROR;
 			pipelineEvent.PipelineFailureReason = PipelineFailureReasonEnum.Name.UNKNOWN_EXCEPTION;
 			pipelineEvent.ReportFileName = reportFileName ?? "";
@@ -570,7 +645,7 @@ namespace lib_edi.Services.Ccdx
 				pipelineEvent.ExceptionInnerMessage = EdiErrorsService.GetInnerException(e);
 			}
 			Dictionary<string, string> customProps = AzureAppInsightsService.BuildCustomPropertiesObject(pipelineEvent);
-			AzureAppInsightsService.LogEntry(PipelineStageEnum.Name.CCDX_CONSUMER, customProps, log);
+			AzureAppInsightsService.LogEntry(stageName, customProps, log);
 		}
 
 		/// <summary>

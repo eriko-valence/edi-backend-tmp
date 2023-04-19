@@ -1,4 +1,5 @@
 using lib_edi.Models.Azure.AppInsights;
+using lib_edi.Models.Enums.Azure.AppInsights;
 using lib_edi.Services.Azure;
 using lib_edi.Services.Ccdx;
 using lib_edi.Services.Data.Transform;
@@ -146,13 +147,13 @@ namespace fa_ccdx_consumer
                                 log.LogInformation($"{logPrefix} Confirmed. Attached cce telemetry file found. Proceed with processing.");
                                 blobContainerName = Environment.GetEnvironmentVariable("CCDX_AZURE_STORAGE_BLOB_CONTAINER_NAME");
                                 //string storageAccountConnectionString = Environment.GetEnvironmentVariable("CCDX_AZURE_STORAGE_ACCOUNT_CONNECTION_STRING");
-                                CcdxService.LogCcdxConsumerStartedEventToAppInsights(reportFileName, log);
+                                CcdxService.LogCcdxConsumerStartedEventToAppInsights(reportFileName, PipelineStageEnum.Name.CCDX_CONSUMER_VARO, log);
                                 log.LogInformation($"{logPrefix} Build the azure storage blob path to be used for uploading the cce telemetry file");
                                 blobName = CcdxService.BuildRawCcdxConsumerBlobPath(ceSubject, ceType);
                                 log.LogInformation($"{logPrefix} Preparing to upload blob {blobName} to container {blobContainerName}: ");
                                 await AzureStorageBlobService.UploadBlobToContainerUsingSdk(eventData.Value, storageAccountConnectionString, blobContainerName, blobName);
                                 log.LogInformation($"{logPrefix} Uploading blob {blobName} to container {blobContainerName}");
-                                CcdxService.LogCcdxConsumerSuccessEventToAppInsights(reportFileName, log);
+                                CcdxService.LogCcdxConsumerSuccessEventToAppInsights(reportFileName, PipelineStageEnum.Name.CCDX_CONSUMER_VARO, log);
 
                                 log.LogInformation($"{logPrefix} Debug");
                                 log.LogInformation($"  ##########################################################################");
@@ -192,7 +193,13 @@ namespace fa_ccdx_consumer
                 string errorCode = "743B";
                 string errorMessage = EdiErrorsService.BuildExceptionMessageString(e, errorCode, EdiErrorsService.BuildErrorVariableArrayList());
 
-                if (reportFileName != null && reportFileName != "")
+				log.LogError($"{logPrefix} Something went wrong consuming the report package");
+				log.LogError($"{logPrefix} Exception  : " + e.Message);
+				log.LogError($"{logPrefix} error code : " + errorCode);
+
+				log.LogError($"An exception was thrown consuming {reportFileName} from ccdx: {e.Message} ({errorCode})");
+
+				if (reportFileName != null && reportFileName != "")
                 {
 					if (VaroDataProcessorService.IsReportPackageSupported(ceType, dxEmail))
                     {
@@ -203,7 +210,7 @@ namespace fa_ccdx_consumer
 								log.LogInformation($"{logPrefix} Upload report package {reportFileName} to error container {blobErrorContainerName}: ");
 								await AzureStorageBlobService.UploadBlobToContainerUsingSdk(eventValue, storageAccountConnectionString, blobErrorContainerName, reportFileName);
 							}
-							CcdxService.LogCcdxConsumerErrorEventToAppInsights(reportFileName, log, e, errorCode);
+							CcdxService.LogCcdxConsumerErrorEventToAppInsights(reportFileName, PipelineStageEnum.Name.CCDX_CONSUMER_VARO, log, e, errorCode);
 							log.LogError($"{logPrefix} There was an exception while consuming report package {reportFileName} from the Kafka topic");
 							log.LogError(e, errorMessage);
 						}

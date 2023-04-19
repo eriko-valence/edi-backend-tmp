@@ -14,6 +14,8 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using System.Threading.Tasks;
 using lib_edi.Services.Ems;
+using System.Security.Cryptography.X509Certificates;
+using lib_edi.Models.Enums.Azure.AppInsights;
 
 namespace fa_ccdx_provider
 {
@@ -63,8 +65,8 @@ namespace fa_ccdx_provider
                 string inputContainerName = Environment.GetEnvironmentVariable("AZURE_STORAGE_BLOB_CONTAINER_NAME_INPUT");
                 log.LogInformation($"{logPrefix} Received telemetry file {ccBlobInputName}");
                 log.LogInformation($"{logPrefix} Track ccdx provider started event (app insights)");
-                reportFileName = Path.GetFileName(ccBlobInputName);
-                CcdxService.LogCcdxProviderStartedEventToAppInsights(reportFileName, log);
+				reportFileName = Path.GetFileName(ccBlobInputName);
+                CcdxService.LogCcdxProviderStartedEventToAppInsights(reportFileName, PipelineStageEnum.Name.CCDX_PROVIDER, log);
                 
                 log.LogInformation($"{logPrefix} Validate incoming blob file extension");
                 string fileExtension = Path.GetExtension(ccBlobInputName);
@@ -108,7 +110,7 @@ namespace fa_ccdx_provider
 							// Consumer would own decision to reconfigure consumer to handle larger payload or jost not accept larger payloads.
 							log.LogInformation($"{logPrefix} Entry into the data interchange was successful");
                             log.LogInformation($"{logPrefix} Track ccdx provider success event (app insights)");
-                            CcdxService.LogCcdxProviderSuccessEventToAppInsights(reportFileName, log);
+                            CcdxService.LogCcdxProviderSuccessEventToAppInsights(reportFileName, PipelineStageEnum.Name.CCDX_PROVIDER, log);
                             log.LogInformation($"{logPrefix} Cleaning up .... deleting telemetry file {ccBlobInputName}");
                             await AzureStorageBlobService.DeleteBlob(storageConnectionString, inputContainerName, ccBlobInputName);
                             log.LogInformation($"{logPrefix} DONE");
@@ -118,7 +120,7 @@ namespace fa_ccdx_provider
                             string errorCode = "2XYK";
                             log.LogError($"{logPrefix} Received http error {httpStatusCode} while uploading {reportFileName} to the interchange");
                             log.LogInformation($"{logPrefix} Track ccdx provider failed event (app insights)");
-                            CcdxService.LogCcdxProviderFailedEventToAppInsights(reportFileName, log);
+                            CcdxService.LogCcdxProviderFailedEventToAppInsights(reportFileName, PipelineStageEnum.Name.CCDX_PROVIDER, log);
                             log.LogInformation($"{logPrefix} Log error message");
                             string errorString = EdiErrorsService.BuildExceptionMessageString(null, errorCode, EdiErrorsService.BuildErrorVariableArrayList(httpStatusCode.ToString(), ccBlobInputName, ccdxHttpEndpoint));
                             log.LogError($"{logPrefix} Message: {errorString}");
@@ -143,7 +145,7 @@ namespace fa_ccdx_provider
                     {
                         log.LogError($"{logPrefix} Incoming telemetry file {reportFileName} is not from a supported data logger");
                         log.LogInformation($"{logPrefix} Track ccdx provider unsupported logger event (app insights)");
-                        CcdxService.LogCcdxProviderUnsupportedLoggerEventToAppInsights(reportFileName, loggerType, log);
+                        CcdxService.LogCcdxProviderUnsupportedLoggerEventToAppInsights(reportFileName, PipelineStageEnum.Name.CCDX_PROVIDER, loggerType, log);
                     }
                 }
                 else
@@ -153,11 +155,14 @@ namespace fa_ccdx_provider
             }
             catch (Exception e)
             {
-                log.LogError($"{logPrefix} An unexpected exception occured: {e.Message}");
-                string errorCode = "ND82";
-                string errorMessage = EdiErrorsService.BuildExceptionMessageString(e, errorCode, EdiErrorsService.BuildErrorVariableArrayList(reportFileName));
+				string errorCode = "ND82";
+				log.LogError($"{logPrefix} An unexpected exception occured: {e.Message}");
+				log.LogError($"{logPrefix} error code : " + errorCode);
+				log.LogError($"An exception was thrown publishing {reportFileName} to ccdx: {e.Message} ({errorCode})");
+
+				string errorMessage = EdiErrorsService.BuildExceptionMessageString(e, errorCode, EdiErrorsService.BuildErrorVariableArrayList(reportFileName));
                 log.LogInformation($"{logPrefix} Track ccdx provider unexpected error event (app insights)");
-                CcdxService.LogCcdxProviderErrorEventToAppInsights(reportFileName, log, e, errorCode);
+                CcdxService.LogCcdxProviderErrorEventToAppInsights(reportFileName, PipelineStageEnum.Name.CCDX_PROVIDER, log, e, errorCode);
                 log.LogError(e, errorMessage);
             }
         }
