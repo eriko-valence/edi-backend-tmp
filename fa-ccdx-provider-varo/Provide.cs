@@ -43,7 +43,10 @@ namespace fa_ccdx_provider_varo
                 log.LogInformation($"{logPrefix} Retrieve base64 encoded content for publishing to ccdx.");
 
                 packageName = data?.name;
-                string fullPackageName = $"{emdType}/{dateString}/{packageName}";
+				log.LogInformation($"{logPrefix} Start processing report package {packageName}");
+				log.LogInformation($"{logPrefix} Track ccdx provider started event (app insights)");
+				CcdxService.LogCcdxProviderStartedEventToAppInsights(packageName, PipelineStageEnum.Name.CCDX_PROVIDER_VARO, log);
+				string fullPackageName = $"{emdType}/{dateString}/{packageName}";
                 string compressedContentBase64 = data?.content;
                 contentBytes = Convert.FromBase64String(compressedContentBase64);
                 MemoryStream stream = new MemoryStream(contentBytes);
@@ -55,9 +58,10 @@ namespace fa_ccdx_provider_varo
                 HttpRequestMessage requestMessage = CcdxService.BuildCcdxHttpMultipartFormDataRequestMessage(multipartFormDataByteArrayContent, fullPackageName, log);
                 
                 log.LogInformation($"{logPrefix}: Sending package into the interchange.");
-                HttpStatusCode httpStatusCode = HttpStatusCode.BadGateway;
+				//HttpStatusCode httpStatusCode = HttpStatusCode.BadGateway;
+				HttpStatusCode httpStatusCode = await HttpService.SendHttpRequestMessage(requestMessage);
 
-                if (httpStatusCode == HttpStatusCode.OK )
+				if (httpStatusCode == HttpStatusCode.OK )
                 {
 					// NHGH-414 2021.09.21 
 					// Message got put on a highly durable topic. A 200 indicates successful entry into the data interchange. 
@@ -67,6 +71,7 @@ namespace fa_ccdx_provider_varo
 					log.LogInformation($"{logPrefix} Track ccdx provider success event (app insights)");
 					CcdxService.LogCcdxProviderSuccessEventToAppInsights(packageName, PipelineStageEnum.Name.CCDX_PROVIDER_VARO, log);
 					log.LogInformation($"{logPrefix} DONE");
+					log.LogInformation($"{logPrefix} Successful entry into the interchange for report package {packageName}");
 				} else
                 {
 					string errorCode = "NAJW";
