@@ -33,19 +33,19 @@ namespace lib_edi.Services.Azure
         //private static readonly string _ediAzureStorageUriCcdxProvider = Environment.GetEnvironmentVariable("AZURE_STORAGE_URI_EDI_CCDX_PROVIDER");
 
         /// <summary>
-        /// Query Azure Monitor Logs service for EDI job status records
+        /// Query Azure Monitor Logs service for EDI USBDG job status records
         /// </summary>
         /// <param name="job">Object that holds import job related data (e.g., job id)</param>
-        /// <param name="logger">Import job logger object</param>
+        /// <param name="log">Import job logger object</param>
         /// <returns>
         /// A list of EDI job status rows
         /// </returns>
         /// <remarks>
         /// NHGH-2484 (2022.08.10 - 1322) Added method to populate a demo grid controller
         /// </remarks>
-        public static async Task<List<EdiJobStatusResult>> QueryWorkspaceForEdiJobsStatus(EdiJobInfo job, ILogger log)
+        public static async Task<List<EdiJobStatusResult>> QueryWorkspaceForEdiUsbdgJobsStatus(EdiJobInfo job, ILogger log)
         {
-            string logPrefix = "- [azure_monitor_svc->query_law_edi_job_status]: ";
+            string logPrefix = "- [azure_monitor_svc->query_law_edi_usbdg_job_status]: ";
             try
             {
                 string query = @"StorageBlobLogs
@@ -111,18 +111,100 @@ namespace lib_edi.Services.Azure
             }
         }
 
-        /// <summary>
-        /// Query Azure Monitor Logs service for EDI job status records
-        /// </summary>
-        /// <param name="job">Object that holds import job related data (e.g., job id)</param>
-        /// <param name="logger">Import job logger object</param>
-        /// <returns>
-        /// A list of EDI job status rows
-        /// </returns>
-        /// <remarks>
-        /// NHGH-2484 (2022.08.10 - 1322) Added method to populate a demo grid controller
-        /// </remarks>
-        public static async Task<List<EdiPipelineEventResult>> QueryWorkspaceForEdiPipelineEvents(EdiJobInfo job)
+		/// <summary>
+		/// Query Azure Monitor Logs service for EDI Varo job status records
+		/// </summary>
+		/// <param name="job">Object that holds import job related data (e.g., job id)</param>
+		/// <param name="log">Import job logger object</param>
+		/// <returns>
+		/// A list of EDI job status rows
+		/// </returns>
+		/// <remarks>
+		/// NHGH-2484 (2022.08.10 - 1322) Added method to populate a demo grid controller
+		/// </remarks>
+		public static async Task<List<EdiJobStatusResult>> QueryWorkspaceForEdiVaroJobsStatus(EdiJobInfo job, ILogger log)
+		{
+			string logPrefix = "- [azure_monitor_svc->query_law_edi_varo_job_status]: ";
+			try
+			{
+				string query = @"AppEvents
+                    | where Name == 'MAIL_COMPRESSOR_VARO'
+                    | where Properties['pipelineEvent'] == 'SUCCEEDED'
+                    | project fileName = tostring(Properties['fileName']), VaroTimeStart = TimeGenerated
+                    | join kind = leftouter(
+                        AppEvents
+                        | where Name == 'CCDX_PROVIDER_VARO'
+                        | where Properties['pipelineEvent'] == 'SUCCEEDED'
+                        | project fileName = tostring(Properties['fileName']), ProviderSuccessTime = TimeGenerated
+                        )
+                        on fileName
+                    | join kind = leftouter(
+                        AppEvents
+                        | where Name == 'CCDX_CONSUMER_VARO'
+                        | where Properties['pipelineEvent'] == 'SUCCEEDED'
+                        | project fileName = tostring(Properties['fileName']), ConsumerSuccessTime = TimeGenerated
+                        )
+                        on fileName
+                    | join kind = leftouter(
+                        AppEvents
+                        | where Name == 'ADF_TRANSFORM_VARO'
+                        | where Properties['pipelineEvent'] == 'SUCCEEDED'
+                        | project
+                            fileName = tostring(Properties['fileName']),
+                            TransformSuccessTime = TimeGenerated
+                        )
+                        on fileName
+                    | join kind = leftouter(
+                        ADFActivityRun
+                        | where OperationName == 'Transform - Succeeded'
+                        | extend parsedInput = parse_json(Input)
+                        | project
+                            fileName = tostring(parsedInput.parameters.PL_P_PARAM_FILE_NAME),
+                            SQLSuccessTime = TimeGenerated
+                        )
+                        on fileName
+                    | extend Duration = SQLSuccessTime - VaroTimeStart
+                    | project
+                        fileName,
+                        VaroTimeStart,
+                        ProviderSuccessTime,
+                        ConsumerSuccessTime,
+                        TransformSuccessTime,
+                        SQLSuccessTime,
+                        Duration";
+
+				// fileName, BlobTimeStart, ProviderSuccessTime, ConsumerSuccessTime, TransformSuccessTime, SQLSuccessTime, Duration
+
+				TimeSpan queryTimeRange = TimeSpan.FromHours(Convert.ToDouble(job.EdiLaw.QueryHours));
+				var client = new LogsQueryClient(new DefaultAzureCredential());
+				Response<LogsQueryResult> response = await client.QueryWorkspaceAsync(
+					job.EdiLaw.WorkspaceId,
+					query,
+					new QueryTimeRange(queryTimeRange));
+				List<EdiJobStatusResult> list = BuildEdiJobStatusList(response.Value.Table);
+				return list;
+
+			}
+			catch (Exception e)
+			{
+				log.LogInformation($"{logPrefix} exception: ");
+				log.LogError(e.Message);
+				throw;
+			}
+		}
+
+		/// <summary>
+		/// Query Azure Monitor Logs service for EDI job status records
+		/// </summary>
+		/// <param name="job">Object that holds import job related data (e.g., job id)</param>
+		/// <param name="logger">Import job logger object</param>
+		/// <returns>
+		/// A list of EDI job status rows
+		/// </returns>
+		/// <remarks>
+		/// NHGH-2484 (2022.08.10 - 1322) Added method to populate a demo grid controller
+		/// </remarks>
+		public static async Task<List<EdiPipelineEventResult>> QueryWorkspaceForEdiPipelineEvents(EdiJobInfo job)
         {
             try
             {
