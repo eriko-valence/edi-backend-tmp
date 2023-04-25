@@ -2,12 +2,13 @@
 	CREATE PROCEDURE [telemetry].[uspCreateEdiJobStatusEvent]
     @FilePackageName [varchar](255),
 	@ESER [varchar](50),
-	@BlobTimeStart [datetime2],
+	@JobStartTime [datetime2],
 	@ProviderSuccessTime [datetime2],
 	@ConsumerSuccessTime [datetime2],
 	@TransformSuccessTime [datetime2],
 	@SQLSuccessTime [datetime2] ,
 	@DurationSecs [int],
+    @EMDType [varchar](50),
     @Result INT OUTPUT
 AS
 BEGIN
@@ -22,22 +23,24 @@ BEGIN
                 INSERT INTO [telemetry].[EdiJobStatus] (
                     [FilePackageName],
 					[ESER],
-                    [BlobTimeStart],
+                    [JobStartTime],
                     [ProviderSuccessTime],
                     [ConsumerSuccessTime],
                     [TransformSuccessTime],
                     [SQLSuccessTime],
 					[DurationSecs],
+                    [EMDType],
 					[DateAdded]) 
                 VALUES(
                     @FilePackageName,
 					@ESER,
-                    @BlobTimeStart,
+                    @JobStartTime,
                     @ProviderSuccessTime,
                     @ConsumerSuccessTime,
                     @TransformSuccessTime,
                     @SQLSuccessTime,
 					@DurationSecs,
+                    @EMDType,
                     getdate())
                 IF @@ROWCOUNT = 1
                     SET @Result = 1 --successful insert
@@ -49,12 +52,13 @@ BEGIN
                 UPDATE [telemetry].[EdiJobStatus]
                 SET 
                     ESER = @ESER, 
-                    BlobTimeStart = @BlobTimeStart,
+                    JobStartTime = @JobStartTime,
                     ProviderSuccessTime = @ProviderSuccessTime,
                     ConsumerSuccessTime = @ConsumerSuccessTime,
                     TransformSuccessTime = @TransformSuccessTime,
                     SQLSuccessTime = @SQLSuccessTime,
                     DurationSecs = @DurationSecs,
+                    EMDType = @EMDType,
                     DateUpdated = getdate()
                 WHERE 
                     FilePackageName = @FilePackageName;

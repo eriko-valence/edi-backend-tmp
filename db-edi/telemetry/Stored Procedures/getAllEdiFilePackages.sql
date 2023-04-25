@@ -1,5 +1,4 @@
-﻿
-CREATE PROCEDURE [telemetry].[getAllEdiFilePackages]
+﻿CREATE PROCEDURE [telemetry].[getAllEdiFilePackages]
   @ESER varchar(64),
   @StartDate [datetime2](7),
   @EndDate [datetime2](7)
@@ -30,9 +29,9 @@ FROM
 LEFT OUTER JOIN 
     FilePackageLoggerTypeCTE t2 ON t2.FilePackageName = t1.FilePackageName
 WHERE 
-    t1.BlobTimeStart > @StartDate AND
-    t1.BlobTimeStart < @EndDate AND
+    t1.JobStartTime > @StartDate AND
+    t1.JobStartTime < @EndDate AND
     t1.ESER = @ESER
 ORDER BY 
-    t1.BlobTimeStart DESC
+    t1.JobStartTime DESC
 END

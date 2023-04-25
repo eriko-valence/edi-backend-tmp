@@ -24,8 +24,8 @@ BEGIN
         WHERE 
             ProviderSuccessTime IS NULL AND 
             DurationSecs IS NULL AND -- make sure the file package also never successfully completed (this accounts for the possibiliy of missing provider telemetry)
-            BlobTimeStart > @StartDate AND
-            BlobTimeStart < @EndDate
+            JobStartTime > @StartDate AND
+            JobStartTime < @EndDate
 	)
     SELECT @FailedProvider = Count FROM FailedProviderCTE;
 
@@ -41,8 +41,8 @@ BEGIN
             ConsumerSuccessTime IS NULL AND
             ProviderSuccessTime IS NOT NULL AND
             DurationSecs IS NULL AND -- make sure the file package also never successfully completed (this accounts for the possibiliy of missing consumer telemetry)
-            BlobTimeStart > @StartDate AND
-            BlobTimeStart < @EndDate
+            JobStartTime > @StartDate AND
+            JobStartTime < @EndDate
 	)
     SELECT @FailedConsumer = Count FROM FailedConsumerCTE;
     
@@ -59,8 +59,8 @@ BEGIN
             ConsumerSuccessTime IS NOT NULL AND 
             ProviderSuccessTime IS NOT NULL AND
             DurationSecs IS NULL AND -- make sure the file package also never successfully completed (this accounts for the possibiliy of missing transform telemetry)
-            BlobTimeStart > @StartDate AND
-            BlobTimeStart < @EndDate
+            JobStartTime > @StartDate AND
+            JobStartTime < @EndDate
 	)
     SELECT @FailedTransform = Count FROM FailedTransformCTE;
 
@@ -78,8 +78,8 @@ BEGIN
             ProviderSuccessTime IS NOT NULL AND 
             TransformSuccessTime IS NOT NULL AND
             DurationSecs IS NULL AND -- make sure the file package also never successfully completed (this accounts for the possibiliy of missing sql load telemetry)
-            BlobTimeStart > @StartDate AND
-            BlobTimeStart < @EndDate
+            JobStartTime > @StartDate AND
+            JobStartTime < @EndDate
 	)
     SELECT @FailedSqlLoad = Count FROM FailedSqlLoadCTE;
 
@@ -95,8 +95,8 @@ BEGIN
             [telemetry].[EdiJobStatus] 
         WHERE 
             DurationSecs IS NOT NULL AND
-            BlobTimeStart > @StartDate AND
-            BlobTimeStart < @EndDate
+            JobStartTime > @StartDate AND
+            JobStartTime < @EndDate
 	)
     SELECT @SuccessfulJobs = SucceededCount FROM SucceededFilePackagesCTE;
 
