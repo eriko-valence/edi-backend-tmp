@@ -70,8 +70,8 @@ BEGIN
     WHERE 
         ProviderSuccessTime IS NULL AND 
         DurationSecs IS NULL AND -- make sure the file package also never successfully completed (this accounts for the possibiliy of missing provider telemetry)
-        BlobTimeStart > @StartDate AND
-        BlobTimeStart < @EndDate
+        JobStartTime > @StartDate AND
+        JobStartTime < @EndDate
     HAVING
         count(*) > 0
 
@@ -96,8 +96,8 @@ BEGIN
             TransformSuccessTime IS NOT NULL AND
             SQLSuccessTime IS NULL AND
             DurationSecs IS NULL AND -- make sure the file package also never successfully completed (this accounts for the possibiliy of missing provider telemetry)
-            BlobTimeStart > @StartDate AND
-            BlobTimeStart < @EndDate
+            JobStartTime > @StartDate AND
+            JobStartTime < @EndDate
         HAVING
             count(*) > 0
 
