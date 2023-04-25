@@ -336,12 +336,12 @@ namespace lib_edi.Services.Data.Transform
                 }
                 ediJob.Logger.Type = GetLoggerTypeFromEmsPackage(ediJob, dataLoggerType);
                 ediJob.Emd.Metadata.Varo.MountTime = GetTimeFromEmsSyncFileName(listLoggerFiles);
-                ediJob.Emd.Metadata.Varo.CreationTime = GetVaroReportCreationTimeFromMetadataFileName(varoReportMetadataBlob.Name);
-                return ediJob;
+				ediJob.Emd.Metadata.Varo.CreationTime = GetVaroReportCreationTimeFromMetadataFileName(varoReportMetadataBlob.Name);
+				return ediJob;
             }
             catch (Exception e)
             {
-                throw new Exception(EdiErrorsService.BuildExceptionMessageString(e, "TTCW", EdiErrorsService.BuildErrorVariableArrayList(sourceFile)));
+                throw new Exception(EdiErrorsService.BuildExceptionMessageString(e, "TTCW", EdiErrorsService.BuildErrorVariableArrayList(packageName)));
             }
         }
 

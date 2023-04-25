@@ -14,6 +14,8 @@ using ICSharpCode.SharpZipLib.Tar;
 using ICSharpCode.SharpZipLib.GZip;
 using lib_edi.Services.Ems;
 using lib_edi.Services.Data.Transform;
+using lib_edi.Models.Enums.Azure.AppInsights;
+using lib_edi.Services.Ccdx;
 
 namespace fa_mail_compressor_varo
 {
@@ -27,20 +29,26 @@ namespace fa_mail_compressor_varo
             ILogger log)
         {
 
-            try
-            {
+            string outputPackageName = null;
+
+			try
+			{
                 log.LogInformation($"{logPrefix} http trigger function received a compression request.");
-                
-                // NHGH-2799 2023-02-09 1420 Identify the attachments to place into the tarball 
-                List<int> attachmentsToCompress = new();
+
+				// NHGH-2799 2023-02-09 1420 Identify the attachments to place into the tarball 
+				List<int> attachmentsToCompress = new();
                 string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
                 dynamic data = JsonConvert.DeserializeObject(requestBody);
                 dynamic attachments = data?.attachments;
 
                 // NHGH-2815 2023-03-01 1033 Generate the Varo package name from the Varo report file name
-                string outputPackageName = VaroDataProcessorService.GeneratePackageNameFromVaroReportFileName(attachments);
+                outputPackageName = VaroDataProcessorService.GeneratePackageNameFromVaroReportFileName(attachments);
 
-                if (outputPackageName != null)
+				log.LogInformation($"{outputPackageName} received compression request");
+
+				CcdxService.LogMailCompressorStartedEventToAppInsights(outputPackageName, PipelineStageEnum.Name.MAIL_COMPRESSOR_VARO, log);
+
+				if (outputPackageName != null)
                 {
                     log.LogInformation($"{logPrefix} identify email attachments to be inserted into the Varo file package");
                     if (attachments != null)
@@ -64,7 +72,8 @@ namespace fa_mail_compressor_varo
                     log.LogInformation($"{logPrefix} attachments identified: {attachmentsToCompress.Count}");
 
                     log.LogInformation($"{logPrefix} build and compress the Varo file package");
-                    using MemoryStream outputStream = new();
+					log.LogInformation($"{outputPackageName} building report package with {attachmentsToCompress.Count} email attachments");
+					using MemoryStream outputStream = new();
                     using (GZipOutputStream gzoStream = new(outputStream))
                     {
                         gzoStream.IsStreamOwner = false;
@@ -104,11 +113,21 @@ namespace fa_mail_compressor_varo
                     };
 
                     log.LogInformation($"{logPrefix} sent successful http response");
-                    return httpResponseMessage;
+					log.LogInformation($"{outputPackageName} finished building report package");
+
+					CcdxService.LogMailCompressorSuccessEventToAppInsights(outputPackageName, PipelineStageEnum.Name.MAIL_COMPRESSOR_VARO, log);
+
+					return httpResponseMessage;
                 } else
                 {
-                    log.LogError($"{logPrefix} unable to build a Varo package file name");
-                    HttpResponseMessage httpResponseMessage = new HttpResponseMessage()
+					log.LogError($"{outputPackageName} unable to generate report package name from email attachments");
+					log.LogError($"{logPrefix} unable to build a Varo package file name");
+
+					log.LogError($"{logPrefix} Incoming telemetry file {outputPackageName} is not from a supported data logger");
+					log.LogInformation($"{logPrefix} Track ccdx provider unsupported logger event (app insights)");
+					CcdxService.LogMailCompressorUnknownReportPackageToAppInsights(outputPackageName, PipelineStageEnum.Name.MAIL_COMPRESSOR_VARO, log);
+
+					HttpResponseMessage httpResponseMessage = new HttpResponseMessage()
                     {
                         StatusCode = System.Net.HttpStatusCode.InternalServerError
                     };
@@ -117,9 +136,16 @@ namespace fa_mail_compressor_varo
             }
             catch (Exception e)
             {
-                log.LogError($"{logPrefix} something went wrong while compressing the Varo package file name");
-                log.LogError($"{logPrefix} exception: " + e.Message);
-                HttpResponseMessage httpResponseMessage = new HttpResponseMessage()
+				string errorCode = "THLB";
+				log.LogError($"{logPrefix} something went wrong while compressing the Varo package file name");
+                log.LogError($"{logPrefix} exception  : " + e.Message);
+				log.LogError($"{logPrefix} error code : " + errorCode);
+
+				log.LogError($"{outputPackageName} An exception was thrown compressing and packaging these email attachments: {e.Message} ({errorCode})");
+
+				CcdxService.LogMailCompressorErrorEventToAppInsights(outputPackageName, PipelineStageEnum.Name.MAIL_COMPRESSOR_VARO, log, e, errorCode);
+
+				HttpResponseMessage httpResponseMessage = new HttpResponseMessage()
                 {
                     StatusCode = System.Net.HttpStatusCode.InternalServerError
                 };

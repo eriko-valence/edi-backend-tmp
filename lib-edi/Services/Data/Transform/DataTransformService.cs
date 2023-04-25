@@ -288,15 +288,15 @@ namespace lib_edi.Services.CceDevice
         /// </summary>
         /// <param name="reportFileName">Name of Cold chain telemetry file pulled from CCDX Kafka topic</param>
         /// <param name="log">Microsoft extension logger</param>
-        public static void LogEmsTransformSucceededEventToAppInsights(string reportFileName, DataLoggerTypeEnum.Name loggerType, ILogger log)
+        public static void LogEmsTransformSucceededEventToAppInsights(string reportFileName, DataLoggerTypeEnum.Name loggerType, PipelineStageEnum.Name stageName, ILogger log)
         {
             PipelineEvent pipelineEvent = new PipelineEvent();
             pipelineEvent.EventName = PipelineEventEnum.Name.SUCCEEDED;
-            pipelineEvent.StageName = PipelineStageEnum.Name.ADF_TRANSFORM;
+            pipelineEvent.StageName = stageName;
             pipelineEvent.LoggerType = loggerType;
             pipelineEvent.ReportFileName = reportFileName;
             Dictionary<string, string> customProps = AzureAppInsightsService.BuildCustomPropertiesObject(pipelineEvent);
-            AzureAppInsightsService.LogEntry(PipelineStageEnum.Name.ADF_TRANSFORM, customProps, log);
+            AzureAppInsightsService.LogEntry(stageName, customProps, log);
         }
 
         /// <summary>
@@ -304,14 +304,14 @@ namespace lib_edi.Services.CceDevice
         /// </summary>
         /// <param name="reportFileName">Name of Cold chain telemetry file pulled from CCDX Kafka topic</param>
         /// <param name="log">Microsoft extension logger</param>
-        public static void LogEmsTransformStartedEventToAppInsights(string reportFileName, ILogger log)
+        public static void LogEmsTransformStartedEventToAppInsights(string reportFileName, PipelineStageEnum.Name stageName, ILogger log)
         {
             PipelineEvent pipelineEvent = new PipelineEvent();
             pipelineEvent.EventName = PipelineEventEnum.Name.STARTED;
-            pipelineEvent.StageName = PipelineStageEnum.Name.ADF_TRANSFORM;
+            pipelineEvent.StageName = stageName;
             pipelineEvent.ReportFileName = reportFileName;
             Dictionary<string, string> customProps = AzureAppInsightsService.BuildCustomPropertiesObject(pipelineEvent);
-            AzureAppInsightsService.LogEntry(PipelineStageEnum.Name.ADF_TRANSFORM, customProps, log);
+            AzureAppInsightsService.LogEntry(stageName, customProps, log);
         }
 
         /// <summary>
@@ -321,12 +321,12 @@ namespace lib_edi.Services.CceDevice
         /// <param name="log">Microsoft extension logger</param>
         /// <param name="e">Exception object</param>
         /// <param name="errorCode">Error code</param>
-        public static void LogEmsTransformErrorEventToAppInsights(string reportFileName, ILogger log, Exception e, string errorCode, string errorMessage, DataLoggerTypeEnum.Name loggerTypeEnum, PipelineFailureReasonEnum.Name failureReason)
+        public static void LogEmsTransformErrorEventToAppInsights(string reportFileName, PipelineStageEnum.Name stageName, ILogger log, Exception e, string errorCode, string errorMessage, DataLoggerTypeEnum.Name loggerTypeEnum, PipelineFailureReasonEnum.Name failureReason)
         {
             //string errorMessage = EdiErrorsService.BuildExceptionMessageString(e, errorCode, EdiErrorsService.BuildErrorVariableArrayList(reportFileName));
             PipelineEvent pipelineEvent = new PipelineEvent();
             pipelineEvent.EventName = PipelineEventEnum.Name.FAILED;
-            pipelineEvent.StageName = PipelineStageEnum.Name.ADF_TRANSFORM;
+            pipelineEvent.StageName = stageName;
             pipelineEvent.LoggerType = loggerTypeEnum;
             pipelineEvent.PipelineFailureType = PipelineFailureTypeEnum.Name.ERROR;
             pipelineEvent.PipelineFailureReason = failureReason;
@@ -339,7 +339,7 @@ namespace lib_edi.Services.CceDevice
                 pipelineEvent.ExceptionInnerMessage = EdiErrorsService.GetInnerException(e);
             }
             Dictionary<string, string> customProps = AzureAppInsightsService.BuildCustomPropertiesObject(pipelineEvent);
-            AzureAppInsightsService.LogEntry(PipelineStageEnum.Name.ADF_TRANSFORM, customProps, log);
+            AzureAppInsightsService.LogEntry(stageName, customProps, log);
         }
 
         /// <summary>
