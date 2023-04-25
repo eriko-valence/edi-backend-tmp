@@ -9,7 +9,7 @@ namespace lib_edi.Models.SendGrid
     public class SendGridEdiFailedJob
     {
         public string FilePackageName { get; set; }
-        public DateTime? BlobTimeStart { get; set; }
+        public DateTime? JobStartTime { get; set; }
         public string DataLoggerType { get; set; }
         public string PipelineFailureLocation { get; set; }
     }

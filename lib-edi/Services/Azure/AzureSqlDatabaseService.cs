@@ -603,7 +603,7 @@ namespace lib_edi.Services.Azure
                             FailedEdiJob failedJob = new FailedEdiJob();
                             failedJob.FilePackageName = dt.Rows[i]["FilePackageName"].ToString();
                             failedJob.ESER = dt.Rows[i]["ESER"].ToString();
-                            failedJob.BlobTimeStart = dt.Rows[i]["BlobTimeStart"] == DBNull.Value ? null : (DateTime?)dt.Rows[i]["BlobTimeStart"];
+                            failedJob.JobStartTime = dt.Rows[i]["JobStartTime"] == DBNull.Value ? null : (DateTime?)dt.Rows[i]["JobStartTime"];
                             failedJob.ProviderSuccessTime = dt.Rows[i]["ProviderSuccessTime"] == DBNull.Value ? null : (DateTime?)dt.Rows[i]["ProviderSuccessTime"];
                             failedJob.ConsumerSuccessTime = dt.Rows[i]["ConsumerSuccessTime"] == DBNull.Value ? null : (DateTime?)dt.Rows[i]["ConsumerSuccessTime"];
                             failedJob.TransformSuccessTime = dt.Rows[i]["TransformSuccessTime"] == DBNull.Value ? null : (DateTime?)dt.Rows[i]["TransformSuccessTime"];
@@ -777,10 +777,10 @@ namespace lib_edi.Services.Azure
         public static string GetEdiPipelineFailureLocation(FailedEdiJob job)
         {
             string result = null;
-            if (job.BlobTimeStart == null)
+            if (job.JobStartTime == null)
             {
                 result = "Blob";
-            } else if (job.BlobTimeStart == null)
+            } else if (job.JobStartTime == null)
             {
                 result = "Blob";
             } else if (job.ProviderSuccessTime == null)
