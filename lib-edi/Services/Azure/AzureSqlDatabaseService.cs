@@ -74,13 +74,14 @@ namespace lib_edi.Services.Azure
                         cmd.CommandText = "telemetry.uspCreateEdiJobStatusEvent";
                         cmd.Parameters.Add(new SqlParameter("@FilePackageName", SqlDbType.VarChar));
                         cmd.Parameters.Add(new SqlParameter("@ESER", SqlDbType.VarChar));
-                        cmd.Parameters.Add(new SqlParameter("@BlobTimeStart", SqlDbType.DateTimeOffset));
-                        cmd.Parameters.Add(new SqlParameter("@ProviderSuccessTime", SqlDbType.DateTimeOffset));
+                        cmd.Parameters.Add(new SqlParameter("@JobStartTime", SqlDbType.DateTimeOffset));
+						cmd.Parameters.Add(new SqlParameter("@ProviderSuccessTime", SqlDbType.DateTimeOffset));
                         cmd.Parameters.Add(new SqlParameter("@ConsumerSuccessTime", SqlDbType.DateTimeOffset));
                         cmd.Parameters.Add(new SqlParameter("@TransformSuccessTime", SqlDbType.DateTimeOffset));
                         cmd.Parameters.Add(new SqlParameter("@SQLSuccessTime", SqlDbType.DateTimeOffset));
                         cmd.Parameters.Add(new SqlParameter("@DurationSecs", SqlDbType.Int));
-                        cmd.Parameters.Add("@Result", SqlDbType.Int).Direction = ParameterDirection.Output;
+						cmd.Parameters.Add(new SqlParameter("@EMDType", SqlDbType.VarChar));
+						cmd.Parameters.Add("@Result", SqlDbType.Int).Direction = ParameterDirection.Output;
                         //logger.LogInfo("execute sql command", job);
                         foreach (var item in list)
                         {
@@ -88,14 +89,22 @@ namespace lib_edi.Services.Azure
                             try
                             {
                                 cmd.Parameters["@FilePackageName"].Value = dbnullable(jobResult.fileName);
-                                cmd.Parameters["@ESER"].Value = dbnullable(GetEserFromFileName(jobResult.fileName));
-                                cmd.Parameters["@BlobTimeStart"].Value = dbnullable(jobResult.BlobTimeStart);
+                                if (jobResult.EmdType == Models.Enums.Emd.EmdEnum.Name.USBDG)
+                                {
+									cmd.Parameters["@ESER"].Value = dbnullable(GetEserFromFileName(jobResult.fileName));
+								} else
+                                {
+                                    cmd.Parameters["@ESER"].Value = null; // nhgh-2908 2023.04.24 varo devices have no sn
+								}
+                                
+                                cmd.Parameters["@JobStartTime"].Value = dbnullable(jobResult.JobStartTime);
                                 cmd.Parameters["@ProviderSuccessTime"].Value = dbnullable(jobResult.ProviderSuccessTime);
                                 cmd.Parameters["@ConsumerSuccessTime"].Value = dbnullable(jobResult.ConsumerSuccessTime);
                                 cmd.Parameters["@TransformSuccessTime"].Value = dbnullable(jobResult.TransformSuccessTime);
                                 cmd.Parameters["@SQLSuccessTime"].Value = dbnullable(jobResult.SQLSuccessTime);
                                 cmd.Parameters["@DurationSecs"].Value = dbnullable(GetTotalSecondsFromTimeSpan(jobResult.Duration));
-                                var rows = await cmd.ExecuteNonQueryAsync();
+								cmd.Parameters["@EMDType"].Value = dbnullable(jobResult.EmdType);
+								var rows = await cmd.ExecuteNonQueryAsync();
                                 String resultString = cmd.Parameters["@Result"].Value.ToString();
                                 var resultObject = cmd.Parameters["@Result"].Value;
                                 int result = Convert.ToInt32(cmd.Parameters["@Result"].Value);
