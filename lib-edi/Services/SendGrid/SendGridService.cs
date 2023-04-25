@@ -40,7 +40,7 @@ namespace lib_edi.Services.SendGrid
                     sendGridJob.FilePackageName = job.FilePackageName;
                     sendGridJob.PipelineFailureLocation = job.PipelineFailureLocation;
                     sendGridJob.DataLoggerType = job.DataLoggerType;
-                    sendGridJob.BlobTimeStart = job.BlobTimeStart;
+                    sendGridJob.JobStartTime = job.JobStartTime;
                     sendGridResultlist.Add(sendGridJob);
                 }
 
