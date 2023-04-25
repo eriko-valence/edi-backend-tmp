@@ -5,6 +5,7 @@ using lib_edi.Models.Edi.Data.Import;
 using lib_edi.Models.Edi.Job;
 using lib_edi.Models.Edi.Job.EmailReport;
 using lib_edi.Models.SendGrid;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -49,14 +50,17 @@ namespace lib_edi.Services.Azure
         /// <remarks>
         /// NHGH-2490 (2022.08.15 - 1825) Added method
         /// </remarks>
-        public static async Task<EdiMaintJobStats> InsertEdiJobStatusEvents(EdiJobInfo job, List<EdiJobStatusResult> list)
+        public static async Task<EdiMaintJobStats> InsertEdiJobStatusEvents(EdiJobInfo job, List<EdiJobStatusResult> list, ILogger log)
         {
             EdiMaintJobStats jobStats = new();
 
-            //logger.LogInfo("insert edi job status events into database", job);
-            //logger.LogInfo(" - records to load: " + list.Count, job);
+			string logPrefix = "- [azure_sqldb_svc->insert_edi_job_status_events]: ";
+			log.LogInformation($"{logPrefix} - start table load");
 
-            jobStats.Queried = list.Count;
+			//logger.LogInfo("insert edi job status events into database", job);
+			//logger.LogInfo(" - records to load: " + list.Count, job);
+
+			jobStats.Queried = list.Count;
             int totalAdded = 0;
             int totalErrors = 0;
             int totalExcluded = 0;
@@ -94,10 +98,10 @@ namespace lib_edi.Services.Azure
 									cmd.Parameters["@ESER"].Value = dbnullable(GetEserFromFileName(jobResult.fileName));
 								} else
                                 {
-                                    cmd.Parameters["@ESER"].Value = null; // nhgh-2908 2023.04.24 varo devices have no sn
+									cmd.Parameters["@ESER"].Value = dbnullable(null); // nhgh-2908 varo devices have no sn
 								}
-                                
-                                cmd.Parameters["@JobStartTime"].Value = dbnullable(jobResult.JobStartTime);
+
+								cmd.Parameters["@JobStartTime"].Value = dbnullable(jobResult.JobStartTime);
                                 cmd.Parameters["@ProviderSuccessTime"].Value = dbnullable(jobResult.ProviderSuccessTime);
                                 cmd.Parameters["@ConsumerSuccessTime"].Value = dbnullable(jobResult.ConsumerSuccessTime);
                                 cmd.Parameters["@TransformSuccessTime"].Value = dbnullable(jobResult.TransformSuccessTime);
@@ -114,16 +118,19 @@ namespace lib_edi.Services.Azure
                                 }
                                 else if (result > 2)
                                 {
-                                    totalErrors++;
+									log.LogInformation($"{logPrefix} - error loading {jobResult.fileName}. sql return code {result}");
+									totalErrors++;
                                 }
                             }
                             catch (Exception ex)
                             {
                                 totalErrors++;
-                                //logger.LogError("Exception thrown while processing EDI job status events", ex, job);
-                                //Dictionary<string, string> customProps = AzureAppInsightsService.BuildOtaExceptionPropertiesObject("AzureSqlDatabaseService", "DataMapping", ex);
-                                //AzureAppInsightsService.LogEvent(OtaJobImportEventEnum.Name.OTA_IMPORT_EXCEPTION.ToString(), customProps);
-                            }
+								log.LogInformation($"{logPrefix} - exception loading {jobResult.fileName}");
+								log.LogInformation($"{logPrefix} - exception message {ex.Message}");
+								//logger.LogError("Exception thrown while processing EDI job status events", ex, job);
+								//Dictionary<string, string> customProps = AzureAppInsightsService.BuildOtaExceptionPropertiesObject("AzureSqlDatabaseService", "DataMapping", ex);
+								//AzureAppInsightsService.LogEvent(OtaJobImportEventEnum.Name.OTA_IMPORT_EXCEPTION.ToString(), customProps);
+							}
                         }
                     }
                     //logger.LogInfo("close database connection", job);

@@ -67,7 +67,7 @@ namespace fa_maint
 				if (l1a.Count > 0)
                 {
                     log.LogInformation($"{logPrefix} insert these edi (usbdg & varo) job results (high level status) into azure sql");
-                    r1 = await AzureSqlDatabaseService.InsertEdiJobStatusEvents(job, l1a);
+                    r1 = await AzureSqlDatabaseService.InsertEdiJobStatusEvents(job, l1a, log);
                 }
                 else
                 {

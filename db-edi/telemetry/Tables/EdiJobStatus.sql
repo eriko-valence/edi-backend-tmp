@@ -1,6 +1,6 @@
 ﻿CREATE TABLE [telemetry].[EdiJobStatus] (
     [FilePackageName]      VARCHAR (255) NOT NULL,
-    [ESER]                 VARCHAR (50)  NOT NULL,
+    [ESER]                 VARCHAR (50)  NULL,
     [JobStartTime]         DATETIME2 (7) NULL,
     [ProviderSuccessTime]  DATETIME2 (7) NULL,
     [ConsumerSuccessTime]  DATETIME2 (7) NULL,
@@ -12,6 +12,8 @@
     [EMDType]              VARCHAR (50)  NULL,
     CONSTRAINT [PK_EdiJobStatus] PRIMARY KEY CLUSTERED ([FilePackageName] ASC)
 );
+
+
 
 
 
