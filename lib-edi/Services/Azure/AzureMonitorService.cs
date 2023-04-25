@@ -6,6 +6,7 @@ using lib_edi.Models.Azure.Monitor.Query;
 using lib_edi.Models.Edi.Data.Import;
 using lib_edi.Models.Edi.Job;
 using lib_edi.Models.Edi.Job.EmailReport;
+using lib_edi.Models.Enums.Emd;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
 using System;
@@ -78,7 +79,14 @@ namespace lib_edi.Services.Azure
                     | project fileName = tostring(parsedInput.parameters.PL_P_PARAM_FILE_NAME), SQLSuccessTime = TimeGenerated
                 ) on fileName
                 | extend Duration = SQLSuccessTime - BlobTimeStart
-                | project fileName, BlobTimeStart, ProviderSuccessTime, ConsumerSuccessTime, TransformSuccessTime, SQLSuccessTime, Duration";
+                | project 
+                    fileName, 
+                    JobStart = BlobTimeStart, 
+                    ProviderSuccessTime, 
+                    ConsumerSuccessTime, 
+                    TransformSuccessTime, 
+                    SQLSuccessTime, 
+                    Duration";
 
                 TimeSpan queryTimeRange = TimeSpan.FromHours(Convert.ToDouble(job.EdiLaw.QueryHours));
                 //logger.LogInfo("Initialize a new instance of Azure.Monitor.Query.LogsQueryClient", job);
@@ -96,7 +104,7 @@ namespace lib_edi.Services.Azure
                 //logger.LogInfo("Received Query Response from Azure Monitor Logs service (EDI Job Status)", job);
                 //logger.LogInfo(" Table Rows: " + response.Value.Table.Rows.Count, job);
                 //logger.LogInfo("Build List of EDI job status data from Azure Monitor Query Result", job);
-                List<EdiJobStatusResult> list = BuildEdiJobStatusList(response.Value.Table);
+                List<EdiJobStatusResult> list = BuildEdiJobStatusList(response.Value.Table, EmdEnum.Name.USBDG);
                 return list;
 
             }
@@ -166,7 +174,7 @@ namespace lib_edi.Services.Azure
                     | extend Duration = SQLSuccessTime - VaroTimeStart
                     | project
                         fileName,
-                        VaroTimeStart,
+                        JobStart = VaroTimeStart,
                         ProviderSuccessTime,
                         ConsumerSuccessTime,
                         TransformSuccessTime,
@@ -181,7 +189,7 @@ namespace lib_edi.Services.Azure
 					job.EdiLaw.WorkspaceId,
 					query,
 					new QueryTimeRange(queryTimeRange));
-				List<EdiJobStatusResult> list = BuildEdiJobStatusList(response.Value.Table);
+				List<EdiJobStatusResult> list = BuildEdiJobStatusList(response.Value.Table, EmdEnum.Name.VARO);
 				return list;
 
 			}
@@ -416,7 +424,7 @@ namespace lib_edi.Services.Azure
         /// <remarks>
         /// NHGH-2484 (2022.08.10 - 1322) Added method to populate a demo grid controller
         /// </remarks>
-        private static List<EdiJobStatusResult> BuildEdiJobStatusList(LogsTable table)
+        private static List<EdiJobStatusResult> BuildEdiJobStatusList(LogsTable table, EmdEnum.Name emdType)
         {
             List<EdiJobStatusResult> list = new();
             if (table != null)
@@ -425,7 +433,8 @@ namespace lib_edi.Services.Azure
                 {
                     EdiJobStatusResult ediJobStatus = new EdiJobStatusResult();
                     ediJobStatus.fileName = (string?)row[0];
-                    ediJobStatus.BlobTimeStart = row[1] != null ? ((DateTimeOffset)row[1]).DateTime : null;
+                    ediJobStatus.EmdType = emdType;
+                    ediJobStatus.JobStartTime = row[1] != null ? ((DateTimeOffset)row[1]).DateTime : null;
                     ediJobStatus.ProviderSuccessTime = row[2] != null ? ((DateTimeOffset)row[2]).DateTime : null;
                     ediJobStatus.ConsumerSuccessTime = row[3] != null ? ((DateTimeOffset)row[3]).DateTime : null;
                     ediJobStatus.TransformSuccessTime = row[4] != null ? ((DateTimeOffset)row[4]).DateTime : null;

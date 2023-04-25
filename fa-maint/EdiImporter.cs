@@ -51,27 +51,27 @@ namespace fa_maint
             try
             {
                 EdiJobInfo job = EdiService.InitializeMaintJobImportEvents(EdiFunctionsEnum.Name.EDI_MAINT_IMPORTER);
-                log.LogInformation($"{logPrefix} - job.edilaw.workspaceid ..............: {job.EdiLaw.WorkspaceId}");
-                log.LogInformation($"{logPrefix} - job.edilaw.azurebloburiccdxprovider .: {job.EdiLaw.AzureBlobUriCcdxProvider}");
-                log.LogInformation($"{logPrefix} - job.edilaw.queryhours ...............: {job.EdiLaw.QueryHours}");
-                log.LogInformation($"{logPrefix} - job.edidb.name ......................: {job.EdiDb.Name}");
-                log.LogInformation($"{logPrefix} - job.edidb.server ....................: {job.EdiDb.Server}");
+                log.LogInformation($"{logPrefix} - job.edilaw.workspaceid .............. : {job.EdiLaw.WorkspaceId}");
+                log.LogInformation($"{logPrefix} - job.edilaw.azurebloburiccdxprovider . : {job.EdiLaw.AzureBlobUriCcdxProvider}");
+                log.LogInformation($"{logPrefix} - job.edilaw.queryhours ............... : {job.EdiLaw.QueryHours}");
+                log.LogInformation($"{logPrefix} - job.edidb.name ...................... : {job.EdiDb.Name}");
+                log.LogInformation($"{logPrefix} - job.edidb.server .................... : {job.EdiDb.Server}");
 
                 log.LogInformation($"{logPrefix} query log analytics workspace for edi usbdg job results (high level status)");
                 List<EdiJobStatusResult> l1a = await AzureMonitorService.QueryWorkspaceForEdiUsbdgJobsStatus(job, log);
 				log.LogInformation($"{logPrefix} query log analytics workspace for edi varo job results (high level status)");
 				List<EdiJobStatusResult> l1b = await AzureMonitorService.QueryWorkspaceForEdiVaroJobsStatus(job, log);
-
-
+				log.LogInformation($"{logPrefix} merge edi usbdg and varo job results (high level status)");
+                l1a.AddRange(l1b);
 
 				if (l1a.Count > 0)
                 {
-                    log.LogInformation($"{logPrefix} insert these edi job results (high level status) into azure sql");
+                    log.LogInformation($"{logPrefix} insert these edi (usbdg & varo) job results (high level status) into azure sql");
                     r1 = await AzureSqlDatabaseService.InsertEdiJobStatusEvents(job, l1a);
                 }
                 else
                 {
-                    log.LogInformation($"{logPrefix} no edi job status records found in the log analytics workspace");
+                    log.LogInformation($"{logPrefix} no edi (usbdg & varo) job status records found in the log analytics workspace");
                 }
 
                 log.LogInformation($"{logPrefix} query log analytics workspace for edi job results (azure function app events)");
