@@ -138,7 +138,6 @@
     <Build Include="dbo\Stored Procedures\getBatteryChargeHighcharts.sql" />
     <Build Include="dbo\Stored Procedures\getAmbientTemperatureHighcharts.sql" />
     <Build Include="indigo_v2\Stored Procedures\getAvgHourlyAmbientTemperatureOverTime_v2.sql" />
-    <Build Include="indigo_v2\Tables\event_aser.sql" />
     <Build Include="telemetry\Tables\EdiMaintEvent.sql" />
     <Build Include="telemetry\Stored Procedures\uspCreateEdiMaintEvent.sql" />
   </ItemGroup>
