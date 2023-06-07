@@ -77,7 +77,8 @@ UNION
         JobStartTime > @StartDate AND
         -- NHGH-2948 (2023.06.07 1049AM) - a provider should only be marked as "not triggered" if it did not have an error (an error implies the provider was triggered)
         --                               - without this filter, a report package would have duplicate failure entries (CCDX_PROVIDER_NOT_TRIGGERED and HTTP_STATUS_CODE_ERROR)
-        JobStartTime < @EndDate and FilePackageName not in (select FilePackageName from FailedEdiPipelineJobResultsCTE where PipelineFailureReason = 'HTTP_STATUS_CODE_ERROR' )
+        JobStartTime < @EndDate and FilePackageName not in (
+            select FilePackageName from FailedEdiPipelineJobResultsCTE where PipelineStage IN('CCDX_PROVIDER', 'CCDX_PROVIDER_VARO') and PipelineEvent = 'FAILED')
 
     -- Need to also monitor file packages that fail to load into the SQL database
     -- This separate UNION statement is needed becuase all events in the table [EdiPipelineEvents]
@@ -104,12 +105,13 @@ UNION
             JobStartTime < @EndDate
 
     -- NHGH-2948 2023.06.07 1135 Need to monitor file packages that never get pulled out of ccdx by the consumer
+    
     UNION
         SELECT 
         FilePackageName,
         'FAILED' as 'PipelineEvent',
         'CCDX_CONSUMER' as 'PipelineStage',
-        'CCDX_CONSUMER_NOT_TRIGGERED' as 'PipelineFailureReason',
+        'CCDX_CONSUMER' as 'PipelineFailureReason',
         'NOT STARTED' AS 'PipelineFailureType',
         'COMPLETED' as 'PipelineState'
         FROM 
@@ -119,8 +121,14 @@ UNION
             ConsumerSuccessTime IS NULL AND 
             DurationSecs IS NULL AND -- make sure the file package also never successfully completed (this accounts for the possibiliy of missing provider telemetry)
             JobStartTime > @StartDate AND
-            JobStartTime < @EndDate
-)
+            JobStartTime < @EndDate AND
+            FilePackageName not in (
+            select FilePackageName from [telemetry].[EdiPipelineEvents] where PipelineStage IN('CCDX_CONSUMER', 'CCDX_CONSUMER_VARO') and PipelineEvent = 'FAILED'))
+
+--select * from UpdatedFailedEdiPipelineJobResultsCTE where FilePackageName = '40A36BCA6956_20230413T212554Z_001f00265547501820333333_reports.tar.gz'
+
+--select * from UpdatedFailedEdiPipelineJobResultsCTE where PipelineStage IN('CCDX_CONSUMER') order by PipelineFailureReason
+
 
     SELECT 
         count(*) as 'FailureCount', 
