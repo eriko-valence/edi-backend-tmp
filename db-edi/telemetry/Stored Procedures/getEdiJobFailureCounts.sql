@@ -102,6 +102,24 @@ UNION
             DurationSecs IS NULL AND -- make sure the file package also never successfully completed (this accounts for the possibiliy of missing provider telemetry)
             JobStartTime > @StartDate AND
             JobStartTime < @EndDate
+
+    -- NHGH-2948 2023.06.07 1135 Need to monitor file packages that never get pulled out of ccdx by the consumer
+    UNION
+        SELECT 
+        FilePackageName,
+        'FAILED' as 'PipelineEvent',
+        'CCDX_CONSUMER' as 'PipelineStage',
+        'CCDX_CONSUMER_NOT_TRIGGERED' as 'PipelineFailureReason',
+        'NOT STARTED' AS 'PipelineFailureType',
+        'COMPLETED' as 'PipelineState'
+        FROM 
+            [telemetry].[EdiJobStatus] 
+        WHERE 
+            ProviderSuccessTime IS NOT NULL AND 
+            ConsumerSuccessTime IS NULL AND 
+            DurationSecs IS NULL AND -- make sure the file package also never successfully completed (this accounts for the possibiliy of missing provider telemetry)
+            JobStartTime > @StartDate AND
+            JobStartTime < @EndDate
 )
 
     SELECT 
