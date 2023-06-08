@@ -1,4 +1,7 @@
 ﻿
+-- NHGH-2960 2023.06.08 13:17 Updated this sproc to use DurationSecs as true indicator of a job's succesful completion. This accounts
+--   for rare scenarios where job telemetry is missing even though the job ran sucessfully to completion. These rare scenarios would 
+-- show false postives on the CDASH EDI status monitor page.  
 CREATE PROCEDURE [telemetry].[getEdiJobFailureCounts]
 (
 	@StartDate [datetime2](7),
@@ -16,17 +19,22 @@ LatestEdiPipelineJobResultsCTE
 AS
 (
     SELECT 
-        MAX(EventTime) as 'EventTime',
-        FilePackageName, PipelineStage, PipelineState
+        MAX(t1.EventTime) as 'EventTime',
+        t1.FilePackageName, t1.PipelineStage, t1.PipelineState, t1.PipelineFailureReason, t1.PipelineFailureType, t2.DurationSecs
     FROM 
-        [telemetry].[EdiPipelineEvents]
+        [telemetry].[EdiPipelineEvents] t1,
+        [telemetry].[EdiJobStatus] t2
     WHERE
-        EventTime >= @StartDate AND
-        EventTime <= @EndDate --AND
+        t1.EventTime >= @StartDate AND
+        t1.EventTime <= @EndDate AND
+        t1.FilePackageName = t2.FilePackageName
     GROUP BY
-        FilePackageName,
-        PipelineStage, 
-        PipelineState
+        t1.FilePackageName,
+        t1.PipelineStage, 
+        t1.PipelineState,
+        t1.PipelineFailureReason,
+        t1.PipelineFailureType,
+        t2.DurationSecs
 ),
 
 FailedEdiPipelineJobResultsCTE
@@ -46,7 +54,13 @@ WHERE
     t1.EventTime = t2.EventTime AND
     t1.PipelineStage = t2.PipelineStage AND
     t1.PipelineState = t2.PipelineState AND
-    t1.PipelineEvent in ('FAILED')
+    t1.PipelineEvent IN ('FAILED') AND
+    -- NHGH-2960 2023.06.08 13:17 By definition, failed jobs have NULL duration seconds (calcluated once a job's data has successfully loaded into the 
+    -- sql db). A failed job with NON-NULL duration seconds implies the job completed successfully, but is missing success telemetry (various, rare 
+    -- reasons for this). For example, a job might have missing ccdx provider success telemetry (e.g., telemetry lost in network transmission) but 
+    -- still processed to completion (i.e., report data loading into sql database).  This NULL filter eliminates false positives due to missing 
+    -- telemetry. 
+    t2.DurationSecs IS NULL 
 ),
 
 UpdatedFailedEdiPipelineJobResultsCTE
@@ -105,7 +119,6 @@ UNION
             JobStartTime < @EndDate
 
     -- NHGH-2948 2023.06.07 1135 Need to monitor file packages that never get pulled out of ccdx by the consumer
-    
     UNION
         SELECT 
         FilePackageName,
@@ -124,11 +137,6 @@ UNION
             JobStartTime < @EndDate AND
             FilePackageName not in (
             select FilePackageName from [telemetry].[EdiPipelineEvents] where PipelineStage IN('CCDX_CONSUMER', 'CCDX_CONSUMER_VARO') and PipelineEvent = 'FAILED'))
-
---select * from UpdatedFailedEdiPipelineJobResultsCTE where FilePackageName = '40A36BCA6956_20230413T212554Z_001f00265547501820333333_reports.tar.gz'
-
---select * from UpdatedFailedEdiPipelineJobResultsCTE where PipelineStage IN('CCDX_CONSUMER') order by PipelineFailureReason
-
 
     SELECT 
         count(*) as 'FailureCount', 
