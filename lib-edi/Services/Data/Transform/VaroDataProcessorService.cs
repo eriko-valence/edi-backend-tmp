@@ -15,9 +15,11 @@ using System.Collections.Generic;
 using System.Dynamic;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using static Microsoft.ApplicationInsights.MetricDimensionNames.TelemetryContext;
 
 namespace lib_edi.Services.Data.Transform
 {
@@ -289,7 +291,19 @@ namespace lib_edi.Services.Data.Transform
             {
                 ediJob.Emd.Type = emdTypeEnum;
 
-                if (sourceLogs != null)
+                foreach (var sl in sourceLogs)
+                {
+					//if (EmsService.IsThisEmsCurrentDataFile(sl.Value))
+					//{
+						JObject sourceLogJObject = (JObject)sl;
+						var aser = sourceLogJObject.SelectToken("ASER");
+                        Console.WriteLine("debug");
+					//}
+				}
+
+
+
+				if (sourceLogs != null)
                 {
                     foreach (dynamic sourceLog in sourceLogs)
                     {
@@ -316,10 +330,34 @@ namespace lib_edi.Services.Data.Transform
                     }
                 }
 
-                JObject varoReportFileJObject = (JObject)varoReportFileObject;
-                var varoReportFileHeaderObject = new ExpandoObject() as IDictionary<string, Object>;
+				/*
+                 * NHGH-922 Pull gps coordinates from "Used" location object if report format version is 2 or higher.
+                 *	 * If location[”gpsCorrectionUsed”] does not exist, assume the report is a “version 1” report and 
+                 *	 just process GPS in the same way it is currently processed	  
+                 *	 * If location[“gpsCorrectionUsed”] exists (regardless of whether it is true or false):
+                 *	   - If used is not present, just use the GPS values in the files “as is”.
+                 *	   - If used is present, always use the used values for GPS records.
+                 */
+				JObject varoReportFileJObject = (JObject)varoReportFileObject;
+				JToken gpsCorrectedionUsedObject = varoReportFileJObject.SelectToken("$.location.gpsCorrectionUsed");
+				JToken locationObject = varoReportFileJObject.SelectToken("$.location");
+				if (gpsCorrectedionUsedObject != null)
+                {
+					JToken locationUsedObject = varoReportFileJObject.SelectToken("$.location.used");
+					if (locationUsedObject != null)
+                    {
+						ediJob.Emd.Metadata.Varo.Location = locationUsedObject.ToObject<EdiJobVaroMetadataLocation>();
+					} else if (locationObject != null)
+                    {
+						ediJob.Emd.Metadata.Varo.Location = locationObject.ToObject<EdiJobVaroMetadataLocation>();
+					}
+                } else
+                {
+					ediJob.Emd.Metadata.Varo.Location = locationObject.ToObject<EdiJobVaroMetadataLocation>();
+				}
 
-                foreach (KeyValuePair<string, JToken> log2 in varoReportFileJObject)
+				var varoReportFileHeaderObject = new ExpandoObject() as IDictionary<string, Object>;
+				foreach (KeyValuePair<string, JToken> log2 in varoReportFileJObject)
                 {
                     if (log2.Value.Type != JTokenType.Array)
                     {

@@ -21,5 +21,6 @@ namespace lib_edi.Models.Edi
         //public long? Timestamp { get; set; } //varo timestamp utc (Epoch)
         public DateTime? TimestampDateTime { get; set; } //varo timestamp utc (human readable date time)
         public string EDI_SOURCE { get; set; }
-    }
+        public EdiJobVaroMetadataLocation Location { get; set; }
+	}
 }
