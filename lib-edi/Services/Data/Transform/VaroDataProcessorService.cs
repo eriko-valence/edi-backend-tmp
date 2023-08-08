@@ -279,7 +279,7 @@ namespace lib_edi.Services.Data.Transform
         /// <returns>
         /// A list of CSV compatible EMD + logger data records, if successful; Exception (D39Y) if any failures occur 
         /// </returns>
-        public static EdiJob PopulateEdiJobObject(dynamic varoReportFileObject, List<dynamic> sourceLogs, List<CloudBlockBlob> listLoggerFiles, CloudBlockBlob varoReportMetadataBlob, CloudBlockBlob usbdgReportMetadataBlob, string packageName, string stagePath, EmdEnum.Name emdTypeEnum, DataLoggerTypeEnum.Name dataLoggerType)
+        public static EdiJob PopulateEdiJobObject(dynamic varoReportFileObject, List<dynamic> sourceLogs, List<CloudBlockBlob> listLoggerFiles, CloudBlockBlob varoReportMetadataBlob, string packageName, string stagePath, EmdEnum.Name emdTypeEnum, DataLoggerTypeEnum.Name dataLoggerType)
         {
             string sourceFile = null;
             EdiJob ediJob = new();
@@ -291,47 +291,33 @@ namespace lib_edi.Services.Data.Transform
             {
                 ediJob.Emd.Type = emdTypeEnum;
 
-                /*
-                 -- NHGH-3024 2023.08.08 1323 Comment this section out (ASER is retrieved further down)
+				/*
+                 -- NHGH-3024 2023.08.08 1323 Comment this section out (ASER is retrieved using GetLogFileData)
                  ediJob.Logger.ASER = IndigoDataTransformService.GetAserFromLogFile(sourceLogs);
                 */
 
-                ediJob.Emd.PackageFiles.StagedFiles = GetStagedFileNames(sourceLogs);
-				ediJob.Emd.PackageFiles.SyncFileName = GetSyncFileName(sourceLogs);
-                ediJob.Logger = IndigoDataTransformService.GetLogFileData(sourceLogs);
-
-                /*
-                 * NHGH-922 Pull gps coordinates from "Used" location object if report format version is 2 or higher.
-                 *	 * If location[”gpsCorrectionUsed”] does not exist, assume the report is a “version 1” report and 
-                 *	 just process GPS in the same way it is currently processed	  
-                 *	 * If location[“gpsCorrectionUsed”] exists (regardless of whether it is true or false):
-                 *	   - If used is not present, just use the GPS values in the files “as is”.
-                 *	   - If used is present, always use the used values for GPS records.
-                 */
-
-                ediJob.Emd.Metadata.Varo.Location = GetVaroMetadataLocation(varoReportFileObject);
-                ediJob.Emd.Metadata.Varo.ReportTime = GetVaroMetadataReportTime(varoReportFileObject);
-
-                /*
+				/*
                 -- NHGH-3024 2023.08.08 1309 Comment this section out for the time being (not currently required)
-				var varoReportFileHeaderObject = new ExpandoObject() as IDictionary<string, Object>;
-				foreach (KeyValuePair<string, JToken> log2 in varoReportFileJObject)
+                var varoReportFileHeaderObject = new ExpandoObject() as IDictionary<string, Object>;
+                foreach (KeyValuePair<string, JToken> log2 in varoReportFileJObject)
                 {
-                    if (log2.Value.Type != JTokenType.Array)
-                    {
-                        varoReportFileHeaderObject.Add(log2.Key, log2.Value);
-                        ObjectManager.SetObjectValue(ediJob.Emd.Metadata.Varo, log2.Key, log2.Value);
-                    }
+	                if (log2.Value.Type != JTokenType.Array)
+	                {
+		                varoReportFileHeaderObject.Add(log2.Key, log2.Value);
+		                ObjectManager.SetObjectValue(ediJob.Emd.Metadata.Varo, log2.Key, log2.Value);
+	                }
                 }
                 */
 
+				ediJob.Emd.PackageFiles.SyncFileName = GetSyncFileName(sourceLogs);
+                ediJob.Logger = IndigoDataTransformService.GetLogFileData(sourceLogs);
+                ediJob.Emd.Metadata.Varo.Location = GetVaroMetadataLocation(varoReportFileObject);
+                ediJob.Emd.Metadata.Varo.ReportTime = GetVaroMetadataReportTime(varoReportFileObject);
+
                 // NHGH-2819 2023.03.15 1644 track report package file name (for debug purposes)
-                ediJob.Emd.PackageFiles.ReportMetadataFileName = GetReportMetadataFileNameFromBlobPath(usbdgReportMetadataBlob.Name);
-                if (ediJob.Emd.PackageFiles.ReportMetadataFileName != null)
-                {
-                    ediJob.Emd.PackageFiles.StagedFiles.Add(ediJob.Emd.PackageFiles.ReportMetadataFileName);
-                }
-                ediJob.Logger.Type = GetLoggerTypeFromEmsPackage(ediJob, dataLoggerType);
+                ediJob.Emd.PackageFiles.ReportMetadataFileName = GetReportMetadataFileNameFromBlobPath(varoReportMetadataBlob.Name);
+				ediJob.Emd.PackageFiles.StagedFiles = GetStagedFileNames(sourceLogs, varoReportMetadataBlob.Name);
+				ediJob.Logger.Type = GetLoggerTypeFromEmsPackage(ediJob, dataLoggerType);
                 ediJob.Emd.Metadata.Varo.MountTime = GetTimeFromEmsSyncFileName(listLoggerFiles);
 				ediJob.Emd.Metadata.Varo.CreationTime = GetVaroReportCreationTimeFromMetadataFileName(varoReportMetadataBlob.Name);
 				return ediJob;
@@ -531,7 +517,7 @@ namespace lib_edi.Services.Data.Transform
 
 		}
 
-		public static List<string> GetStagedFileNames(List<dynamic> sourceLogs)
+		public static List<string> GetStagedFileNames(List<dynamic> sourceLogs, string reportMetadataFilePath)
 		{
 			List<string> stagedFiles = new();
 			if (sourceLogs != null)
@@ -543,7 +529,14 @@ namespace lib_edi.Services.Data.Transform
 					stagedFiles.Add(GetFileNameFromPath(fileName.ToString()));
 				}
 			}
-            return stagedFiles;
+
+			string reportMetadataFileName = GetReportMetadataFileNameFromBlobPath(reportMetadataFilePath);
+			if (reportMetadataFileName != null)
+			{
+				stagedFiles.Add(reportMetadataFileName);
+			}
+
+			return stagedFiles;
 		}
 
 		public static string GetSyncFileName(List<dynamic> sourceLogs)

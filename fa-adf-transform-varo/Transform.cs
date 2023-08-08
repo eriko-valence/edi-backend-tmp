@@ -78,7 +78,7 @@ namespace fa_adf_transform_varo
                     List<dynamic> emsLogFiles = await AzureStorageBlobService.DownloadAndDeserializeJsonBlobs(varoCollectedEmsLogBlobs, inputContainer, inputBlobPath, log);
                     dynamic varoReportMetadataObject = await AzureStorageBlobService.DownloadAndDeserializeJsonBlob(varoReportMetadataBlob, inputContainer, inputBlobPath, log);
                     await DataTransformService.ValidateJsonObjects(emsConfgContainer, emsLogFiles, jsonSchemaBlobNameEmsCompliantLog, log);
-                    EdiJob ediJob = VaroDataProcessorService.PopulateEdiJobObject(varoReportMetadataObject, emsLogFiles, varoCollectedEmsLogBlobs, varoReportMetadataBlob, varoReportMetadataBlob, payload.FileName, inputBlobPath, emdTypeEnum, loggerTypeEnum);
+                    EdiJob ediJob = VaroDataProcessorService.PopulateEdiJobObject(varoReportMetadataObject, emsLogFiles, varoCollectedEmsLogBlobs, varoReportMetadataBlob, payload.FileName, inputBlobPath, emdTypeEnum, loggerTypeEnum);
                     verfiedLoggerType = ediJob.Logger.Type.ToString().ToLower();
 
                     if (ediJob.Logger.Type != DataLoggerTypeEnum.Name.UNKNOWN)

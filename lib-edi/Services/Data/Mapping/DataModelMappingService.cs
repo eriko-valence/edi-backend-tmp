@@ -727,7 +727,7 @@ namespace lib_edi.Services.Loggers
 			{
 				EdiSinkRecord sinkCsvLocationsRecord = new VaroLocationRecord();
 				ObjectManager.SetObjectValue(sinkCsvLocationsRecord, "EDI_SOURCE", sourceEdiJob.Emd.Metadata.Varo.EDI_SOURCE);
-				ObjectManager.SetObjectValue(sinkCsvLocationsRecord, "ASER", sourceEdiJob.Emd.ASER);
+				ObjectManager.SetObjectValue(sinkCsvLocationsRecord, "ASER", sourceEdiJob.Logger.ASER);
 				ObjectManager.SetObjectValue(sinkCsvLocationsRecord, "ReportTime", sourceEdiJob.Emd.Metadata.Varo.ReportTime);
 				ObjectManager.SetObjectValue(sinkCsvLocationsRecord, "Accuracy", sourceEdiJob.Emd.Metadata.Varo.Location.Accuracy);
 				ObjectManager.SetObjectValue(sinkCsvLocationsRecord, "Latitude", sourceEdiJob.Emd.Metadata.Varo.Location.Latitude);
