@@ -85,15 +85,18 @@ namespace fa_adf_transform_varo
                     {
                         log.LogInformation($"- {payload.FileName} - Transform package contents");
                         List<EmsEventRecord> emsEventCsvRows = DataModelMappingService.MapEmsLoggerEvents(emsLogFiles, ediJob);
-                        emsEventCsvRows = DataTransformService.ConvertRelativeTimeToTotalSecondsForEmsLogRecords(emsEventCsvRows);
+                        List<EdiSinkRecord> varoLocationsCsvRows = DataModelMappingService.MapVaroLocations(ediJob);
+
+						emsEventCsvRows = DataTransformService.ConvertRelativeTimeToTotalSecondsForEmsLogRecords(emsEventCsvRows);
                         List<EmsEventRecord> sortedEmsEventCsvRows = emsEventCsvRows.OrderBy(i => (i.EDI_RELT_ELAPSED_SECS)).ToList();
                         sortedEmsEventCsvRows = VaroDataProcessorService.CalculateAbsoluteTimeForVaroCollectedRecords(sortedEmsEventCsvRows, ediJob);                        
                         List<EdiSinkRecord> sortedEmsEventCsvRowsFinal = sortedEmsEventCsvRows.Cast<EdiSinkRecord>().ToList();
 
                         log.LogInformation($"- {payload.FileName} - Upload curated output to blob storage");
                         ediJob.CuratedFiles.Add(await DataTransformService.WriteRecordsToCsvBlob(ouputContainer, payload, sortedEmsEventCsvRowsFinal, verfiedLoggerType, log));
+						ediJob.CuratedFiles.Add(await DataTransformService.WriteRecordsToCsvBlob(ouputContainer, payload, varoLocationsCsvRows, verfiedLoggerType, log));
 
-                        log.LogInformation($"- {payload.FileName} - Send transformation response");
+						log.LogInformation($"- {payload.FileName} - Send transformation response");
                         string blobPathFolderCurated = DataTransformService.BuildCuratedBlobFolderPath(payload.Path, verfiedLoggerType);
                         string responseBody = DataTransformService.SerializeHttpResponseBody(blobPathFolderCurated);
                         DataTransformService.LogEmsTransformSucceededEventToAppInsights(payload.FileName, ediJob.Logger.Type, PipelineStageEnum.Name.ADF_TRANSFORM_VARO, log);

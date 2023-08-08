@@ -716,5 +716,30 @@ namespace lib_edi.Services.Loggers
             }
         }
 
-    }
+		public static List<EdiSinkRecord> MapVaroLocations(EdiJob sourceEdiJob)
+		{
+			string propName = null;
+			string propValue = null;
+			string sourceFile = null;
+            List<EdiSinkRecord> sinkCsvLocationsRecords = new();
+
+			try
+			{
+				EdiSinkRecord sinkCsvLocationsRecord = new VaroLocationRecord();
+				ObjectManager.SetObjectValue(sinkCsvLocationsRecord, "EDI_SOURCE", sourceEdiJob.Emd.Metadata.Varo.EDI_SOURCE);
+				ObjectManager.SetObjectValue(sinkCsvLocationsRecord, "ASER", sourceEdiJob.Emd.ASER);
+				ObjectManager.SetObjectValue(sinkCsvLocationsRecord, "ReportTime", sourceEdiJob.Emd.Metadata.Varo.ReportTime);
+				ObjectManager.SetObjectValue(sinkCsvLocationsRecord, "Accuracy", sourceEdiJob.Emd.Metadata.Varo.Location.Accuracy);
+				ObjectManager.SetObjectValue(sinkCsvLocationsRecord, "Latitude", sourceEdiJob.Emd.Metadata.Varo.Location.Latitude);
+				ObjectManager.SetObjectValue(sinkCsvLocationsRecord, "Longitude", sourceEdiJob.Emd.Metadata.Varo.Location.Longitude);
+                sinkCsvLocationsRecords.Add(sinkCsvLocationsRecord);
+				return sinkCsvLocationsRecords;
+			}
+			catch (Exception e)
+			{
+				throw new Exception(EdiErrorsService.BuildExceptionMessageString(e, "UQUM", EdiErrorsService.BuildErrorVariableArrayList(propName, propValue, sourceFile)));
+			}
+		}
+
+	}
 }

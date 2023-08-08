@@ -399,7 +399,12 @@ namespace lib_edi.Services.CceDevice
                                 //log.LogInformation($"  - Is record type supported? Yes");
                                 blobName = DataTransformService.BuildCuratedBlobPath(requestBody.Path, "usbdg_event.csv", loggerType);
                             }
-                            else
+							else if (recordType == "VaroLocationRecord")
+							{
+								//log.LogInformation($"  - Is record type supported? Yes");
+								blobName = DataTransformService.BuildCuratedBlobPath(requestBody.Path, "varo_location.csv", loggerType);
+							}
+							else
                             {
                                 //log.LogInformation($"  - Is record type supported? No");
                                 return blobName;
@@ -451,6 +456,12 @@ namespace lib_edi.Services.CceDevice
                                 //log.LogInformation($"  - Write list of usbdg event records to the CSV file");
                                 csvWriter.WriteRecords(records);
                             }
+                            else if (recordType == "VaroLocationRecord")
+                            {
+								List<VaroLocationRecord> records = JsonConvert.DeserializeObject<List<VaroLocationRecord>>(serializedParent);
+								//log.LogInformation($"  - Write list of usbdg event records to the CSV file");
+								csvWriter.WriteRecords(records);
+							}
                             else
                             {
                                 //log.LogInformation($"  - Unsupported record type. Will not write list of records to CSV file.");

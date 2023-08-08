@@ -290,18 +290,20 @@ namespace lib_edi.Services.Data.Transform
             try
             {
                 ediJob.Emd.Type = emdTypeEnum;
-
-                foreach (var sl in sourceLogs)
+                bool aserFound = false;
+                foreach (var sourceLog in sourceLogs)
                 {
-					//if (EmsService.IsThisEmsCurrentDataFile(sl.Value))
-					//{
-						JObject sourceLogJObject = (JObject)sl;
-						var aser = sourceLogJObject.SelectToken("ASER");
-                        Console.WriteLine("debug");
-					//}
+                    if (!aserFound)
+                    {
+						JObject sourceLogJObject = (JObject)sourceLog;
+						JToken AserToken = sourceLogJObject.SelectToken("ASER");
+						if (AserToken != null)
+						{
+							ediJob.Emd.ASER = AserToken.ToString();
+							aserFound = true;
+						}
+					}
 				}
-
-
 
 				if (sourceLogs != null)
                 {
@@ -355,6 +357,14 @@ namespace lib_edi.Services.Data.Transform
                 {
 					ediJob.Emd.Metadata.Varo.Location = locationObject.ToObject<EdiJobVaroMetadataLocation>();
 				}
+
+				JToken timestampObject = varoReportFileJObject.SelectToken("$.timestamp");
+                if (timestampObject != null)
+                {
+					ediJob.Emd.Metadata.Varo.ReportTime = DateConverter.FromUnixTimeMilliseconds(timestampObject.ToObject<long>());
+				}
+
+				// ediJob.Emd.Metadata.Varo.ReportTime = DateConverter.FromUnixTimeMilliseconds(123421432);
 
 				var varoReportFileHeaderObject = new ExpandoObject() as IDictionary<string, Object>;
 				foreach (KeyValuePair<string, JToken> log2 in varoReportFileJObject)

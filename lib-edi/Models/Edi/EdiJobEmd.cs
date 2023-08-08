@@ -18,5 +18,6 @@ namespace lib_edi.Models.Edi
 
         public EdiJobEmdMetadata Metadata { get; set; }
         public EmdEnum.Name Type { get; set; }
+        public string ASER { get; set; }
     }
 }
