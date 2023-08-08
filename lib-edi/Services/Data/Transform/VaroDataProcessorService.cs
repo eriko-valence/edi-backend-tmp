@@ -284,55 +284,23 @@ namespace lib_edi.Services.Data.Transform
             string sourceFile = null;
             EdiJob ediJob = new();
             // NHGH-2819 2023.03.16 1020 track report package file name (for debug purposes)
-            ediJob.ReportPackageFileName = packageName;
-            ediJob.StagedBlobPath = stagePath;
+            ediJob.Emd.PackageFiles.ReportPackageFileName = packageName;
+            ediJob.Emd.PackageFiles.StagedBlobPath = stagePath;
 
             try
             {
                 ediJob.Emd.Type = emdTypeEnum;
-                bool aserFound = false;
-                foreach (var sourceLog in sourceLogs)
-                {
-                    if (!aserFound)
-                    {
-						JObject sourceLogJObject = (JObject)sourceLog;
-						JToken AserToken = sourceLogJObject.SelectToken("ASER");
-						if (AserToken != null)
-						{
-							ediJob.Emd.ASER = AserToken.ToString();
-							aserFound = true;
-						}
-					}
-				}
 
-				if (sourceLogs != null)
-                {
-                    foreach (dynamic sourceLog in sourceLogs)
-                    {
-                        JObject sourceLogJObject = (JObject)sourceLog;
+                /*
+                 -- NHGH-3024 2023.08.08 1323 Comment this section out (ASER is retrieved further down)
+                 ediJob.Logger.ASER = IndigoDataTransformService.GetAserFromLogFile(sourceLogs);
+                */
 
-                        // NHGH-2819 2023.03.16 1020 track sync file name (for debug purposes)
-                        var fileName = sourceLogJObject.SelectToken("EDI_SOURCE");
-                        ediJob.StagedFiles.Add(GetFileNameFromPath(fileName.ToString()));
-                        if (EmsService.IsThisEmsSyncDataFile(fileName.ToString()))
-                        {
-                            ediJob.SyncFileName = GetSyncFileNameFromBlobPath(fileName.ToString());
-                        }
+                ediJob.Emd.PackageFiles.StagedFiles = GetStagedFileNames(sourceLogs);
+				ediJob.Emd.PackageFiles.SyncFileName = GetSyncFileName(sourceLogs);
+                ediJob.Logger = IndigoDataTransformService.GetLogFileData(sourceLogs);
 
-                        // Grab the log header properties from the source log file
-                        var logHeaderObject = new ExpandoObject() as IDictionary<string, Object>;
-                        foreach (KeyValuePair<string, JToken> log1 in sourceLogJObject)
-                        {
-                            if (log1.Value.Type != JTokenType.Array)
-                            {
-                                logHeaderObject.Add(log1.Key, log1.Value);
-                                ObjectManager.SetObjectValue(ediJob.Logger, log1.Key, log1.Value);
-                            }
-                        }
-                    }
-                }
-
-				/*
+                /*
                  * NHGH-922 Pull gps coordinates from "Used" location object if report format version is 2 or higher.
                  *	 * If location[”gpsCorrectionUsed”] does not exist, assume the report is a “version 1” report and 
                  *	 just process GPS in the same way it is currently processed	  
@@ -340,32 +308,12 @@ namespace lib_edi.Services.Data.Transform
                  *	   - If used is not present, just use the GPS values in the files “as is”.
                  *	   - If used is present, always use the used values for GPS records.
                  */
-				JObject varoReportFileJObject = (JObject)varoReportFileObject;
-				JToken gpsCorrectedionUsedObject = varoReportFileJObject.SelectToken("$.location.gpsCorrectionUsed");
-				JToken locationObject = varoReportFileJObject.SelectToken("$.location");
-				if (gpsCorrectedionUsedObject != null)
-                {
-					JToken locationUsedObject = varoReportFileJObject.SelectToken("$.location.used");
-					if (locationUsedObject != null)
-                    {
-						ediJob.Emd.Metadata.Varo.Location = locationUsedObject.ToObject<EdiJobVaroMetadataLocation>();
-					} else if (locationObject != null)
-                    {
-						ediJob.Emd.Metadata.Varo.Location = locationObject.ToObject<EdiJobVaroMetadataLocation>();
-					}
-                } else
-                {
-					ediJob.Emd.Metadata.Varo.Location = locationObject.ToObject<EdiJobVaroMetadataLocation>();
-				}
 
-				JToken timestampObject = varoReportFileJObject.SelectToken("$.timestamp");
-                if (timestampObject != null)
-                {
-					ediJob.Emd.Metadata.Varo.ReportTime = DateConverter.FromUnixTimeMilliseconds(timestampObject.ToObject<long>());
-				}
+                ediJob.Emd.Metadata.Varo.Location = GetVaroMetadataLocation(varoReportFileObject);
+                ediJob.Emd.Metadata.Varo.ReportTime = GetVaroMetadataReportTime(varoReportFileObject);
 
-				// ediJob.Emd.Metadata.Varo.ReportTime = DateConverter.FromUnixTimeMilliseconds(123421432);
-
+                /*
+                -- NHGH-3024 2023.08.08 1309 Comment this section out for the time being (not currently required)
 				var varoReportFileHeaderObject = new ExpandoObject() as IDictionary<string, Object>;
 				foreach (KeyValuePair<string, JToken> log2 in varoReportFileJObject)
                 {
@@ -375,12 +323,13 @@ namespace lib_edi.Services.Data.Transform
                         ObjectManager.SetObjectValue(ediJob.Emd.Metadata.Varo, log2.Key, log2.Value);
                     }
                 }
+                */
 
                 // NHGH-2819 2023.03.15 1644 track report package file name (for debug purposes)
-                ediJob.ReportMetadataFileName = GetReportMetadataFileNameFromBlobPath(usbdgReportMetadataBlob.Name);
-                if (ediJob.ReportMetadataFileName != null)
+                ediJob.Emd.PackageFiles.ReportMetadataFileName = GetReportMetadataFileNameFromBlobPath(usbdgReportMetadataBlob.Name);
+                if (ediJob.Emd.PackageFiles.ReportMetadataFileName != null)
                 {
-                    ediJob.StagedFiles.Add(ediJob.ReportMetadataFileName);
+                    ediJob.Emd.PackageFiles.StagedFiles.Add(ediJob.Emd.PackageFiles.ReportMetadataFileName);
                 }
                 ediJob.Logger.Type = GetLoggerTypeFromEmsPackage(ediJob, dataLoggerType);
                 ediJob.Emd.Metadata.Varo.MountTime = GetTimeFromEmsSyncFileName(listLoggerFiles);
@@ -525,5 +474,95 @@ namespace lib_edi.Services.Data.Transform
             }
             return reportFileName;
         }
-    }
+
+		/// <summary>
+		/// Pulls GPS location coordinates from the Varo report metadata
+		/// </summary>
+		/// <param name="varoReportMetadata">Varo report metadata object</param>
+		/// <returns>
+		/// Absolute timestamp (DateTime) of a Indigo V2 record; Exception (4Q5D) otherwise
+		/// </returns>
+		public static EdiJobVaroMetadataLocation GetVaroMetadataLocation(JObject varoReportMetadata)
+        {
+			EdiJobVaroMetadataLocation varoLocation = new();
+			/*
+             * NHGH-922 Pull gps coordinates from "Used" location object if report format version is 2 or higher.
+             *	 * If location[”gpsCorrectionUsed”] does not exist, assume the report is a “version 1” report and 
+             *	 just process GPS in the same way it is currently processed	  
+             *	 * If location[“gpsCorrectionUsed”] exists (regardless of whether it is true or false):
+             *	   - If used is not present, just use the GPS values in the files “as is”.
+             *	   - If used is present, always use the used values for GPS records.
+             */
+            if (varoReportMetadata != null)
+            {
+				JObject varoReportFileJObject = (JObject)varoReportMetadata;
+				JToken gpsCorrectedionUsedObject = varoReportFileJObject.SelectToken("$.location.gpsCorrectionUsed");
+				JToken locationObject = varoReportFileJObject.SelectToken("$.location");
+				if (gpsCorrectedionUsedObject != null)
+				{
+					JToken locationUsedObject = varoReportFileJObject.SelectToken("$.location.used");
+					if (locationUsedObject != null)
+					{
+						varoLocation = locationUsedObject.ToObject<EdiJobVaroMetadataLocation>();
+					}
+					else if (locationObject != null)
+					{
+						varoLocation = locationObject.ToObject<EdiJobVaroMetadataLocation>();
+					}
+				}
+				else if (locationObject != null)
+				{
+					varoLocation = locationObject.ToObject<EdiJobVaroMetadataLocation>();
+				}
+			}
+			return varoLocation;
+		}
+
+        public static DateTime? GetVaroMetadataReportTime(JObject varoReportMetadata)
+        {
+            DateTime? reportTime = null;
+			JToken timestampObject = varoReportMetadata.SelectToken("$.timestamp");
+			if (timestampObject != null)
+			{
+				reportTime = DateConverter.FromUnixTimeMilliseconds(timestampObject.ToObject<long>());
+			}
+
+            return reportTime;
+
+		}
+
+		public static List<string> GetStagedFileNames(List<dynamic> sourceLogs)
+		{
+			List<string> stagedFiles = new();
+			if (sourceLogs != null)
+			{
+				foreach (dynamic sourceLog in sourceLogs)
+				{
+					JObject sourceLogJObject = (JObject)sourceLog;
+					var fileName = sourceLogJObject.SelectToken("EDI_SOURCE");
+					stagedFiles.Add(GetFileNameFromPath(fileName.ToString()));
+				}
+			}
+            return stagedFiles;
+		}
+
+		public static string GetSyncFileName(List<dynamic> sourceLogs)
+		{
+            string syncFileName = null;
+			if (sourceLogs != null)
+			{
+				foreach (dynamic sourceLog in sourceLogs)
+				{
+					JObject sourceLogJObject = (JObject)sourceLog;
+					// NHGH-2819 2023.03.16 1020 track sync file name (for debug purposes)
+					var fileName = sourceLogJObject.SelectToken("EDI_SOURCE");
+					if (EmsService.IsThisEmsSyncDataFile(fileName.ToString()))
+					{
+						syncFileName = GetSyncFileNameFromBlobPath(fileName.ToString());
+					}
+				}
+			}
+			return syncFileName;
+		}
+	}
 }

@@ -27,6 +27,7 @@ using lib_edi.Models.Enums.Emd;
 using lib_edi.Services.Azure;
 using lib_edi.Services.Loggers;
 using lib_edi.Services.Ems;
+using lib_edi.Models.Edi;
 
 namespace lib_edi.Services.CceDevice
 {
@@ -144,6 +145,51 @@ namespace lib_edi.Services.CceDevice
                 throw;
             }
         }
+
+        public static string GetAserFromLogFile(List<dynamic> sourceLogs)
+        {
+			bool aserFound = false;
+            string aser = null;
+			foreach (var sourceLog in sourceLogs)
+			{
+				if (!aserFound)
+				{
+					JObject sourceLogJObject = (JObject)sourceLog;
+					JToken AserToken = sourceLogJObject.SelectToken("ASER");
+					if (AserToken != null)
+					{
+						aser = AserToken.ToString();
+						aserFound = true;
+					}
+				}
+			}
+
+            return aser;
+		}
+
+        public static EdiJobLogger GetLogFileData(List<dynamic> sourceLogs)
+        {
+			EdiJobLogger loggerData = new();
+			if (sourceLogs != null)
+			{
+				foreach (dynamic sourceLog in sourceLogs)
+				{
+					JObject sourceLogJObject = (JObject)sourceLog;
+					// Grab the log header properties from the source log file
+					var logHeaderObject = new ExpandoObject() as IDictionary<string, Object>;
+					foreach (KeyValuePair<string, JToken> log1 in sourceLogJObject)
+					{
+						if (log1.Value.Type != JTokenType.Array)
+						{
+							logHeaderObject.Add(log1.Key, log1.Value);
+							ObjectManager.SetObjectValue(loggerData, log1.Key, log1.Value);
+						}
+					}
+				}
+			}
+
+            return loggerData;
+		}
 
     }
 }

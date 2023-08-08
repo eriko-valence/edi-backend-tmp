@@ -15,6 +15,7 @@ namespace lib_edi.Models.Edi
         }
         public string LSER { get; set; }
         public string LMOD { get; set; }
+        public string ASER { get; set; }
         public DataLoggerTypeEnum.Name Type { get; set; }
     }
 }

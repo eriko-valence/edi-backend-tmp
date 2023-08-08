@@ -168,8 +168,8 @@ namespace lib_edi.Services.Loggers
             {
                 ediJob.Emd.Type = emdTypeEnum;
                 // NHGH-2819 2023.03.15 1643 track report package file name (for debug purposes)
-                ediJob.ReportPackageFileName = packageName;
-                ediJob.StagedBlobPath = stagePath;
+                ediJob.Emd.PackageFiles.ReportPackageFileName = packageName;
+                ediJob.Emd.PackageFiles.StagedBlobPath = stagePath;
 
                 if (sourceLogs != null)
                 {
@@ -179,10 +179,10 @@ namespace lib_edi.Services.Loggers
 
                         // NHGH-2819 2023.03.15 1638 track sync file name (for debug purposes)
                         var fileName = sourceLogJObject.SelectToken("EDI_SOURCE");
-                        ediJob.StagedFiles.Add(GetFileNameFromPath(fileName.ToString()));
+                        ediJob.Emd.PackageFiles.StagedFiles.Add(GetFileNameFromPath(fileName.ToString()));
                         if (EmsService.IsThisEmsSyncDataFile(fileName.ToString()))
                         {
-                            ediJob.SyncFileName = GetSyncFileNameFromBlobPath(fileName.ToString());
+                            ediJob.Emd.PackageFiles.SyncFileName = GetSyncFileNameFromBlobPath(fileName.ToString());
                         }
 
                         // Grab the log header properties from the source log file
@@ -227,9 +227,9 @@ namespace lib_edi.Services.Loggers
                 ediJob.Logger.Type = GetLoggerTypeFromEmsPackage(ediJob, dataLoggerType);
 
                 // NHGH-2819 2023.03.15 1644 track report package file name (for debug purposes)
-                ediJob.ReportMetadataFileName = GetReportMetadataFileNameFromBlobPath(usbdgReportMetadataBlob.Name);
-                if (ediJob.ReportMetadataFileName != null) {
-                    ediJob.StagedFiles.Add(ediJob.ReportMetadataFileName);
+                ediJob.Emd.PackageFiles.ReportMetadataFileName = GetReportMetadataFileNameFromBlobPath(usbdgReportMetadataBlob.Name);
+                if (ediJob.Emd.PackageFiles.ReportMetadataFileName != null) {
+                    ediJob.Emd.PackageFiles.StagedFiles.Add(ediJob.Emd.PackageFiles.ReportMetadataFileName);
                 }
                 // NHGH-2819 2023.03.15 1335 Only grab the mount time if there are logger data files
                 if (listLoggerFiles != null)
