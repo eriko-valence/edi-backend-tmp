@@ -1,29 +1,29 @@
 {
-    "name": "pl_load_switch",
+    "name": "pl_load_indigo_v2_switch",
     "properties": {
         "activities": [
             {
-                "name": "SQL Load Switch",
+                "name": "SQL Indigo Load Switch",
                 "type": "Switch",
                 "dependsOn": [],
                 "userProperties": [],
                 "typeProperties": {
                     "on": {
-                        "value": "@pipeline().parameters.PL_C_PARAM_TRANSFORM_DEVICE_TYPE",
+                        "value": "@pipeline().parameters.PL_P_PARAM_EMD_TYPE",
                         "type": "Expression"
                     },
                     "cases": [
                         {
-                            "value": "indigo_v2",
+                            "value": "varo",
                             "activities": [
                                 {
-                                    "name": "Load Indigo SQL Data",
+                                    "name": "Load Indigo Varo",
                                     "type": "ExecutePipeline",
                                     "dependsOn": [],
                                     "userProperties": [],
                                     "typeProperties": {
                                         "pipeline": {
-                                            "referenceName": "pl_load_indigo_v2_switch",
+                                            "referenceName": "pl_load_indigo_v2_report_varo",
                                             "type": "PipelineReference"
                                         },
                                         "waitOnCompletion": true,
@@ -53,7 +53,7 @@
                                                 "type": "Expression"
                                             },
                                             "PL_P_PARAM_EMD_TYPE": {
-                                                "value": "@pipeline().parameters.PL_P_DEVICE_TYPE",
+                                                "value": "@pipeline().parameters.PL_P_PARAM_EMD_TYPE",
                                                 "type": "Expression"
                                             }
                                         }
@@ -62,16 +62,16 @@
                             ]
                         },
                         {
-                            "value": "no_logger",
+                            "value": "ems",
                             "activities": [
                                 {
-                                    "name": "Load No Logger SQL Data",
+                                    "name": "Load Indigo Usbdg",
                                     "type": "ExecutePipeline",
                                     "dependsOn": [],
                                     "userProperties": [],
                                     "typeProperties": {
                                         "pipeline": {
-                                            "referenceName": "pl_load_no_logger_report",
+                                            "referenceName": "pl_load_indigo_v2_report_usbdg",
                                             "type": "PipelineReference"
                                         },
                                         "waitOnCompletion": true,
@@ -101,55 +101,7 @@
                                                 "type": "Expression"
                                             },
                                             "PL_P_PARAM_EMD_TYPE": {
-                                                "value": "@pipeline().parameters.PL_C_PARAM_TRANSFORM_DEVICE_TYPE",
-                                                "type": "Expression"
-                                            }
-                                        }
-                                    }
-                                }
-                            ]
-                        },
-                        {
-                            "value": "sl1",
-                            "activities": [
-                                {
-                                    "name": "Load Stationary Logger SQL Data",
-                                    "type": "ExecutePipeline",
-                                    "dependsOn": [],
-                                    "userProperties": [],
-                                    "typeProperties": {
-                                        "pipeline": {
-                                            "referenceName": "pl_load_sl1_report",
-                                            "type": "PipelineReference"
-                                        },
-                                        "waitOnCompletion": true,
-                                        "parameters": {
-                                            "PL_P_PARAM_TRIGGER_TIME": {
-                                                "value": "@pipeline().parameters.PL_P_PARAM_TRIGGER_TIME",
-                                                "type": "Expression"
-                                            },
-                                            "PL_P_PARAM_FOLDER_NAME": {
-                                                "value": "@pipeline().parameters.PL_P_PARAM_FOLDER_NAME",
-                                                "type": "Expression"
-                                            },
-                                            "PL_P_PARAM_FILE_NAME": {
-                                                "value": "@pipeline().parameters.PL_P_PARAM_FILE_NAME",
-                                                "type": "Expression"
-                                            },
-                                            "PL_P_PARAM_LOG_DIR_GUID": {
-                                                "value": "@pipeline().parameters.PL_P_PARAM_LOG_DIR_GUID",
-                                                "type": "Expression"
-                                            },
-                                            "PL_C_PARAM_TRANSFORM_CURATED_PATH": {
-                                                "value": "@pipeline().parameters.PL_C_PARAM_TRANSFORM_CURATED_PATH",
-                                                "type": "Expression"
-                                            },
-                                            "PL_C_PARAM_TRANSFORM_DEVICE_TYPE": {
-                                                "value": "@pipeline().parameters.PL_C_PARAM_TRANSFORM_DEVICE_TYPE",
-                                                "type": "Expression"
-                                            },
-                                            "PL_P_PARAM_EMD_TYPE": {
-                                                "value": "@pipeline().parameters.PL_C_PARAM_TRANSFORM_DEVICE_TYPE",
+                                                "value": "@pipeline().parameters.PL_P_PARAM_EMD_TYPE",
                                                 "type": "Expression"
                                             }
                                         }
@@ -160,12 +112,12 @@
                     ],
                     "defaultActivities": [
                         {
-                            "name": "Unknown Load",
+                            "name": "Unknown Indigo Load",
                             "type": "Fail",
                             "dependsOn": [],
                             "userProperties": [],
                             "typeProperties": {
-                                "message": "Curated output type (PL_C_PARAM_TRANSFORM_DEVICE_TYPE) is not supported",
+                                "message": "Uknown EMD Type",
                                 "errorCode": "500"
                             }
                         }
@@ -206,7 +158,7 @@
             "name": "Load"
         },
         "annotations": [],
-        "lastPublishTime": "2023-08-09T17:41:47Z"
+        "lastPublishTime": "2023-08-09T17:37:36Z"
     },
     "type": "Microsoft.DataFactory/factories/pipelines"
 }

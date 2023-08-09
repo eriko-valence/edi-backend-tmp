@@ -76,6 +76,10 @@
                         ]
                     }
                 ],
+                "policy": {
+                    "secureOutput": false,
+                    "secureInput": false
+                },
                 "userProperties": [],
                 "typeProperties": {
                     "variableName": "PL_C_VAR_TRANSFORM_DEVICE_TYPE",
@@ -135,6 +139,10 @@
                         "PL_C_PARAM_TRANSFORM_DEVICE_TYPE": {
                             "value": "@variables('PL_C_VAR_TRANSFORM_DEVICE_TYPE')",
                             "type": "Expression"
+                        },
+                        "PL_P_PARAM_EMD_TYPE": {
+                            "value": "@pipeline().parameters.PL_P_DEVICE_TYPE",
+                            "type": "Expression"
                         }
                     }
                 }
@@ -158,6 +166,9 @@
             },
             "PL_P_DEVICE_TYPE": {
                 "type": "string"
+            },
+            "PL_P_PARAM_EMD_TYPE": {
+                "type": "string"
             }
         },
         "variables": {
@@ -169,7 +180,7 @@
             "name": "Transform"
         },
         "annotations": [],
-        "lastPublishTime": "2023-03-10T22:49:01Z"
+        "lastPublishTime": "2023-08-09T02:26:44Z"
     },
     "type": "Microsoft.DataFactory/factories/pipelines"
 }
