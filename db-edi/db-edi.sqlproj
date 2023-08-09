@@ -76,6 +76,10 @@
     <Folder Include="dbo\Tables\" />
     <Folder Include="dbo\Functions\" />
     <Folder Include="dbo\Stored Procedures\" />
+    <Folder Include="varo\" />
+    <Folder Include="varo\Tables\" />
+    <Folder Include="varo\Stored Procedures\" />
+    <Folder Include="varo\User Defined Types\" />
   </ItemGroup>
   <ItemGroup>
     <Build Include="usbdg\Tables\event.sql" />
@@ -140,5 +144,9 @@
     <Build Include="indigo_v2\Stored Procedures\getAvgHourlyAmbientTemperatureOverTime_v2.sql" />
     <Build Include="telemetry\Tables\EdiMaintEvent.sql" />
     <Build Include="telemetry\Stored Procedures\uspCreateEdiMaintEvent.sql" />
+    <Build Include="varo\Tables\location.sql" />
+    <Build Include="varo\Stored Procedures\uspLoadVaroLocations.sql" />
+    <Build Include="varo\User Defined Types\location_type.sql" />
+    <Build Include="Security\varo.sql" />
   </ItemGroup>
 </Project>

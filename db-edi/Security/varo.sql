@@ -1,0 +1,3 @@
+﻿CREATE SCHEMA [varo]
+    AUTHORIZATION [dbo];
+
