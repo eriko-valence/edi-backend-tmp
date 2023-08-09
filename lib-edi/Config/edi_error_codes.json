@@ -114,6 +114,12 @@
 			"error-source": "EMS Data Mapping Service",
 			"error-mitigation": null
 		},
+		"UQUM": {
+			"error-code": "UQUM",
+			"error-message": "Unable to map Varo location record with property '{0}' and value '{1}' in source file '{2}'",
+			"error-source": "EMS Data Mapping Service",
+			"error-mitigation": null
+		},
 		"B98R": {
 			"error-code": "B98R",
 			"error-message": "No CFD50 log records found",

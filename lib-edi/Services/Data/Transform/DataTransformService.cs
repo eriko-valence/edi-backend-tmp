@@ -399,7 +399,12 @@ namespace lib_edi.Services.CceDevice
                                 //log.LogInformation($"  - Is record type supported? Yes");
                                 blobName = DataTransformService.BuildCuratedBlobPath(requestBody.Path, "usbdg_event.csv", loggerType);
                             }
-                            else
+							else if (recordType == "VaroLocationRecord")
+							{
+								//log.LogInformation($"  - Is record type supported? Yes");
+								blobName = DataTransformService.BuildCuratedBlobPath(requestBody.Path, "varo_location.csv", loggerType);
+							}
+							else
                             {
                                 //log.LogInformation($"  - Is record type supported? No");
                                 return blobName;
@@ -451,6 +456,12 @@ namespace lib_edi.Services.CceDevice
                                 //log.LogInformation($"  - Write list of usbdg event records to the CSV file");
                                 csvWriter.WriteRecords(records);
                             }
+                            else if (recordType == "VaroLocationRecord")
+                            {
+								List<VaroLocationRecord> records = JsonConvert.DeserializeObject<List<VaroLocationRecord>>(serializedParent);
+								//log.LogInformation($"  - Write list of usbdg event records to the CSV file");
+								csvWriter.WriteRecords(records);
+							}
                             else
                             {
                                 //log.LogInformation($"  - Unsupported record type. Will not write list of records to CSV file.");
@@ -763,15 +774,15 @@ namespace lib_edi.Services.CceDevice
             log.LogInformation($" #  - EDI package information ");
             log.LogInformation($" #    - EMD type ..............................: {ediJob.Emd.Type}");
             log.LogInformation($" #    - Logger type ...........................: {ediJob.Logger.Type}");
-            log.LogInformation($" #    - Staged path ...........................: {ediJob.StagedBlobPath}");
-            log.LogInformation($" #    - Report package file name ..............: {ediJob.ReportPackageFileName ?? "NOT_FOUND"}");
-            log.LogInformation($" #    - Report metadata file name .............: {ediJob.ReportMetadataFileName ?? "NOT_FOUND"}");
+            log.LogInformation($" #    - Staged path ...........................: {ediJob.Emd.PackageFiles.StagedBlobPath}");
+            log.LogInformation($" #    - Report package file name ..............: {ediJob.Emd.PackageFiles.ReportPackageFileName ?? "NOT_FOUND"}");
+            log.LogInformation($" #    - Report metadata file name .............: {ediJob.Emd.PackageFiles.ReportMetadataFileName ?? "NOT_FOUND"}");
             if (ediJob.Logger.Type == DataLoggerTypeEnum.Name.NO_LOGGER)
             {
                 log.LogInformation($" #    - Sync file name ........................: N/A");
             } else
             {
-                log.LogInformation($" #    - Sync file name ........................: {ediJob.SyncFileName ?? "NOT_FOUND"}");
+                log.LogInformation($" #    - Sync file name ........................: {ediJob.Emd.PackageFiles.SyncFileName ?? "NOT_FOUND"}");
             }
             if (ediJob.Emd.Type == EmdEnum.Name.USBDG)
             {
@@ -857,12 +868,12 @@ namespace lib_edi.Services.CceDevice
                 }
             }
 
-            if (ediJob.StagedFiles != null)
+            if (ediJob.Emd.PackageFiles.StagedFiles != null)
             {
-                if (ediJob.StagedFiles.Count > 0)
+                if (ediJob.Emd.PackageFiles.StagedFiles.Count > 0)
                 {
                     log.LogInformation($" #  - EDI staged files ");
-                    foreach (string stagedFile in ediJob.StagedFiles)
+                    foreach (string stagedFile in ediJob.Emd.PackageFiles.StagedFiles)
                     {
                         log.LogInformation($" #    - {stagedFile}");
                     }
@@ -870,12 +881,12 @@ namespace lib_edi.Services.CceDevice
                 }
             }
 
-            if (ediJob.CuratedFiles != null)
+            if (ediJob.Emd.PackageFiles.CuratedFiles != null)
             {
-                if (ediJob.CuratedFiles.Count > 0)
+                if (ediJob.Emd.PackageFiles.CuratedFiles.Count > 0)
                 {
                     log.LogInformation($" #  - EDI curated files ");
-                    foreach (string curatedFiles in ediJob.CuratedFiles)
+                    foreach (string curatedFiles in ediJob.Emd.PackageFiles.CuratedFiles)
                     {
                         log.LogInformation($" #    - {curatedFiles}");
                     }

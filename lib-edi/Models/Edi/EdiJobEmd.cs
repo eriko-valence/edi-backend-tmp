@@ -14,9 +14,11 @@ namespace lib_edi.Models.Edi
         {
             Metadata = new EdiJobEmdMetadata();
             Type = EmdEnum.Name.UNKNOWN;
-        }
+			PackageFiles = new EdiJobEmdPackageFiles();
+		}
 
         public EdiJobEmdMetadata Metadata { get; set; }
         public EmdEnum.Name Type { get; set; }
-    }
+        public EdiJobEmdPackageFiles PackageFiles { get; set; }
+	}
 }

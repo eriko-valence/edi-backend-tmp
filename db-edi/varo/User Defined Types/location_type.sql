@@ -1,0 +1,7 @@
+﻿CREATE TYPE [varo].[location_type] AS TABLE (
+    [ASER]       VARCHAR (20)   NOT NULL,
+    [REPORTTIME] DATETIME2 (0)  NOT NULL,
+    [ACCURACY]   DECIMAL (8, 5) NULL,
+    [LATITUDE]   DECIMAL (8, 5) NULL,
+    [LONGITUDE]  DECIMAL (8, 5) NULL);
+

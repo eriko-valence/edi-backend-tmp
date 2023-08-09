@@ -78,22 +78,25 @@ namespace fa_adf_transform_varo
                     List<dynamic> emsLogFiles = await AzureStorageBlobService.DownloadAndDeserializeJsonBlobs(varoCollectedEmsLogBlobs, inputContainer, inputBlobPath, log);
                     dynamic varoReportMetadataObject = await AzureStorageBlobService.DownloadAndDeserializeJsonBlob(varoReportMetadataBlob, inputContainer, inputBlobPath, log);
                     await DataTransformService.ValidateJsonObjects(emsConfgContainer, emsLogFiles, jsonSchemaBlobNameEmsCompliantLog, log);
-                    EdiJob ediJob = VaroDataProcessorService.PopulateEdiJobObject(varoReportMetadataObject, emsLogFiles, varoCollectedEmsLogBlobs, varoReportMetadataBlob, varoReportMetadataBlob, payload.FileName, inputBlobPath, emdTypeEnum, loggerTypeEnum);
+                    EdiJob ediJob = VaroDataProcessorService.PopulateEdiJobObject(varoReportMetadataObject, emsLogFiles, varoCollectedEmsLogBlobs, varoReportMetadataBlob, payload.FileName, inputBlobPath, emdTypeEnum, loggerTypeEnum);
                     verfiedLoggerType = ediJob.Logger.Type.ToString().ToLower();
 
                     if (ediJob.Logger.Type != DataLoggerTypeEnum.Name.UNKNOWN)
                     {
                         log.LogInformation($"- {payload.FileName} - Transform package contents");
                         List<EmsEventRecord> emsEventCsvRows = DataModelMappingService.MapEmsLoggerEvents(emsLogFiles, ediJob);
-                        emsEventCsvRows = DataTransformService.ConvertRelativeTimeToTotalSecondsForEmsLogRecords(emsEventCsvRows);
+                        List<EdiSinkRecord> varoLocationsCsvRows = DataModelMappingService.MapVaroLocations(ediJob);
+
+						emsEventCsvRows = DataTransformService.ConvertRelativeTimeToTotalSecondsForEmsLogRecords(emsEventCsvRows);
                         List<EmsEventRecord> sortedEmsEventCsvRows = emsEventCsvRows.OrderBy(i => (i.EDI_RELT_ELAPSED_SECS)).ToList();
                         sortedEmsEventCsvRows = VaroDataProcessorService.CalculateAbsoluteTimeForVaroCollectedRecords(sortedEmsEventCsvRows, ediJob);                        
                         List<EdiSinkRecord> sortedEmsEventCsvRowsFinal = sortedEmsEventCsvRows.Cast<EdiSinkRecord>().ToList();
 
                         log.LogInformation($"- {payload.FileName} - Upload curated output to blob storage");
-                        ediJob.CuratedFiles.Add(await DataTransformService.WriteRecordsToCsvBlob(ouputContainer, payload, sortedEmsEventCsvRowsFinal, verfiedLoggerType, log));
+                        ediJob.Emd.PackageFiles.CuratedFiles.Add(await DataTransformService.WriteRecordsToCsvBlob(ouputContainer, payload, sortedEmsEventCsvRowsFinal, verfiedLoggerType, log));
+						ediJob.Emd.PackageFiles.CuratedFiles.Add(await DataTransformService.WriteRecordsToCsvBlob(ouputContainer, payload, varoLocationsCsvRows, verfiedLoggerType, log));
 
-                        log.LogInformation($"- {payload.FileName} - Send transformation response");
+						log.LogInformation($"- {payload.FileName} - Send transformation response");
                         string blobPathFolderCurated = DataTransformService.BuildCuratedBlobFolderPath(payload.Path, verfiedLoggerType);
                         string responseBody = DataTransformService.SerializeHttpResponseBody(blobPathFolderCurated);
                         DataTransformService.LogEmsTransformSucceededEventToAppInsights(payload.FileName, ediJob.Logger.Type, PipelineStageEnum.Name.ADF_TRANSFORM_VARO, log);
