@@ -198,7 +198,14 @@ namespace lib_edi.Services.Ems
                 foreach (CloudBlockBlob logBlob in logDirectoryBlobs)
                 {
                     string fileExtension = Path.GetExtension(logBlob.Name);
-                    if (IsFileFromEmsLogger(logBlob.Name))
+					/*
+                     * NHGH-3059 2023.08.11 0858 CURRENT_DATA file normally exists, but in rare scenarios it can be
+                     * missing. For example, DATA files are archived every 60 days. If your logger is in standby mode, 
+                     * it will not have a CURRENT_DATA record in memory for 24 hours. As a result, the CURRENT_DATA 
+                     * file can be missing from a report package. This  is a rare, but valid scenario. Therefore a USBDG
+                     * collected report package can have only a metadata file and a SYNC file. 
+                     */
+					if (IsFileFromEmsLogger(logBlob.Name))
                     {
                         emsCompliantLogFilesFound = true;
                     }
