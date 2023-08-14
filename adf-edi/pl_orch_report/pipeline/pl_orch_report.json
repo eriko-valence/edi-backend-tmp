@@ -87,10 +87,6 @@
                         "PL_C_PARAM_REQ_JSON": {
                             "value": "@CONCAT('{\"path\":\"', pipeline().parameters.PL_P_PARAM_LOG_DIR_GUID,'\",\"type\":\"', pipeline().parameters.PL_P_DEVICE_TYPE,'\", \"fileName\":\"',pipeline().parameters.PL_P_PARAM_FILE_NAME,'\"}')",
                             "type": "Expression"
-                        },
-                        "PL_P_PARAM_EMD_TYPE": {
-                            "value": "@pipeline().parameters.PL_P_DEVICE_TYPE",
-                            "type": "Expression"
                         }
                     }
                 }
