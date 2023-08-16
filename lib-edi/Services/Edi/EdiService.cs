@@ -131,7 +131,7 @@ namespace lib_edi.Services.Edi
                  * emit to Azure Log Analytics and then Azure SQL. This queryHourOffset variable is used to
                  * account for this delay. 
                  */
-                int queryReportHoursOffset = 3;
+                int queryReportHoursOffset = 0;
                 int queryReportHours = ((Convert.ToInt32(queryHours) + queryReportHoursOffset) * -1);
                 parameters.StartDate = DateTime.Now.AddHours(queryReportHours);
                 parameters.EndDate = DateTime.Now.AddHours(queryReportHoursOffset * -1);

@@ -12,5 +12,6 @@ namespace lib_edi.Models.SendGrid
         public DateTime? JobStartTime { get; set; }
         public string DataLoggerType { get; set; }
         public string PipelineFailureLocation { get; set; }
+        public string ErrorCode { get; set; } // NHGH-3056 1640 daily edi status email report
     }
 }

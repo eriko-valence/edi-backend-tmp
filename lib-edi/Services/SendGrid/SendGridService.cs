@@ -41,6 +41,7 @@ namespace lib_edi.Services.SendGrid
                     sendGridJob.PipelineFailureLocation = job.PipelineFailureLocation;
                     sendGridJob.DataLoggerType = job.DataLoggerType;
                     sendGridJob.JobStartTime = job.JobStartTime;
+                    sendGridJob.ErrorCode = job.ErrorCode;
                     sendGridResultlist.Add(sendGridJob);
                 }
 
