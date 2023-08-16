@@ -216,7 +216,8 @@ namespace lib_edi.Services.Azure
         {
             try
             {
-                string query = @"AppEvents 
+				// NHGH-3056 1310 add errorcode for hourly edi import job
+				string query = @"AppEvents 
                 | extend
                   fileName = Properties.fileName, 
                   pipelineEvent = Properties.pipelineEvent, 
@@ -224,11 +225,12 @@ namespace lib_edi.Services.Azure
                   pipelineFailureReason = Properties.pipelineFailureReason, 
                   pipelineFailureType = Properties.pipelineFailureType, 
                   dataLoggerType = Properties.dataLoggerType,
-                  exceptionMessage = Properties.errorMessage
+                  exceptionMessage = Properties.errorMessage,
+                  errorCode = Properties.errorCode
                 | where isnotnull(fileName) and isnotnull(pipelineEvent) and isnotnull(pipelineStage)
                 | project
                   TimeGenerated, fileName, pipelineEvent, pipelineStage, pipelineFailureReason, 
-                  pipelineFailureType, dataLoggerType, exceptionMessage";
+                  pipelineFailureType, dataLoggerType, exceptionMessage, errorCode";
 
                 TimeSpan queryTimeRange = TimeSpan.FromHours(Convert.ToDouble(job.EdiLaw.QueryHours));
                 //logger.LogInfo("Initialize a new instance of Azure.Monitor.Query.LogsQueryClient", job);
@@ -514,8 +516,10 @@ namespace lib_edi.Services.Azure
                         PipelineFailureReason = row[4]?.ToString(),
                         PipelineFailureType = row[5]?.ToString(),
                         DataLoggerType = row[6]?.ToString(),
-                        ExceptionMessage = row[7]?.ToString()
-                    };
+                        ExceptionMessage = row[7]?.ToString(),
+                        // NHGH-3056 1310 hourly edi import job
+						ErrorCode = row[8]?.ToString()
+					};
                     list.Add(ediJobStatus);
                 }
             }
