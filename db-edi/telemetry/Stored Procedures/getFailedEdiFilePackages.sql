@@ -40,7 +40,7 @@ BEGIN
 	)
 
 
-SELECT t1.*, t2.DataLoggerType
+SELECT t1.*, t2.DataLoggerType, t2.ErrorCode
 FROM 
     [telemetry].[EdiJobStatus] t1
 LEFT OUTER JOIN 

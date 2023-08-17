@@ -10,8 +10,11 @@
     [ExceptionMessage]      VARCHAR (1500) NULL,
     [DateAdded]             DATETIME2 (7)  NOT NULL,
     [PipelineState]         VARCHAR (50)   NULL,
+    [ErrorCode]             VARCHAR (10)   NULL,
     CONSTRAINT [PK_EdiPipelineEvents] PRIMARY KEY CLUSTERED ([EventTime] ASC, [FilePackageName] ASC, [PipelineStage] ASC, [PipelineEvent] ASC)
 );
+
+
 
 
 
