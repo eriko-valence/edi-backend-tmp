@@ -41,6 +41,8 @@ namespace lib_edi.Services.SendGrid
                     sendGridJob.PipelineFailureLocation = job.PipelineFailureLocation;
                     sendGridJob.DataLoggerType = job.DataLoggerType;
                     sendGridJob.JobStartTime = job.JobStartTime;
+					// NHGH-3056 1640 daily edi status email report
+					sendGridJob.ErrorCode = job.ErrorCode;
                     sendGridResultlist.Add(sendGridJob);
                 }
 

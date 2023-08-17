@@ -9,6 +9,7 @@
 	@PipelineFailureType [varchar](100),
 	@DataLoggerType [varchar](100),
 	@ExceptionMessage [varchar](1500),
+    @ErrorCode [varchar](10),
     @Result INT OUTPUT
 AS
 BEGIN
@@ -35,6 +36,7 @@ BEGIN
 					[PipelineFailureType],
 					[DataLoggerType],
 					[ExceptionMessage],
+                    [ErrorCode],
 					[DateAdded]) 
                 VALUES(
 					@EventTime,
@@ -50,6 +52,7 @@ BEGIN
 					@PipelineFailureType,
 					@DataLoggerType,
 					@ExceptionMessage,
+                    @ErrorCode,
                     getdate())
                 IF @@ROWCOUNT = 1
                     SET @Result = 1 --successful insert

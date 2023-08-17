@@ -16,5 +16,6 @@ namespace lib_edi.Models.Edi.Data.Import
         public string? PipelineFailureType { get; set; }
         public string? DataLoggerType { get; set; }
         public string? ExceptionMessage { get; set; }
-    }
+		public string? ErrorCode { get; set; } // NHGH-3056 1308 hourly edi import jobs
+	}
 }
