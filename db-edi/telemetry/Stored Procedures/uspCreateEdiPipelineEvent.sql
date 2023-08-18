@@ -10,6 +10,7 @@
 	@DataLoggerType [varchar](100),
 	@ExceptionMessage [varchar](1500),
     @ErrorCode [varchar](10),
+    @EmdType [varchar](15),
     @Result INT OUTPUT
 AS
 BEGIN
@@ -37,6 +38,7 @@ BEGIN
 					[DataLoggerType],
 					[ExceptionMessage],
                     [ErrorCode],
+                    [EmdType],
 					[DateAdded]) 
                 VALUES(
 					@EventTime,
@@ -53,6 +55,7 @@ BEGIN
 					@DataLoggerType,
 					@ExceptionMessage,
                     @ErrorCode,
+                    @EmdType,
                     getdate())
                 IF @@ROWCOUNT = 1
                     SET @Result = 1 --successful insert

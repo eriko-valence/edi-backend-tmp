@@ -288,13 +288,15 @@ namespace lib_edi.Services.CceDevice
         /// </summary>
         /// <param name="reportFileName">Name of Cold chain telemetry file pulled from CCDX Kafka topic</param>
         /// <param name="log">Microsoft extension logger</param>
-        public static void LogEmsTransformSucceededEventToAppInsights(string reportFileName, DataLoggerTypeEnum.Name loggerType, PipelineStageEnum.Name stageName, ILogger log)
+        public static void LogEmsTransformSucceededEventToAppInsights(string reportFileName, EmdEnum.Name emdType, DataLoggerTypeEnum.Name loggerType, PipelineStageEnum.Name stageName, ILogger log)
         {
             PipelineEvent pipelineEvent = new PipelineEvent();
             pipelineEvent.EventName = PipelineEventEnum.Name.SUCCEEDED;
             pipelineEvent.StageName = stageName;
             pipelineEvent.LoggerType = loggerType;
             pipelineEvent.ReportFileName = reportFileName;
+			// NHGH-3057 1652 Add EMD type to app insights logging
+			pipelineEvent.EmdType = emdType;
             Dictionary<string, string> customProps = AzureAppInsightsService.BuildCustomPropertiesObject(pipelineEvent);
             AzureAppInsightsService.LogEntry(stageName, customProps, log);
         }
@@ -321,7 +323,7 @@ namespace lib_edi.Services.CceDevice
         /// <param name="log">Microsoft extension logger</param>
         /// <param name="e">Exception object</param>
         /// <param name="errorCode">Error code</param>
-        public static void LogEmsTransformErrorEventToAppInsights(string reportFileName, PipelineStageEnum.Name stageName, ILogger log, Exception e, string errorCode, string errorMessage, DataLoggerTypeEnum.Name loggerTypeEnum, PipelineFailureReasonEnum.Name failureReason)
+        public static void LogEmsTransformErrorEventToAppInsights(string reportFileName, EmdEnum.Name emdType, PipelineStageEnum.Name stageName, ILogger log, Exception e, string errorCode, string errorMessage, DataLoggerTypeEnum.Name loggerTypeEnum, PipelineFailureReasonEnum.Name failureReason)
         {
             //string errorMessage = EdiErrorsService.BuildExceptionMessageString(e, errorCode, EdiErrorsService.BuildErrorVariableArrayList(reportFileName));
             PipelineEvent pipelineEvent = new PipelineEvent();
@@ -333,6 +335,7 @@ namespace lib_edi.Services.CceDevice
             pipelineEvent.ReportFileName = reportFileName;
             pipelineEvent.ErrorCode = errorCode;
             pipelineEvent.ErrorMessage = errorMessage;
+            pipelineEvent.EmdType = emdType;
             if (e != null)
             {
                 pipelineEvent.ExceptionMessage = e.Message;

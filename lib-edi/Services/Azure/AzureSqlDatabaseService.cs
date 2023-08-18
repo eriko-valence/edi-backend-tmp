@@ -194,8 +194,10 @@ namespace lib_edi.Services.Azure
                         cmd.Parameters.Add(new SqlParameter("@PipelineFailureType", SqlDbType.VarChar));
                         cmd.Parameters.Add(new SqlParameter("@DataLoggerType", SqlDbType.VarChar));
                         cmd.Parameters.Add(new SqlParameter("@ExceptionMessage", SqlDbType.VarChar));
-						// NHGH-3056 1319 hourly edi import job
+						// NHGH-3056 2023.08.17 1319 add edi error code to hourly import job
 						cmd.Parameters.Add(new SqlParameter("@ErrorCode", SqlDbType.VarChar));
+						// NHGH-3057 2023.08.18 0910 add emd type to hourly import job
+						cmd.Parameters.Add(new SqlParameter("@EmdType", SqlDbType.VarChar));
 						cmd.Parameters.Add("@Result", SqlDbType.Int).Direction = ParameterDirection.Output;
 
                         //logger.LogInfo("execute sql command", job);
@@ -213,8 +215,10 @@ namespace lib_edi.Services.Azure
                                 cmd.Parameters["@PipelineFailureType"].Value = dbnullable(jobResult.PipelineFailureType);
                                 cmd.Parameters["@DataLoggerType"].Value = dbnullable(jobResult.DataLoggerType);
                                 cmd.Parameters["@ExceptionMessage"].Value = dbnullable(jobResult.ExceptionMessage);
-                                // NHGH-3056 1319 hourly edi import job
+								// NHGH-3056 2023.08.17 1319 add edi error code to hourly import job
 								cmd.Parameters["@ErrorCode"].Value = dbnullable(jobResult.ErrorCode);
+								// NHGH-3057 2023.08.18 0910 add emd type to hourly import job
+								cmd.Parameters["@EmdType"].Value = dbnullable(jobResult.EmdType);
 								var rows = await cmd.ExecuteNonQueryAsync();
                                 String resultString = cmd.Parameters["@Result"].Value.ToString();
                                 var resultObject = cmd.Parameters["@Result"].Value;
@@ -607,9 +611,11 @@ namespace lib_edi.Services.Azure
                             FailedEdiJob failedJob = new FailedEdiJob();
                             failedJob.FilePackageName = dt.Rows[i]["FilePackageName"].ToString();
                             failedJob.ESER = dt.Rows[i]["ESER"].ToString();
-                            // NHGH-3056 1516 daily edi email status report
+                            // NHGH-3056 2023.08.17 1516 add error code to daily edi email status report
                             failedJob.ErrorCode = dt.Rows[i]["ErrorCode"].ToString();
-                            failedJob.JobStartTime = dt.Rows[i]["JobStartTime"] == DBNull.Value ? null : (DateTime?)dt.Rows[i]["JobStartTime"];
+							// NHGH-3057 2023.08.18 0922 add emd type to daily edi email status report
+							failedJob.EmdType = dt.Rows[i]["EmdType"].ToString();
+							failedJob.JobStartTime = dt.Rows[i]["JobStartTime"] == DBNull.Value ? null : (DateTime?)dt.Rows[i]["JobStartTime"];
                             failedJob.ProviderSuccessTime = dt.Rows[i]["ProviderSuccessTime"] == DBNull.Value ? null : (DateTime?)dt.Rows[i]["ProviderSuccessTime"];
                             failedJob.ConsumerSuccessTime = dt.Rows[i]["ConsumerSuccessTime"] == DBNull.Value ? null : (DateTime?)dt.Rows[i]["ConsumerSuccessTime"];
                             failedJob.TransformSuccessTime = dt.Rows[i]["TransformSuccessTime"] == DBNull.Value ? null : (DateTime?)dt.Rows[i]["TransformSuccessTime"];

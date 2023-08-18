@@ -71,7 +71,7 @@ namespace fa_adf_transform_indigo_v2
 
                 if (EmsService.IsFilePackageContentsEms(logDirectoryBlobs) && EmsService.ValidateCceDeviceType(loggerType))
                 {
-                    log.LogInformation($"- {payload.FileName} - Download and validate package contents");
+					log.LogInformation($"- {payload.FileName} - Download and validate package contents");
                     List<CloudBlockBlob> usbdgLogBlobs = DataTransformService.GetLogBlobs(logDirectoryBlobs, inputBlobPath);
                     CloudBlockBlob usbdgReportMetadataBlob = UsbdgDataProcessorService.GetReportMetadataBlob(logDirectoryBlobs, inputBlobPath);
                     List<dynamic> emsLogFiles = await AzureStorageBlobService.DownloadAndDeserializeJsonBlobs(usbdgLogBlobs, inputContainer, inputBlobPath, log);
@@ -110,7 +110,7 @@ namespace fa_adf_transform_indigo_v2
                         log.LogInformation($"- {payload.FileName} - Send transformation response");
                         string blobPathFolderCurated = DataTransformService.BuildCuratedBlobFolderPath(payload.Path, verfiedLoggerType);
                         string responseBody = DataTransformService.SerializeHttpResponseBody(blobPathFolderCurated);
-                        DataTransformService.LogEmsTransformSucceededEventToAppInsights(payload.FileName, ediJob.Logger.Type, PipelineStageEnum.Name.ADF_TRANSFORM, log);
+                        DataTransformService.LogEmsTransformSucceededEventToAppInsights(payload.FileName, ediJob.Emd.Type, ediJob.Logger.Type, PipelineStageEnum.Name.ADF_TRANSFORM, log);
                         log.LogInformation($"- {payload.FileName} - Done");
 
                         log.LogInformation($" PROCESSING SUMMARY");
@@ -123,7 +123,7 @@ namespace fa_adf_transform_indigo_v2
                         loggerTypeEnum = EmsService.GetDataLoggerType(loggerType);
                         string errorCode = "EHN9";
                         string errorMessage = EdiErrorsService.BuildExceptionMessageString(null, errorCode, EdiErrorsService.BuildErrorVariableArrayList(ediJob.Logger.LMOD));
-                        DataTransformService.LogEmsTransformErrorEventToAppInsights(payload?.FileName, PipelineStageEnum.Name.ADF_TRANSFORM, log, null, errorCode, errorMessage, loggerTypeEnum, PipelineFailureReasonEnum.Name.UNSUPPORTED_EMS_DEVICE);
+                        DataTransformService.LogEmsTransformErrorEventToAppInsights(payload?.FileName, emdTypeEnum, PipelineStageEnum.Name.ADF_TRANSFORM, log, null, errorCode, errorMessage, loggerTypeEnum, PipelineFailureReasonEnum.Name.UNSUPPORTED_EMS_DEVICE);
                         //string errorMessage = $"Unknown file package";
                         log.LogError($"- {payload.FileName} - {errorMessage}");
                         var result = new ObjectResult(new { statusCode = 500, currentDate = DateTime.Now, message = errorMessage });
@@ -160,7 +160,7 @@ namespace fa_adf_transform_indigo_v2
 
                     log.LogInformation($"- {payload.FileName} - Send transformation response");
                     string responseBody = DataTransformService.SerializeHttpResponseBody(ediJob.Emd.PackageFiles.CuratedFiles[0]);
-                    DataTransformService.LogEmsTransformSucceededEventToAppInsights(payload.FileName, loggerTypeEnum, PipelineStageEnum.Name.ADF_TRANSFORM, log);
+                    DataTransformService.LogEmsTransformSucceededEventToAppInsights(payload.FileName, ediJob.Emd.Type, loggerTypeEnum, PipelineStageEnum.Name.ADF_TRANSFORM, log);
                     log.LogInformation($"- {payload.FileName} - Done");
 
                     log.LogInformation($" PROCESSING SUMMARY");
@@ -170,7 +170,7 @@ namespace fa_adf_transform_indigo_v2
                 } else {
                     string errorCode = "KHRD";
                     string errorMessage = EdiErrorsService.BuildExceptionMessageString(null, errorCode, EdiErrorsService.BuildErrorVariableArrayList(payload.FileName));
-                    DataTransformService.LogEmsTransformErrorEventToAppInsights(payload?.FileName, PipelineStageEnum.Name.ADF_TRANSFORM, log, null, errorCode, errorMessage, loggerTypeEnum, PipelineFailureReasonEnum.Name.UNKNOWN_FILE_PACKAGE);
+                    DataTransformService.LogEmsTransformErrorEventToAppInsights(payload?.FileName, emdTypeEnum, PipelineStageEnum.Name.ADF_TRANSFORM, log, null, errorCode, errorMessage, loggerTypeEnum, PipelineFailureReasonEnum.Name.UNKNOWN_FILE_PACKAGE);
                     //string errorMessage = $"Unknown file package";
                     log.LogError($"- {payload.FileName} - {errorMessage}");
                     var result = new ObjectResult(new { statusCode = 500, currentDate = DateTime.Now, message = errorMessage });
@@ -185,7 +185,7 @@ namespace fa_adf_transform_indigo_v2
 
 				string errorMessage = EdiErrorsService.BuildExceptionMessageString(e, errorCode, EdiErrorsService.BuildErrorVariableArrayList(payload.FileName));
                 string innerErrorCode = EdiErrorsService.GetInnerErrorCodeFromMessage(errorMessage, errorCode);
-                DataTransformService.LogEmsTransformErrorEventToAppInsights(payload?.FileName, PipelineStageEnum.Name.ADF_TRANSFORM, log, e, innerErrorCode, errorMessage, loggerTypeEnum, PipelineFailureReasonEnum.Name.UNKNOWN_EXCEPTION);
+                DataTransformService.LogEmsTransformErrorEventToAppInsights(payload?.FileName, emdTypeEnum, PipelineStageEnum.Name.ADF_TRANSFORM, log, e, innerErrorCode, errorMessage, loggerTypeEnum, PipelineFailureReasonEnum.Name.UNKNOWN_EXCEPTION);
                 if (e is BadRequestException)
                 {
                     string errStr = $"Bad request thrown while validating '{loggerType}' transformation request";

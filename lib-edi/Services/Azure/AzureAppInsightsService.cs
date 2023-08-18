@@ -82,6 +82,11 @@ namespace lib_edi.Services.Azure
 			{
 				customProperties.Add("dataLoggerType", pipelineEvent.LoggerType.ToString());
 			}
+			// NHGH-3057 1723 Add EMD type to app insights logging
+			if (pipelineEvent.EmdType != EmdEnum.Name.NONE)
+			{
+				customProperties.Add("emdType", pipelineEvent.EmdType.ToString());
+			}
 
 
 			return customProperties;
