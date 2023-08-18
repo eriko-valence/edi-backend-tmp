@@ -216,7 +216,8 @@ namespace lib_edi.Services.Azure
         {
             try
             {
-				// NHGH-3056 1310 add errorcode for hourly edi import job
+				// NHGH-3056 2023.08.17 1310 add errorcode to hourly edi import job
+                // NHGH-3057 2023.08.18 1014 add emdtype to hourly edi import job
 				string query = @"AppEvents 
                 | extend
                   fileName = Properties.fileName, 
@@ -226,7 +227,7 @@ namespace lib_edi.Services.Azure
                   pipelineFailureType = Properties.pipelineFailureType, 
                   dataLoggerType = Properties.dataLoggerType,
                   exceptionMessage = Properties.errorMessage,
-                  errorCode = Properties.errorCode
+                  errorCode = Properties.errorCode,
                   emdType = Properties.emdType
                 | where isnotnull(fileName) and isnotnull(pipelineEvent) and isnotnull(pipelineStage)
                 | project
