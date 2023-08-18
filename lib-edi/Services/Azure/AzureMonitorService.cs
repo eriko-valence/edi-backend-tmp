@@ -227,10 +227,11 @@ namespace lib_edi.Services.Azure
                   dataLoggerType = Properties.dataLoggerType,
                   exceptionMessage = Properties.errorMessage,
                   errorCode = Properties.errorCode
+                  emdType = Properties.emdType
                 | where isnotnull(fileName) and isnotnull(pipelineEvent) and isnotnull(pipelineStage)
                 | project
                   TimeGenerated, fileName, pipelineEvent, pipelineStage, pipelineFailureReason, 
-                  pipelineFailureType, dataLoggerType, exceptionMessage, errorCode";
+                  pipelineFailureType, dataLoggerType, exceptionMessage, errorCode, emdType";
 
                 TimeSpan queryTimeRange = TimeSpan.FromHours(Convert.ToDouble(job.EdiLaw.QueryHours));
                 //logger.LogInfo("Initialize a new instance of Azure.Monitor.Query.LogsQueryClient", job);
@@ -517,8 +518,10 @@ namespace lib_edi.Services.Azure
                         PipelineFailureType = row[5]?.ToString(),
                         DataLoggerType = row[6]?.ToString(),
                         ExceptionMessage = row[7]?.ToString(),
-                        // NHGH-3056 1310 hourly edi import job
-						ErrorCode = row[8]?.ToString()
+                        // NHGH-3056 2023.08.17 1310 add edi error code to import job
+						ErrorCode = row[8]?.ToString(),
+                        // NHGH-3057 2023.08.18 0907 add emd type to import job
+						EmdType = row[9]?.ToString()
 					};
                     list.Add(ediJobStatus);
                 }
