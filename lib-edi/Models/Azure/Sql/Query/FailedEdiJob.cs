@@ -10,8 +10,9 @@ namespace lib_edi.Models.Azure.Sql.Query
     {
         public string FilePackageName { get; set; }
         public string ESER { get; set; }
-        public string ErrorCode { get; set; } // NHGH-3056 1503 daily edi status email report
-        public DateTime? JobStartTime { get; set; }
+        public string ErrorCode { get; set; } // NHGH-3056 2023.08.17 1503 daily edi status email report
+		public string EmdType { get; set; } // NHGH-3056 2023.08.18 1503 daily edi status email report
+		public DateTime? JobStartTime { get; set; }
         public DateTime? ProviderSuccessTime { get; set; }
         public DateTime? ConsumerSuccessTime { get; set; }
         public DateTime? TransformSuccessTime { get; set; }

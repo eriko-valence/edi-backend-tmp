@@ -41,6 +41,29 @@ namespace lib_edi.Services.Errors
 			}
 		}
 
+		private static EmsErrors GetEmsErrorsList()
+		{
+			EmsErrors emsErrorsList = null;
+
+			//var emsErrorCodeFile = Path.Combine(context.FunctionAppDirectory, "Config", "ems_error_codes.json");
+			var binpath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+			var rootpath = Path.GetFullPath(Path.Combine(binpath, ".."));
+			var emsErrorCodeFile = Path.Combine(rootpath, "Config", "edi_error_codes.json");
+
+			try
+			{
+				using StreamReader r = new StreamReader(emsErrorCodeFile);
+				string jsonString = r.ReadToEnd();
+				emsErrorsList = JsonConvert.DeserializeObject<EmsErrors>(jsonString);
+			}
+			catch (Exception e)
+			{
+				Console.WriteLine($"Unable to load the EMS error code json file {emsErrorCodeFile}: {e.Message}");
+			}
+
+			return emsErrorsList;
+		}
+
 		/// <summary>
 		/// Looks up EMS error object in EMS error code definition file
 		/// </summary>
@@ -50,11 +73,13 @@ namespace lib_edi.Services.Errors
 		/// </returns>
 		public static EmsError GetError(string emsErrorCode)
 		{
+			EmsErrors emsErrorsList = GetEmsErrorsList();
+
 			EmsError emsError;
-			Initialize();
-			if (emsErrors != null)
+			//Initialize();
+			if (emsErrorsList != null)
 			{
-				bool hasValue = emsErrors.list.TryGetValue(emsErrorCode, out emsError);
+				bool hasValue = emsErrorsList.list.TryGetValue(emsErrorCode, out emsError);
 				if (hasValue)
 				{
 					return emsError;
