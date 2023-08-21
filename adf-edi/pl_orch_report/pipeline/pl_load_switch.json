@@ -55,6 +55,10 @@
                                             "PL_P_PARAM_EMD_TYPE": {
                                                 "value": "@pipeline().parameters.PL_P_DEVICE_TYPE",
                                                 "type": "Expression"
+                                            },
+                                            "PL_C_PARAM_TRANSFORM_EMD_TYPE": {
+                                                "value": "@pipeline().parameters.PL_C_PARAM_TRANSFORM_EMD_TYPE",
+                                                "type": "Expression"
                                             }
                                         }
                                     }
@@ -103,6 +107,10 @@
                                             "PL_P_PARAM_EMD_TYPE": {
                                                 "value": "@pipeline().parameters.PL_C_PARAM_TRANSFORM_DEVICE_TYPE",
                                                 "type": "Expression"
+                                            },
+                                            "PL_C_PARAM_TRANSFORM_EMD_TYPE": {
+                                                "value": "@pipeline().parameters.PL_C_PARAM_TRANSFORM_EMD_TYPE",
+                                                "type": "Expression"
                                             }
                                         }
                                     }
@@ -150,6 +158,10 @@
                                             },
                                             "PL_P_PARAM_EMD_TYPE": {
                                                 "value": "@pipeline().parameters.PL_C_PARAM_TRANSFORM_DEVICE_TYPE",
+                                                "type": "Expression"
+                                            },
+                                            "PL_C_PARAM_TRANSFORM_EMD_TYPE": {
+                                                "value": "@pipeline().parameters.PL_C_PARAM_TRANSFORM_EMD_TYPE",
                                                 "type": "Expression"
                                             }
                                         }
@@ -200,13 +212,16 @@
             },
             "PL_P_PARAM_EMD_TYPE": {
                 "type": "string"
+            },
+            "PL_C_PARAM_TRANSFORM_EMD_TYPE": {
+                "type": "string"
             }
         },
         "folder": {
             "name": "Load"
         },
         "annotations": [],
-        "lastPublishTime": "2023-08-09T17:41:47Z"
+        "lastPublishTime": "2023-08-18T22:47:10Z"
     },
     "type": "Microsoft.DataFactory/factories/pipelines"
 }

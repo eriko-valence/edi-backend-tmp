@@ -199,12 +199,13 @@ namespace lib_edi.Services.CceDevice
 		/// <returns>
 		/// A serialized string of the EMS log transformation http reseponse body if successful; Exception (X83E) otherwise
 		/// </returns>
-		public static string SerializeHttpResponseBody(string csvBlobName)
+		public static string SerializeHttpResponseBody(string csvBlobName, string emdType)
 		{
 			try
 			{
 				TransformHttpResponseMessageBodyDto emsLogResponseDto = new TransformHttpResponseMessageBodyDto();
 				emsLogResponseDto.Path = csvBlobName;
+				emsLogResponseDto.EmdType = emdType;
 				return JsonConvert.SerializeObject(emsLogResponseDto);
 			}
 			catch (Exception e)
