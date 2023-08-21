@@ -550,13 +550,16 @@
             },
             "PL_P_PARAM_EMD_TYPE": {
                 "type": "string"
+            },
+            "PL_C_PARAM_TRANSFORM_EMD_TYPE": {
+                "type": "string"
             }
         },
         "folder": {
             "name": "Load"
         },
         "annotations": [],
-        "lastPublishTime": "2023-08-09T02:16:12Z"
+        "lastPublishTime": "2023-08-18T22:47:09Z"
     },
     "type": "Microsoft.DataFactory/factories/pipelines"
 }

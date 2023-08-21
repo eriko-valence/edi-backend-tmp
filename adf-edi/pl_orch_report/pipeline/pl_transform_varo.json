@@ -94,7 +94,7 @@
                 "type": "ExecutePipeline",
                 "dependsOn": [
                     {
-                        "activity": "Get Device Type",
+                        "activity": "Get EMD Type",
                         "dependencyConditions": [
                             "Succeeded"
                         ]
@@ -143,7 +143,35 @@
                         "PL_P_PARAM_EMD_TYPE": {
                             "value": "@pipeline().parameters.PL_P_DEVICE_TYPE",
                             "type": "Expression"
+                        },
+                        "PL_C_PARAM_TRANSFORM_EMD_TYPE": {
+                            "value": "@variables('PL_C_VAR_TRANSFORM_EMD_TYPE')",
+                            "type": "Expression"
                         }
+                    }
+                }
+            },
+            {
+                "name": "Get EMD Type",
+                "type": "SetVariable",
+                "dependsOn": [
+                    {
+                        "activity": "Get Device Type",
+                        "dependencyConditions": [
+                            "Succeeded"
+                        ]
+                    }
+                ],
+                "policy": {
+                    "secureOutput": false,
+                    "secureInput": false
+                },
+                "userProperties": [],
+                "typeProperties": {
+                    "variableName": "PL_C_VAR_TRANSFORM_EMD_TYPE",
+                    "value": {
+                        "value": "@toLower(activity('Transform').output.emd)",
+                        "type": "Expression"
                     }
                 }
             }
@@ -171,13 +199,16 @@
         "variables": {
             "PL_C_VAR_TRANSFORM_DEVICE_TYPE": {
                 "type": "String"
+            },
+            "PL_C_VAR_TRANSFORM_EMD_TYPE": {
+                "type": "String"
             }
         },
         "folder": {
             "name": "Transform"
         },
         "annotations": [],
-        "lastPublishTime": "2023-08-11T18:55:51Z"
+        "lastPublishTime": "2023-08-18T22:34:55Z"
     },
     "type": "Microsoft.DataFactory/factories/pipelines"
 }

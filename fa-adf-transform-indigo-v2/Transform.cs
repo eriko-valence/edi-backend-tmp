@@ -109,7 +109,7 @@ namespace fa_adf_transform_indigo_v2
 
                         log.LogInformation($"- {payload.FileName} - Send transformation response");
                         string blobPathFolderCurated = DataTransformService.BuildCuratedBlobFolderPath(payload.Path, verfiedLoggerType);
-                        string responseBody = DataTransformService.SerializeHttpResponseBody(blobPathFolderCurated);
+                        string responseBody = DataTransformService.SerializeHttpResponseBody(blobPathFolderCurated, ediJob.Emd.Type.ToString());
                         DataTransformService.LogEmsTransformSucceededEventToAppInsights(payload.FileName, ediJob.Emd.Type, ediJob.Logger.Type, PipelineStageEnum.Name.ADF_TRANSFORM, log);
                         log.LogInformation($"- {payload.FileName} - Done");
 
@@ -159,7 +159,7 @@ namespace fa_adf_transform_indigo_v2
                     ediJob.Emd.PackageFiles.CuratedFiles.Add(await DataTransformService.WriteRecordsToCsvBlob(ouputContainer, payload, usbdgLocationCsvRows, loggerType, log));
 
                     log.LogInformation($"- {payload.FileName} - Send transformation response");
-                    string responseBody = DataTransformService.SerializeHttpResponseBody(ediJob.Emd.PackageFiles.CuratedFiles[0]);
+                    string responseBody = DataTransformService.SerializeHttpResponseBody(ediJob.Emd.PackageFiles.CuratedFiles[0], ediJob.Emd.Type.ToString());
                     DataTransformService.LogEmsTransformSucceededEventToAppInsights(payload.FileName, ediJob.Emd.Type, loggerTypeEnum, PipelineStageEnum.Name.ADF_TRANSFORM, log);
                     log.LogInformation($"- {payload.FileName} - Done");
 
