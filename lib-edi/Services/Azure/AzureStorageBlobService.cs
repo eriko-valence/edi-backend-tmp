@@ -301,7 +301,6 @@ namespace lib_edi.Services.Azure
 			foreach (CloudBlockBlob logBlob in blobs)
 			{
 				string blobSource = $"{ cloudBlobContainer.Name}/{ logBlob.Name}";
-				Console.WriteLine(" --> blobSource: " +  blobSource);
 				string logBlobText = await AzureStorageBlobService.DownloadBlobTextAsync(cloudBlobContainer, logBlob.Name);
 
 				// NHGH-3078 20230824 1441 Add custom error to capture blobs with empty strings 
