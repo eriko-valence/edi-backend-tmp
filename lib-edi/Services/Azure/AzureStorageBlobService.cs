@@ -302,9 +302,19 @@ namespace lib_edi.Services.Azure
 			{
 				string blobSource = $"{ cloudBlobContainer.Name}/{ logBlob.Name}";
 				string logBlobText = await AzureStorageBlobService.DownloadBlobTextAsync(cloudBlobContainer, logBlob.Name);
-				dynamic logBlobJson = DeserializeJsonText(logBlob.Name, logBlobText);
-				logBlobJson.EDI_SOURCE = $"{blobSource}";
-				listLogs.Add(logBlobJson);
+
+				// NHGH-3078 20230824 1441 Add custom error to capture blobs with empty strings 
+				if (logBlobText == "")
+				{
+					string customErrorMessage = EdiErrorsService.BuildExceptionMessageString(null, "ATDM", EdiErrorsService.BuildErrorVariableArrayList(blobSource));
+					throw new Exception(customErrorMessage);
+				} else
+				{
+					dynamic logBlobJson = DeserializeJsonText(logBlob.Name, logBlobText);
+					logBlobJson.EDI_SOURCE = $"{blobSource}";
+					listLogs.Add(logBlobJson);
+				}
+				
 			}
 
 			if (listLogs.Count == 0)

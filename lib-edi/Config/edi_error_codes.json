@@ -246,6 +246,12 @@
 			"error-source": "EMS Transform Service",
 			"error-mitigation": null
 		},
+		"ATDM": {
+			"error-code": "ATDM",
+			"error-message": "Empty string found in {0}",
+			"error-source": "Azure Storage Blob Service",
+			"error-mitigation": null
+		},
 		"FY84": {
 			"error-code": "FY84",
 			"error-message": "An exception was thrown while validating the JSON structure",
