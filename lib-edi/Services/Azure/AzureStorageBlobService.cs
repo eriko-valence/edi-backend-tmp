@@ -300,11 +300,26 @@ namespace lib_edi.Services.Azure
 			List<dynamic> listLogs = new();
 			foreach (CloudBlockBlob logBlob in blobs)
 			{
+				if (logBlob.Name == "2023-08-23/485c55ff-e52c-4bc4-a076-b2ee1024d952/004300484630501120363837_DATA_P155DT21H43M44S_20230823T221350Z.json")
+				{
+					Console.WriteLine("found");
+				}
 				string blobSource = $"{ cloudBlobContainer.Name}/{ logBlob.Name}";
+				Console.WriteLine(" --> blobSource: " +  blobSource);
 				string logBlobText = await AzureStorageBlobService.DownloadBlobTextAsync(cloudBlobContainer, logBlob.Name);
-				dynamic logBlobJson = DeserializeJsonText(logBlob.Name, logBlobText);
-				logBlobJson.EDI_SOURCE = $"{blobSource}";
-				listLogs.Add(logBlobJson);
+
+				// NHGH-3078 20230824 1441 Add custom error to capture blobs with empty strings 
+				if (logBlobText == "")
+				{
+					string customErrorMessage = EdiErrorsService.BuildExceptionMessageString(null, "ATDM", EdiErrorsService.BuildErrorVariableArrayList(blobSource));
+					throw new Exception(customErrorMessage);
+				} else
+				{
+					dynamic logBlobJson = DeserializeJsonText(logBlob.Name, logBlobText);
+					logBlobJson.EDI_SOURCE = $"{blobSource}";
+					listLogs.Add(logBlobJson);
+				}
+				
 			}
 
 			if (listLogs.Count == 0)
