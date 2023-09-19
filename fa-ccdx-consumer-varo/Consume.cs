@@ -191,7 +191,7 @@ namespace fa_ccdx_consumer
 			catch (Exception e)
             {
                 string errorCode = "743B";
-                string errorMessage = EdiErrorsService.BuildExceptionMessageString(e, errorCode, EdiErrorsService.BuildErrorVariableArrayList());
+                string errorMessage = await EdiErrorsService.BuildExceptionMessageString(e, errorCode, EdiErrorsService.BuildErrorVariableArrayList());
 
 				log.LogError($"{logPrefix} Something went wrong consuming the report package");
 				log.LogError($"{logPrefix} Exception  : " + e.Message);

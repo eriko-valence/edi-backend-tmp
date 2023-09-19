@@ -68,28 +68,28 @@ namespace fa_adf_transform_varo
                 loggerType = payload.LoggerType ?? DataLoggerTypeEnum.Name.UNKNOWN.ToString();
                 loggerTypeEnum = EmsService.GetDataLoggerType(loggerType);
 
-                IEnumerable<IListBlobItem> logDirectoryBlobs = AzureStorageBlobService.GetListOfBlobsInDirectory(inputContainer, payload.Path, inputBlobPath);
+                IEnumerable<IListBlobItem> logDirectoryBlobs = await AzureStorageBlobService.GetListOfBlobsInDirectory(inputContainer, payload.Path, inputBlobPath);
 
                 if (VaroDataProcessorService.IsThisVaroCollectedEmsReportPackage(logDirectoryBlobs, emdType))
                 {
                     log.LogInformation($"- {payload.FileName} - Download and validate package contents");
-                    List<CloudBlockBlob> varoCollectedEmsLogBlobs = DataTransformService.GetLogBlobs(logDirectoryBlobs, inputBlobPath);
-                    CloudBlockBlob varoReportMetadataBlob = VaroDataProcessorService.GetReportMetadataBlob(logDirectoryBlobs, inputBlobPath);
-                    List<dynamic> emsLogFiles = await AzureStorageBlobService.DownloadAndDeserializeJsonBlobs(varoCollectedEmsLogBlobs, inputContainer, inputBlobPath, log);
+                    List<CloudBlockBlob> varoCollectedEmsLogBlobs = await DataTransformService.GetLogBlobs(logDirectoryBlobs, inputBlobPath);
+                    CloudBlockBlob varoReportMetadataBlob = await VaroDataProcessorService.GetReportMetadataBlob(logDirectoryBlobs, inputBlobPath);
+                    List<dynamic> emsLogFiles = await AzureStorageBlobService.DownloadAndDeserializeJsonBlobs(varoCollectedEmsLogBlobs, inputContainer, inputBlobPath, log, payload?.FileName, emdTypeEnum, loggerTypeEnum);
                     dynamic varoReportMetadataObject = await AzureStorageBlobService.DownloadAndDeserializeJsonBlob(varoReportMetadataBlob, inputContainer, inputBlobPath, log);
                     await DataTransformService.ValidateJsonObjects(emsConfgContainer, emsLogFiles, jsonSchemaBlobNameEmsCompliantLog, log);
-                    EdiJob ediJob = VaroDataProcessorService.PopulateEdiJobObject(varoReportMetadataObject, emsLogFiles, varoCollectedEmsLogBlobs, varoReportMetadataBlob, payload.FileName, inputBlobPath, emdTypeEnum, loggerTypeEnum);
+                    EdiJob ediJob = await VaroDataProcessorService.PopulateEdiJobObject(varoReportMetadataObject, emsLogFiles, varoCollectedEmsLogBlobs, varoReportMetadataBlob, payload.FileName, inputBlobPath, emdTypeEnum, loggerTypeEnum);
                     verfiedLoggerType = ediJob.Logger.Type.ToString().ToLower();
 
                     if (ediJob.Logger.Type != DataLoggerTypeEnum.Name.UNKNOWN)
                     {
                         log.LogInformation($"- {payload.FileName} - Transform package contents");
-                        List<EmsEventRecord> emsEventCsvRows = DataModelMappingService.MapEmsLoggerEvents(emsLogFiles, ediJob);
-                        List<EdiSinkRecord> varoLocationsCsvRows = DataModelMappingService.MapVaroLocations(ediJob);
+                        List<EmsEventRecord> emsEventCsvRows = await DataModelMappingService.MapEmsLoggerEvents(emsLogFiles, ediJob);
+                        List<EdiSinkRecord> varoLocationsCsvRows = await DataModelMappingService.MapVaroLocations(ediJob);
 
-						emsEventCsvRows = DataTransformService.ConvertRelativeTimeToTotalSecondsForEmsLogRecords(emsEventCsvRows);
+						emsEventCsvRows = await DataTransformService.ConvertRelativeTimeToTotalSecondsForEmsLogRecords(emsEventCsvRows);
                         List<EmsEventRecord> sortedEmsEventCsvRows = emsEventCsvRows.OrderBy(i => (i.EDI_RELT_ELAPSED_SECS)).ToList();
-                        sortedEmsEventCsvRows = VaroDataProcessorService.CalculateAbsoluteTimeForVaroCollectedRecords(sortedEmsEventCsvRows, ediJob);                        
+                        sortedEmsEventCsvRows = await VaroDataProcessorService.CalculateAbsoluteTimeForVaroCollectedRecords(sortedEmsEventCsvRows, ediJob);                        
                         List<EdiSinkRecord> sortedEmsEventCsvRowsFinal = sortedEmsEventCsvRows.Cast<EdiSinkRecord>().ToList();
 
                         log.LogInformation($"- {payload.FileName} - Upload curated output to blob storage");
@@ -98,7 +98,7 @@ namespace fa_adf_transform_varo
 
 						log.LogInformation($"- {payload.FileName} - Send transformation response");
                         string blobPathFolderCurated = DataTransformService.BuildCuratedBlobFolderPath(payload.Path, verfiedLoggerType);
-                        string responseBody = DataTransformService.SerializeHttpResponseBody(blobPathFolderCurated, ediJob.Emd.Type.ToString());
+                        string responseBody = await DataTransformService.SerializeHttpResponseBody(blobPathFolderCurated, ediJob.Emd.Type.ToString());
                         DataTransformService.LogEmsTransformSucceededEventToAppInsights(payload.FileName, ediJob.Emd.Type, ediJob.Logger.Type, PipelineStageEnum.Name.ADF_TRANSFORM_VARO, log);
                         log.LogInformation($"- {payload.FileName} - Done");
 
@@ -114,7 +114,7 @@ namespace fa_adf_transform_varo
                         //loggerTypeEnum = EmsService.GetDataLoggerType(loggerType);
                         loggerTypeEnum = DataLoggerTypeEnum.Name.UNKNOWN;
                         string errorCode = "EHN9";
-                        string errorMessage = EdiErrorsService.BuildExceptionMessageString(null, errorCode, EdiErrorsService.BuildErrorVariableArrayList(ediJob.Logger.LMOD));
+                        string errorMessage = await EdiErrorsService.BuildExceptionMessageString(null, errorCode, EdiErrorsService.BuildErrorVariableArrayList(ediJob.Logger.LMOD));
                         DataTransformService.LogEmsTransformErrorEventToAppInsights(payload?.FileName, emdTypeEnum, PipelineStageEnum.Name.ADF_TRANSFORM_VARO, log, null, errorCode, errorMessage, loggerTypeEnum, PipelineFailureReasonEnum.Name.UNSUPPORTED_EMS_DEVICE);
                         //string errorMessage = $"Unknown file package";
                         log.LogError($"- {payload.FileName} - {errorMessage}");
@@ -127,7 +127,7 @@ namespace fa_adf_transform_varo
                 else 
                 {
                     string errorCode = "KHRD";
-                    string errorMessage = EdiErrorsService.BuildExceptionMessageString(null, errorCode, EdiErrorsService.BuildErrorVariableArrayList(payload.FileName));
+                    string errorMessage = await EdiErrorsService.BuildExceptionMessageString(null, errorCode, EdiErrorsService.BuildErrorVariableArrayList(payload.FileName));
                     DataTransformService.LogEmsTransformErrorEventToAppInsights(payload?.FileName, emdTypeEnum, PipelineStageEnum.Name.ADF_TRANSFORM_VARO, log, null, errorCode, errorMessage, loggerTypeEnum, PipelineFailureReasonEnum.Name.UNKNOWN_FILE_PACKAGE);
                     //string errorMessage = $"Unknown file package";
                     log.LogError($"- {payload.FileName} - {errorMessage}");
@@ -141,7 +141,7 @@ namespace fa_adf_transform_varo
                 string errorCode = "E2N8";
 				log.LogError($"- {payload.FileName} - error code : " + errorCode);
 
-				string errorMessage = EdiErrorsService.BuildExceptionMessageString(e, errorCode, EdiErrorsService.BuildErrorVariableArrayList(payload.FileName));
+				string errorMessage = await EdiErrorsService.BuildExceptionMessageString(e, errorCode, EdiErrorsService.BuildErrorVariableArrayList(payload.FileName));
                 string innerErrorCode = EdiErrorsService.GetInnerErrorCodeFromMessage(errorMessage, errorCode);
                 DataTransformService.LogEmsTransformErrorEventToAppInsights(payload?.FileName, emdTypeEnum, PipelineStageEnum.Name.ADF_TRANSFORM_VARO, log, e, innerErrorCode, errorMessage, loggerTypeEnum, PipelineFailureReasonEnum.Name.UNKNOWN_EXCEPTION);
                 if (e is BadRequestException)

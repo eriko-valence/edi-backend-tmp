@@ -1,5 +1,9 @@
 ﻿using Azure;
 using Azure.Storage.Blobs;
+using lib_edi.Models.Edi;
+using lib_edi.Models.Enums.Azure.AppInsights;
+using lib_edi.Models.Enums.Emd;
+using lib_edi.Services.CceDevice;
 using lib_edi.Services.Errors;
 using lib_edi.Services.System.IO;
 using Microsoft.Azure.Storage; // Microsoft.Azure.WebJobs.Extensions.Storage
@@ -39,7 +43,7 @@ namespace lib_edi.Services.Azure
 		/// directoryPath = "usbdg/2021-11-10/22/e190f06b-8de8-494e-8fbc-20599f14a9b7/"
 		/// fullBlobPath = ""
 		/// </example>
-		public static List<CloudBlockBlob> GetListOfBlobsInDirectory(CloudBlobContainer cloudBlobContainer, string directoryPath, string fullBlobPath)
+		public static async Task<List<CloudBlockBlob>> GetListOfBlobsInDirectory(CloudBlobContainer cloudBlobContainer, string directoryPath, string fullBlobPath)
 		{
 			List<CloudBlockBlob> listCloudBlockBlob = new();
 			try
@@ -54,7 +58,7 @@ namespace lib_edi.Services.Azure
 			}
 			catch (Exception e)
 			{
-				string customErrorMessage = EdiErrorsService.BuildExceptionMessageString(e, "K3E5", EdiErrorsService.BuildErrorVariableArrayList(cloudBlobContainer.Name, fullBlobPath));
+				string customErrorMessage = await EdiErrorsService.BuildExceptionMessageString(e, "K3E5", EdiErrorsService.BuildErrorVariableArrayList(cloudBlobContainer.Name, fullBlobPath));
 				throw new Exception(customErrorMessage);
 			}
 		}
@@ -97,7 +101,7 @@ namespace lib_edi.Services.Azure
 			catch (Exception e)
 			{
 				blobName ??= ""; // set blob name to an empty string value as error code 9L96 expects blob name to not be null
-				string customErrorMessage = EdiErrorsService.BuildExceptionMessageString(e, "9L96", EdiErrorsService.BuildErrorVariableArrayList(blobName, cloudBlobContainer.Name));
+				string customErrorMessage = await EdiErrorsService.BuildExceptionMessageString(e, "9L96", EdiErrorsService.BuildErrorVariableArrayList(blobName, cloudBlobContainer.Name));
 				throw new Exception(customErrorMessage);
 			}
 		}
@@ -110,7 +114,7 @@ namespace lib_edi.Services.Azure
 		/// <returns>
 		/// Blob's contents as Stream object
 		/// </returns>
-		public static Stream DownloadBlobContent(CloudBlobContainer cloudBlobContainer, string blobName)
+		public static async Task<Stream> DownloadBlobContent(CloudBlobContainer cloudBlobContainer, string blobName)
 		{
 			try
 			{
@@ -121,7 +125,7 @@ namespace lib_edi.Services.Azure
 			}
 			catch (Exception e)
 			{
-				string customErrorMessage = EdiErrorsService.BuildExceptionMessageString(e, "21SQ", EdiErrorsService.BuildErrorVariableArrayList(blobName, cloudBlobContainer.Name));
+				string customErrorMessage = await EdiErrorsService.BuildExceptionMessageString(e, "21SQ", EdiErrorsService.BuildErrorVariableArrayList(blobName, cloudBlobContainer.Name));
 				throw new Exception(customErrorMessage);
 			}
 		}
@@ -146,7 +150,7 @@ namespace lib_edi.Services.Azure
 				bool isUploaded = false;
 				string baseUri = "https://usbdatagrabberstorage.blob.core.windows.net";
 				string URI = $"{baseUri}/{containerName}/{name}{SasToken}";
-				byte[] requestPayload = StreamService.ReadToEnd(s);
+				byte[] requestPayload = await StreamService.ReadToEnd(s);
 				HttpRequestMessage httpRequestMessage = new HttpRequestMessage(HttpMethod.Put, URI);
 				httpRequestMessage.Content = (requestPayload == null) ? null : new ByteArrayContent(requestPayload);
 
@@ -174,7 +178,7 @@ namespace lib_edi.Services.Azure
 			}
 			catch (Exception e)
 			{
-				string customErrorMessage = EdiErrorsService.BuildExceptionMessageString(e, "L72L", EdiErrorsService.BuildErrorVariableArrayList(name, containerName));
+				string customErrorMessage = await EdiErrorsService.BuildExceptionMessageString(e, "L72L", EdiErrorsService.BuildErrorVariableArrayList(name, containerName));
 				throw new Exception(customErrorMessage);
 			}
 		}
@@ -201,7 +205,7 @@ namespace lib_edi.Services.Azure
 			}
 			catch (Exception e)
 			{
-				string customErrorMessage = EdiErrorsService.BuildExceptionMessageString(e, "R6C5", EdiErrorsService.BuildErrorVariableArrayList(fileName, containerName));
+				string customErrorMessage = await EdiErrorsService.BuildExceptionMessageString(e, "R6C5", EdiErrorsService.BuildErrorVariableArrayList(fileName, containerName));
 				throw new Exception(customErrorMessage);
 			}
 		}
@@ -234,7 +238,7 @@ namespace lib_edi.Services.Azure
 			}
 			catch (Exception e)
 			{
-				string customErrorMessage = EdiErrorsService.BuildExceptionMessageString(e, "747H", EdiErrorsService.BuildErrorVariableArrayList(fileName, containerName, storageAccount.Credentials.AccountName));
+				string customErrorMessage = await EdiErrorsService.BuildExceptionMessageString(e, "747H", EdiErrorsService.BuildErrorVariableArrayList(fileName, containerName, storageAccount.Credentials.AccountName));
 				throw new Exception(customErrorMessage);
 			}
 		}
@@ -256,7 +260,7 @@ namespace lib_edi.Services.Azure
 			}
 			catch (Exception e)
 			{
-				string customErrorMessage = EdiErrorsService.BuildExceptionMessageString(e, "Q9W9", EdiErrorsService.BuildErrorVariableArrayList(fileName, containerName));
+				string customErrorMessage = await EdiErrorsService.BuildExceptionMessageString(e, "Q9W9", EdiErrorsService.BuildErrorVariableArrayList(fileName, containerName));
 				throw new Exception(customErrorMessage);
 			}
 		}
@@ -266,7 +270,7 @@ namespace lib_edi.Services.Azure
 		/// </summary>
 		/// <param name="container">Azure blob container object</param>
 		/// <param name="path">Azure blob folder path</param>
-		public static void DeleteFolder(CloudBlobContainer container, string path)
+		public static async void DeleteFolder(CloudBlobContainer container, string path)
 		{
 			try
 			{
@@ -279,7 +283,7 @@ namespace lib_edi.Services.Azure
 				}
 			} catch (Exception e)
 			{
-				string customErrorMessage = EdiErrorsService.BuildExceptionMessageString(e, "RH84", EdiErrorsService.BuildErrorVariableArrayList(path, container.Name));
+				string customErrorMessage = await EdiErrorsService.BuildExceptionMessageString(e, "RH84", EdiErrorsService.BuildErrorVariableArrayList(path, container.Name));
 				throw new Exception(customErrorMessage);
 			}
 		}
@@ -294,7 +298,7 @@ namespace lib_edi.Services.Azure
 		/// <returns>
 		/// A list of deserialized CCE device logs in JObject format that have been downloaded from Azure blob storage; Exception (C26Z) if no blobs found
 		/// </returns>
-		public static async Task<List<dynamic>> DownloadAndDeserializeJsonBlobs(List<CloudBlockBlob> blobs, CloudBlobContainer cloudBlobContainer, string blobPath, ILogger log)
+		public static async Task<List<dynamic>> DownloadAndDeserializeJsonBlobs(List<CloudBlockBlob> blobs, CloudBlobContainer cloudBlobContainer, string blobPath, ILogger log, string reportPackageName, EmdEnum.Name emdNum, DataLoggerTypeEnum.Name dataLoggerType)
 		{
 
 			List<dynamic> listLogs = new();
@@ -306,20 +310,19 @@ namespace lib_edi.Services.Azure
 				// NHGH-3078 20230824 1441 Add custom error to capture blobs with empty strings 
 				if (logBlobText == "")
 				{
-					string customErrorMessage = EdiErrorsService.BuildExceptionMessageString(null, "ATDM", EdiErrorsService.BuildErrorVariableArrayList(blobSource));
+					string customErrorMessage = await EdiErrorsService.BuildExceptionMessageString(null, "ATDM", EdiErrorsService.BuildErrorVariableArrayList(blobSource));
 					throw new Exception(customErrorMessage);
 				} else
 				{
-					dynamic logBlobJson = DeserializeJsonText(logBlob.Name, logBlobText);
+					dynamic logBlobJson = await DeserializeJsonText(logBlob.Name, logBlobText);
 					logBlobJson.EDI_SOURCE = $"{blobSource}";
 					listLogs.Add(logBlobJson);
 				}
-				
 			}
 
 			if (listLogs.Count == 0)
 			{
-				string customErrorMessage = EdiErrorsService.BuildExceptionMessageString(null, "C26Z", EdiErrorsService.BuildErrorVariableArrayList(blobPath));
+				string customErrorMessage = await EdiErrorsService.BuildExceptionMessageString(null, "C26Z", EdiErrorsService.BuildErrorVariableArrayList(blobPath));
 				throw new Exception(customErrorMessage);
 			}
 			return listLogs;
@@ -339,12 +342,12 @@ namespace lib_edi.Services.Azure
 		{
 			string emsBlobPath = $"{ blobContainer.Name}/{ blob.Name}";
 			string logBlobText = await AzureStorageBlobService.DownloadBlobTextAsync(blobContainer, blob.Name);
-			dynamic logBlobJson = DeserializeJsonText(blob.Name, logBlobText);
+			dynamic logBlobJson = await DeserializeJsonText(blob.Name, logBlobText);
 			logBlobJson.EDI_SOURCE = emsBlobPath;
 
 			if (logBlobJson == null)
 			{
-				string customErrorMessage = EdiErrorsService.BuildExceptionMessageString(null, "P76H", EdiErrorsService.BuildErrorVariableArrayList(blobPath));
+				string customErrorMessage = await EdiErrorsService.BuildExceptionMessageString(null, "P76H", EdiErrorsService.BuildErrorVariableArrayList(blobPath));
 				throw new Exception(customErrorMessage);
 			}
 
@@ -359,7 +362,7 @@ namespace lib_edi.Services.Azure
 		/// <returns>
 		/// Deserialized object of JSON string; Exception (582N) otherwise
 		/// </returns>
-		private static JObject DeserializeJsonText(string blobName, string blobText)
+		private static async Task<JObject> DeserializeJsonText(string blobName, string blobText)
 		{
 			try
 			{
@@ -368,7 +371,7 @@ namespace lib_edi.Services.Azure
 			}
 			catch (Exception e)
 			{
-				string customErrorMessage = EdiErrorsService.BuildExceptionMessageString(e, "582N", EdiErrorsService.BuildErrorVariableArrayList(blobName));
+				string customErrorMessage = await EdiErrorsService.BuildExceptionMessageString(e, "582N", EdiErrorsService.BuildErrorVariableArrayList(blobName));
 				throw new Exception(customErrorMessage);
 			}
 		}

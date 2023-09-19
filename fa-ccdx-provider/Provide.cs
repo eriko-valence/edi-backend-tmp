@@ -93,8 +93,8 @@ namespace fa_ccdx_provider
                         CcdxProviderSampleHeadersDto sampleHeaders = JsonConvert.DeserializeObject<CcdxProviderSampleHeadersDto>(blobText);
                         log.LogInformation($"{logPrefix} Prepare ccdx provider http request with multipart content");
                         string ccdxHttpEndpoint = Environment.GetEnvironmentVariable("CCDX_HTTP_MULTIPART_FORM_DATA_FILE_ENDPOINT");
-                        MultipartFormDataContent multipartFormDataByteArrayContent = HttpService.BuildMultipartFormDataByteArrayContent(ccBlobInput, "file", ccBlobInputName);
-                        HttpRequestMessage requestMessage = CcdxService.BuildCcdxHttpMultipartFormDataRequestMessage(HttpMethod.Post, ccdxHttpEndpoint, multipartFormDataByteArrayContent, sampleHeaders, ccBlobInputName, log);
+                        MultipartFormDataContent multipartFormDataByteArrayContent = await HttpService.BuildMultipartFormDataByteArrayContent(ccBlobInput, "file", ccBlobInputName);
+                        HttpRequestMessage requestMessage = await CcdxService.BuildCcdxHttpMultipartFormDataRequestMessage(HttpMethod.Post, ccdxHttpEndpoint, multipartFormDataByteArrayContent, sampleHeaders, ccBlobInputName, log);
                         log.LogInformation($"{logPrefix} Request header metadata: ");
                         log.LogInformation($"{logPrefix}   ce-id: {HttpService.GetHeaderStringValue(requestMessage, "ce-id")}");
                         log.LogInformation($"{logPrefix}   ce-type: {HttpService.GetHeaderStringValue(requestMessage, "ce-type")}");
@@ -122,13 +122,13 @@ namespace fa_ccdx_provider
                             log.LogInformation($"{logPrefix} Track ccdx provider failed event (app insights)");
                             CcdxService.LogCcdxProviderFailedEventToAppInsights(reportFileName, PipelineStageEnum.Name.CCDX_PROVIDER, log);
                             log.LogInformation($"{logPrefix} Log error message");
-                            string errorString = EdiErrorsService.BuildExceptionMessageString(null, errorCode, EdiErrorsService.BuildErrorVariableArrayList(httpStatusCode.ToString(), ccBlobInputName, ccdxHttpEndpoint));
+                            string errorString = await EdiErrorsService.BuildExceptionMessageString(null, errorCode, EdiErrorsService.BuildErrorVariableArrayList(httpStatusCode.ToString(), ccBlobInputName, ccdxHttpEndpoint));
                             log.LogError($"{logPrefix} Message: {errorString}");
                             string blobContainerName = Environment.GetEnvironmentVariable("AZURE_STORAGE_BLOB_CONTAINER_NAME_HOLDING");
                             string storageAccountConnectionString = Environment.GetEnvironmentVariable("AZURE_STORAGE_INPUT_CONNECTION_STRING");
                             //Scope of holding container: To be used only for situations with CCDX transmission.
                             log.LogInformation($"{logPrefix} Move failed telemetry file {reportFileName} to holding container {blobContainerName} for further investigation");
-                            byte[] bytes = StreamService.ReadToEnd(ccBlobInput);
+                            byte[] bytes = await StreamService.ReadToEnd(ccBlobInput);
                             // EDI architecture: "Container where files are placed when there is a problem sending to CCDX via the provider. Examples 
                             // includes files that are too large (>5MB), or when the backend has a problem such as Kafka brokers unavailable. This 
                             // condition is typically indicated by a 5xx HTTP response from the CCDX POST by the provider. The purpose of this container 
@@ -160,7 +160,7 @@ namespace fa_ccdx_provider
 				log.LogError($"{logPrefix} error code : " + errorCode);
 				log.LogError($"An exception was thrown publishing {reportFileName} to ccdx: {e.Message} ({errorCode})");
 
-				string errorMessage = EdiErrorsService.BuildExceptionMessageString(e, errorCode, EdiErrorsService.BuildErrorVariableArrayList(reportFileName));
+				string errorMessage = await EdiErrorsService.BuildExceptionMessageString(e, errorCode, EdiErrorsService.BuildErrorVariableArrayList(reportFileName));
                 log.LogInformation($"{logPrefix} Track ccdx provider unexpected error event (app insights)");
                 CcdxService.LogCcdxProviderErrorEventToAppInsights(reportFileName, PipelineStageEnum.Name.CCDX_PROVIDER, log, e, errorCode);
                 log.LogError(e, errorMessage);

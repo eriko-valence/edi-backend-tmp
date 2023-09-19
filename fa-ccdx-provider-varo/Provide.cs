@@ -52,7 +52,7 @@ namespace fa_ccdx_provider_varo
                 MemoryStream stream = new MemoryStream(contentBytes);
                 
                 log.LogInformation($"{logPrefix}: Build multipart form data data content.");
-                MultipartFormDataContent multipartFormDataByteArrayContent = HttpService.BuildMultipartFormDataByteArrayContent(stream, "file", fullPackageName);
+                MultipartFormDataContent multipartFormDataByteArrayContent = await HttpService.BuildMultipartFormDataByteArrayContent(stream, "file", fullPackageName);
                 
                 log.LogInformation($"{logPrefix}: Build interchange request headers.");
                 HttpRequestMessage requestMessage = CcdxService.BuildCcdxHttpMultipartFormDataRequestMessage(multipartFormDataByteArrayContent, fullPackageName, log);
@@ -81,7 +81,7 @@ namespace fa_ccdx_provider_varo
 					log.LogInformation($"{logPrefix} Log error message");
 					string storageAccountConnectionString = Environment.GetEnvironmentVariable("AZURE_STORAGE_INPUT_CONNECTION_STRING");
 					string ccdxEndpoint = Environment.GetEnvironmentVariable("CCDX_HEADERS:MULTIPART_FORM_DATA_FILE_ENDPOINT");
-					string errorString = EdiErrorsService.BuildExceptionMessageString(null, errorCode, EdiErrorsService.BuildErrorVariableArrayList(httpStatusCode.ToString(), packageName, ccdxEndpoint));
+					string errorString = await EdiErrorsService.BuildExceptionMessageString(null, errorCode, EdiErrorsService.BuildErrorVariableArrayList(httpStatusCode.ToString(), packageName, ccdxEndpoint));
 					log.LogError($"{logPrefix} Message: {errorString}");
 					string blobContainerName = Environment.GetEnvironmentVariable("AZURE_STORAGE_BLOB_CONTAINER_NAME_HOLDING");
 					
@@ -115,7 +115,7 @@ namespace fa_ccdx_provider_varo
 				log.LogError($"{logPrefix} Exception  : " + e.Message);
 				string errorCode = "IWNE";
 				log.LogError($"{logPrefix} error code : " + errorCode);
-				string errorMessage = EdiErrorsService.BuildExceptionMessageString(e, errorCode, EdiErrorsService.BuildErrorVariableArrayList(packageName));
+				string errorMessage = await EdiErrorsService.BuildExceptionMessageString(e, errorCode, EdiErrorsService.BuildErrorVariableArrayList(packageName));
 				log.LogError($"{logPrefix} Track ccdx provider unexpected error event (app insights)");
 				log.LogError($"An exception was thrown publishing {packageName} to ccdx: {e.Message} ({errorCode})");
 				CcdxService.LogCcdxProviderErrorEventToAppInsights(packageName, PipelineStageEnum.Name.CCDX_PROVIDER_VARO, log, e, errorCode);
