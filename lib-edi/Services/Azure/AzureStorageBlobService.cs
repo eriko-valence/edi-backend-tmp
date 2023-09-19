@@ -314,9 +314,21 @@ namespace lib_edi.Services.Azure
 					throw new Exception(customErrorMessage);
 				} else
 				{
-					dynamic logBlobJson = await DeserializeJsonText(logBlob.Name, logBlobText);
-					logBlobJson.EDI_SOURCE = $"{blobSource}";
-					listLogs.Add(logBlobJson);
+					try
+					{
+						dynamic logBlobJson = await DeserializeJsonText(logBlob.Name, logBlobText);
+						logBlobJson.EDI_SOURCE = $"{blobSource}";
+						listLogs.Add(logBlobJson);
+					}
+					catch (Exception e)
+					{
+						log.LogError($"- {reportPackageName} - error deserializing data file");
+						log.LogError($"- {reportPackageName}   - data file : " + blobSource);
+						log.LogError($"- {reportPackageName}   - action    : skip this invalid json data file and continue processing other files in this report package ");
+						string errorCode = "QTAF";
+						string errorMessage = await EdiErrorsService.BuildExceptionMessageString(e, errorCode, EdiErrorsService.BuildErrorVariableArrayList(logBlob.Name));
+						DataTransformService.LogEmsTransformWarningEventToAppInsights(reportPackageName, emdNum, PipelineStageEnum.Name.ADF_TRANSFORM, log, null, errorCode, errorMessage, dataLoggerType);
+					}
 				}
 			}
 

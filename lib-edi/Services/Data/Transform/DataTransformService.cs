@@ -772,7 +772,28 @@ namespace lib_edi.Services.CceDevice
             }
         }
 
-        public static void LogEmsPackageInformation(ILogger log, List<EmsEventRecord> records, EdiJob ediJob)
+		public static void LogEmsTransformWarningEventToAppInsights(string reportFileName, EmdEnum.Name emdType, PipelineStageEnum.Name stageName, ILogger log, Exception e, string errorCode, string errorMessage, DataLoggerTypeEnum.Name loggerTypeEnum)
+		{
+			PipelineEvent pipelineEvent = new PipelineEvent();
+			pipelineEvent.EventName = PipelineEventEnum.Name.WARN;
+			pipelineEvent.StageName = stageName;
+			pipelineEvent.LoggerType = loggerTypeEnum;
+			pipelineEvent.PipelineFailureType = PipelineFailureTypeEnum.Name.WARN;
+			pipelineEvent.PipelineFailureReason = PipelineFailureReasonEnum.Name.WARN;
+			pipelineEvent.ReportFileName = reportFileName;
+			pipelineEvent.ErrorCode = errorCode;
+			pipelineEvent.ErrorMessage = errorMessage;
+			pipelineEvent.EmdType = emdType;
+			if (e != null)
+			{
+				pipelineEvent.ExceptionMessage = e.Message;
+				pipelineEvent.ExceptionInnerMessage = EdiErrorsService.GetInnerException(e);
+			}
+			Dictionary<string, string> customProps = AzureAppInsightsService.BuildCustomPropertiesObject(pipelineEvent);
+			AzureAppInsightsService.LogEntry(stageName, customProps, log);
+		}
+
+		public static void LogEmsPackageInformation(ILogger log, List<EmsEventRecord> records, EdiJob ediJob)
         {
             log.LogInformation($" ###########################################################################");
             log.LogInformation($" #  - EDI package information ");
