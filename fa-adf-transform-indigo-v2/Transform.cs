@@ -71,6 +71,7 @@ namespace fa_adf_transform_indigo_v2
 
                 if (EmsService.IsFilePackageContentsEms(logDirectoryBlobs) && EmsService.ValidateCceDeviceType(loggerType))
                 {
+					log.LogInformation($"- {payload.FileName} - Detected report package type: USBDG collected (with logger data files)");
 					log.LogInformation($"- {payload.FileName} - Download and validate package contents");
                     List<CloudBlockBlob> usbdgLogBlobs = await DataTransformService.GetLogBlobs(logDirectoryBlobs, inputBlobPath);
                     CloudBlockBlob usbdgReportMetadataBlob = await UsbdgDataProcessorService.GetReportMetadataBlob(logDirectoryBlobs, inputBlobPath);
@@ -85,7 +86,7 @@ namespace fa_adf_transform_indigo_v2
 
                     if (ediJob.Logger.Type != DataLoggerTypeEnum.Name.UNKNOWN)
                     {
-                        log.LogInformation($"- {payload.FileName} - Transform package contents");
+						log.LogInformation($"- {payload.FileName} - Transform package contents");
                         List<EmsEventRecord> emsEventCsvRows = await DataModelMappingService.MapEmsLoggerEvents(emsLogFiles, ediJob);
                         List<EdiSinkRecord> usbdgLocationCsvRows = await DataModelMappingService.MapUsbdgLocations(usbdgMetadataJsonObject, ediJob);
                         List<EdiSinkRecord> usbdgDeviceCsvRows = await DataModelMappingService.MapUsbdgDevice(usbdgMetadataJsonObject);
@@ -133,7 +134,8 @@ namespace fa_adf_transform_indigo_v2
                 // Account for file packages with no logger data files
                 } else if (UsbdgDataProcessorService.IsFilePackageUsbdgOnly(logDirectoryBlobs) && EmsService.ValidateCceDeviceType(loggerType)) {
 
-                    log.LogInformation($"- {payload.FileName} - Download and validate package contents");
+					log.LogInformation($"- {payload.FileName} - Detected report package type: USBDG collected (no logger data files)");
+					log.LogInformation($"- {payload.FileName} - Download and validate package contents");
                     // NHGH-2819 2023.03.16 0950 USBDG collected package with no logger data
                     emdTypeEnum = EmdEnum.Name.USBDG;
                     loggerTypeEnum = DataLoggerTypeEnum.Name.NO_LOGGER;
