@@ -40,7 +40,7 @@ namespace lib_edi.Services.CceDevice
 		/// <returns>
 		/// Text of serialized JSON object; Exception (48TV) otherwise
 		/// </returns>
-		public static string SerializeJsonObject(dynamic emsLog)
+		public static async Task<string> SerializeJsonObject(dynamic emsLog)
 		{
 			try
 			{
@@ -54,7 +54,7 @@ namespace lib_edi.Services.CceDevice
 			}
 			catch (Exception e)
 			{
-				string customErrorMessage = EdiErrorsService.BuildExceptionMessageString(e, "48TV", null);
+				string customErrorMessage = await EdiErrorsService.BuildExceptionMessageString(e, "48TV", null);
 				throw new Exception(customErrorMessage);
 			}
 		}
@@ -84,13 +84,13 @@ namespace lib_edi.Services.CceDevice
 			catch (Exception e)
 			{
 				log.LogError($"    - Validated: No");
-				string customErrorMessage = EdiErrorsService.BuildExceptionMessageString(e, "FY84", null);
+				string customErrorMessage = await EdiErrorsService.BuildExceptionMessageString(e, "FY84", null);
 				throw new Exception(customErrorMessage);
 			}
 
 			foreach (dynamic emsLog in listOfJsonDataoValidate)
 			{
-				string emsLogText = SerializeJsonObject(emsLog);
+				string emsLogText = await SerializeJsonObject(emsLog);
 
 				ICollection<ValidationError> errors = configJsonSchema.Validate(emsLogText);
 				if (errors.Count == 0)
@@ -104,7 +104,7 @@ namespace lib_edi.Services.CceDevice
 					log.LogError($"    - Validated: No - {validationResultString}");
 					string source = emsLog.EDI_SOURCE;
 					ArrayList al = EdiErrorsService.BuildErrorVariableArrayList(source, validationResultString);
-					string customErrorMessage = EdiErrorsService.BuildExceptionMessageString(null, "R85Y", al);
+					string customErrorMessage = await EdiErrorsService.BuildExceptionMessageString(null, "R85Y", al);
 					throw new Exception(customErrorMessage);
 				}
 			}
@@ -135,12 +135,12 @@ namespace lib_edi.Services.CceDevice
 			catch (Exception e)
 			{
 				//log.LogError($"    - Validated: No");
-				string customErrorMessage = EdiErrorsService.BuildExceptionMessageString(e, "4VN5", null);
+				string customErrorMessage = await EdiErrorsService.BuildExceptionMessageString(e, "4VN5", null);
 				throw new Exception(customErrorMessage);
 			}
 
 			// Validate the JSON data against the schema
-			string jsonStringToValidate = SerializeJsonObject(jsonDataToValidate);
+			string jsonStringToValidate = await SerializeJsonObject(jsonDataToValidate);
 			ICollection<ValidationError> errors = jsonSchemaObject.Validate(jsonStringToValidate);
 			if (errors.Count == 0)
 			{
@@ -153,7 +153,7 @@ namespace lib_edi.Services.CceDevice
 				log.LogError($"    - Validated: No - {validationResultString}");
 				string source = jsonDataToValidate.EDI_SOURCE;
 				ArrayList al = EdiErrorsService.BuildErrorVariableArrayList(source, validationResultString);
-				string customErrorMessage = EdiErrorsService.BuildExceptionMessageString(null, "YR42", al);
+				string customErrorMessage = await EdiErrorsService.BuildExceptionMessageString(null, "YR42", al);
 				throw new Exception(customErrorMessage);
 			}
 		}
@@ -199,7 +199,7 @@ namespace lib_edi.Services.CceDevice
 		/// <returns>
 		/// A serialized string of the EMS log transformation http reseponse body if successful; Exception (X83E) otherwise
 		/// </returns>
-		public static string SerializeHttpResponseBody(string csvBlobName, string emdType)
+		public static async Task<string> SerializeHttpResponseBody(string csvBlobName, string emdType)
 		{
 			try
 			{
@@ -210,7 +210,7 @@ namespace lib_edi.Services.CceDevice
 			}
 			catch (Exception e)
 			{
-				string customError = EdiErrorsService.BuildExceptionMessageString(e, "X83E", null);
+				string customError = await EdiErrorsService.BuildExceptionMessageString(e, "X83E", null);
 				throw new Exception(customError);
 			}
 		}
@@ -346,17 +346,17 @@ namespace lib_edi.Services.CceDevice
             AzureAppInsightsService.LogEntry(stageName, customProps, log);
         }
 
-        /// <summary>
-        /// Writes denormalized USBDG log file csv records to Azure blob storage
-        /// </summary>
-        /// <param name="cloudBlobContainer">A container in the Microsoft Azure Blob service</param>
-        /// <param name="requestBody">EMS log transformation http reqest object</param>
-        /// <param name="usbdgRecords">A list of denormalized USBDG log records</param>
-        /// <param name="log">Azure function logger object</param>
-        /// <returns>
-        /// Blob name of USBDG csv formatted log file; Exception (Q25U)
-        /// </returns>
-        public static async Task<string> WriteRecordsToCsvBlob(CloudBlobContainer cloudBlobContainer, TransformHttpRequestMessageBodyDto requestBody, List<EdiSinkRecord> usbdgRecords, string loggerTypeName, ILogger log)
+		/// <summary>
+		/// Writes denormalized USBDG log file csv records to Azure blob storage
+		/// </summary>
+		/// <param name="cloudBlobContainer">A container in the Microsoft Azure Blob service</param>
+		/// <param name="requestBody">EMS log transformation http reqest object</param>
+		/// <param name="usbdgRecords">A list of denormalized USBDG log records</param>
+		/// <param name="log">Azure function logger object</param>
+		/// <returns>
+		/// Blob name of USBDG csv formatted log file; Exception (Q25U)
+		/// </returns>
+		public static async Task<string> WriteRecordsToCsvBlob(CloudBlobContainer cloudBlobContainer, TransformHttpRequestMessageBodyDto requestBody, List<EdiSinkRecord> usbdgRecords, string loggerTypeName, ILogger log)
         {
             string blobName = "";
             string loggerType = loggerTypeName.ToString().ToLower();
@@ -480,7 +480,7 @@ namespace lib_edi.Services.CceDevice
                     }
                     catch (Exception e)
                     {
-                        string customErrorMessage = EdiErrorsService.BuildExceptionMessageString(e, "Q25U", EdiErrorsService.BuildErrorVariableArrayList(blobName, cloudBlobContainer.Name));
+                        string customErrorMessage = await EdiErrorsService.BuildExceptionMessageString(e, "Q25U", EdiErrorsService.BuildErrorVariableArrayList(blobName, cloudBlobContainer.Name));
                         throw new Exception(customErrorMessage);
                     }
                 }
@@ -495,7 +495,7 @@ namespace lib_edi.Services.CceDevice
         /// <returns>
         /// List of denormalized USBDG records (with the calculated duration seconds); Exception (M34T) otherwise
         /// </returns>
-        public static List<EmsEventRecord> ConvertRelativeTimeToTotalSecondsForEmsLogRecords(List<EmsEventRecord> records)
+        public static async Task<List<EmsEventRecord>> ConvertRelativeTimeToTotalSecondsForEmsLogRecords(List<EmsEventRecord> records)
         {
             foreach (EmsEventRecord record in records)
             {
@@ -506,7 +506,7 @@ namespace lib_edi.Services.CceDevice
                 }
                 catch (Exception e)
                 {
-                    string customErrorMessage = EdiErrorsService.BuildExceptionMessageString(e, "M34T", EdiErrorsService.BuildErrorVariableArrayList(record.RELT, record.EDI_SOURCE));
+                    string customErrorMessage = await EdiErrorsService.BuildExceptionMessageString(e, "M34T", EdiErrorsService.BuildErrorVariableArrayList(record.RELT, record.EDI_SOURCE));
                     throw new Exception(customErrorMessage);
                 }
             }
@@ -521,7 +521,7 @@ namespace lib_edi.Services.CceDevice
         /// <returns>
         /// Total seconds calculated from relative time; Exception (A89R) or (EZ56) otherwise
         /// </returns>
-        public static int ConvertRelativeTimeStringToTotalSeconds(dynamic metadata, EdiJob ediJob)
+        public static async Task<int> ConvertRelativeTimeStringToTotalSeconds(dynamic metadata, EdiJob ediJob)
         {
             string relativeTime = null;
             int result = 0;
@@ -540,12 +540,12 @@ namespace lib_edi.Services.CceDevice
             {
                 if (relativeTime != null)
                 {
-                    string customErrorMessage = EdiErrorsService.BuildExceptionMessageString(e, "A89R", EdiErrorsService.BuildErrorVariableArrayList(relativeTime));
+                    string customErrorMessage = await EdiErrorsService.BuildExceptionMessageString(e, "A89R", EdiErrorsService.BuildErrorVariableArrayList(relativeTime));
                     throw new Exception(customErrorMessage);
                 }
                 else
                 {
-                    string customErrorMessage = EdiErrorsService.BuildExceptionMessageString(e, "EZ56", null);
+                    string customErrorMessage = await EdiErrorsService.BuildExceptionMessageString(e, "EZ56", null);
                     throw new Exception(customErrorMessage);
                 }
             }
@@ -595,7 +595,7 @@ namespace lib_edi.Services.CceDevice
         /// <returns>
         /// Total seconds calculated from relative time; Exception (A89R) or (EZ56) otherwise
         /// </returns>
-        public static int ConvertRelativeTimeStringToTotalSeconds(string relativeTime)
+        public static async Task<int> ConvertRelativeTimeStringToTotalSeconds(string relativeTime)
         {
             try
             {
@@ -606,12 +606,12 @@ namespace lib_edi.Services.CceDevice
             {
                 if (relativeTime != null)
                 {
-                    string customErrorMessage = EdiErrorsService.BuildExceptionMessageString(e, "A89R", EdiErrorsService.BuildErrorVariableArrayList(relativeTime));
+                    string customErrorMessage = await EdiErrorsService.BuildExceptionMessageString(e, "A89R", EdiErrorsService.BuildErrorVariableArrayList(relativeTime));
                     throw new Exception(customErrorMessage);
                 }
                 else
                 {
-                    string customErrorMessage = EdiErrorsService.BuildExceptionMessageString(e, "EZ56", null);
+                    string customErrorMessage = await EdiErrorsService.BuildExceptionMessageString(e, "EZ56", null);
                     throw new Exception(customErrorMessage);
                 }
             }
@@ -625,12 +625,12 @@ namespace lib_edi.Services.CceDevice
         /// <returns>
         /// Seconds that elapsed snce logger activation relative time
         /// </returns>
-        public static int CalculateElapsedSecondsFromLoggerMountRelativeTime(string loggerActivationRelativeTime, string recordRelativeTime)
+        public static async Task<int> CalculateElapsedSecondsFromLoggerMountRelativeTime(string loggerActivationRelativeTime, string recordRelativeTime)
         {
             try
             {
-                int loggerActivationRelativeTimeSecs = ConvertRelativeTimeStringToTotalSeconds(loggerActivationRelativeTime); // convert timespan to seconds
-                int recordRelativeTimeSecs = ConvertRelativeTimeStringToTotalSeconds(recordRelativeTime);
+                int loggerActivationRelativeTimeSecs = await ConvertRelativeTimeStringToTotalSeconds(loggerActivationRelativeTime); // convert timespan to seconds
+                int recordRelativeTimeSecs = await ConvertRelativeTimeStringToTotalSeconds(recordRelativeTime);
                 int elapsedSeconds = loggerActivationRelativeTimeSecs - recordRelativeTimeSecs; // How far away time wise is this record compared to the absolute time
                 int elapsedDays = (elapsedSeconds / 86000);
                 return elapsedSeconds;
@@ -651,7 +651,7 @@ namespace lib_edi.Services.CceDevice
         /// <returns>
         /// List containing only Indigo V2 log blobs; Exception (L91T)
         /// </returns>
-        public static List<CloudBlockBlob> GetLogBlobs(IEnumerable<IListBlobItem> logDirectoryBlobs, string blobPath)
+        public static async Task<List<CloudBlockBlob>> GetLogBlobs(IEnumerable<IListBlobItem> logDirectoryBlobs, string blobPath)
         {
             List<CloudBlockBlob> listDataBlobs = new();
             List<CloudBlockBlob> listSyncBlobs = new();
@@ -683,7 +683,7 @@ namespace lib_edi.Services.CceDevice
 
                 if (listDataBlobs.Count == 0)
                 {
-                    string customErrorMessage = EdiErrorsService.BuildExceptionMessageString(null, "L91T", EdiErrorsService.BuildErrorVariableArrayList(blobPath));
+                    string customErrorMessage = await EdiErrorsService.BuildExceptionMessageString(null, "L91T", EdiErrorsService.BuildErrorVariableArrayList(blobPath));
                     throw new Exception(customErrorMessage);
                 }
             }
@@ -744,14 +744,14 @@ namespace lib_edi.Services.CceDevice
         /// <returns>
         /// Absolute timestamp (DateTime) of a USBDG record; Exception (4Q5D) otherwise
         /// </returns>
-        public static DateTime? CalculateAbsoluteTimeForEmsRecord(string reportAbsoluteTime, int reportDurationSeconds, string recordRelativeTime, string sourceLogFile)
+        public static async Task<DateTime?> CalculateAbsoluteTimeForEmsRecord(string reportAbsoluteTime, int reportDurationSeconds, string recordRelativeTime, string sourceLogFile)
         {
             try
             {
-                int recordDurationSeconds = ConvertRelativeTimeStringToTotalSeconds(recordRelativeTime);
+                int recordDurationSeconds = await ConvertRelativeTimeStringToTotalSeconds(recordRelativeTime);
                 int elapsedSeconds = reportDurationSeconds - recordDurationSeconds; // How far away time wise is this record compared to the absolute time
 
-                DateTime? reportAbsoluteDateTime = DateConverter.ConvertIso8601CompliantString(reportAbsoluteTime);
+                DateTime? reportAbsoluteDateTime = await DateConverter.ConvertIso8601CompliantString(reportAbsoluteTime);
 
                 TimeSpan ts = TimeSpan.FromSeconds(elapsedSeconds);
                 if (reportAbsoluteDateTime != null)
@@ -767,7 +767,7 @@ namespace lib_edi.Services.CceDevice
             }
             catch (Exception e)
             {
-                string customErrorMessage = EdiErrorsService.BuildExceptionMessageString(e, "4Q5D", EdiErrorsService.BuildErrorVariableArrayList(reportAbsoluteTime, recordRelativeTime, sourceLogFile));
+                string customErrorMessage = await EdiErrorsService.BuildExceptionMessageString(e, "4Q5D", EdiErrorsService.BuildErrorVariableArrayList(reportAbsoluteTime, recordRelativeTime, sourceLogFile));
                 throw new Exception(customErrorMessage);
             }
         }
