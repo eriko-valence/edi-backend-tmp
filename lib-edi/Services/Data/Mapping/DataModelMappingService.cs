@@ -434,7 +434,7 @@ namespace lib_edi.Services.Loggers
             }
             catch (Exception e)
             {
-                throw new Exception(await EdiErrorsService.BuildExceptionMessageString(e, "HKTJ", EdiErrorsService.BuildErrorVariableArrayList(propName, propValue, sourceFile)));
+                throw new Exception(await EdiErrorsService.BuildExceptionMessageString(e, "HKTJ", EdiErrorsService.BuildErrorVariableArrayList(propName ?? "unknown", propValue ?? "unknown", sourceFile)));
             }
         }
 
@@ -542,7 +542,7 @@ namespace lib_edi.Services.Loggers
             }
             catch (Exception e)
             {
-                throw new Exception(await EdiErrorsService.BuildExceptionMessageString(e, "HKTJ", EdiErrorsService.BuildErrorVariableArrayList(propName, propValue, sourceFile)));
+                throw new Exception(await EdiErrorsService.BuildExceptionMessageString(e, "HKTJ", EdiErrorsService.BuildErrorVariableArrayList(propName ?? "unknown", propValue ?? "unknown", sourceFile)));
             }
         }
 
@@ -556,7 +556,7 @@ namespace lib_edi.Services.Loggers
                 return new IndigoV2EventRecord();
             } else
             {
-                return null;
+                return new EmsEventRecord();
             }
                 
         }
