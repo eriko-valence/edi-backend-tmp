@@ -125,23 +125,27 @@ namespace lib_edi.Services.Ems
             }
         }
 
-        /// <summary>
-        /// Correlates string to an EMD type
-        /// </summary>
-        /// <param name="emdType">string to check</param>
-        public static EmdEnum.Name GetEmdType(string emdType)
+		/// <summary>
+		/// Correlates string to an EMD type
+		/// </summary>
+		/// <param name="loggerType">string to check</param>
+		public static EmdEnum.Name GetEmdType(string loggerType)
         {
-            if (emdType != null)
+            if (loggerType != null)
             {
-                if (emdType.ToUpper() == "EMS")
+                if (loggerType.ToUpper() == DataLoggerTypeEnum.Name.EMS.ToString())
                 {
                     return EmdEnum.Name.USBDG;
                 }
-                else if (emdType.ToUpper() == EmdEnum.Name.VARO.ToString())
+                else if (loggerType.ToUpper() == EmdEnum.Name.VARO.ToString())
                 {
                     return EmdEnum.Name.VARO;
                 }
-                else
+                else if (loggerType.ToUpper() == DataLoggerTypeEnum.Name.NO_LOGGER.ToString())
+                {
+					return EmdEnum.Name.USBDG;
+				}
+				else
                 {
                     return EmdEnum.Name.UNKNOWN;
                 }
