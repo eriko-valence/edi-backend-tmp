@@ -35,7 +35,7 @@ namespace lib_edi.Services.Loggers
 		/// <returns>
 		/// Deserialized MetaFridge log object if successful; Exception (X7Z1) otherwise
 		/// </returns>
-		private static dynamic DeserializeMetaFridgeLogText(string blobName, string blobText)
+		private static async Task<dynamic> DeserializeMetaFridgeLogText(string blobName, string blobText)
 		{
 			try
 			{
@@ -45,7 +45,7 @@ namespace lib_edi.Services.Loggers
 			}
 			catch (Exception e)
 			{
-				string customError = EdiErrorsService.BuildExceptionMessageString(e, "X7Z1", EdiErrorsService.BuildErrorVariableArrayList(blobName));
+				string customError = await EdiErrorsService.BuildExceptionMessageString(e, "X7Z1", EdiErrorsService.BuildErrorVariableArrayList(blobName));
 				throw new Exception(customError);
 			}
 		}
@@ -57,7 +57,7 @@ namespace lib_edi.Services.Loggers
 		/// <returns>
 		/// A list of cloud block blobs located in this virtual directory; Exception (A21P) otherwise
 		/// </returns>
-		public static List<CloudBlockBlob> FindMetaFridgeLogBlobs(IEnumerable<IListBlobItem> logDirectoryBlobs, string blobPath)
+		public static async Task<List<CloudBlockBlob>> FindMetaFridgeLogBlobs(IEnumerable<IListBlobItem> logDirectoryBlobs, string blobPath)
 		{
 			List<CloudBlockBlob> metaFridgeLogBlobs = new List<CloudBlockBlob>();
 
@@ -74,7 +74,7 @@ namespace lib_edi.Services.Loggers
 
 			if (metaFridgeLogBlobs.Count == 0)
 			{
-				string customError = EdiErrorsService.BuildExceptionMessageString(null, "A21P", EdiErrorsService.BuildErrorVariableArrayList(blobPath));
+				string customError = await EdiErrorsService.BuildExceptionMessageString(null, "A21P", EdiErrorsService.BuildErrorVariableArrayList(blobPath));
 				throw new Exception(customError);
 			}
 
@@ -108,7 +108,7 @@ namespace lib_edi.Services.Loggers
 			}
 			catch (Exception e)
 			{
-				string customError = EdiErrorsService.BuildExceptionMessageString(e, "PH77", EdiErrorsService.BuildErrorVariableArrayList(blobName, cloudBlobContainer.Name));
+				string customError = await EdiErrorsService.BuildExceptionMessageString(e, "PH77", EdiErrorsService.BuildErrorVariableArrayList(blobName, cloudBlobContainer.Name));
 				throw new Exception(customError);
 			}
 
@@ -135,7 +135,7 @@ namespace lib_edi.Services.Loggers
 
 			if (metaFridgeLogFiles.Count == 0)
 			{
-				string customError = EdiErrorsService.BuildExceptionMessageString(null, "3L4P", EdiErrorsService.BuildErrorVariableArrayList(blobPath));
+				string customError = await EdiErrorsService.BuildExceptionMessageString(null, "3L4P", EdiErrorsService.BuildErrorVariableArrayList(blobPath));
 				throw new Exception(customError);
 			}
 
@@ -168,7 +168,7 @@ namespace lib_edi.Services.Loggers
 			catch (Exception e)
 			{
 				log.LogError($"    - Validated: No");
-				string customErrorMessage = EdiErrorsService.BuildExceptionMessageString(e, "P2G3", null);
+				string customErrorMessage = await EdiErrorsService.BuildExceptionMessageString(e, "P2G3", null);
 				throw new Exception(customErrorMessage);
 			}
 
@@ -187,7 +187,7 @@ namespace lib_edi.Services.Loggers
 					string validationResultString = EdiErrorsService.BuildJsonValidationErrorString(errors);
 					log.LogError($"    - Validated: No - {validationResultString}");
 					string source = ObjectManager.GetJObjectPropertyValueAsString(emsLog, "EDI_SOURCE");
-					string customErrorMessage = EdiErrorsService.BuildExceptionMessageString(null, "TV79", EdiErrorsService.BuildErrorVariableArrayList(source, validationResultString));
+					string customErrorMessage = await EdiErrorsService.BuildExceptionMessageString(null, "TV79", EdiErrorsService.BuildErrorVariableArrayList(source, validationResultString));
 					throw new Exception(customErrorMessage);
 				}
 			}
@@ -202,7 +202,7 @@ namespace lib_edi.Services.Loggers
 		/// <returns>
 		/// Serialized USBDG log text; Exception (EL33) otherwise
 		/// </returns>
-		private static string SerializeCfd50LogText(dynamic emsLog)
+		private static async Task<string> SerializeCfd50LogText(dynamic emsLog)
 		{
 			try
 			{
@@ -216,7 +216,7 @@ namespace lib_edi.Services.Loggers
 			}
 			catch (Exception e)
 			{
-				string customErrorMessage = EdiErrorsService.BuildExceptionMessageString(e, "EL33", null);
+				string customErrorMessage = await EdiErrorsService.BuildExceptionMessageString(e, "EL33", null);
 				throw new Exception(customErrorMessage);
 			}
 		}

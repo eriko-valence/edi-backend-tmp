@@ -9,6 +9,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 
 namespace lib_edi.Services.Errors
 {
@@ -41,7 +42,7 @@ namespace lib_edi.Services.Errors
 			}
 		}
 
-		private static EmsErrors GetEmsErrorsList()
+		private static async Task<EmsErrors> GetEmsErrorsList()
 		{
 			EmsErrors emsErrorsList = null;
 
@@ -53,7 +54,7 @@ namespace lib_edi.Services.Errors
 			try
 			{
 				using StreamReader r = new StreamReader(emsErrorCodeFile);
-				string jsonString = r.ReadToEnd();
+				string jsonString = await r.ReadToEndAsync();
 				emsErrorsList = JsonConvert.DeserializeObject<EmsErrors>(jsonString);
 			}
 			catch (Exception e)
@@ -71,9 +72,9 @@ namespace lib_edi.Services.Errors
 		/// <returns>
 		/// EMS error object matching provided EMS error code
 		/// </returns>
-		public static EmsError GetError(string emsErrorCode)
+		public static async Task<EmsError> GetError(string emsErrorCode)
 		{
-			EmsErrors emsErrorsList = GetEmsErrorsList();
+			EmsErrors emsErrorsList = await GetEmsErrorsList();
 
 			EmsError emsError;
 			//Initialize();
@@ -171,9 +172,9 @@ namespace lib_edi.Services.Errors
 		/// <returns>
 		/// A custom exception message string
 		/// </returns>
-		public static string BuildExceptionMessageString(Exception e, string customErrorCode, ArrayList errorVariables)
+		public static async Task<string> BuildExceptionMessageString(Exception e, string customErrorCode, ArrayList errorVariables)
 		{
-			EmsError emsError = EdiErrorsService.GetError(customErrorCode);
+			EmsError emsError = await EdiErrorsService.GetError(customErrorCode);
 			string customErrorMessage = BuildCustomErrorMessage(emsError, errorVariables);
 
 			string message = null;

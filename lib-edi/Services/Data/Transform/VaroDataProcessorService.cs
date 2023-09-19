@@ -35,7 +35,7 @@ namespace lib_edi.Services.Data.Transform
         /// <returns>
         /// List containing only USBDG metadata report blobs; Exception (RV62) otherwise
         /// </returns>
-        public static CloudBlockBlob GetReportMetadataBlob(IEnumerable<IListBlobItem> logDirectoryBlobs, string blobPath)
+        public static async Task<CloudBlockBlob> GetReportMetadataBlob(IEnumerable<IListBlobItem> logDirectoryBlobs, string blobPath)
         {
             List<CloudBlockBlob> reportBlobs = new();
 
@@ -53,7 +53,7 @@ namespace lib_edi.Services.Data.Transform
 
             if (reportBlobs.Count == 0)
             {
-                string customErrorMessage = EdiErrorsService.BuildExceptionMessageString(null, "SVQJ", EdiErrorsService.BuildErrorVariableArrayList(blobPath));
+                string customErrorMessage = await EdiErrorsService.BuildExceptionMessageString(null, "SVQJ", EdiErrorsService.BuildErrorVariableArrayList(blobPath));
                 throw new Exception(customErrorMessage);
             }
 
@@ -279,7 +279,7 @@ namespace lib_edi.Services.Data.Transform
         /// <returns>
         /// A list of CSV compatible EMD + logger data records, if successful; Exception (D39Y) if any failures occur 
         /// </returns>
-        public static EdiJob PopulateEdiJobObject(dynamic varoReportFileObject, List<dynamic> sourceLogs, List<CloudBlockBlob> listLoggerFiles, CloudBlockBlob varoReportMetadataBlob, string packageName, string stagePath, EmdEnum.Name emdTypeEnum, DataLoggerTypeEnum.Name dataLoggerType)
+        public static async Task<EdiJob> PopulateEdiJobObject(dynamic varoReportFileObject, List<dynamic> sourceLogs, List<CloudBlockBlob> listLoggerFiles, CloudBlockBlob varoReportMetadataBlob, string packageName, string stagePath, EmdEnum.Name emdTypeEnum, DataLoggerTypeEnum.Name dataLoggerType)
         {
             string sourceFile = null;
             EdiJob ediJob = new();
@@ -318,17 +318,17 @@ namespace lib_edi.Services.Data.Transform
                 ediJob.Emd.PackageFiles.ReportMetadataFileName = GetReportMetadataFileNameFromBlobPath(varoReportMetadataBlob.Name);
 				ediJob.Emd.PackageFiles.StagedFiles = GetStagedFileNames(sourceLogs, varoReportMetadataBlob.Name);
 				ediJob.Logger.Type = GetLoggerTypeFromEmsPackage(ediJob, dataLoggerType);
-                ediJob.Emd.Metadata.Varo.MountTime = GetTimeFromEmsSyncFileName(listLoggerFiles);
-				ediJob.Emd.Metadata.Varo.CreationTime = GetVaroReportCreationTimeFromMetadataFileName(varoReportMetadataBlob.Name);
+                ediJob.Emd.Metadata.Varo.MountTime = await GetTimeFromEmsSyncFileName(listLoggerFiles);
+				ediJob.Emd.Metadata.Varo.CreationTime = await GetVaroReportCreationTimeFromMetadataFileName(varoReportMetadataBlob.Name);
 				return ediJob;
             }
             catch (Exception e)
             {
-                throw new Exception(EdiErrorsService.BuildExceptionMessageString(e, "TTCW", EdiErrorsService.BuildErrorVariableArrayList(packageName)));
+                throw new Exception(await EdiErrorsService.BuildExceptionMessageString(e, "TTCW", EdiErrorsService.BuildErrorVariableArrayList(packageName)));
             }
         }
 
-        public static void LogEmsPackageInformation_OLD(ILogger log, List<EmsEventRecord> records, EdiJob ediJob)
+        public static async void LogEmsPackageInformation_OLD(ILogger log, List<EmsEventRecord> records, EdiJob ediJob)
         {
             int first = (records.Count - 1);
             int last = (0);
@@ -356,7 +356,7 @@ namespace lib_edi.Services.Data.Transform
             }
         }
 
-        public static EdiJobVaroMetadataMountTime GetTimeFromEmsSyncFileName(List<CloudBlockBlob> listLoggerFiles)
+        public static async Task<EdiJobVaroMetadataMountTime> GetTimeFromEmsSyncFileName(List<CloudBlockBlob> listLoggerFiles)
         {
             EdiJobVaroMetadataMountTime timeInfo = null;
 
@@ -374,8 +374,8 @@ namespace lib_edi.Services.Data.Transform
                             timeInfo ??= new EdiJobVaroMetadataMountTime();
                             timeInfo.ABST = m1.Groups[3].Value;
                             timeInfo.RELT = m1.Groups[2].Value;
-                            timeInfo.Calcs.ABST_UTC = DateConverter.ConvertIso8601CompliantString(m1.Groups[3].Value);
-                            timeInfo.Calcs.RELT_ELAPSED_SECS = DataTransformService.ConvertRelativeTimeStringToTotalSeconds(m1.Groups[2].Value);
+                            timeInfo.Calcs.ABST_UTC = await DateConverter.ConvertIso8601CompliantString(m1.Groups[3].Value);
+                            timeInfo.Calcs.RELT_ELAPSED_SECS = await DataTransformService.ConvertRelativeTimeStringToTotalSeconds(m1.Groups[2].Value);
                             timeInfo.SOURCE = EmdTimeSource.Name.EMS_SYNC_FILENAME;
                         }
                     }
@@ -400,7 +400,7 @@ namespace lib_edi.Services.Data.Transform
             return result;
         }
 
-        public static EdiJobVaroMetadataCreationTime GetVaroReportCreationTimeFromMetadataFileName(string name)
+        public static async Task<EdiJobVaroMetadataCreationTime> GetVaroReportCreationTimeFromMetadataFileName(string name)
         {
             EdiJobVaroMetadataCreationTime timeInfo = null;
 
@@ -414,7 +414,7 @@ namespace lib_edi.Services.Data.Transform
                 {
                     timeInfo ??= new EdiJobVaroMetadataCreationTime();
                     timeInfo.ABST = m.Groups[2].Value;
-                    timeInfo.ABST_UTC = DateConverter.ConvertIso8601CompliantString(m.Groups[2].Value);
+                    timeInfo.ABST_UTC = await DateConverter.ConvertIso8601CompliantString(m.Groups[2].Value);
                     timeInfo.SOURCE = EmdTimeSource.Name.EMD_REPORT_METADATA_FILENAME;
                 }
             }
@@ -431,7 +431,7 @@ namespace lib_edi.Services.Data.Transform
         /// Absolute timestamp (DateTime) of a Indigo V2 record; Exception (4Q5D) otherwise
         /// </returns>
         //public static List<EmsEventRecord> CalculateAbsoluteTimeForUsbdgRecords(List<EmsEventRecord> records, int reportDurationSeconds, dynamic reportMetadata, EdiJob ediJob)
-        public static List<EmsEventRecord> CalculateAbsoluteTimeForVaroCollectedRecords(List<EmsEventRecord> records, EdiJob ediJob)
+        public static async Task<List<EmsEventRecord>> CalculateAbsoluteTimeForVaroCollectedRecords(List<EmsEventRecord> records, EdiJob ediJob)
         {
             //string absoluteTime = GetKeyValueFromMetadataRecordsObject("ABST", reportMetadata);
             string emdTimeAbst = GetVaroMountTimeAbst(ediJob);
@@ -439,7 +439,7 @@ namespace lib_edi.Services.Data.Transform
 
             foreach (EmsEventRecord record in records)
             {
-                DateTime? dt = DataTransformService.CalculateAbsoluteTimeForEmsRecord(emdTimeAbst, emdTimeElapsedSecs, record.RELT, record.EDI_SOURCE);
+                DateTime? dt = await DataTransformService.CalculateAbsoluteTimeForEmsRecord(emdTimeAbst, emdTimeElapsedSecs, record.RELT, record.EDI_SOURCE);
                 record.EDI_ABST = dt;
             }
             return records;

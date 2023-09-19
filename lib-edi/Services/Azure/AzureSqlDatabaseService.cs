@@ -5,6 +5,7 @@ using lib_edi.Models.Edi.Data.Import;
 using lib_edi.Models.Edi.Job;
 using lib_edi.Models.Edi.Job.EmailReport;
 using lib_edi.Models.SendGrid;
+using Microsoft.Extensions.Azure;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -89,8 +90,15 @@ namespace lib_edi.Services.Azure
                         //logger.LogInfo("execute sql command", job);
                         foreach (var item in list)
                         {
-                            EdiJobStatusResult jobResult = (EdiJobStatusResult)item;
-                            try
+
+
+							EdiJobStatusResult jobResult = (EdiJobStatusResult)item;
+							if (jobResult.fileName == "40A36BCA5D2F_20230915T234233Z_004e00374630501020363837_reports.tar.gz")
+							{
+                                log.LogInformation(jobResult.fileName + ": TransformSuccessTime : " + jobResult.TransformSuccessTime);
+								log.LogInformation(jobResult.fileName + ": SQLSuccessTime       : " + jobResult.SQLSuccessTime);
+							}
+							try
                             {
                                 cmd.Parameters["@FilePackageName"].Value = dbnullable(jobResult.fileName);
                                 if (jobResult.EmdType == Models.Enums.Emd.EmdEnum.Name.USBDG)

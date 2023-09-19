@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
+using System.Threading.Tasks;
 using lib_edi.Services.Errors;
 
 namespace lib_edi.Helpers
@@ -23,7 +24,7 @@ namespace lib_edi.Helpers
 		/// <example>
 		/// ISO 8601 compliant date/time string in format "yyyyMMddTHHmmssZ": 20211018T164303Z
 		/// </example>
-		public static DateTime? ConvertIso8601CompliantString(string s)
+		public static async Task<DateTime?> ConvertIso8601CompliantString(string s)
 		{
 			try
 			{
@@ -42,13 +43,13 @@ namespace lib_edi.Helpers
 			catch (ArgumentNullException ane)
 			{
 				s ??= "''";
-				string customErrorMessage = EdiErrorsService.BuildExceptionMessageString(ane, "D23W", EdiErrorsService.BuildErrorVariableArrayList(s));
+				string customErrorMessage = await EdiErrorsService.BuildExceptionMessageString(ane, "D23W", EdiErrorsService.BuildErrorVariableArrayList(s));
 				throw new Exception(customErrorMessage);
 			}
 			catch (Exception e)
 			{
 				s ??= "''";
-				string customErrorMessage = EdiErrorsService.BuildExceptionMessageString(e, "HQ37", EdiErrorsService.BuildErrorVariableArrayList(s));
+				string customErrorMessage = await EdiErrorsService.BuildExceptionMessageString(e, "HQ37", EdiErrorsService.BuildErrorVariableArrayList(s));
 				throw new Exception(customErrorMessage);
 			}
 
@@ -78,13 +79,15 @@ namespace lib_edi.Helpers
 			catch (ArgumentNullException ane)
 			{
 				s ??= "''";
-				string customErrorMessage = EdiErrorsService.BuildExceptionMessageString(ane, "23EJ", EdiErrorsService.BuildErrorVariableArrayList(s));
+				//string customErrorMessage = await EdiErrorsService.BuildExceptionMessageString(ane, "23EJ", EdiErrorsService.BuildErrorVariableArrayList(s));
+				string customErrorMessage = "23EJ: An null valued exception was thrown while converting date {0}";
 				throw new Exception(customErrorMessage);
 			}
 			catch (Exception e)
 			{
 				s ??= "''";
-				string customErrorMessage = EdiErrorsService.BuildExceptionMessageString(e, "7ZE5", EdiErrorsService.BuildErrorVariableArrayList(s));
+				//string customErrorMessage = await EdiErrorsService.BuildExceptionMessageString(e, "7ZE5", EdiErrorsService.BuildErrorVariableArrayList(s));
+				string customErrorMessage = "7ZE5: An exception was thrown while converting date {0}";
 				throw new Exception(customErrorMessage);
 			}
 		}

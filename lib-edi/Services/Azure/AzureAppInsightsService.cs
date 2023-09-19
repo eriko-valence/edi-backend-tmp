@@ -15,6 +15,7 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace lib_edi.Services.Azure
 {
@@ -99,7 +100,7 @@ namespace lib_edi.Services.Azure
 		/// <param name="pipelineStageName">A pipeline stage log entry name</param>
 		/// <param name="customProps">A dictionary of properties to include with the telemetry</param>
 		/// <param name="log">A Microsoft extensions logger object</param>
-		public static void LogEntry(PipelineStageEnum.Name pipelineStageName, Dictionary<string, string> customProps, ILogger log)
+		public static async void LogEntry(PipelineStageEnum.Name pipelineStageName, Dictionary<string, string> customProps, ILogger log)
 		{
 			try
 			{
@@ -114,7 +115,7 @@ namespace lib_edi.Services.Azure
 			catch (Exception e)
 			{
 				log.LogError("   - [azure_app_insights_service->log_entry]: an exception occured while sending app insights custom events");
-				string customErrorMessage = EdiErrorsService.BuildExceptionMessageString(e, "97E7", EdiErrorsService.BuildErrorVariableArrayList());
+				string customErrorMessage = await EdiErrorsService.BuildExceptionMessageString(e, "97E7", EdiErrorsService.BuildErrorVariableArrayList());
 				throw new Exception(customErrorMessage);
 			}
 
@@ -127,7 +128,7 @@ namespace lib_edi.Services.Azure
 		/// <returns>
 		/// A list of Pogo LT app errors
 		/// </returns>
-		public static Dictionary<string, PipelineJobStatus> GetDailyAppInsightsCustomEvents(ILogger log)
+		public static async Task<Dictionary<string, PipelineJobStatus>> GetDailyAppInsightsCustomEvents(ILogger log)
 		{
 
 			try
@@ -160,21 +161,21 @@ namespace lib_edi.Services.Azure
 					else
 					{
 						log.LogError($"   - [azure_app_insights_service->get_daily_errors]: received an unsuccessful status code {response.StatusCode}: {response.ReasonPhrase}");
-						string customErrorMessage = EdiErrorsService.BuildExceptionMessageString(null, "C36G", EdiErrorsService.BuildErrorVariableArrayList(response.ReasonPhrase));
+						string customErrorMessage = await EdiErrorsService.BuildExceptionMessageString(null, "C36G", EdiErrorsService.BuildErrorVariableArrayList(response.ReasonPhrase));
 						throw new Exception(customErrorMessage);
 					}
 				}
 				else
 				{
 					log.LogError("   - [azure_app_insights_service->get_daily_errors]: missing api query settings");
-					string customErrorMessage = EdiErrorsService.BuildExceptionMessageString(null, "EN5G", EdiErrorsService.BuildErrorVariableArrayList());
+					string customErrorMessage = await EdiErrorsService.BuildExceptionMessageString(null, "EN5G", EdiErrorsService.BuildErrorVariableArrayList());
 					throw new Exception(customErrorMessage);
 				}
 			}
 			catch (Exception e)
 			{
 				log.LogError("   - [azure_app_insights_service->get_daily_errors]: an exception occured while retrieving app insights custom events");
-				string customErrorMessage = EdiErrorsService.BuildExceptionMessageString(e, "QDJ3", EdiErrorsService.BuildErrorVariableArrayList());
+				string customErrorMessage = await EdiErrorsService.BuildExceptionMessageString(e, "QDJ3", EdiErrorsService.BuildErrorVariableArrayList());
 				throw new Exception(customErrorMessage);
 			}
 		}

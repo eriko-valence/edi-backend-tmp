@@ -41,7 +41,7 @@ namespace lib_edi.Services.System.Net
 			}
 			catch (Exception e)
 			{
-				string customError = EdiErrorsService.BuildExceptionMessageString(e, "SB49", null);
+				string customError = await EdiErrorsService.BuildExceptionMessageString(e, "SB49", null);
 				throw new Exception(customError);
 			}
 		}
@@ -53,7 +53,7 @@ namespace lib_edi.Services.System.Net
 		/// <returns>
 		/// A serialized string of the EMS log transformation http reseponse body if successful; Exception (X83E) otherwise
 		/// </returns>
-		public static string SerializeHttpResponseBody(string csvBlobName)
+		public static async Task<string> SerializeHttpResponseBody(string csvBlobName)
 		{
 			try
 			{
@@ -63,7 +63,7 @@ namespace lib_edi.Services.System.Net
 			}
 			catch (Exception e)
 			{
-				string customError = EdiErrorsService.BuildExceptionMessageString(e, "X83E", null);
+				string customError = await EdiErrorsService.BuildExceptionMessageString(e, "X83E", null);
 				throw new Exception(customError);
 			}
 		}
@@ -102,7 +102,7 @@ namespace lib_edi.Services.System.Net
 		/// <returns>
 		/// True if validation passes; BadRequestException if body missing (SR54) or 'path' property missing (26ZZ)
 		/// </returns>
-		public static bool ValidateHttpRequestBody(TransformHttpRequestMessageBodyDto body)
+		public static async Task<bool> ValidateHttpRequestBody(TransformHttpRequestMessageBodyDto body)
 		{
 			bool result;
 			if (body != null)
@@ -113,13 +113,13 @@ namespace lib_edi.Services.System.Net
 				}
 				else
 				{
-					string customError = EdiErrorsService.BuildExceptionMessageString(null, "26ZZ", null);
+					string customError = await EdiErrorsService.BuildExceptionMessageString(null, "26ZZ", null);
 					throw new BadRequestException(customError);
 				}
 			}
 			else
 			{
-				string customError = EdiErrorsService.BuildExceptionMessageString(null, "SR54", null);
+				string customError = await EdiErrorsService.BuildExceptionMessageString(null, "SR54", null);
 				throw new BadRequestException(customError);
 			}
 			return result;
@@ -142,7 +142,7 @@ namespace lib_edi.Services.System.Net
 			}
 			catch (Exception e)
 			{
-				string customError = EdiErrorsService.BuildExceptionMessageString(e, "H39L", EdiErrorsService.BuildErrorVariableArrayList(requestMessage.Method.ToString(), requestMessage.RequestUri.ToString()));
+				string customError = await EdiErrorsService.BuildExceptionMessageString(e, "H39L", EdiErrorsService.BuildErrorVariableArrayList(requestMessage.Method.ToString(), requestMessage.RequestUri.ToString()));
 				throw new BadRequestException(customError);
 			}
 
@@ -157,11 +157,11 @@ namespace lib_edi.Services.System.Net
 		/// <returns>
 		/// An HTTP multipart/form-data MIME container with byte array content.
 		/// </returns>
-		public static MultipartFormDataContent BuildMultipartFormDataByteArrayContent(Stream s, string name, string fileName)
+		public static async Task<MultipartFormDataContent> BuildMultipartFormDataByteArrayContent(Stream s, string name, string fileName)
 		{
 			try
 			{
-				byte[] byteArray = StreamService.ReadToEnd(s);
+				byte[] byteArray = await StreamService.ReadToEnd(s);
 				string boundary = $"----{Guid.NewGuid()}";
 				MultipartFormDataContent multiPartContent = new MultipartFormDataContent(boundary);
 				ByteArrayContent byteArrayContent = new ByteArrayContent(byteArray);
@@ -170,7 +170,7 @@ namespace lib_edi.Services.System.Net
 			}
 			catch (Exception e)
 			{
-				string customError = EdiErrorsService.BuildExceptionMessageString(e, "YT86", EdiErrorsService.BuildErrorVariableArrayList(name, fileName));
+				string customError = await EdiErrorsService.BuildExceptionMessageString(e, "YT86", EdiErrorsService.BuildErrorVariableArrayList(name, fileName));
 				throw new BadRequestException(customError);
 			}
 
@@ -185,7 +185,7 @@ namespace lib_edi.Services.System.Net
 		/// <returns>
 		/// An HTTP multipart/form-data MIME container with string content.
 		/// </returns>
-		public static MultipartFormDataContent BuildMultipartFormDataStringContent(string s, string name, string fileName)
+		public static async Task<MultipartFormDataContent> BuildMultipartFormDataStringContent(string s, string name, string fileName)
 		{
 			try
 			{
@@ -197,7 +197,7 @@ namespace lib_edi.Services.System.Net
 			}
 			catch (Exception e)
 			{
-				string customError = EdiErrorsService.BuildExceptionMessageString(e, "32L6", EdiErrorsService.BuildErrorVariableArrayList(name, fileName));
+				string customError = await EdiErrorsService.BuildExceptionMessageString(e, "32L6", EdiErrorsService.BuildErrorVariableArrayList(name, fileName));
 				throw new BadRequestException(customError);
 			}
 

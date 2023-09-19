@@ -59,10 +59,10 @@ namespace fa_adf_transform_cfd50
                 log.LogInformation($"- [transform-cdf50->run]: - Path: {inputBlobPath}");
 
                 log.LogInformation($"- [transform-cdf50->run]: List blobs in storage container {inputContainer.Name}/{payload.Path}");
-                IEnumerable<IListBlobItem> logDirectoryBlobs = AzureStorageBlobService.GetListOfBlobsInDirectory(inputContainer, payload.Path, inputBlobPath);
+                IEnumerable<IListBlobItem> logDirectoryBlobs = await AzureStorageBlobService.GetListOfBlobsInDirectory(inputContainer, payload.Path, inputBlobPath);
 
                 log.LogInformation($"- [transform-cdf50->run]: Filter for {logType} log blobs");
-                List<CloudBlockBlob> metaFridgeLogBlobs = Cfd50DataProcessorService.FindMetaFridgeLogBlobs(logDirectoryBlobs, inputBlobPath);
+                List<CloudBlockBlob> metaFridgeLogBlobs = await Cfd50DataProcessorService.FindMetaFridgeLogBlobs(logDirectoryBlobs, inputBlobPath);
 
                 log.LogInformation("- [transform-cdf50->run]: Download metafridge log blobs");
                 List<dynamic> metaFridgeLogFiles = await Cfd50DataProcessorService.DownloadsAndDeserializesMetaFridgeLogBlobs(metaFridgeLogBlobs, inputContainer, inputBlobPath, log);
@@ -77,7 +77,7 @@ namespace fa_adf_transform_cfd50
                 string csvOutputBlobName = await Cfd50DataProcessorService.WriteMetaFridgeLogRecordsToCsvBlob(ouputContainer, payload, metaFridgeCsvRows, log);
 
                 log.LogInformation("- [transform-cdf50->run]: Serialize http response body");
-                string responseBody = HttpService.SerializeHttpResponseBody(csvOutputBlobName);
+                string responseBody = await HttpService.SerializeHttpResponseBody(csvOutputBlobName);
                 log.LogInformation("- [transform-cdf50->run]: Send http response message");
                 log.LogInformation("- [transform-cdf50->run]: SUCCESS");
                 CcdxService.LogMetaFridgeTransformSucceededEventToAppInsights(payload.FileName, log);

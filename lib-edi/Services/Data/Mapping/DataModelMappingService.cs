@@ -17,6 +17,7 @@ using System.Dynamic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace lib_edi.Services.Loggers
 {
@@ -35,7 +36,7 @@ namespace lib_edi.Services.Loggers
         /// <returns>
 		/// A list of csv compatible MetaFridge log file records if successful; Exception (3B6U) if any there are any failures
 		/// </returns>
-        private static List<Cfd50CsvRecordDto> MapMetaFridgeLogFileRecords(dynamic metaFridgeLogFile)
+        private static async Task<List<Cfd50CsvRecordDto>> MapMetaFridgeLogFileRecords(dynamic metaFridgeLogFile)
         {
             try
             {
@@ -88,14 +89,14 @@ namespace lib_edi.Services.Loggers
 
                 if (cfd50CsvRecords.Count == 0)
 				{
-                    throw new Exception(EdiErrorsService.BuildExceptionMessageString(null, "B98R", null));
+                    throw new Exception(await EdiErrorsService.BuildExceptionMessageString(null, "B98R", null));
                 }
 
                 return cfd50CsvRecords;
             }
             catch (Exception e)
             {
-                throw new Exception(EdiErrorsService.BuildExceptionMessageString(e, "3B6U", null));
+                throw new Exception(await EdiErrorsService.BuildExceptionMessageString(e, "3B6U", null));
             }
 
 
@@ -133,7 +134,7 @@ namespace lib_edi.Services.Loggers
         /// <returns>
         /// A list of CSV compatible EMD + logger data records, if successful; Exception (HUA2) if any failures occur 
         /// </returns>
-        public static List<UsbdgSimCsvRecordDto> MapUsbdgLogFileRecords(dynamic emdLogFile, dynamic metadataFile)
+        public static async Task<List<UsbdgSimCsvRecordDto>> MapUsbdgLogFileRecords(dynamic emdLogFile, dynamic metadataFile)
         {
             try
             {
@@ -155,7 +156,7 @@ namespace lib_edi.Services.Loggers
                 {
                     if (x.Key == "ABST")
 					{
-                        DateTime? emdAbsoluteTime = DateConverter.ConvertIso8601CompliantString(x.Value.ToString());
+                        DateTime? emdAbsoluteTime = await DateConverter.ConvertIso8601CompliantString(x.Value.ToString());
                         //ObjectManager.SetObjectValue(ref usbdgSimEmdMetadata, x.Key, emdAbsoluteTime);
                     }  
                 }
@@ -191,7 +192,7 @@ namespace lib_edi.Services.Loggers
                             {
                                 if (prop.Name == "ABST")
 								{
-                                    DateTime? emdAbsoluteTime = DateConverter.ConvertIso8601CompliantString(prop.Value.ToString());
+                                    DateTime? emdAbsoluteTime = await DateConverter.ConvertIso8601CompliantString(prop.Value.ToString());
                                     ObjectManager.SetObjectValue(ref csvUsbdgSimRecordDto, prop.Name, emdAbsoluteTime);
 
                                 } else
@@ -208,7 +209,7 @@ namespace lib_edi.Services.Loggers
             }
             catch (Exception e)
             {
-                throw new Exception(EdiErrorsService.BuildExceptionMessageString(e, "HUA2", null));
+                throw new Exception(await EdiErrorsService.BuildExceptionMessageString(e, "HUA2", null));
             }
 
         }
@@ -223,7 +224,7 @@ namespace lib_edi.Services.Loggers
         /// <returns>
         /// A list of one USBDG device csv record, if successful; Exception (CPA8) if any failures occur 
         /// </returns>
-        public static List<EdiSinkRecord> MapUsbdgDevice(dynamic sourceUsbdgMetadata)
+        public static async Task<List<EdiSinkRecord>> MapUsbdgDevice(dynamic sourceUsbdgMetadata)
         {
             string propName = null;
             string propValue = null;
@@ -252,7 +253,7 @@ namespace lib_edi.Services.Loggers
             }
             catch (Exception e)
             {
-                throw new Exception(EdiErrorsService.BuildExceptionMessageString(e, "CPA8", EdiErrorsService.BuildErrorVariableArrayList(propName, propValue, sourceFile)));
+                throw new Exception(await EdiErrorsService.BuildExceptionMessageString(e, "CPA8", EdiErrorsService.BuildErrorVariableArrayList(propName, propValue, sourceFile)));
             }
         }
 
@@ -266,7 +267,7 @@ namespace lib_edi.Services.Loggers
         /// <returns>
         /// A list of one USBDG event csv record, if successful; Exception (DYUF) if any failures occur 
         /// </returns>
-        public static List<EdiSinkRecord> MapUsbdgEvent(dynamic sourceUsbdgMetadata)
+        public static async Task<List<EdiSinkRecord>> MapUsbdgEvent(dynamic sourceUsbdgMetadata)
         {
             string propName = null;
             string propValue = null;
@@ -296,7 +297,7 @@ namespace lib_edi.Services.Loggers
                             string strZutcNow = log1.Value.ToString();
                             if (strZutcNow != "")
                             {
-                                DateTime? zutcNow = DateConverter.ConvertIso8601CompliantString(log1.Value.ToString());
+                                DateTime? zutcNow = await DateConverter.ConvertIso8601CompliantString(log1.Value.ToString());
                                 ((UsbdgEventRecord)sinkUsbdgDeviceRecord).EDI_ZUTC_NOW_DATETIME = zutcNow;
                             }
                         }
@@ -319,7 +320,7 @@ namespace lib_edi.Services.Loggers
                                     string strAbst = prop.Value.ToString();
                                     if (strAbst != "")
                                     {
-                                        DateTime? emdAbsoluteTime = DateConverter.ConvertIso8601CompliantString(prop.Value.ToString());
+                                        DateTime? emdAbsoluteTime = await DateConverter.ConvertIso8601CompliantString(prop.Value.ToString());
                                         ((UsbdgEventRecord)sinkUsbdgDeviceRecord).EDI_ABST_DATETIME = emdAbsoluteTime;
                                     }
                                 }
@@ -343,7 +344,7 @@ namespace lib_edi.Services.Loggers
                 {
                     propValue = "null";
                 }
-                throw new Exception(EdiErrorsService.BuildExceptionMessageString(e, "DYUF", EdiErrorsService.BuildErrorVariableArrayList(propName, propValue, sourceFile)));
+                throw new Exception(await EdiErrorsService.BuildExceptionMessageString(e, "DYUF", EdiErrorsService.BuildErrorVariableArrayList(propName, propValue, sourceFile)));
             }
         }
 
@@ -358,7 +359,7 @@ namespace lib_edi.Services.Loggers
         /// <returns>
         /// A list of CSV compatible Indigo V2 event records, if successful; Exception (HKTJ) if any failures occur 
         /// </returns>
-        public static List<IndigoV2EventRecord> MapIndigoV2Events(List<dynamic> sourceLogs, EdiJob sourceEdiJob)
+        public static async Task<List<IndigoV2EventRecord>> MapIndigoV2Events(List<dynamic> sourceLogs, EdiJob sourceEdiJob)
         {
             string propName = null;
             string propValue = null;
@@ -433,7 +434,7 @@ namespace lib_edi.Services.Loggers
             }
             catch (Exception e)
             {
-                throw new Exception(EdiErrorsService.BuildExceptionMessageString(e, "HKTJ", EdiErrorsService.BuildErrorVariableArrayList(propName, propValue, sourceFile)));
+                throw new Exception(await EdiErrorsService.BuildExceptionMessageString(e, "HKTJ", EdiErrorsService.BuildErrorVariableArrayList(propName ?? "unknown", propValue ?? "unknown", sourceFile)));
             }
         }
 
@@ -448,7 +449,7 @@ namespace lib_edi.Services.Loggers
         /// <returns>
         /// A list of CSV compatible Indigo V2 event records, if successful; Exception (HKTJ) if any failures occur 
         /// </returns>
-        public static List<EmsEventRecord> MapEmsLoggerEvents(List<dynamic> sourceLogs, EdiJob ediJob)
+        public static async Task<List<EmsEventRecord>> MapEmsLoggerEvents(List<dynamic> sourceLogs, EdiJob ediJob)
         {
             string propName = null;
             string propValue = null;
@@ -541,7 +542,7 @@ namespace lib_edi.Services.Loggers
             }
             catch (Exception e)
             {
-                throw new Exception(EdiErrorsService.BuildExceptionMessageString(e, "HKTJ", EdiErrorsService.BuildErrorVariableArrayList(propName, propValue, sourceFile)));
+                throw new Exception(await EdiErrorsService.BuildExceptionMessageString(e, "HKTJ", EdiErrorsService.BuildErrorVariableArrayList(propName ?? "unknown", propValue ?? "unknown", sourceFile)));
             }
         }
 
@@ -555,7 +556,7 @@ namespace lib_edi.Services.Loggers
                 return new IndigoV2EventRecord();
             } else
             {
-                return null;
+                return new EmsEventRecord();
             }
                 
         }
@@ -571,7 +572,7 @@ namespace lib_edi.Services.Loggers
         /// <returns>
         /// A list of CSV compatible Indigo V2 location records, if successful; Exception (DVKA) if any failures occur 
         /// </returns>
-        public static List<EdiSinkRecord> MapIndigoV2Locations(dynamic sourceUsbdgMetadata, EdiJob sourceEdiJob)
+        public static async Task<List<EdiSinkRecord>> MapIndigoV2Locations(dynamic sourceUsbdgMetadata, EdiJob sourceEdiJob)
         {
             string propName = null;
             string propValue = null;
@@ -632,7 +633,7 @@ namespace lib_edi.Services.Loggers
             }
             catch (Exception e)
             {
-                throw new Exception(EdiErrorsService.BuildExceptionMessageString(e, "DVKA", EdiErrorsService.BuildErrorVariableArrayList(propName, propValue, sourceFile)));
+                throw new Exception(await EdiErrorsService.BuildExceptionMessageString(e, "DVKA", EdiErrorsService.BuildErrorVariableArrayList(propName, propValue, sourceFile)));
             }
         }
 
@@ -646,7 +647,7 @@ namespace lib_edi.Services.Loggers
         /// <returns>
         /// A list of CSV compatible USBDG location records, if successful; Exception (DVKA) if any failures occur 
         /// </returns>
-        public static List<EdiSinkRecord> MapUsbdgLocations(dynamic sourceUsbdgMetadata, EdiJob sourceEdiJob)
+        public static async Task<List<EdiSinkRecord>> MapUsbdgLocations(dynamic sourceUsbdgMetadata, EdiJob sourceEdiJob)
         {
             string propName = null;
             string propValue = null;
@@ -712,11 +713,11 @@ namespace lib_edi.Services.Loggers
             }
             catch (Exception e)
             {
-                throw new Exception(EdiErrorsService.BuildExceptionMessageString(e, "DVKA", EdiErrorsService.BuildErrorVariableArrayList(propName, propValue, sourceFile)));
+                throw new Exception(await EdiErrorsService.BuildExceptionMessageString(e, "DVKA", EdiErrorsService.BuildErrorVariableArrayList(propName, propValue, sourceFile)));
             }
         }
 
-		public static List<EdiSinkRecord> MapVaroLocations(EdiJob sourceEdiJob)
+		public static async Task<List<EdiSinkRecord>> MapVaroLocations(EdiJob sourceEdiJob)
 		{
 			string propName = null;
 			string propValue = null;
@@ -737,7 +738,7 @@ namespace lib_edi.Services.Loggers
 			}
 			catch (Exception e)
 			{
-				throw new Exception(EdiErrorsService.BuildExceptionMessageString(e, "UQUM", EdiErrorsService.BuildErrorVariableArrayList(propName, propValue, sourceFile)));
+				throw new Exception(await EdiErrorsService.BuildExceptionMessageString(e, "UQUM", EdiErrorsService.BuildErrorVariableArrayList(propName, propValue, sourceFile)));
 			}
 		}
 

@@ -11,7 +11,8 @@ namespace lib_edi.Models.Enums.Azure.AppInsights
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
 			NONE,
 			VALIDATION,
-			ERROR
+			ERROR,
+			WARN
 #pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 		}
 	}

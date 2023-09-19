@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace lib_edi.Services.Ccdx
 {
@@ -33,7 +34,7 @@ namespace lib_edi.Services.Ccdx
 		/// <returns>
 		/// HTTP request message
 		/// </returns>
-		public static HttpRequestMessage BuildCcdxHttpMultipartFormDataRequestMessage(HttpMethod httpMethod, string httpRequestUriString, MultipartFormDataContent multipartFormDataContent, CcdxProviderSampleHeadersDto requiredProviderHeaders, string blobReportName, ILogger log)
+		public static async Task<HttpRequestMessage> BuildCcdxHttpMultipartFormDataRequestMessage(HttpMethod httpMethod, string httpRequestUriString, MultipartFormDataContent multipartFormDataContent, CcdxProviderSampleHeadersDto requiredProviderHeaders, string blobReportName, ILogger log)
 		{
 			try
 			{
@@ -83,7 +84,7 @@ namespace lib_edi.Services.Ccdx
 			}
 			catch (Exception e)
 			{
-				string customErrorMessage = EdiErrorsService.BuildExceptionMessageString(e, "M92H", null);
+				string customErrorMessage = await EdiErrorsService.BuildExceptionMessageString(e, "M92H", null);
 				throw new Exception(customErrorMessage);
 			}
 
@@ -448,9 +449,9 @@ namespace lib_edi.Services.Ccdx
 		/// <param name="log">Microsoft extension logger</param>
 		/// <param name="e">Exception object</param>
 		/// <param name="errorCode">Error code</param>
-		public static void LogCcdxProviderErrorEventToAppInsights(string reportFileName, PipelineStageEnum.Name stageName, ILogger log, Exception e, string errorCode)
+		public static async void LogCcdxProviderErrorEventToAppInsights(string reportFileName, PipelineStageEnum.Name stageName, ILogger log, Exception e, string errorCode)
 		{
-			string errorMessage = EdiErrorsService.BuildExceptionMessageString(e, errorCode, EdiErrorsService.BuildErrorVariableArrayList(reportFileName));
+			string errorMessage = await EdiErrorsService.BuildExceptionMessageString(e, errorCode, EdiErrorsService.BuildErrorVariableArrayList(reportFileName));
 			PipelineEvent pipelineEvent = new PipelineEvent();
 			pipelineEvent.EventName = PipelineEventEnum.Name.FAILED;
 			pipelineEvent.StageName = stageName;
@@ -535,9 +536,9 @@ namespace lib_edi.Services.Ccdx
 		/// <param name="log">Microsoft extension logger</param>
 		/// <param name="e">Exception object</param>
 		/// <param name="errorCode">Error code</param>
-		public static void LogMailCompressorErrorEventToAppInsights(string reportFileName, PipelineStageEnum.Name stageName, ILogger log, Exception e, string errorCode)
+		public static async void LogMailCompressorErrorEventToAppInsights(string reportFileName, PipelineStageEnum.Name stageName, ILogger log, Exception e, string errorCode)
 		{
-			string errorMessage = EdiErrorsService.BuildExceptionMessageString(e, errorCode, EdiErrorsService.BuildErrorVariableArrayList(reportFileName));
+			string errorMessage = await EdiErrorsService.BuildExceptionMessageString(e, errorCode, EdiErrorsService.BuildErrorVariableArrayList(reportFileName));
 			PipelineEvent pipelineEvent = new PipelineEvent();
 			pipelineEvent.EventName = PipelineEventEnum.Name.FAILED;
 			pipelineEvent.StageName = stageName;
@@ -628,9 +629,9 @@ namespace lib_edi.Services.Ccdx
 		/// <param name="log">Microsoft extension logger</param>
 		/// <param name="e">Exception object</param>
 		/// <param name="errorCode">Error code</param>
-		public static void LogCcdxConsumerErrorEventToAppInsights(string reportFileName, PipelineStageEnum.Name stageName, ILogger log, Exception e, string errorCode)
+		public static async void LogCcdxConsumerErrorEventToAppInsights(string reportFileName, PipelineStageEnum.Name stageName, ILogger log, Exception e, string errorCode)
 		{
-			string errorMessage = EdiErrorsService.BuildExceptionMessageString(e, errorCode, EdiErrorsService.BuildErrorVariableArrayList(reportFileName));
+			string errorMessage = await EdiErrorsService.BuildExceptionMessageString(e, errorCode, EdiErrorsService.BuildErrorVariableArrayList(reportFileName));
 			PipelineEvent pipelineEvent = new PipelineEvent();
 			pipelineEvent.EventName = PipelineEventEnum.Name.FAILED;
 			pipelineEvent.StageName = stageName;
@@ -703,9 +704,9 @@ namespace lib_edi.Services.Ccdx
 		/// <param name="log">Microsoft extension logger</param>
 		/// <param name="e">Exception object</param>
 		/// <param name="errorCode">Error code</param>
-		public static void LogMetaFridgeTransformErrorEventToAppInsights(string reportFileName, ILogger log, Exception e, string errorCode)
+		public static async void LogMetaFridgeTransformErrorEventToAppInsights(string reportFileName, ILogger log, Exception e, string errorCode)
 		{
-			string errorMessage = EdiErrorsService.BuildExceptionMessageString(e, errorCode, EdiErrorsService.BuildErrorVariableArrayList(reportFileName));
+			string errorMessage = await EdiErrorsService.BuildExceptionMessageString(e, errorCode, EdiErrorsService.BuildErrorVariableArrayList(reportFileName));
 			PipelineEvent pipelineEvent = new PipelineEvent();
 			pipelineEvent.EventName = PipelineEventEnum.Name.FAILED;
 			pipelineEvent.StageName = PipelineStageEnum.Name.ADF_TRANSFORM;
@@ -724,7 +725,7 @@ namespace lib_edi.Services.Ccdx
 			AzureAppInsightsService.LogEntry(PipelineStageEnum.Name.ADF_TRANSFORM, customProps, log);
 		}
 
-		public static void ValidateCcdxConsumerCeTypeEnvVariables(ILogger log)
+		public static async void ValidateCcdxConsumerCeTypeEnvVariables(ILogger log)
 		{
 			string logPrefix = "- [ccdx-service->validate-env-vars]";
 			string envVarCeTypeUsbdgDataDim = "CCDX_PUBLISHER_HEADER_CE_TYPE_USBDG";
@@ -734,18 +735,18 @@ namespace lib_edi.Services.Ccdx
 
 			if (Environment.GetEnvironmentVariable(envVarCeTypeUsbdgDataDim) == null)
 			{
-				string errorMessage = EdiErrorsService.BuildExceptionMessageString(null, errorCode, EdiErrorsService.BuildErrorVariableArrayList(envVarCeTypeUsbdgDataDim));
+				string errorMessage = await EdiErrorsService.BuildExceptionMessageString(null, errorCode, EdiErrorsService.BuildErrorVariableArrayList(envVarCeTypeUsbdgDataDim));
 				log.LogError($"{logPrefix} {errorMessage}");
 				throw new Exception(errorMessage);
 			}
 			else if (Environment.GetEnvironmentVariable(envVarCeTypeCfd50) == null)
 			{
-				string errorMessage = EdiErrorsService.BuildExceptionMessageString(null, errorCode, EdiErrorsService.BuildErrorVariableArrayList(envVarCeTypeCfd50));
+				string errorMessage = await EdiErrorsService.BuildExceptionMessageString(null, errorCode, EdiErrorsService.BuildErrorVariableArrayList(envVarCeTypeCfd50));
 				log.LogError($"{logPrefix} {errorMessage}");
 				throw new Exception(errorMessage);
 			} else if (Environment.GetEnvironmentVariable(envVarCeTypeIndigoV2) == null)
 			{
-				string errorMessage = EdiErrorsService.BuildExceptionMessageString(null, errorCode, EdiErrorsService.BuildErrorVariableArrayList(envVarCeTypeIndigoV2));
+				string errorMessage = await EdiErrorsService.BuildExceptionMessageString(null, errorCode, EdiErrorsService.BuildErrorVariableArrayList(envVarCeTypeIndigoV2));
 				log.LogError($"{logPrefix} {errorMessage}");
 				throw new Exception(errorMessage);
 			}

@@ -67,33 +67,34 @@ namespace fa_adf_transform_indigo_v2
                 loggerType = payload.LoggerType ?? DataLoggerTypeEnum.Name.UNKNOWN.ToString();
                 loggerTypeEnum = EmsService.GetDataLoggerType(loggerType);
 
-                IEnumerable<IListBlobItem> logDirectoryBlobs = AzureStorageBlobService.GetListOfBlobsInDirectory(inputContainer, payload.Path, inputBlobPath);
+                IEnumerable<IListBlobItem> logDirectoryBlobs = await AzureStorageBlobService.GetListOfBlobsInDirectory(inputContainer, payload.Path, inputBlobPath);
 
                 if (EmsService.IsFilePackageContentsEms(logDirectoryBlobs) && EmsService.ValidateCceDeviceType(loggerType))
                 {
+					log.LogInformation($"- {payload.FileName} - Detected report package type: USBDG collected (with logger data files)");
 					log.LogInformation($"- {payload.FileName} - Download and validate package contents");
-                    List<CloudBlockBlob> usbdgLogBlobs = DataTransformService.GetLogBlobs(logDirectoryBlobs, inputBlobPath);
-                    CloudBlockBlob usbdgReportMetadataBlob = UsbdgDataProcessorService.GetReportMetadataBlob(logDirectoryBlobs, inputBlobPath);
-                    List<dynamic> emsLogFiles = await AzureStorageBlobService.DownloadAndDeserializeJsonBlobs(usbdgLogBlobs, inputContainer, inputBlobPath, log);
+                    List<CloudBlockBlob> usbdgLogBlobs = await DataTransformService.GetLogBlobs(logDirectoryBlobs, inputBlobPath);
+                    CloudBlockBlob usbdgReportMetadataBlob = await UsbdgDataProcessorService.GetReportMetadataBlob(logDirectoryBlobs, inputBlobPath);
+                    List<dynamic> emsLogFiles = await AzureStorageBlobService.DownloadAndDeserializeJsonBlobs(usbdgLogBlobs, inputContainer, inputBlobPath, log, payload?.FileName, emdTypeEnum, loggerTypeEnum);
                     dynamic usbdgMetadataJsonObject = await AzureStorageBlobService.DownloadAndDeserializeJsonBlob(usbdgReportMetadataBlob, inputContainer, inputBlobPath, log);
                     await DataTransformService.ValidateJsonObject(emsConfgContainer, usbdgMetadataJsonObject, jsonSchemaBlobNameUsbdgMetadata, log);
                     await DataTransformService.ValidateJsonObjects(emsConfgContainer, emsLogFiles, jsonSchemaBlobNameEmsCompliantLog, log);
-                    EdiJob ediJob = UsbdgDataProcessorService.PopulateEdiJobObject(usbdgMetadataJsonObject, emsLogFiles, usbdgLogBlobs, usbdgReportMetadataBlob, payload.FileName, inputBlobPath, emdTypeEnum, loggerTypeEnum);
+                    EdiJob ediJob = await UsbdgDataProcessorService.PopulateEdiJobObject(usbdgMetadataJsonObject, emsLogFiles, usbdgLogBlobs, usbdgReportMetadataBlob, payload.FileName, inputBlobPath, emdTypeEnum, loggerTypeEnum);
                     string emdAbsoluteTime = UsbdgDataProcessorService.GetUsbdgMountTimeAbst(ediJob);
                     string emdRelativeTime = DataTransformService.GetUsbdgMountTimeRelt(ediJob);
                     verfiedLoggerType = ediJob.Logger.Type.ToString().ToLower();
 
                     if (ediJob.Logger.Type != DataLoggerTypeEnum.Name.UNKNOWN)
                     {
-                        log.LogInformation($"- {payload.FileName} - Transform package contents");
-                        List<EmsEventRecord> emsEventCsvRows = DataModelMappingService.MapEmsLoggerEvents(emsLogFiles, ediJob);
-                        List<EdiSinkRecord> usbdgLocationCsvRows = DataModelMappingService.MapUsbdgLocations(usbdgMetadataJsonObject, ediJob);
-                        List<EdiSinkRecord> usbdgDeviceCsvRows = DataModelMappingService.MapUsbdgDevice(usbdgMetadataJsonObject);
-                        List<EdiSinkRecord> usbdgEventCsvRows = DataModelMappingService.MapUsbdgEvent(usbdgMetadataJsonObject);
-                        emsEventCsvRows = DataTransformService.ConvertRelativeTimeToTotalSecondsForEmsLogRecords(emsEventCsvRows);
+						log.LogInformation($"- {payload.FileName} - Transform package contents");
+                        List<EmsEventRecord> emsEventCsvRows = await DataModelMappingService.MapEmsLoggerEvents(emsLogFiles, ediJob);
+                        List<EdiSinkRecord> usbdgLocationCsvRows = await DataModelMappingService.MapUsbdgLocations(usbdgMetadataJsonObject, ediJob);
+                        List<EdiSinkRecord> usbdgDeviceCsvRows = await DataModelMappingService.MapUsbdgDevice(usbdgMetadataJsonObject);
+                        List<EdiSinkRecord> usbdgEventCsvRows = await DataModelMappingService.MapUsbdgEvent(usbdgMetadataJsonObject);
+                        emsEventCsvRows = await DataTransformService.ConvertRelativeTimeToTotalSecondsForEmsLogRecords(emsEventCsvRows);
                         List<EmsEventRecord> sortedEmsEventCsvRows = emsEventCsvRows.OrderBy(i => (i.EDI_RELT_ELAPSED_SECS)).ToList();
-                        int DurationSecs = DataTransformService.ConvertRelativeTimeStringToTotalSeconds(usbdgMetadataJsonObject, ediJob); // convert timespan to seconds
-                        sortedEmsEventCsvRows = UsbdgDataProcessorService.CalculateAbsoluteTimeForUsbdgRecords(sortedEmsEventCsvRows, ediJob);
+                        int DurationSecs = await DataTransformService.ConvertRelativeTimeStringToTotalSeconds(usbdgMetadataJsonObject, ediJob); // convert timespan to seconds
+                        sortedEmsEventCsvRows = await UsbdgDataProcessorService.CalculateAbsoluteTimeForUsbdgRecords(sortedEmsEventCsvRows, ediJob);
                         List<EdiSinkRecord> sortedEmsEventCsvRowsFinal = sortedEmsEventCsvRows.Cast<EdiSinkRecord>().ToList();
 
                         //string r1 = await DataTransformService.WriteRecordsToCsvBlob(ouputContainer, payload, sortedEmsEventCsvRowsFinal, verfiedLoggerType, log);
@@ -109,7 +110,7 @@ namespace fa_adf_transform_indigo_v2
 
                         log.LogInformation($"- {payload.FileName} - Send transformation response");
                         string blobPathFolderCurated = DataTransformService.BuildCuratedBlobFolderPath(payload.Path, verfiedLoggerType);
-                        string responseBody = DataTransformService.SerializeHttpResponseBody(blobPathFolderCurated, ediJob.Emd.Type.ToString());
+                        string responseBody = await DataTransformService.SerializeHttpResponseBody(blobPathFolderCurated, ediJob.Emd.Type.ToString());
                         DataTransformService.LogEmsTransformSucceededEventToAppInsights(payload.FileName, ediJob.Emd.Type, ediJob.Logger.Type, PipelineStageEnum.Name.ADF_TRANSFORM, log);
                         log.LogInformation($"- {payload.FileName} - Done");
 
@@ -122,7 +123,7 @@ namespace fa_adf_transform_indigo_v2
                         loggerType = DataLoggerTypeEnum.Name.UNKNOWN.ToString();
                         loggerTypeEnum = EmsService.GetDataLoggerType(loggerType);
                         string errorCode = "EHN9";
-                        string errorMessage = EdiErrorsService.BuildExceptionMessageString(null, errorCode, EdiErrorsService.BuildErrorVariableArrayList(ediJob.Logger.LMOD));
+                        string errorMessage = await EdiErrorsService.BuildExceptionMessageString(null, errorCode, EdiErrorsService.BuildErrorVariableArrayList(ediJob.Logger.LMOD));
                         DataTransformService.LogEmsTransformErrorEventToAppInsights(payload?.FileName, emdTypeEnum, PipelineStageEnum.Name.ADF_TRANSFORM, log, null, errorCode, errorMessage, loggerTypeEnum, PipelineFailureReasonEnum.Name.UNSUPPORTED_EMS_DEVICE);
                         //string errorMessage = $"Unknown file package";
                         log.LogError($"- {payload.FileName} - {errorMessage}");
@@ -133,22 +134,23 @@ namespace fa_adf_transform_indigo_v2
                 // Account for file packages with no logger data files
                 } else if (UsbdgDataProcessorService.IsFilePackageUsbdgOnly(logDirectoryBlobs) && EmsService.ValidateCceDeviceType(loggerType)) {
 
-                    log.LogInformation($"- {payload.FileName} - Download and validate package contents");
+					log.LogInformation($"- {payload.FileName} - Detected report package type: USBDG collected (no logger data files)");
+					log.LogInformation($"- {payload.FileName} - Download and validate package contents");
                     // NHGH-2819 2023.03.16 0950 USBDG collected package with no logger data
                     emdTypeEnum = EmdEnum.Name.USBDG;
                     loggerTypeEnum = DataLoggerTypeEnum.Name.NO_LOGGER;
-                    CloudBlockBlob usbdgReportMetadataBlob = UsbdgDataProcessorService.GetReportMetadataBlob(logDirectoryBlobs, inputBlobPath);
+                    CloudBlockBlob usbdgReportMetadataBlob = await UsbdgDataProcessorService.GetReportMetadataBlob(logDirectoryBlobs, inputBlobPath);
                     dynamic usbdgReportMetadata = await AzureStorageBlobService.DownloadAndDeserializeJsonBlob(usbdgReportMetadataBlob, inputContainer, inputBlobPath, log);
                     dynamic validatedUsbdgReportMetadataFile = await DataTransformService.ValidateJsonObject(emsConfgContainer, usbdgReportMetadata, jsonSchemaBlobNameUsbdgMetadata, log);
                     dynamic usbdgRecords = UsbdgDataProcessorService.GetUsbdgMetadataRecordsElement(usbdgReportMetadata);
                     string emdRelativeTime = DataTransformService.GetJObjectPropertyValueAsString(usbdgRecords, "RELT");
                     string emdAbsoluteTime = DataTransformService.GetJObjectPropertyValueAsString(usbdgRecords, "ABST");
-                    EdiJob ediJob = UsbdgDataProcessorService.PopulateEdiJobObject(usbdgReportMetadata, null, null, usbdgReportMetadataBlob, payload.FileName, inputBlobPath, emdTypeEnum, loggerTypeEnum);
+                    EdiJob ediJob = await UsbdgDataProcessorService.PopulateEdiJobObject(usbdgReportMetadata, null, null, usbdgReportMetadataBlob, payload.FileName, inputBlobPath, emdTypeEnum, loggerTypeEnum);
                     
                     log.LogInformation($"- {payload.FileName} - Transform package contents");
-                    List<EdiSinkRecord> usbdgLocationCsvRows = DataModelMappingService.MapUsbdgLocations(usbdgReportMetadata, ediJob);
-                    List<EdiSinkRecord> usbdgDeviceCsvRows = DataModelMappingService.MapUsbdgDevice(usbdgReportMetadata);
-                    List<EdiSinkRecord> usbdgEventCsvRows = DataModelMappingService.MapUsbdgEvent(usbdgReportMetadata);
+                    List<EdiSinkRecord> usbdgLocationCsvRows = await DataModelMappingService.MapUsbdgLocations(usbdgReportMetadata, ediJob);
+                    List<EdiSinkRecord> usbdgDeviceCsvRows = await DataModelMappingService.MapUsbdgDevice(usbdgReportMetadata);
+                    List<EdiSinkRecord> usbdgEventCsvRows = await DataModelMappingService.MapUsbdgEvent(usbdgReportMetadata);
 
                     //string r1 = await DataTransformService.WriteRecordsToCsvBlob(ouputContainer, payload, usbdgDeviceCsvRows, loggerType, log);
                     //string r2 = await DataTransformService.WriteRecordsToCsvBlob(ouputContainer, payload, usbdgEventCsvRows, loggerType, log);
@@ -159,7 +161,7 @@ namespace fa_adf_transform_indigo_v2
                     ediJob.Emd.PackageFiles.CuratedFiles.Add(await DataTransformService.WriteRecordsToCsvBlob(ouputContainer, payload, usbdgLocationCsvRows, loggerType, log));
 
                     log.LogInformation($"- {payload.FileName} - Send transformation response");
-                    string responseBody = DataTransformService.SerializeHttpResponseBody(ediJob.Emd.PackageFiles.CuratedFiles[0], ediJob.Emd.Type.ToString());
+                    string responseBody = await DataTransformService.SerializeHttpResponseBody(ediJob.Emd.PackageFiles.CuratedFiles[0], ediJob.Emd.Type.ToString());
                     DataTransformService.LogEmsTransformSucceededEventToAppInsights(payload.FileName, ediJob.Emd.Type, loggerTypeEnum, PipelineStageEnum.Name.ADF_TRANSFORM, log);
                     log.LogInformation($"- {payload.FileName} - Done");
 
@@ -169,7 +171,7 @@ namespace fa_adf_transform_indigo_v2
                     return new OkObjectResult(responseBody);
                 } else {
                     string errorCode = "KHRD";
-                    string errorMessage = EdiErrorsService.BuildExceptionMessageString(null, errorCode, EdiErrorsService.BuildErrorVariableArrayList(payload.FileName));
+                    string errorMessage = await EdiErrorsService.BuildExceptionMessageString(null, errorCode, EdiErrorsService.BuildErrorVariableArrayList(payload.FileName));
                     DataTransformService.LogEmsTransformErrorEventToAppInsights(payload?.FileName, emdTypeEnum, PipelineStageEnum.Name.ADF_TRANSFORM, log, null, errorCode, errorMessage, loggerTypeEnum, PipelineFailureReasonEnum.Name.UNKNOWN_FILE_PACKAGE);
                     //string errorMessage = $"Unknown file package";
                     log.LogError($"- {payload.FileName} - {errorMessage}");
@@ -183,7 +185,7 @@ namespace fa_adf_transform_indigo_v2
                 string errorCode = "E2N8";
 				log.LogError($"- {payload.FileName} - error code : " + errorCode);
 
-				string errorMessage = EdiErrorsService.BuildExceptionMessageString(e, errorCode, EdiErrorsService.BuildErrorVariableArrayList(payload.FileName));
+				string errorMessage = await EdiErrorsService.BuildExceptionMessageString(e, errorCode, EdiErrorsService.BuildErrorVariableArrayList(payload.FileName));
                 string innerErrorCode = EdiErrorsService.GetInnerErrorCodeFromMessage(errorMessage, errorCode);
                 DataTransformService.LogEmsTransformErrorEventToAppInsights(payload?.FileName, emdTypeEnum, PipelineStageEnum.Name.ADF_TRANSFORM, log, e, innerErrorCode, errorMessage, loggerTypeEnum, PipelineFailureReasonEnum.Name.UNKNOWN_EXCEPTION);
                 if (e is BadRequestException)

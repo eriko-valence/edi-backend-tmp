@@ -15,6 +15,7 @@ using lib_edi.Models.Loggers.Csv;
 using lib_edi.Models.Enums.Emd;
 using Microsoft.Extensions.Logging;
 using Microsoft.Azure.Storage.Blob.Protocol;
+using System.Threading.Tasks;
 
 namespace lib_edi.Services.Loggers
 {
@@ -31,7 +32,7 @@ namespace lib_edi.Services.Loggers
 		/// <returns>
 		/// List containing only USBDG metadata report blobs; Exception (RV62) otherwise
 		/// </returns>
-		public static CloudBlockBlob GetReportMetadataBlob(IEnumerable<IListBlobItem> logDirectoryBlobs, string blobPath)
+		public static async Task<CloudBlockBlob> GetReportMetadataBlob(IEnumerable<IListBlobItem> logDirectoryBlobs, string blobPath)
 		{
 			List<CloudBlockBlob> usbdgLogReportBlobs = new();
 
@@ -49,7 +50,7 @@ namespace lib_edi.Services.Loggers
 
 			if (usbdgLogReportBlobs.Count == 0)
 			{
-				string customErrorMessage = EdiErrorsService.BuildExceptionMessageString(null, "RV62", EdiErrorsService.BuildErrorVariableArrayList(blobPath));
+				string customErrorMessage = await EdiErrorsService.BuildExceptionMessageString(null, "RV62", EdiErrorsService.BuildErrorVariableArrayList(blobPath));
 				throw new Exception(customErrorMessage);
 			}
 
@@ -157,7 +158,7 @@ namespace lib_edi.Services.Loggers
         /// <returns>
         /// A list of CSV compatible EMD + logger data records, if successful; Exception (D39Y) if any failures occur 
         /// </returns>
-        public static EdiJob PopulateEdiJobObject(dynamic sourceUsbdgMetadata, List<dynamic> sourceLogs, List<CloudBlockBlob> listLoggerFiles, CloudBlockBlob usbdgReportMetadataBlob, string packageName, string stagePath, EmdEnum.Name emdTypeEnum, DataLoggerTypeEnum.Name dataLoggerType)
+        public static async Task<EdiJob> PopulateEdiJobObject(dynamic sourceUsbdgMetadata, List<dynamic> sourceLogs, List<CloudBlockBlob> listLoggerFiles, CloudBlockBlob usbdgReportMetadataBlob, string packageName, string stagePath, EmdEnum.Name emdTypeEnum, DataLoggerTypeEnum.Name dataLoggerType)
         {
             string propName = null;
             string propValue = null;
@@ -234,16 +235,16 @@ namespace lib_edi.Services.Loggers
                 // NHGH-2819 2023.03.15 1335 Only grab the mount time if there are logger data files
                 if (listLoggerFiles != null)
                 {
-                    ediJob.Emd.Metadata.Usbdg.MountTime = GetUsbdgMountTime(ediJob, listLoggerFiles, usbdgReportMetadataBlob);
+                    ediJob.Emd.Metadata.Usbdg.MountTime = await GetUsbdgMountTime(ediJob, listLoggerFiles, usbdgReportMetadataBlob);
                 }
                 
-                ediJob.Emd.Metadata.Usbdg.CreationTime = GetUsbdgReportCreationTime(usbdgReportMetadataBlob);
+                ediJob.Emd.Metadata.Usbdg.CreationTime = await GetUsbdgReportCreationTime(usbdgReportMetadataBlob);
 
                 return ediJob;
             }
             catch (Exception e)
             {
-                throw new Exception(EdiErrorsService.BuildExceptionMessageString(e, "D39Y", EdiErrorsService.BuildErrorVariableArrayList(propName, propValue, sourceFile)));
+                throw new Exception(await EdiErrorsService.BuildExceptionMessageString(e, "D39Y", EdiErrorsService.BuildErrorVariableArrayList(propName, propValue, sourceFile)));
             }
         }
 
@@ -257,14 +258,14 @@ namespace lib_edi.Services.Loggers
         /// Absolute time
         /// </returns>
         
-        public static EdiJobUsbdgMetadataMountTime GetUsbdgMountTimeFromReportMetadata(EdiJobUsbdgMetadata reportMetadata)
+        public static async Task<EdiJobUsbdgMetadataMountTime> GetUsbdgMountTimeFromReportMetadata(EdiJobUsbdgMetadata reportMetadata)
         {
             if (reportMetadata.MountTime.ABST != null && reportMetadata.MountTime.ABST != "")
             {
                 if (reportMetadata.MountTime.RELT != null && reportMetadata.MountTime.RELT != "")
                 {
-                    reportMetadata.MountTime.Calcs.ABST_UTC = DateConverter.ConvertIso8601CompliantString(reportMetadata.MountTime.ABST);
-                    reportMetadata.MountTime.Calcs.RELT_ELAPSED_SECS = DataTransformService.ConvertRelativeTimeStringToTotalSeconds(reportMetadata.MountTime.RELT);
+                    reportMetadata.MountTime.Calcs.ABST_UTC = await DateConverter.ConvertIso8601CompliantString(reportMetadata.MountTime.ABST);
+                    reportMetadata.MountTime.Calcs.RELT_ELAPSED_SECS = await DataTransformService.ConvertRelativeTimeStringToTotalSeconds(reportMetadata.MountTime.RELT);
                     reportMetadata.MountTime.SOURCE = EmdTimeSource.Name.EMD_REPORT_METADATA;
                 } else
                 {
@@ -279,25 +280,25 @@ namespace lib_edi.Services.Loggers
             return reportMetadata.MountTime;
         }
         
-        public static EdiJobUsbdgMetadataMountTime GetUsbdgMountTime(EdiJob ediJob, List<CloudBlockBlob> listLoggerFiles, CloudBlockBlob usbdgReportMetadataBlob)
+        public static async Task<EdiJobUsbdgMetadataMountTime> GetUsbdgMountTime(EdiJob ediJob, List<CloudBlockBlob> listLoggerFiles, CloudBlockBlob usbdgReportMetadataBlob)
         {
             
-            EdiJobUsbdgMetadataMountTime timeInfo = GetUsbdgMountTimeFromReportMetadata(ediJob.Emd.Metadata.Usbdg);
+            EdiJobUsbdgMetadataMountTime timeInfo = await GetUsbdgMountTimeFromReportMetadata(ediJob.Emd.Metadata.Usbdg);
             // NHGH-2819 2023.13.15 1502 fall back to SYNC file name if mount times do not exist in report metadata
             if (ediJob.Emd.Metadata.Usbdg.MountTime.SOURCE == EmdTimeSource.Name.NONE)
             {
-                timeInfo = GetUsbdgMountTimeFromSyncFileName(listLoggerFiles);
+                timeInfo = await GetUsbdgMountTimeFromSyncFileName(listLoggerFiles);
             }
             return timeInfo;
         }
 
-        public static EdiJobUsbdgMetadataCreationTime GetUsbdgReportCreationTime(CloudBlockBlob usbdgReportMetadataBlob)
+        public static async Task<EdiJobUsbdgMetadataCreationTime> GetUsbdgReportCreationTime(CloudBlockBlob usbdgReportMetadataBlob)
         {
-            EdiJobUsbdgMetadataCreationTime timeInfo = GetUsbdgReportCreationTimeFromMetadataFileName(usbdgReportMetadataBlob.Name);
+            EdiJobUsbdgMetadataCreationTime timeInfo = await GetUsbdgReportCreationTimeFromMetadataFileName(usbdgReportMetadataBlob.Name);
             return timeInfo;
         }
 
-        public static EdiJobUsbdgMetadataCreationTime GetUsbdgReportCreationTimeFromMetadataFileName(string name)
+        public static async Task<EdiJobUsbdgMetadataCreationTime> GetUsbdgReportCreationTimeFromMetadataFileName(string name)
         {
             EdiJobUsbdgMetadataCreationTime timeInfo = null;
 
@@ -311,7 +312,7 @@ namespace lib_edi.Services.Loggers
                 {
                     timeInfo ??= new EdiJobUsbdgMetadataCreationTime();
                     timeInfo.ABST = m.Groups[2].Value;
-                    timeInfo.ABST_UTC = DateConverter.ConvertIso8601CompliantString(m.Groups[2].Value); ;
+                    timeInfo.ABST_UTC = await DateConverter.ConvertIso8601CompliantString(m.Groups[2].Value); ;
                     timeInfo.RELT = m.Groups[1].Value;
                     timeInfo.SOURCE = EmdTimeSource.Name.EMD_REPORT_METADATA_FILENAME;
                 }
@@ -358,7 +359,7 @@ namespace lib_edi.Services.Loggers
         /// Absolute timestamp (DateTime) of a Indigo V2 record; Exception (4Q5D) otherwise
         /// </returns>
         //public static List<EmsEventRecord> CalculateAbsoluteTimeForUsbdgRecords(List<EmsEventRecord> records, int reportDurationSeconds, dynamic reportMetadata, EdiJob ediJob)
-        public static List<EmsEventRecord> CalculateAbsoluteTimeForUsbdgRecords(List<EmsEventRecord> records, EdiJob ediJob)
+        public static async Task<List<EmsEventRecord>> CalculateAbsoluteTimeForUsbdgRecords(List<EmsEventRecord> records, EdiJob ediJob)
         {
             //string absoluteTime = GetKeyValueFromMetadataRecordsObject("ABST", reportMetadata);
             string emdTimeAbst = GetUsbdgMountTimeAbst(ediJob);
@@ -366,7 +367,7 @@ namespace lib_edi.Services.Loggers
 
             foreach (EmsEventRecord record in records)
             {
-                DateTime? dt = DataTransformService.CalculateAbsoluteTimeForEmsRecord(emdTimeAbst, emdTimeElapsedSecs, record.RELT, record.EDI_SOURCE);
+                DateTime? dt = await DataTransformService.CalculateAbsoluteTimeForEmsRecord(emdTimeAbst, emdTimeElapsedSecs, record.RELT, record.EDI_SOURCE);
                 record.EDI_ABST = dt;
             }
             return records;
@@ -382,7 +383,7 @@ namespace lib_edi.Services.Loggers
             return m;
         }
 
-        public static EdiJobUsbdgMetadataMountTime GetUsbdgMountTimeFromSyncFileName(List<CloudBlockBlob> listLoggerFiles)
+        public static async Task<EdiJobUsbdgMetadataMountTime> GetUsbdgMountTimeFromSyncFileName(List<CloudBlockBlob> listLoggerFiles)
         {
             EdiJobUsbdgMetadataMountTime timeInfo = null;
 
@@ -400,8 +401,8 @@ namespace lib_edi.Services.Loggers
                             timeInfo ??= new EdiJobUsbdgMetadataMountTime();
                             timeInfo.ABST = m1.Groups[3].Value;
                             timeInfo.RELT = m1.Groups[2].Value;
-                            timeInfo.Calcs.ABST_UTC = DateConverter.ConvertIso8601CompliantString(m1.Groups[3].Value);
-                            timeInfo.Calcs.RELT_ELAPSED_SECS = DataTransformService.ConvertRelativeTimeStringToTotalSeconds(m1.Groups[2].Value);
+                            timeInfo.Calcs.ABST_UTC = await DateConverter.ConvertIso8601CompliantString(m1.Groups[3].Value);
+                            timeInfo.Calcs.RELT_ELAPSED_SECS = await DataTransformService.ConvertRelativeTimeStringToTotalSeconds(m1.Groups[2].Value);
                             timeInfo.SOURCE = EmdTimeSource.Name.EMS_SYNC_FILENAME;
                         }
                     }

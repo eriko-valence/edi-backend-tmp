@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace lib_edi.Services.System.IO
 {
@@ -19,7 +20,7 @@ namespace lib_edi.Services.System.IO
         /// <returns>
         /// Byte array of the stream object
         /// </returns>
-        public static byte[] ReadToEnd(Stream s)
+        public static async Task<byte[]> ReadToEnd(Stream s)
         {
             try
             {
@@ -74,7 +75,7 @@ namespace lib_edi.Services.System.IO
             }
             catch (Exception e)
             {
-                string customError = EdiErrorsService.BuildExceptionMessageString(e, "U791", null);
+                string customError = await EdiErrorsService.BuildExceptionMessageString(e, "U791", null);
                 throw new Exception(customError);
             }
 

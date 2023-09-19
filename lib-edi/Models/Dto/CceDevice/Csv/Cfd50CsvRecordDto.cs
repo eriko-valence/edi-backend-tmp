@@ -35,7 +35,8 @@ namespace lib_edi.Models.Dto.CceDevice.Csv
 					_ASER = IntegerConverter.ConvertToBigInteger(value);
 				} catch (Exception e)
 				{
-					string customErrorMessage = EdiErrorsService.BuildExceptionMessageString(e, "3C68", EdiErrorsService.BuildErrorVariableArrayList("ASER"));
+					//string customErrorMessage = EdiErrorsService.BuildExceptionMessageString(e, "3C68", EdiErrorsService.BuildErrorVariableArrayList("ASER"));
+					string customErrorMessage = "3C68: An exception was thrown while setting property 'ASER'";
 					throw new Exception(customErrorMessage);
 				}
 				

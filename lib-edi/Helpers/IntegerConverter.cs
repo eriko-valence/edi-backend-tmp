@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Numerics;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace lib_edi.Helpers
 {
@@ -17,13 +18,15 @@ namespace lib_edi.Helpers
 			catch (ArgumentNullException ane)
 			{
 				hex ??= "''";
-				string customErrorMessage = EdiErrorsService.BuildExceptionMessageString(ane, "G375", EdiErrorsService.BuildErrorVariableArrayList(hex));
+				//string customErrorMessage = await EdiErrorsService.BuildExceptionMessageString(ane, "G375", EdiErrorsService.BuildErrorVariableArrayList(hex));
+				string customErrorMessage = "G375: An null valued exception was thrown while converting hex to bigint";
 				throw new Exception(customErrorMessage);
 			}
 			catch (Exception e)
 			{
 				hex ??= "''";
-				string customErrorMessage = EdiErrorsService.BuildExceptionMessageString(e, "T216", EdiErrorsService.BuildErrorVariableArrayList(hex));
+				//string customErrorMessage = await EdiErrorsService.BuildExceptionMessageString(e, "T216", EdiErrorsService.BuildErrorVariableArrayList(hex));
+				string customErrorMessage = "T216: An exception was thrown while converting hex to bigint";
 				throw new Exception(customErrorMessage);
 			}
 		} 
