@@ -18,7 +18,7 @@ namespace lib_edi.Models.Enums.Azure.AppInsights
 			UNSUPPORTED_EXTENSION,
 			UNSUPPORTED_EMS_DEVICE,
 			UNKNOWN_FILE_PACKAGE,
-			WARN,
+			WARN_INVALID_JSON,
 #pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 		}
 	}

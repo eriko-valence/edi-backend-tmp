@@ -755,14 +755,14 @@ namespace lib_edi.Services.CceDevice
             }
         }
 
-		public static void LogEmsTransformWarningEventToAppInsights(string reportFileName, EmdEnum.Name emdType, PipelineStageEnum.Name stageName, ILogger log, Exception e, string errorCode, string errorMessage, DataLoggerTypeEnum.Name loggerTypeEnum)
+		public static void LogEmsTransformWarningEventToAppInsights(string reportFileName, EmdEnum.Name emdType, PipelineStageEnum.Name stageName, ILogger log, Exception e, string errorCode, string errorMessage, DataLoggerTypeEnum.Name loggerTypeEnum, PipelineFailureReasonEnum.Name pipelineFailureReasonEnum)
 		{
 			PipelineEvent pipelineEvent = new PipelineEvent();
 			pipelineEvent.EventName = PipelineEventEnum.Name.WARN;
 			pipelineEvent.StageName = stageName;
 			pipelineEvent.LoggerType = loggerTypeEnum;
 			pipelineEvent.PipelineFailureType = PipelineFailureTypeEnum.Name.WARN;
-			pipelineEvent.PipelineFailureReason = PipelineFailureReasonEnum.Name.WARN;
+			pipelineEvent.PipelineFailureReason = pipelineFailureReasonEnum;
 			pipelineEvent.ReportFileName = reportFileName;
 			pipelineEvent.ErrorCode = errorCode;
 			pipelineEvent.ErrorMessage = errorMessage;

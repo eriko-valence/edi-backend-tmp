@@ -310,8 +310,12 @@ namespace lib_edi.Services.Azure
 				// NHGH-3078 20230824 1441 Add custom error to capture blobs with empty strings 
 				if (logBlobText == "")
 				{
-					string customErrorMessage = await EdiErrorsService.BuildExceptionMessageString(null, "ATDM", EdiErrorsService.BuildErrorVariableArrayList(blobSource));
-					throw new Exception(customErrorMessage);
+					log.LogError($"- {reportPackageName} - json data file is empty");
+					log.LogError($"- {reportPackageName}   - data file : " + blobSource);
+					log.LogError($"- {reportPackageName}   - action    : skip this empty json data file and continue processing other files in this report package ");
+					string errorCode = "ATDM";
+					string errorMessage = await EdiErrorsService.BuildExceptionMessageString(null, errorCode, EdiErrorsService.BuildErrorVariableArrayList(logBlob.Name));
+					DataTransformService.LogEmsTransformWarningEventToAppInsights(reportPackageName, emdNum, PipelineStageEnum.Name.ADF_TRANSFORM, log, null, errorCode, errorMessage, dataLoggerType, PipelineFailureReasonEnum.Name.WARN_INVALID_JSON);
 				} else
 				{
 					try
@@ -327,7 +331,7 @@ namespace lib_edi.Services.Azure
 						log.LogError($"- {reportPackageName}   - action    : skip this invalid json data file and continue processing other files in this report package ");
 						string errorCode = "QTAF";
 						string errorMessage = await EdiErrorsService.BuildExceptionMessageString(e, errorCode, EdiErrorsService.BuildErrorVariableArrayList(logBlob.Name));
-						DataTransformService.LogEmsTransformWarningEventToAppInsights(reportPackageName, emdNum, PipelineStageEnum.Name.ADF_TRANSFORM, log, null, errorCode, errorMessage, dataLoggerType);
+						DataTransformService.LogEmsTransformWarningEventToAppInsights(reportPackageName, emdNum, PipelineStageEnum.Name.ADF_TRANSFORM, log, null, errorCode, errorMessage, dataLoggerType, PipelineFailureReasonEnum.Name.WARN_INVALID_JSON);
 					}
 				}
 			}
