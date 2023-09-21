@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using lib_edi.Models.Azure.Monitor.Query;
@@ -110,7 +111,9 @@ namespace fa_maint
                     log.LogInformation($"{logPrefix} no edi adf pipeline activity records found in the log analytics workspace");
                 }
 
-                EdiMaintJobStats results = new()
+				List<EdiPipelineEventResult> warnEvents = l2.Where(x => x.PipelineEvent == PipelineEventEnum.Name.WARN.ToString()).ToList();
+
+				EdiMaintJobStats results = new()
                 {
                     EdiFunctionApp = EdiFunctionAppsEnum.Name.EDI_MAINT,
                     EdiJobEventType = EdiMaintJobEventEnum.Name.EDI_IMPORTER_RESULT,
@@ -130,8 +133,9 @@ namespace fa_maint
                 log.LogInformation($"{logPrefix} - events loaded into db ..................: {results.Loaded}");
                 log.LogInformation($"{logPrefix} - events not loaded into db (duplicates) .: {results.Skipped}");
                 log.LogInformation($"{logPrefix} - events not loaded into db (failed) .....: {results.Failed}");
+				log.LogInformation($"{logPrefix} - total warning events ...................: {warnEvents.Count}");
 
-                AzureAppInsightsService.LogEvent(results);
+				AzureAppInsightsService.LogEvent(results);
                 log.LogInformation($"{logPrefix} done");
             }
             catch (Exception ex)

@@ -644,7 +644,60 @@ namespace lib_edi.Services.Azure
             return failedEdiJobs;
         }
 
-        public static async Task<OverallEdiRunStat> GetOverallEdiJobRunStats(EdiJobInfo job)
+		public static async Task<List<EdiPipelineEvent>> GetEdiJobWarningEventsFromLast24Hours(EdiJobInfo job)
+		{
+			List<EdiPipelineEvent> pipelineEvents = new List<EdiPipelineEvent>();
+			using (SqlConnection conn = new(job.EdiDb.ConnectionString))
+			{
+				conn.Open();
+
+				using (SqlCommand cmd = conn.CreateCommand())
+				{
+					cmd.CommandType = CommandType.StoredProcedure;
+					cmd.CommandText = "[telemetry].[getEdiFilePackageWarnings]";
+					cmd.Parameters.Add(new SqlParameter("@StartDate", SqlDbType.DateTimeOffset));
+					cmd.Parameters.Add(new SqlParameter("@EndDate", SqlDbType.DateTimeOffset));
+
+					try
+					{
+
+						cmd.Parameters["@StartDate"].Value = job.EdiEmailReportParameters.StartDate;
+						cmd.Parameters["@EndDate"].Value = job.EdiEmailReportParameters.EndDate;
+
+						using var reader = await cmd.ExecuteReaderAsync();
+						DataTable dt = new();
+						dt.Load(reader);
+
+						for (int i = 0; i < dt.Rows.Count; i++)
+						{
+							EdiPipelineEvent pipelineEvent = new EdiPipelineEvent();
+							pipelineEvent.FilePackageName = dt.Rows[i]["FilePackageName"].ToString();
+							pipelineEvent.ESER = dt.Rows[i]["ESER"].ToString();
+							pipelineEvent.ErrorCode = dt.Rows[i]["ErrorCode"].ToString();
+							pipelineEvent.EmdType = dt.Rows[i]["EmdType"].ToString();
+							pipelineEvent.PipelineEvent = dt.Rows[i]["PipelineEvent"].ToString();
+							pipelineEvent.PipelineStage = dt.Rows[i]["PipelineStage"].ToString();
+							pipelineEvent.PipelineFailureReason = dt.Rows[i]["PipelineFailureReason"].ToString();
+							pipelineEvent.PipelineFailureType = dt.Rows[i]["PipelineFailureType"].ToString();
+							pipelineEvent.ExceptionMessage = dt.Rows[i]["ExceptionMessage"].ToString();
+							pipelineEvent.PipelineState = dt.Rows[i]["PipelineState"].ToString();
+							pipelineEvent.DataLoggerType = dt.Rows[i]["DataLoggerType"].ToString();
+							pipelineEvent.DateAdded = dt.Rows[i]["DateAdded"] == DBNull.Value ? null : (DateTime?)dt.Rows[i]["DateAdded"];
+							pipelineEvent.EventTime = dt.Rows[i]["EventTime"] == DBNull.Value ? null : (DateTime?)dt.Rows[i]["EventTime"];
+							pipelineEvents.Add(pipelineEvent);
+						}
+					}
+					catch (Exception)
+					{
+						throw;
+					}
+				}
+				conn.Close();
+			}
+			return pipelineEvents;
+		}
+
+		public static async Task<OverallEdiRunStat> GetOverallEdiJobRunStats(EdiJobInfo job)
         {
             OverallEdiRunStat overallEdiRunStat = new OverallEdiRunStat();
             using (SqlConnection conn = new(job.EdiDb.ConnectionString))

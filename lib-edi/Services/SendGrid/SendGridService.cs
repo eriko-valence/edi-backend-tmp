@@ -24,7 +24,7 @@ namespace lib_edi.Services.SendGrid
         /// <returns>
         /// true if the email was successfully sent; otherwise, false.
         /// </returns>
-        public async static Task<bool> SendEdiJobFailuresEmailReport(List<FailedEdiJob> jobs, OverallEdiRunStat jobStats, SendGridConnectInfo settings, ILogger log)
+        public async static Task<bool> SendEdiJobFailuresEmailReport(List<FailedEdiJob> jobs, List<EdiPipelineEvent> warnEvents, OverallEdiRunStat jobStats, SendGridConnectInfo settings, ILogger log)
         {
             string logPrefix = "  - [sendgrid_service->send_edi_job_failure_report_email]: ";
 
@@ -33,8 +33,9 @@ namespace lib_edi.Services.SendGrid
                 log.LogInformation($"{logPrefix} start");
 
                 List<SendGridEdiFailedJob> sendGridResultlist = new();
+				List<SendGridWarningEvent> sendGridWarnEventsList = new();
 
-                foreach (FailedEdiJob job in jobs)
+				foreach (FailedEdiJob job in jobs)
                 {
                     SendGridEdiFailedJob sendGridJob = new SendGridEdiFailedJob();
                     sendGridJob.FilePackageName = job.FilePackageName;
@@ -47,6 +48,22 @@ namespace lib_edi.Services.SendGrid
 					sendGridJob.EmdType = job.EmdType;
 					sendGridResultlist.Add(sendGridJob);
                 }
+
+                foreach (EdiPipelineEvent job in warnEvents)
+                {
+					SendGridWarningEvent sendGridWarnEvent = new SendGridWarningEvent();
+					sendGridWarnEvent.FilePackageName = job.FilePackageName;
+                    sendGridWarnEvent.PipelineEvent = job.PipelineEvent;
+					sendGridWarnEvent.PipelineFailureType = job.PipelineFailureType;
+					sendGridWarnEvent.PipelineFailureReason = job.PipelineFailureReason;
+					sendGridWarnEvent.ErrorCode = job.ErrorCode;
+					sendGridWarnEvent.ExceptionMessage = job.ExceptionMessage;
+					sendGridWarnEvent.EventTime = job.EventTime;
+                    sendGridWarnEvent.EmdType = job.EmdType.ToString();
+                    sendGridWarnEvent.DataLoggerType = job.DataLoggerType.ToString();
+					sendGridWarnEvent.PipelineStage = job.PipelineStage;
+                    sendGridWarnEventsList.Add(sendGridWarnEvent);
+				}
 
                 if (settings != null)
                 {
@@ -81,7 +98,8 @@ namespace lib_edi.Services.SendGrid
                     {
                         Subject = emailSubjectLine,
                         Results = sendGridResultlist,
-                        JobStats = jobStats
+                        WarningEvents = sendGridWarnEventsList,
+						JobStats = jobStats
                     };
                     string stringJsonDynamicTemplateData = JsonConvert.SerializeObject(dynamicTemplateData);
                     log.LogInformation($"{logPrefix} template data: ");
