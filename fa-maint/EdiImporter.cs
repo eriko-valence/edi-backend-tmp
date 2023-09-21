@@ -7,6 +7,7 @@ using lib_edi.Models.Azure.Monitor.Query;
 using lib_edi.Models.Edi.Data.Import;
 using lib_edi.Models.Edi.Job;
 using lib_edi.Models.Edi.Job.EmailReport;
+using lib_edi.Models.Enums.Azure.AppInsights;
 using lib_edi.Models.Enums.Edi.Data.Import;
 using lib_edi.Models.Enums.Edi.Functions;
 using lib_edi.Services.Azure;
