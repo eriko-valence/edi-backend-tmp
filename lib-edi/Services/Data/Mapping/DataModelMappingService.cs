@@ -444,8 +444,8 @@ namespace lib_edi.Services.Loggers
         /// <remarks>
         /// This mapping denormalizes the logger data file into records ready for CSV serialization.
         /// </remarks>
-        /// <param name="sourceLogs">A list of deserilized logger data file objects</param>
-        /// <param name="sourceEdiJob">A deserilized EDI job object holding the USBDG serial number and ABST</param>
+        /// <param name="sourceLogs">A list of deserialized logger data file objects</param>
+        /// <param name="sourceEdiJob">A deserialized EDI job object holding the USBDG serial number and ABST</param>
         /// <returns>
         /// A list of CSV compatible Indigo V2 event records, if successful; Exception (HKTJ) if any failures occur 
         /// </returns>
