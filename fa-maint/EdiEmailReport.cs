@@ -47,10 +47,12 @@ namespace fa_maint
                 log.LogInformation($"{logPrefix} - job.query.enddate (utc)..............: {job.EdiEmailReportParameters.EndDate}");
                 log.LogInformation($"{logPrefix} get recent edi job runtime telemetry from azure sql");
                 List<FailedEdiJob> results = await AzureSqlDatabaseService.GetFailedEdiJobsFromLast24Hours(job);
-                log.LogInformation($"{logPrefix} get recent edi job runtime overall telemetry from azure sql");
+				log.LogInformation($"{logPrefix} get recent edi job runtime telemetry from azure sql");
+				List<EdiPipelineEvent> warnEvents = await AzureSqlDatabaseService.GetEdiJobWarningEventsFromLast24Hours(job);
+				log.LogInformation($"{logPrefix} get recent edi job runtime overall telemetry from azure sql");
                 OverallEdiRunStat overallStats = await AzureSqlDatabaseService.GetOverallEdiJobRunStats(job);
                 log.LogInformation($"{logPrefix} send edi daily job status email report via sendgrid");
-                await SendGridService.SendEdiJobFailuresEmailReport(results, overallStats, EdiService.GetDailyStatusEmailReportSendGridSettings(), log);
+                await SendGridService.SendEdiJobFailuresEmailReport(results, warnEvents, overallStats, EdiService.GetDailyStatusEmailReportSendGridSettings(), log);
 
                 EdiMaintJobStats jobStatsSummarySucceeded = new()
                 {
@@ -68,7 +70,8 @@ namespace fa_maint
                 log.LogInformation($"{logPrefix}     - failures at consumer ..: {overallStats.FailedConsumer}");
                 log.LogInformation($"{logPrefix}     - failures at transform .: {overallStats.FailedTransform}");
                 log.LogInformation($"{logPrefix}     - failures at sql .......: {overallStats.FailedSqlLoad}");
-                AzureAppInsightsService.LogEvent(jobStatsSummarySucceeded);
+				log.LogInformation($"{logPrefix} - warning events count ......: {warnEvents.Count}");
+				AzureAppInsightsService.LogEvent(jobStatsSummarySucceeded);
                 log.LogInformation($"{logPrefix} done");
 
             } catch (Exception ex)

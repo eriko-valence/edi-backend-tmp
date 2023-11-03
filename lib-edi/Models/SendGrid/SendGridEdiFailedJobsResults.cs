@@ -16,10 +16,11 @@ namespace lib_edi.Models.SendGrid
         }
 
         public List<SendGridEdiFailedJob> Results { get; set; }
-        //public List<PogoLTAppError> Errors { get; set; }
-        //public int TotalJobsRun { get; set; }
-        //public int TotalErrors { get; set; }
-        public string Subject { get; set; }
+		public List<SendGridWarningEvent> WarningEvents { get; set; }
+		//public List<PogoLTAppError> Errors { get; set; }
+		//public int TotalJobsRun { get; set; }
+		//public int TotalErrors { get; set; }
+		public string Subject { get; set; }
         public OverallEdiRunStat JobStats { get; set; }
     }
 }
