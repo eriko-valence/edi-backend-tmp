@@ -235,7 +235,7 @@ namespace lib_edi.Services.Loggers
                 // NHGH-2819 2023.03.15 1335 Only grab the mount time if there are logger data files
                 if (listLoggerFiles != null)
                 {
-                    ediJob.Emd.Metadata.Usbdg.MountTime = await GetUsbdgMountTime(ediJob, listLoggerFiles, usbdgReportMetadataBlob);
+                    ediJob.Emd.Metadata.Usbdg.MountTime = await GetUsbdgMountTime(listLoggerFiles);
                 }
                 
                 ediJob.Emd.Metadata.Usbdg.CreationTime = await GetUsbdgReportCreationTime(usbdgReportMetadataBlob);
@@ -279,16 +279,15 @@ namespace lib_edi.Services.Loggers
             }
             return reportMetadata.MountTime;
         }
-        
-        public static async Task<EdiJobUsbdgMetadataMountTime> GetUsbdgMountTime(EdiJob ediJob, List<CloudBlockBlob> listLoggerFiles, CloudBlockBlob usbdgReportMetadataBlob)
+
+        /*
+         * HISTORY
+         *   - NHGH-3192 2023.11.06 1337 primary source of usbdg mount times should be SYNC file name, not report metadata
+         *   - NHGH-2819 2023.03.15 1502 fall back to SYNC file name if mount times do not exist in report metadata 
+         */
+        public static async Task<EdiJobUsbdgMetadataMountTime> GetUsbdgMountTime(List<CloudBlockBlob> listLoggerFiles)
         {
-            
-            EdiJobUsbdgMetadataMountTime timeInfo = await GetUsbdgMountTimeFromReportMetadata(ediJob.Emd.Metadata.Usbdg);
-            // NHGH-2819 2023.13.15 1502 fall back to SYNC file name if mount times do not exist in report metadata
-            if (ediJob.Emd.Metadata.Usbdg.MountTime.SOURCE == EmdTimeSource.Name.NONE)
-            {
-                timeInfo = await GetUsbdgMountTimeFromSyncFileName(listLoggerFiles);
-            }
+            EdiJobUsbdgMetadataMountTime timeInfo = await GetUsbdgMountTimeFromSyncFileName(listLoggerFiles);
             return timeInfo;
         }
 
