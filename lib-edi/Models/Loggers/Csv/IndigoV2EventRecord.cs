@@ -16,5 +16,11 @@ namespace lib_edi.Models.Loggers.Csv
         // NHGH-3191 2023.11.03 0928 New field introduced with logger firmware v1.0.5-C
         [Name("MSW")]
         public string MSW { get; set;}
+        // NHGH-3287 2024.02.07 1614 New Indigo logger object
+        [Name("ZXCLC")]
+        public double? ZXCLC { get; set; }
+        // NHGH-3287 2024.02.07 1614 New Indigo logger object
+        [Name("DRCV")]
+        public int DRCV { get; set; }
     }
 }
