@@ -88,10 +88,9 @@ namespace fa_ccdx_provider
                         string storageConnectionStringConfig = Environment.GetEnvironmentVariable("AZURE_STORAGE_INPUT_CONNECTION_STRING");
                         string blobContainerNameConfig = Environment.GetEnvironmentVariable("AZURE_STORAGE_BLOB_CONTAINER_NAME_CONFIG");
                         // 2024.02.29 1602 NHGH-3305 Remove sample ccdx headers
-                        //string fileCcdxPublisherSampleHeaderValues = Environment.GetEnvironmentVariable("CCDX_PUBLISHER_HEADER_SAMPLE_VALUES_FILENAME");
-                        log.LogInformation($"{logPrefix} Retrieve sample ccdx provider metadata headers from blob storage");
-                        // 2024.02.29 1602 NHGH-3305 Remove sample ccdx headers
                         /*
+                        string fileCcdxPublisherSampleHeaderValues = Environment.GetEnvironmentVariable("CCDX_PUBLISHER_HEADER_SAMPLE_VALUES_FILENAME");
+                        log.LogInformation($"{logPrefix} Retrieve sample ccdx provider metadata headers from blob storage");
                         string blobText = await AzureStorageBlobService.DownloadBlobTextAsync(storageConnectionStringConfig, blobContainerNameConfig, fileCcdxPublisherSampleHeaderValues);
                         CcdxProviderSampleHeadersDto sampleHeaders = JsonConvert.DeserializeObject<CcdxProviderSampleHeadersDto>(blobText);
                         */
