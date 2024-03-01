@@ -34,7 +34,7 @@ namespace lib_edi.Services.Ccdx
 		/// <returns>
 		/// HTTP request message
 		/// </returns>
-		public static async Task<HttpRequestMessage> BuildCcdxHttpMultipartFormDataRequestMessage(HttpMethod httpMethod, string httpRequestUriString, MultipartFormDataContent multipartFormDataContent, CcdxProviderSampleHeadersDto requiredProviderHeaders, string blobReportName, ILogger log)
+		public static async Task<HttpRequestMessage> BuildCcdxHttpMultipartFormDataRequestMessage(HttpMethod httpMethod, string httpRequestUriString, MultipartFormDataContent multipartFormDataContent, string blobReportName, ILogger log)
 		{
 			try
 			{
@@ -62,6 +62,8 @@ namespace lib_edi.Services.Ccdx
 				requestMessage.Headers.Add("dx-owner", ccdxHttpHeaderDXOwner); // data Owner that owns that data
 				requestMessage.Headers.Add("ce-time", ccdxEventTime); // time the originating event was created
 
+                // 2024.02.29 1602 NHGH-3305 Remove sample ccdx headers
+                /*
 				requestMessage.Headers.Add("dx-location-latitude", requiredProviderHeaders.Location.Latitude);
 				requestMessage.Headers.Add("dx-location-longitude", requiredProviderHeaders.Location.Longitude);
 				requestMessage.Headers.Add("dx-location-accuracy", requiredProviderHeaders.Location.Accuracy);
@@ -77,8 +79,9 @@ namespace lib_edi.Services.Ccdx
 				requestMessage.Headers.Add("dx-facility-name", requiredProviderHeaders.Facility.FacilityName);
 				requestMessage.Headers.Add("dx-facility-contact-name", requiredProviderHeaders.Facility.ContactName);
 				requestMessage.Headers.Add("dx-facility-contact-phone", requiredProviderHeaders.Facility.ContactPhone);
+				*/
 
-				requestMessage.Headers.ExpectContinue = false;
+                requestMessage.Headers.ExpectContinue = false;
 				requestMessage.Content = multipartFormDataContent;
 				return requestMessage;
 			}

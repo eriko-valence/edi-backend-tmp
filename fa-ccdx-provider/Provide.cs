@@ -87,14 +87,17 @@ namespace fa_ccdx_provider
                         var body = await sr.ReadToEndAsync();
                         string storageConnectionStringConfig = Environment.GetEnvironmentVariable("AZURE_STORAGE_INPUT_CONNECTION_STRING");
                         string blobContainerNameConfig = Environment.GetEnvironmentVariable("AZURE_STORAGE_BLOB_CONTAINER_NAME_CONFIG");
+                        // 2024.02.29 1602 NHGH-3305 Remove sample ccdx headers
+                        /*
                         string fileCcdxPublisherSampleHeaderValues = Environment.GetEnvironmentVariable("CCDX_PUBLISHER_HEADER_SAMPLE_VALUES_FILENAME");
                         log.LogInformation($"{logPrefix} Retrieve sample ccdx provider metadata headers from blob storage");
                         string blobText = await AzureStorageBlobService.DownloadBlobTextAsync(storageConnectionStringConfig, blobContainerNameConfig, fileCcdxPublisherSampleHeaderValues);
                         CcdxProviderSampleHeadersDto sampleHeaders = JsonConvert.DeserializeObject<CcdxProviderSampleHeadersDto>(blobText);
+                        */
                         log.LogInformation($"{logPrefix} Prepare ccdx provider http request with multipart content");
                         string ccdxHttpEndpoint = Environment.GetEnvironmentVariable("CCDX_HTTP_MULTIPART_FORM_DATA_FILE_ENDPOINT");
                         MultipartFormDataContent multipartFormDataByteArrayContent = await HttpService.BuildMultipartFormDataByteArrayContent(ccBlobInput, "file", ccBlobInputName);
-                        HttpRequestMessage requestMessage = await CcdxService.BuildCcdxHttpMultipartFormDataRequestMessage(HttpMethod.Post, ccdxHttpEndpoint, multipartFormDataByteArrayContent, sampleHeaders, ccBlobInputName, log);
+                        HttpRequestMessage requestMessage = await CcdxService.BuildCcdxHttpMultipartFormDataRequestMessage(HttpMethod.Post, ccdxHttpEndpoint, multipartFormDataByteArrayContent, ccBlobInputName, log);
                         log.LogInformation($"{logPrefix} Request header metadata: ");
                         log.LogInformation($"{logPrefix}   ce-id: {HttpService.GetHeaderStringValue(requestMessage, "ce-id")}");
                         log.LogInformation($"{logPrefix}   ce-type: {HttpService.GetHeaderStringValue(requestMessage, "ce-type")}");
