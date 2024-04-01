@@ -381,6 +381,10 @@ namespace lib_edi.Services.CceDevice
                             {
                                 blobName = DataTransformService.BuildCuratedBlobPath(requestBody.Path, "indigo_v2_event.csv", loggerType);
                             }
+                            else if (recordType == "IndigoChargerV2EventRecord")
+                            {
+                                blobName = DataTransformService.BuildCuratedBlobPath(requestBody.Path, "indigo_charger_v2_event.csv", loggerType);
+                            }
                             else if (recordType == "Sl1EventRecord")
                             {
                                 blobName = DataTransformService.BuildCuratedBlobPath(requestBody.Path, "sl1_event.csv", loggerType);
@@ -417,6 +421,11 @@ namespace lib_edi.Services.CceDevice
                             if (recordType == "IndigoV2EventRecord")
                             {
                                 List<IndigoV2EventRecord> records = JsonConvert.DeserializeObject<List<IndigoV2EventRecord>>(serializedParent);
+                                csvWriter.WriteRecords(records);
+                            }
+                            else if (recordType == "IndigoChargerV2EventRecord")
+                            {
+                                List<IndigoChargerV2EventRecord> records = JsonConvert.DeserializeObject<List<IndigoChargerV2EventRecord>>(serializedParent);
                                 csvWriter.WriteRecords(records);
                             }
                             else if (recordType == "Sl1EventRecord")
@@ -713,7 +722,6 @@ namespace lib_edi.Services.CceDevice
                 string verfiedLoggerType = loggerModelCheckResult.LoggerModelEnum.ToString().ToLower();
                 result = EmsService.GetDataLoggerType(verfiedLoggerType);
             }
-
 
             return result;
         }

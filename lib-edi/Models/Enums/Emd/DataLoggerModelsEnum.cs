@@ -16,6 +16,7 @@ namespace lib_edi.Models.Enums.Emd
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
             UNKNOWN,
             INDIGO_V2,
+            INDIGO_CHARGER_V2,
             SL1
 #pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         }

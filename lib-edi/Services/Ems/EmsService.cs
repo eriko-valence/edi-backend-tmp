@@ -34,10 +34,13 @@ namespace lib_edi.Services.Ems
         /// </remarks>
         public static void Initialize()
         {
-            emsLoggerModelsSupported = new();
-            emsLoggerModelsSupported.Add("Indigo_Lid_201", DataLoggerModelsEnum.Name.INDIGO_V2);
-            emsLoggerModelsSupported.Add("L201", DataLoggerModelsEnum.Name.INDIGO_V2);
-            emsLoggerModelsSupported.Add("Demo EMS Logger", DataLoggerModelsEnum.Name.SL1);
+            emsLoggerModelsSupported = new()
+            {
+                { "Indigo_Lid_201", DataLoggerModelsEnum.Name.INDIGO_V2 },
+                { "L201", DataLoggerModelsEnum.Name.INDIGO_V2 },
+                { "Indigo_Charger_C1", DataLoggerModelsEnum.Name.INDIGO_CHARGER_V2 },
+                { "Demo EMS Logger", DataLoggerModelsEnum.Name.SL1 }
+            };
         }
 
         /// <summary>
@@ -102,6 +105,10 @@ namespace lib_edi.Services.Ems
                 else if (loggerType.ToUpper() == DataLoggerTypeEnum.Name.INDIGO_V2.ToString())
                 {
                     return DataLoggerTypeEnum.Name.INDIGO_V2;
+                }
+                else if (loggerType.ToUpper() == DataLoggerTypeEnum.Name.INDIGO_CHARGER_V2.ToString())
+                {
+                    return DataLoggerTypeEnum.Name.INDIGO_CHARGER_V2;
                 }
                 else if (loggerType.ToUpper() == DataLoggerTypeEnum.Name.SL1.ToString())
                 {
