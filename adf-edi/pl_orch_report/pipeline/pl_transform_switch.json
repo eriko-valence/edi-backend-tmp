@@ -20,6 +20,9 @@
                                     "name": "Transform Varo Packages",
                                     "type": "ExecutePipeline",
                                     "dependsOn": [],
+                                    "policy": {
+                                        "secureInput": false
+                                    },
                                     "userProperties": [],
                                     "typeProperties": {
                                         "pipeline": {
@@ -68,6 +71,9 @@
                                     "name": "Transform EMS Data",
                                     "type": "ExecutePipeline",
                                     "dependsOn": [],
+                                    "policy": {
+                                        "secureInput": false
+                                    },
                                     "userProperties": [],
                                     "typeProperties": {
                                         "pipeline": {
@@ -116,6 +122,9 @@
                                     "name": "Transform No Logger Data",
                                     "type": "ExecutePipeline",
                                     "dependsOn": [],
+                                    "policy": {
+                                        "secureInput": false
+                                    },
                                     "userProperties": [],
                                     "typeProperties": {
                                         "pipeline": {

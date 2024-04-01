@@ -62,6 +62,9 @@
                         ]
                     }
                 ],
+                "policy": {
+                    "secureInput": false
+                },
                 "userProperties": [],
                 "typeProperties": {
                     "pipeline": {

@@ -1,5 +1,5 @@
 {
-    "name": "pl_load_indigo_v2_switch",
+    "name": "pl_load_indigo_charger_v2_switch",
     "properties": {
         "activities": [
             {
@@ -26,7 +26,7 @@
                                     "userProperties": [],
                                     "typeProperties": {
                                         "pipeline": {
-                                            "referenceName": "pl_load_indigo_v2_report_varo",
+                                            "referenceName": "pl_load_indigo_charger_v2_report_varo",
                                             "type": "PipelineReference"
                                         },
                                         "waitOnCompletion": true,
@@ -81,7 +81,7 @@
                                     "userProperties": [],
                                     "typeProperties": {
                                         "pipeline": {
-                                            "referenceName": "pl_load_indigo_v2_report_usbdg",
+                                            "referenceName": "pl_load_indigo_charger_v2_report_usbdg",
                                             "type": "PipelineReference"
                                         },
                                         "waitOnCompletion": true,
