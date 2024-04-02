@@ -42,5 +42,21 @@ namespace lib_edi.Models.Loggers.Csv
         public string DORF { get; set; }
         [Name("TFRZ")]
         public string TFRZ { get; set; }
+        [Name("ALRM")]
+        public string ALRM { get; set; }
+        [Name("BLOG")]
+        public double? BLOG { get; set; }
+        [Name("ZSTATE")]
+        public int? ZSTATE { get; set; }
+        [Name("ZVLVD")]
+        public int? ZVLVD { get; set; }
+        [Name("TAMB")]
+        public double? TAMB { get; set; }
+        [Name("TVC")]
+        public double? TVC { get; set; }
+        [Name("HOLD")]
+        public double? HOLD { get; set; }
+        [Name("DORV")]
+        public string DORV { get; set; }
     }
 }
