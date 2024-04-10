@@ -1,5 +1,5 @@
 {
-    "name": "ds_adls_curated_usbdg_device_csv",
+    "name": "ds_adls_curated_indigo_v2_charger_event_csv",
     "properties": {
         "linkedServiceName": {
             "referenceName": "ls_adls_adlsedidev",
@@ -18,7 +18,7 @@
         "typeProperties": {
             "location": {
                 "type": "AzureBlobFSLocation",
-                "fileName": "usbdg_device.csv",
+                "fileName": "indigo_v2_charger_event.csv",
                 "folderPath": {
                     "value": "@dataset().PL_C_PARAM_TRANSFORM_CURATED_PATH",
                     "type": "Expression"
@@ -30,40 +30,7 @@
             "firstRowAsHeader": true,
             "quoteChar": "\""
         },
-        "schema": [
-            {
-                "name": "EDOP",
-                "type": "String"
-            },
-            {
-                "name": "EMFR",
-                "type": "String"
-            },
-            {
-                "name": "EMOD",
-                "type": "String"
-            },
-            {
-                "name": "EMSV",
-                "type": "String"
-            },
-            {
-                "name": "EPQS",
-                "type": "String"
-            },
-            {
-                "name": "ESER",
-                "type": "String"
-            },
-            {
-                "name": "zcfg_ver",
-                "type": "String"
-            },
-            {
-                "name": "zmcu_ver",
-                "type": "String"
-            }
-        ]
+        "schema": []
     },
     "type": "Microsoft.DataFactory/factories/datasets"
 }

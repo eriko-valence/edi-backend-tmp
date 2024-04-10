@@ -15,8 +15,6 @@ namespace lib_edi.Models.Loggers.Csv
 		 */
         [Name("ADOP")]
         public string ADOP { get; set; }
-        [Name("ALRM")]
-        public string ALRM { get; set; }
         [Name("AMOD")]
         public string AMOD { get; set; }
         [Name("AMFR")]
@@ -29,8 +27,6 @@ namespace lib_edi.Models.Loggers.Csv
         /*
 		 * OTHER PROPERTIES
 		 */
-        [Name("BLOG")]
-        public double? BLOG { get; set; }
 
         /*
 		 * LOGGER PROPERTIES
@@ -57,12 +53,7 @@ namespace lib_edi.Models.Loggers.Csv
         public string ESER { get; set; }
         [Name("ZCHRG")]
         public string ZCHRG { get; set; }
-        [Name("ZSTATE")]
-        public int? ZSTATE { get; set; }
-        [Name("ZVLVD")]
-        public int? ZVLVD { get; set; }
-        [Name("TAMB")]
-        public double? TAMB { get; set; }
+
         [Name("RELT")]
         public string RELT { get; set; }
         [Name("RTCW")]
@@ -73,10 +64,6 @@ namespace lib_edi.Models.Loggers.Csv
         /*
 		 * OTHER PROPERTIES
 		 */
-        [Name("TVC")]
-        public double? TVC { get; set; }
-        [Name("DORV")]
-        public string DORV { get; set; }
         [Name("ABST_CALC")]
         public DateTime? EDI_ABST { get; set; }
         [Name("_RELT_SECS")]

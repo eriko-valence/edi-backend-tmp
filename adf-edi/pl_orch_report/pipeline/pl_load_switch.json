@@ -20,6 +20,9 @@
                                     "name": "Load Indigo SQL Data",
                                     "type": "ExecutePipeline",
                                     "dependsOn": [],
+                                    "policy": {
+                                        "secureInput": false
+                                    },
                                     "userProperties": [],
                                     "typeProperties": {
                                         "pipeline": {
@@ -72,6 +75,9 @@
                                     "name": "Load No Logger SQL Data",
                                     "type": "ExecutePipeline",
                                     "dependsOn": [],
+                                    "policy": {
+                                        "secureInput": false
+                                    },
                                     "userProperties": [],
                                     "typeProperties": {
                                         "pipeline": {
@@ -124,6 +130,9 @@
                                     "name": "Load Stationary Logger SQL Data",
                                     "type": "ExecutePipeline",
                                     "dependsOn": [],
+                                    "policy": {
+                                        "secureInput": false
+                                    },
                                     "userProperties": [],
                                     "typeProperties": {
                                         "pipeline": {
@@ -165,6 +174,27 @@
                                                 "type": "Expression"
                                             }
                                         }
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "value": "indigo_charger_v2",
+                            "activities": [
+                                {
+                                    "name": "Load Indigo Charger SQL Data",
+                                    "type": "ExecutePipeline",
+                                    "dependsOn": [],
+                                    "policy": {
+                                        "secureInput": false
+                                    },
+                                    "userProperties": [],
+                                    "typeProperties": {
+                                        "pipeline": {
+                                            "referenceName": "pl_load_indigo_charger_v2_switch",
+                                            "type": "PipelineReference"
+                                        },
+                                        "waitOnCompletion": true
                                     }
                                 }
                             ]

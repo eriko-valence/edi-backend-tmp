@@ -19,6 +19,7 @@ namespace lib_edi.Models.Enums.Emd
             CFD50,
             EMS,
             INDIGO_V2,
+            INDIGO_CHARGER_V2,
             NO_LOGGER,
             SL1,
             USBDG_DATASIM,

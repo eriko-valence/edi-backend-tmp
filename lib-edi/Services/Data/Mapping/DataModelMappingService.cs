@@ -551,10 +551,16 @@ namespace lib_edi.Services.Loggers
             if (loggerType.ToUpper() == DataLoggerTypeEnum.Name.SL1.ToString())
             {
                 return new Sl1EventRecord();
-            } else if (loggerType.ToUpper() == DataLoggerTypeEnum.Name.INDIGO_V2.ToString())
+            } 
+            else if (loggerType.ToUpper() == DataLoggerTypeEnum.Name.INDIGO_V2.ToString())
             {
                 return new IndigoV2EventRecord();
-            } else
+            }
+            else if (loggerType.ToUpper() == DataLoggerTypeEnum.Name.INDIGO_CHARGER_V2.ToString())
+            {
+                return new IndigoChargerV2EventRecord();
+            }
+            else
             {
                 return new EmsEventRecord();
             }
