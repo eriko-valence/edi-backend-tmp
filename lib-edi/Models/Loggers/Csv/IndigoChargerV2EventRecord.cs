@@ -90,10 +90,10 @@ namespace lib_edi.Models.Loggers.Csv
         public Int16? ZIFC { get; set; }
 
         [Name("ZLID")]
-        public int ZLID { get; set; }
+        public int? ZLID { get; set; }
 
         [Name("ZTCO")]
-        public int ZTCO { get; set; }
+        public int? ZTCO { get; set; }
 
         [Name("ZVENT")]
         public string ZVENT { get; set; }
