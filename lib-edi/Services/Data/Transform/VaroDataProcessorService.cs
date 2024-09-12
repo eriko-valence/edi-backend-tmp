@@ -188,6 +188,24 @@ namespace lib_edi.Services.Data.Transform
             return name;
         }
 
+        // NHGH-3474 20240912 1514 Varo report file extensions needed for EDI processig
+        public static List<string> GetUncompressedVaroReportFileExtensions()
+        {
+            return new List<string>
+            {
+                ".json"
+            };
+        }
+
+        // NHGH-3474 20240912 1514 Varo report compressed (EMS) data file extensions that need to be extracted for EDI processing
+        public static List<string> GetCompressedVaroDataFileExtensions()
+        {
+            return new List<string>
+            {
+                ".zip"
+            };
+        }
+
         /// <summary>
         /// Looks for a Varo report file name regular expression match
         /// </summary>
