@@ -5,8 +5,8 @@
     <RootNamespace>fa_adf_transform_varo</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Azure.Storage.Blobs" Version="12.15.0" />
-    <PackageReference Include="Microsoft.NET.Sdk.Functions" Version="4.1.1" />
+    <PackageReference Include="Azure.Storage.Blobs" Version="12.21.2" />
+    <PackageReference Include="Microsoft.NET.Sdk.Functions" Version="4.4.1" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\lib-edi\lib-edi.csproj" />

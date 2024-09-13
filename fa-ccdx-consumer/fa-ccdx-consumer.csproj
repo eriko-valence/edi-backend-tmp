@@ -5,8 +5,8 @@
     <RootNamespace>fa_ccdx_consumer</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.NET.Sdk.Functions" Version="4.0.0" />
-	<PackageReference Include="Microsoft.Azure.WebJobs.Extensions.Kafka" Version="3.3.2" />
+    <PackageReference Include="Microsoft.NET.Sdk.Functions" Version="4.4.1" />
+	<PackageReference Include="Microsoft.Azure.WebJobs.Extensions.Kafka" Version="4.0.0" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\lib-edi\lib-edi.csproj" />
