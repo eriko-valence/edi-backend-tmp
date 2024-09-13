@@ -1,13 +1,15 @@
 ﻿using Azure;
 using Azure.Storage.Blobs;
+using Azure.Storage.Blobs.Models;
+using Azure.Storage.Blobs.Specialized;
 using lib_edi.Models.Edi;
 using lib_edi.Models.Enums.Azure.AppInsights;
 using lib_edi.Models.Enums.Emd;
 using lib_edi.Services.CceDevice;
 using lib_edi.Services.Errors;
 using lib_edi.Services.System.IO;
-using Microsoft.Azure.Storage; // Microsoft.Azure.WebJobs.Extensions.Storage
-using Microsoft.Azure.Storage.Blob; // Microsoft.Azure.WebJobs.Extensions.Storage
+//using Microsoft.Azure.Storage; // Microsoft.Azure.WebJobs.Extensions.Storage
+//using Microsoft.Azure.Storage.Blob; // Microsoft.Azure.WebJobs.Extensions.Storage
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -33,7 +35,7 @@ namespace lib_edi.Services.Azure
 		/// <summary>
 		/// Returns a list of azure storage blobs 
 		/// </summary>
-		/// <param name="cloudBlobContainer">A container in the Microsoft Azure Blob service</param>
+		/// <param name="BlobContainerClient">A container in the Microsoft Azure Blob service</param>
 		/// <param name="directoryPath">Azure blob storage virtual directory</param>
 		/// <param name="fullBlobPath">Azure blob storage virtual directory</param>
 		/// <returns>
@@ -43,22 +45,26 @@ namespace lib_edi.Services.Azure
 		/// directoryPath = "usbdg/2021-11-10/22/e190f06b-8de8-494e-8fbc-20599f14a9b7/"
 		/// fullBlobPath = ""
 		/// </example>
-		public static async Task<List<CloudBlockBlob>> GetListOfBlobsInDirectory(CloudBlobContainer cloudBlobContainer, string directoryPath, string fullBlobPath)
+		public static async Task<List<BlobItem>> GetListOfBlobsInDirectory(BlobContainerClient blobContainerClient, string directoryPath, string fullBlobPath)
 		{
-			List<CloudBlockBlob> listCloudBlockBlob = new();
+			List<BlobItem> listBlockBlobClient = new();
 			try
 			{
-				var logDirectory = cloudBlobContainer.GetDirectoryReference(directoryPath);
-				IEnumerable<IListBlobItem> listBlobs = logDirectory.ListBlobs();
-				foreach (CloudBlockBlob logBlob in logDirectory.ListBlobs())
+                //var logDirectory = BlobContainerClient.GetDirectoryReference(directoryPath);
+                //IAsyncEnumerable<BlobHierarchyItem> results = BlobContainerClient.GetBlobsByHierarchyAsync(prefix:directoryPath);
+
+                IAsyncEnumerable<BlobItem> results = blobContainerClient.GetBlobsAsync(prefix: directoryPath);
+
+                //IEnumerable <IListBlobItem> listBlobs = logDirectory.;
+				await foreach (BlobItem item in results)
 				{
-					listCloudBlockBlob.Add(logBlob);
+					listBlockBlobClient.Add(item);
 				}
-				return listCloudBlockBlob;
+				return listBlockBlobClient;
 			}
 			catch (Exception e)
 			{
-				string customErrorMessage = await EdiErrorsService.BuildExceptionMessageString(e, "K3E5", EdiErrorsService.BuildErrorVariableArrayList(cloudBlobContainer.Name, fullBlobPath));
+				string customErrorMessage = await EdiErrorsService.BuildExceptionMessageString(e, "K3E5", EdiErrorsService.BuildErrorVariableArrayList(blobContainerClient.Name, fullBlobPath));
 				throw new Exception(customErrorMessage);
 			}
 		}
@@ -70,38 +76,40 @@ namespace lib_edi.Services.Azure
 		/// <returns>
 		/// An enumerable collection of objects that implement IListBlobItem if successful; Exception (K3E5) otherwise
 		/// </returns>
-		public static List<CloudBlockBlob> GetUsbdgBlobs(IEnumerable<IListBlobItem> logDirectoryBlobs)
+		public static List<BlobItem> GetUsbdgBlobs(IEnumerable<BlobItem> logDirectoryBlobs)
 		{
-			List<CloudBlockBlob> listCloudBlockBlob = new();
-			foreach (CloudBlockBlob logBlob in logDirectoryBlobs)
+			List<BlobItem> listBlockBlobClient = new();
+			foreach (BlobItem logBlob in logDirectoryBlobs)
 			{
 				if (logBlob.Name.Contains("DATA") || logBlob.Name.Contains("CURRENT"))
 				{
-					listCloudBlockBlob.Add(logBlob);
+					listBlockBlobClient.Add(logBlob);
 				}
 			}
-			return listCloudBlockBlob;
+			return listBlockBlobClient;
 		}
 
 		/// <summary>
 		/// Initiates an asychronous operation to download the blob's contents as a string
 		/// </summary>
-		/// <param name="cloudBlobContainer">A container in the Microsoft Azure Blob service</param>
+		/// <param name="BlobContainerClient">A container in the Microsoft Azure Blob service</param>
 		/// <param name="blobName">Azure blob name to download</param>
 		/// <returns>
 		/// Blob's contents as a string if successful; Exception (9L96) otherwise
 		/// </returns>
-		public static async Task<string> DownloadBlobTextAsync(CloudBlobContainer cloudBlobContainer, string blobName)
+		public static async Task<string> DownloadBlobTextAsync(BlobContainerClient blobContainerClient, string blobName)
 		{
 			try
 			{
-				CloudBlockBlob cloudBlockBlob = cloudBlobContainer.GetBlockBlobReference(blobName);
-				return await cloudBlockBlob.DownloadTextAsync();
-			}
+                BlobClient blobClient = blobContainerClient.GetBlobClient(blobName);
+                BlobDownloadResult downloadResult = await blobClient.DownloadContentAsync();
+                string downloadedData = downloadResult.Content.ToString();
+				return downloadedData;
+            }
 			catch (Exception e)
 			{
 				blobName ??= ""; // set blob name to an empty string value as error code 9L96 expects blob name to not be null
-				string customErrorMessage = await EdiErrorsService.BuildExceptionMessageString(e, "9L96", EdiErrorsService.BuildErrorVariableArrayList(blobName, cloudBlobContainer.Name));
+				string customErrorMessage = await EdiErrorsService.BuildExceptionMessageString(e, "9L96", EdiErrorsService.BuildErrorVariableArrayList(blobName, blobContainerClient.Name));
 				throw new Exception(customErrorMessage);
 			}
 		}
@@ -109,23 +117,27 @@ namespace lib_edi.Services.Azure
 		/// <summary>
 		/// Downloads blob content to a stream
 		/// </summary>
-		/// <param name="cloudBlobContainer">A container in the Microsoft Azure Blob service</param>
+		/// <param name="BlobContainerClient">A container in the Microsoft Azure Blob service</param>
 		/// <param name="blobName">Azure blob name to download</param>
 		/// <returns>
 		/// Blob's contents as Stream object
 		/// </returns>
-		public static async Task<Stream> DownloadBlobContent(CloudBlobContainer cloudBlobContainer, string blobName)
+		public static async Task<Stream> DownloadBlobContent(BlobContainerClient blobContainerClient, string blobName)
 		{
 			try
 			{
 				using Stream mem = new MemoryStream();
-				CloudBlockBlob cloudBlockBlob = cloudBlobContainer.GetBlockBlobReference(blobName);
-				cloudBlockBlob.DownloadToStream(mem);
-				return mem;
+                //BlockBlobClient BlockBlobClient = BlobContainerClient.GetBlockBlobReference(blobName);
+
+                BlobClient blobClient = blobContainerClient.GetBlobClient(blobName);
+
+                //BlockBlobClient.DownloadToStream(mem);
+                await blobClient.DownloadToAsync(mem);
+                return mem;
 			}
 			catch (Exception e)
 			{
-				string customErrorMessage = await EdiErrorsService.BuildExceptionMessageString(e, "21SQ", EdiErrorsService.BuildErrorVariableArrayList(blobName, cloudBlobContainer.Name));
+				string customErrorMessage = await EdiErrorsService.BuildExceptionMessageString(e, "21SQ", EdiErrorsService.BuildErrorVariableArrayList(blobName, blobContainerClient.Name));
 				throw new Exception(customErrorMessage);
 			}
 		}
@@ -221,24 +233,27 @@ namespace lib_edi.Services.Azure
 		/// </returns>
 		public static async Task<string> DownloadBlobTextAsync(string storageConnString, string containerName, string fileName)
 		{
-			CloudStorageAccount storageAccount = null;
-			try
+			BlobServiceClient blobServiceClient = null;
+			string downloadedData = "";
+            try
 			{
-				if (CloudStorageAccount.TryParse(storageConnString, out storageAccount))
+				if (storageConnString != null)
 				{
-					CloudBlobClient cloudBlobClient = storageAccount.CreateCloudBlobClient();
-					CloudBlobContainer cloudBlobContainer = cloudBlobClient.GetContainerReference(containerName);
-					CloudBlockBlob cloudBlockBlob = cloudBlobContainer.GetBlockBlobReference(fileName);
-					return await cloudBlockBlob.DownloadTextAsync();
+					blobServiceClient = new BlobServiceClient(storageConnString);
+					BlobContainerClient containerClient = blobServiceClient.GetBlobContainerClient(containerName);
+					BlobClient blobClient = containerClient.GetBlobClient(fileName);
+					BlobDownloadResult downloadResult = await blobClient.DownloadContentAsync();
+					downloadedData = downloadResult.Content.ToString();
+					return downloadedData;
 				}
 				else
 				{
-					return null;
+					return downloadedData;
 				}
-			}
+            }
 			catch (Exception e)
 			{
-				string customErrorMessage = await EdiErrorsService.BuildExceptionMessageString(e, "747H", EdiErrorsService.BuildErrorVariableArrayList(fileName, containerName, storageAccount.Credentials.AccountName));
+				string customErrorMessage = await EdiErrorsService.BuildExceptionMessageString(e, "747H", EdiErrorsService.BuildErrorVariableArrayList(fileName, containerName, blobServiceClient.AccountName));
 				throw new Exception(customErrorMessage);
 			}
 		}
@@ -270,16 +285,15 @@ namespace lib_edi.Services.Azure
 		/// </summary>
 		/// <param name="container">Azure blob container object</param>
 		/// <param name="path">Azure blob folder path</param>
-		public static async void DeleteFolder(CloudBlobContainer container, string path)
+		public static async Task DeleteFolder(BlobContainerClient container, string path)
 		{
 			try
 			{
-				foreach (IListBlobItem blob in container.GetDirectoryReference(path).ListBlobs(true))
+                IAsyncEnumerable<BlobItem> results = container.GetBlobsAsync(prefix: path);
+                await foreach (BlobItem blobItem in results)
 				{
-					if (blob.GetType() == typeof(CloudBlob) || blob.GetType().BaseType == typeof(CloudBlob))
-					{
-						((CloudBlob)blob).DeleteIfExists();
-					}
+                    var blob = container.GetBlobClient(blobItem.Name);
+                    await blob.DeleteIfExistsAsync();
 				}
 			} catch (Exception e)
 			{
@@ -292,20 +306,20 @@ namespace lib_edi.Services.Azure
 		/// Downloads and deserializes a list of CCE device blobs residing in Azure blob storage
 		/// </summary>
 		/// <param name="blobs">A list of CCE device blobs</param>
-		/// <param name="cloudBlobContainer">Microsoft Azure Blob service container holding the logs</param>
+		/// <param name="BlobContainerClient">Microsoft Azure Blob service container holding the logs</param>
 		/// <param name="blobPath">Path to log blobs</param>
 		/// <param name="log">Azure function logger object</param>
 		/// <returns>
 		/// A list of deserialized CCE device logs in JObject format that have been downloaded from Azure blob storage; Exception (C26Z) if no blobs found
 		/// </returns>
-		public static async Task<List<dynamic>> DownloadAndDeserializeJsonBlobs(List<CloudBlockBlob> blobs, CloudBlobContainer cloudBlobContainer, string blobPath, ILogger log, string reportPackageName, EmdEnum.Name emdNum, DataLoggerTypeEnum.Name dataLoggerType)
+		public static async Task<List<dynamic>> DownloadAndDeserializeJsonBlobs(List<BlobItem> blobs, BlobContainerClient BlobContainerClient, string blobPath, ILogger log, string reportPackageName, EmdEnum.Name emdNum, DataLoggerTypeEnum.Name dataLoggerType)
 		{
 
 			List<dynamic> listLogs = new();
-			foreach (CloudBlockBlob logBlob in blobs)
+			foreach (BlobItem logBlob in blobs)
 			{
-				string blobSource = $"{ cloudBlobContainer.Name}/{ logBlob.Name}";
-				string logBlobText = await AzureStorageBlobService.DownloadBlobTextAsync(cloudBlobContainer, logBlob.Name);
+				string blobSource = $"{ BlobContainerClient.Name}/{ logBlob.Name}";
+				string logBlobText = await AzureStorageBlobService.DownloadBlobTextAsync(BlobContainerClient, logBlob.Name);
 
 				// NHGH-3078 20230824 1441 Add custom error to capture blobs with empty strings 
 				if (logBlobText == "")
@@ -354,7 +368,7 @@ namespace lib_edi.Services.Azure
 		/// <returns>
 		/// A list of deserialized CCE device logsobjects that have been downloaded from Azure blob storage; Exception (C26Z) if no blobs found
 		/// </returns>
-		public static async Task<dynamic> DownloadAndDeserializeJsonBlob(CloudBlockBlob blob, CloudBlobContainer blobContainer, string blobPath, ILogger log)
+		public static async Task<dynamic> DownloadAndDeserializeJsonBlob(BlobItem blob, BlobContainerClient blobContainer, string blobPath, ILogger log)
 		{
 			string emsBlobPath = $"{ blobContainer.Name}/{ blob.Name}";
 			string logBlobText = await AzureStorageBlobService.DownloadBlobTextAsync(blobContainer, blob.Name);

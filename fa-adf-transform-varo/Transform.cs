@@ -20,12 +20,16 @@ using lib_edi.Services.Ems;
 using lib_edi.Services.System.Net;
 using lib_edi.Models.Enums.Emd;
 using lib_edi.Models.Dto.Http;
-using Microsoft.Azure.Storage.Blob;
+//using Microsoft.Azure.Storage.Blob;
+using Azure.Storage.Blobs.Models;
 using lib_edi.Models.Loggers.Csv;
 using System.Linq;
 using lib_edi.Helpers;
 using lib_edi.Models.Enums.Azure.AppInsights;
 using lib_edi.Services.Data.Transform;
+using Azure.Storage.Blobs;
+using Azure.Storage.Blobs.Models;
+using Azure.Storage.Blobs.Specialized;
 
 namespace fa_adf_transform_varo
 {
@@ -34,9 +38,9 @@ namespace fa_adf_transform_varo
         [FunctionName("transform")]
         public static async Task<IActionResult> Run(
             [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequest req,
-            [Blob("%AZURE_STORAGE_BLOB_CONTAINER_NAME_INPUT_UNCOMPRESSED%", FileAccess.ReadWrite, Connection = "AZURE_STORAGE_INPUT_CONNECTION_STRING")] CloudBlobContainer inputContainer,
-            [Blob("%AZURE_STORAGE_BLOB_CONTAINER_NAME_OUTPUT_PROCESSED%", FileAccess.ReadWrite, Connection = "AZURE_STORAGE_INPUT_CONNECTION_STRING")] CloudBlobContainer ouputContainer,
-            [Blob("%AZURE_STORAGE_BLOB_CONTAINER_NAME_EMS_CONFIG%", FileAccess.ReadWrite, Connection = "AZURE_STORAGE_INPUT_CONNECTION_STRING")] CloudBlobContainer emsConfgContainer,
+            [Blob("%AZURE_STORAGE_BLOB_CONTAINER_NAME_INPUT_UNCOMPRESSED%", FileAccess.ReadWrite, Connection = "AZURE_STORAGE_INPUT_CONNECTION_STRING")] BlobContainerClient inputContainer,
+            [Blob("%AZURE_STORAGE_BLOB_CONTAINER_NAME_OUTPUT_PROCESSED%", FileAccess.ReadWrite, Connection = "AZURE_STORAGE_INPUT_CONNECTION_STRING")] BlobContainerClient ouputContainer,
+            [Blob("%AZURE_STORAGE_BLOB_CONTAINER_NAME_EMS_CONFIG%", FileAccess.ReadWrite, Connection = "AZURE_STORAGE_INPUT_CONNECTION_STRING")] BlobContainerClient emsConfgContainer,
             ILogger log)
         {
             //string loggerType = DataLoggerTypeEnum.Name.UNKNOWN.ToString();
@@ -68,13 +72,13 @@ namespace fa_adf_transform_varo
                 loggerType = payload.LoggerType ?? DataLoggerTypeEnum.Name.UNKNOWN.ToString();
                 loggerTypeEnum = EmsService.GetDataLoggerType(loggerType);
 
-                IEnumerable<IListBlobItem> logDirectoryBlobs = await AzureStorageBlobService.GetListOfBlobsInDirectory(inputContainer, payload.Path, inputBlobPath);
+                IEnumerable<BlobItem> logDirectoryBlobs = await AzureStorageBlobService.GetListOfBlobsInDirectory(inputContainer, payload.Path, inputBlobPath);
 
                 if (VaroDataProcessorService.IsThisVaroCollectedEmsReportPackage(logDirectoryBlobs, emdType))
                 {
                     log.LogInformation($"- {payload.FileName} - Download and validate package contents");
-                    List<CloudBlockBlob> varoCollectedEmsLogBlobs = await DataTransformService.GetLogBlobs(logDirectoryBlobs, inputBlobPath);
-                    CloudBlockBlob varoReportMetadataBlob = await VaroDataProcessorService.GetReportMetadataBlob(logDirectoryBlobs, inputBlobPath);
+                    List<BlobItem> varoCollectedEmsLogBlobs = await DataTransformService.GetLogBlobs(logDirectoryBlobs, inputBlobPath);
+                    BlobItem varoReportMetadataBlob = await VaroDataProcessorService.GetReportMetadataBlob(logDirectoryBlobs, inputBlobPath);
                     List<dynamic> emsLogFiles = await AzureStorageBlobService.DownloadAndDeserializeJsonBlobs(varoCollectedEmsLogBlobs, inputContainer, inputBlobPath, log, payload?.FileName, emdTypeEnum, loggerTypeEnum);
                     dynamic varoReportMetadataObject = await AzureStorageBlobService.DownloadAndDeserializeJsonBlob(varoReportMetadataBlob, inputContainer, inputBlobPath, log);
                     await DataTransformService.ValidateJsonObjects(emsConfgContainer, emsLogFiles, jsonSchemaBlobNameEmsCompliantLog, log);

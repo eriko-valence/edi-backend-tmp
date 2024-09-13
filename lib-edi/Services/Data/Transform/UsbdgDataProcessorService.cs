@@ -1,5 +1,4 @@
 ﻿using lib_edi.Services.Errors;
-using Microsoft.Azure.Storage.Blob;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -13,9 +12,8 @@ using System.Text.RegularExpressions;
 using lib_edi.Helpers;
 using lib_edi.Models.Loggers.Csv;
 using lib_edi.Models.Enums.Emd;
-using Microsoft.Extensions.Logging;
-using Microsoft.Azure.Storage.Blob.Protocol;
 using System.Threading.Tasks;
+using Azure.Storage.Blobs.Models;
 
 namespace lib_edi.Services.Loggers
 {
@@ -32,13 +30,13 @@ namespace lib_edi.Services.Loggers
 		/// <returns>
 		/// List containing only USBDG metadata report blobs; Exception (RV62) otherwise
 		/// </returns>
-		public static async Task<CloudBlockBlob> GetReportMetadataBlob(IEnumerable<IListBlobItem> logDirectoryBlobs, string blobPath)
+		public static async Task<BlobItem> GetReportMetadataBlob(IEnumerable<BlobItem> logDirectoryBlobs, string blobPath)
 		{
-			List<CloudBlockBlob> usbdgLogReportBlobs = new();
+			List<BlobItem> usbdgLogReportBlobs = new();
 
 			if (logDirectoryBlobs != null)
 			{
-				foreach (CloudBlockBlob logBlob in logDirectoryBlobs)
+				foreach (BlobItem logBlob in logDirectoryBlobs)
 				{
 					// NHGH-2362 (2022.06.16) - only add USBDG report metadata files
 					if (IsFileUsbdgReportMetadata(logBlob.Name))
@@ -64,14 +62,14 @@ namespace lib_edi.Services.Loggers
 		/// <returns>
 		/// True if file package has USBDG report metdata exists and no logger data; False otherwise 
 		/// </returns>
-		public static bool IsFilePackageUsbdgOnly(IEnumerable<IListBlobItem> logDirectoryBlobs)
+		public static bool IsFilePackageUsbdgOnly(IEnumerable<BlobItem> logDirectoryBlobs)
 		{
 			bool result = false;
 			bool emsCompliantLogFilesFound = false;
 			bool usbdgMetaDataFound = false;
 			if (logDirectoryBlobs != null)
 			{
-				foreach (CloudBlockBlob logBlob in logDirectoryBlobs)
+				foreach (BlobItem logBlob in logDirectoryBlobs)
 				{
 					string fileExtension = Path.GetExtension(logBlob.Name);
 					if (EmsService.IsFileFromEmsLogger(logBlob.Name))
@@ -158,7 +156,7 @@ namespace lib_edi.Services.Loggers
         /// <returns>
         /// A list of CSV compatible EMD + logger data records, if successful; Exception (D39Y) if any failures occur 
         /// </returns>
-        public static async Task<EdiJob> PopulateEdiJobObject(dynamic sourceUsbdgMetadata, List<dynamic> sourceLogs, List<CloudBlockBlob> listLoggerFiles, CloudBlockBlob usbdgReportMetadataBlob, string packageName, string stagePath, EmdEnum.Name emdTypeEnum, DataLoggerTypeEnum.Name dataLoggerType)
+        public static async Task<EdiJob> PopulateEdiJobObject(dynamic sourceUsbdgMetadata, List<dynamic> sourceLogs, List<BlobItem> listLoggerFiles, BlobItem usbdgReportMetadataBlob, string packageName, string stagePath, EmdEnum.Name emdTypeEnum, DataLoggerTypeEnum.Name dataLoggerType)
         {
             string propName = null;
             string propValue = null;
@@ -285,13 +283,13 @@ namespace lib_edi.Services.Loggers
          *   - NHGH-3192 2023.11.06 1337 primary source of usbdg mount times should be SYNC file name, not report metadata
          *   - NHGH-2819 2023.03.15 1502 fall back to SYNC file name if mount times do not exist in report metadata 
          */
-        public static async Task<EdiJobUsbdgMetadataMountTime> GetUsbdgMountTime(List<CloudBlockBlob> listLoggerFiles)
+        public static async Task<EdiJobUsbdgMetadataMountTime> GetUsbdgMountTime(List<BlobItem> listLoggerFiles)
         {
             EdiJobUsbdgMetadataMountTime timeInfo = await GetUsbdgMountTimeFromSyncFileName(listLoggerFiles);
             return timeInfo;
         }
 
-        public static async Task<EdiJobUsbdgMetadataCreationTime> GetUsbdgReportCreationTime(CloudBlockBlob usbdgReportMetadataBlob)
+        public static async Task<EdiJobUsbdgMetadataCreationTime> GetUsbdgReportCreationTime(BlobItem usbdgReportMetadataBlob)
         {
             EdiJobUsbdgMetadataCreationTime timeInfo = await GetUsbdgReportCreationTimeFromMetadataFileName(usbdgReportMetadataBlob.Name);
             return timeInfo;
@@ -382,13 +380,13 @@ namespace lib_edi.Services.Loggers
             return m;
         }
 
-        public static async Task<EdiJobUsbdgMetadataMountTime> GetUsbdgMountTimeFromSyncFileName(List<CloudBlockBlob> listLoggerFiles)
+        public static async Task<EdiJobUsbdgMetadataMountTime> GetUsbdgMountTimeFromSyncFileName(List<BlobItem> listLoggerFiles)
         {
             EdiJobUsbdgMetadataMountTime timeInfo = null;
 
             if (listLoggerFiles != null)
             {
-                foreach (CloudBlockBlob logBlob in listLoggerFiles)
+                foreach (BlobItem logBlob in listLoggerFiles)
                 {
                     if (EmsService.IsThisEmsSyncDataFile(logBlob.Name))
                     {

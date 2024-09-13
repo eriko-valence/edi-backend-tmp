@@ -7,7 +7,7 @@ using lib_edi.Services.Azure;
 using lib_edi.Services.Ccdx;
 using lib_edi.Services.CceDevice;
 using lib_edi.Services.Errors;
-using Microsoft.Azure.Storage.Blob;
+//using Microsoft.Azure.Storage.Blob;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -19,6 +19,10 @@ using System.Globalization;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
+
+using Azure.Storage.Blobs;
+using Azure.Storage.Blobs.Models;
+using Azure.Storage.Blobs.Specialized;
 
 namespace lib_edi.Services.Loggers
 {
@@ -57,11 +61,11 @@ namespace lib_edi.Services.Loggers
 		/// <returns>
 		/// A list of cloud block blobs located in this virtual directory; Exception (A21P) otherwise
 		/// </returns>
-		public static async Task<List<CloudBlockBlob>> FindMetaFridgeLogBlobs(IEnumerable<IListBlobItem> logDirectoryBlobs, string blobPath)
+		public static async Task<List<BlobItem>> FindMetaFridgeLogBlobs(IEnumerable<BlobItem> logDirectoryBlobs, string blobPath)
 		{
-			List<CloudBlockBlob> metaFridgeLogBlobs = new List<CloudBlockBlob>();
+			List<BlobItem> metaFridgeLogBlobs = new List<BlobItem>();
 
-			foreach (CloudBlockBlob logBlob in logDirectoryBlobs)
+			foreach (BlobItem logBlob in logDirectoryBlobs)
 			{
 				metaFridgeLogBlobs.Add(logBlob);
 				/* NHGH-1788 No longer a requirement to validate CFD50 log files using the file name
@@ -84,14 +88,14 @@ namespace lib_edi.Services.Loggers
 		/// <summary>
 		/// Writes denormalized MetaFridge log file csv records to Azure blob storage
 		/// </summary>
-		/// <param name="cloudBlobContainer">A container in the Microsoft Azure Blob service</param>
+		/// <param name="BlobContainerClient">A container in the Microsoft Azure Blob service</param>
 		/// <param name="requestBody">MetaFridge log transformation http reqest object</param>
 		/// <param name="metaFridgeRecords">A list of denormalized Metafridge log records</param>
 		/// <param name="log">Azure function logger object</param>
 		/// <returns>
 		/// Blob name of MetaFridge csv formatted log file; Exception (PH77) otherwise
 		/// </returns>
-		public static async Task<string> WriteMetaFridgeLogRecordsToCsvBlob(CloudBlobContainer cloudBlobContainer, TransformHttpRequestMessageBodyDto requestBody, List<Cfd50CsvRecordDto> metaFridgeRecords, ILogger log)
+		public static async Task<string> WriteMetaFridgeLogRecordsToCsvBlob(BlobContainerClient blobContainerClient, TransformHttpRequestMessageBodyDto requestBody, List<Cfd50CsvRecordDto> metaFridgeRecords, ILogger log)
 		{
 			string blobName = "";
 
@@ -99,8 +103,9 @@ namespace lib_edi.Services.Loggers
 			{
 				blobName = CcdxService.BuildCuratedCfd50BlobName(requestBody.Path);
 				log.LogInformation($"  - Blob: {blobName}");
-				CloudBlockBlob outBlob = cloudBlobContainer.GetBlockBlobReference(blobName);
-				using var writer = await outBlob.OpenWriteAsync();
+				//CloudBlockBlob outBlob = blobContainerClient.GetBlockBlobReference(blobName);
+                BlobClient blobClient = blobContainerClient.GetBlobClient(blobName);
+                using var writer = await blobClient.OpenWriteAsync(true);
 				using var streamWriter = new StreamWriter(writer);
 				using var csvWriter = new CsvWriter(streamWriter, CultureInfo.InvariantCulture);
 				csvWriter.WriteRecords(metaFridgeRecords);
@@ -108,7 +113,7 @@ namespace lib_edi.Services.Loggers
 			}
 			catch (Exception e)
 			{
-				string customError = await EdiErrorsService.BuildExceptionMessageString(e, "PH77", EdiErrorsService.BuildErrorVariableArrayList(blobName, cloudBlobContainer.Name));
+				string customError = await EdiErrorsService.BuildExceptionMessageString(e, "PH77", EdiErrorsService.BuildErrorVariableArrayList(blobName, blobContainerClient.Name));
 				throw new Exception(customError);
 			}
 
@@ -118,18 +123,18 @@ namespace lib_edi.Services.Loggers
 		/// Downloads and deserializes a list of MetaFridge logs stored in Azure blob storage
 		/// </summary>
 		/// <param name="blobs">A list of MetaFridge cloud block blobs located in this virtual directory</param>
-		/// <param name="cloudBlobContainer">A container in the Microsoft Azure Blob service</param>
+		/// <param name="BlobContainerClient">A container in the Microsoft Azure Blob service</param>
 		/// <param name="log">Azure function logger object</param>
 		/// <returns>
 		/// A list of deserialized MetaFridge log objects that have been downloaded from Azure blob storage; Exception (3L4P) otherwise
 		/// </returns>
-		public static async Task<List<dynamic>> DownloadsAndDeserializesMetaFridgeLogBlobs(List<CloudBlockBlob> blobs, CloudBlobContainer cloudBlobContainer, string blobPath, ILogger log)
+		public static async Task<List<dynamic>> DownloadsAndDeserializesMetaFridgeLogBlobs(List<BlobItem> blobs, BlobContainerClient BlobContainerClient, string blobPath, ILogger log)
 		{
 			List<dynamic> metaFridgeLogFiles = new List<dynamic>();
-			foreach (CloudBlockBlob logBlob in blobs)
+			foreach (BlobItem logBlob in blobs)
 			{
-				log.LogInformation($"  - Blob: {cloudBlobContainer.Name}/{logBlob.Name}");
-				string blobText = await AzureStorageBlobService.DownloadBlobTextAsync(cloudBlobContainer, logBlob.Name);
+				log.LogInformation($"  - Blob: {BlobContainerClient.Name}/{logBlob.Name}");
+				string blobText = await AzureStorageBlobService.DownloadBlobTextAsync(BlobContainerClient, logBlob.Name);
 				metaFridgeLogFiles.Add(DeserializeMetaFridgeLogText(logBlob.Name, blobText));
 			}
 
@@ -146,12 +151,12 @@ namespace lib_edi.Services.Loggers
 		/// Validates 
 		/// </summary>
 		/// <param name="emsLogs">A list of downloaded CFD50 log objects</param>
-		/// <param name="cloudBlobContainer">A container in the Microsoft Azure Blob service</param>
+		/// <param name="BlobContainerClient">A container in the Microsoft Azure Blob service</param>
 		/// <param name="log">Azure function logger object</param>
 		/// <returns>
 		/// A list of validated CFD50 log objects; Exception thrown if at least one report fails validation (TV79) or if the json definition file failed to be retrieved (P2G3)
 		/// </returns>
-		public static async Task<List<dynamic>> ValidateCfd50LogBlobs(CloudBlobContainer cloudBlobContainer, List<dynamic> emsLogs, ILogger log)
+		public static async Task<List<dynamic>> ValidateCfd50LogBlobs(BlobContainerClient BlobContainerClient, List<dynamic> emsLogs, ILogger log)
 		{
 			List<dynamic> validatedEmsLogs = new List<dynamic>();
 
@@ -162,7 +167,7 @@ namespace lib_edi.Services.Loggers
 			try
 			{
 				cfd50ConfigBlobName = Environment.GetEnvironmentVariable("CFD50_LOG_JSON_SCHEMA_DEFINITION_FILE_NAME");
-				cfd50ConfigBlobJson = await AzureStorageBlobService.DownloadBlobTextAsync(cloudBlobContainer, cfd50ConfigBlobName);
+				cfd50ConfigBlobJson = await AzureStorageBlobService.DownloadBlobTextAsync(BlobContainerClient, cfd50ConfigBlobName);
 				emsLogJsonSchema = await JsonSchema.FromJsonAsync(cfd50ConfigBlobJson);
 			}
 			catch (Exception e)

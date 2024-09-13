@@ -2,16 +2,9 @@
 using lib_edi.Models.Edi;
 using lib_edi.Models.Enums.Emd;
 using lib_edi.Services.Loggers;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Azure.Storage.Blob;
-using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Reflection.Metadata.Ecma335;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
 namespace lib_edi.Services.Ems
 {
@@ -199,14 +192,14 @@ namespace lib_edi.Services.Ems
         /// <returns>
         /// Return true if yes; false if no
         /// </returns>
-        public static bool IsFilePackageContentsEms(IEnumerable<IListBlobItem> logDirectoryBlobs)
+        public static bool IsFilePackageContentsEms(IEnumerable<BlobItem> logDirectoryBlobs)
         {
             bool result = false;
             bool emsCompliantLogFilesFound = false;
             bool usbdgMetaDataFound = false;
             if (logDirectoryBlobs != null)
             {
-                foreach (CloudBlockBlob logBlob in logDirectoryBlobs)
+                foreach (BlobItem logBlob in logDirectoryBlobs)
                 {
                     string fileExtension = Path.GetExtension(logBlob.Name);
 					/*

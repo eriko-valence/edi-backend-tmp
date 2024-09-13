@@ -14,7 +14,8 @@ using lib_edi.Services.Loggers;
 using lib_edi.Helpers;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.Azure.Storage.Blob;
+//using Microsoft.Azure.Storage.Blob;
+using Azure.Storage.Blobs.Models;
 using lib_edi.Models.Dto.Http;
 using lib_edi.Services.Azure;
 using lib_edi.Services.CceDevice;
@@ -26,6 +27,7 @@ using System.Net;
 using lib_edi.Services.Ems;
 using lib_edi.Models.Enums.Azure.AppInsights;
 using lib_edi.Services.Data.Transform;
+using Azure.Storage.Blobs;
 
 namespace fa_adf_transform_indigo_v2
 {
@@ -34,9 +36,9 @@ namespace fa_adf_transform_indigo_v2
         [FunctionName("transform")]
         public static async Task<IActionResult> Run(
             [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequest req,
-            [Blob("%AZURE_STORAGE_BLOB_CONTAINER_NAME_INPUT_UNCOMPRESSED%", FileAccess.ReadWrite, Connection = "AZURE_STORAGE_INPUT_CONNECTION_STRING")] CloudBlobContainer inputContainer,
-            [Blob("%AZURE_STORAGE_BLOB_CONTAINER_NAME_OUTPUT_PROCESSED%", FileAccess.ReadWrite, Connection = "AZURE_STORAGE_INPUT_CONNECTION_STRING")] CloudBlobContainer ouputContainer,
-            [Blob("%AZURE_STORAGE_BLOB_CONTAINER_NAME_EMS_CONFIG%", FileAccess.ReadWrite, Connection = "AZURE_STORAGE_INPUT_CONNECTION_STRING")] CloudBlobContainer emsConfgContainer,
+            [Blob("%AZURE_STORAGE_BLOB_CONTAINER_NAME_INPUT_UNCOMPRESSED%", FileAccess.ReadWrite, Connection = "AZURE_STORAGE_INPUT_CONNECTION_STRING")] BlobContainerClient inputContainer,
+            [Blob("%AZURE_STORAGE_BLOB_CONTAINER_NAME_OUTPUT_PROCESSED%", FileAccess.ReadWrite, Connection = "AZURE_STORAGE_INPUT_CONNECTION_STRING")] BlobContainerClient ouputContainer,
+            [Blob("%AZURE_STORAGE_BLOB_CONTAINER_NAME_EMS_CONFIG%", FileAccess.ReadWrite, Connection = "AZURE_STORAGE_INPUT_CONNECTION_STRING")] BlobContainerClient emsConfgContainer,
             ILogger log)
         {
             string loggerType = DataLoggerTypeEnum.Name.UNKNOWN.ToString();
@@ -67,14 +69,14 @@ namespace fa_adf_transform_indigo_v2
                 loggerType = payload.LoggerType ?? DataLoggerTypeEnum.Name.UNKNOWN.ToString();
                 loggerTypeEnum = EmsService.GetDataLoggerType(loggerType);
 
-                IEnumerable<IListBlobItem> logDirectoryBlobs = await AzureStorageBlobService.GetListOfBlobsInDirectory(inputContainer, payload.Path, inputBlobPath);
+                IEnumerable<BlobItem> logDirectoryBlobs = await AzureStorageBlobService.GetListOfBlobsInDirectory(inputContainer, payload.Path, inputBlobPath);
 
                 if (EmsService.IsFilePackageContentsEms(logDirectoryBlobs) && EmsService.ValidateCceDeviceType(loggerType))
                 {
 					log.LogInformation($"- {payload.FileName} - Detected report package type: USBDG collected (with logger data files)");
 					log.LogInformation($"- {payload.FileName} - Download and validate package contents");
-                    List<CloudBlockBlob> usbdgLogBlobs = await DataTransformService.GetLogBlobs(logDirectoryBlobs, inputBlobPath);
-                    CloudBlockBlob usbdgReportMetadataBlob = await UsbdgDataProcessorService.GetReportMetadataBlob(logDirectoryBlobs, inputBlobPath);
+                    List<BlobItem> usbdgLogBlobs = await DataTransformService.GetLogBlobs(logDirectoryBlobs, inputBlobPath);
+                    BlobItem usbdgReportMetadataBlob = await UsbdgDataProcessorService.GetReportMetadataBlob(logDirectoryBlobs, inputBlobPath);
                     List<dynamic> emsLogFiles = await AzureStorageBlobService.DownloadAndDeserializeJsonBlobs(usbdgLogBlobs, inputContainer, inputBlobPath, log, payload?.FileName, emdTypeEnum, loggerTypeEnum);
                     dynamic usbdgMetadataJsonObject = await AzureStorageBlobService.DownloadAndDeserializeJsonBlob(usbdgReportMetadataBlob, inputContainer, inputBlobPath, log);
                     await DataTransformService.ValidateJsonObject(emsConfgContainer, usbdgMetadataJsonObject, jsonSchemaBlobNameUsbdgMetadata, log);
@@ -139,7 +141,7 @@ namespace fa_adf_transform_indigo_v2
                     // NHGH-2819 2023.03.16 0950 USBDG collected package with no logger data
                     emdTypeEnum = EmdEnum.Name.USBDG;
                     loggerTypeEnum = DataLoggerTypeEnum.Name.NO_LOGGER;
-                    CloudBlockBlob usbdgReportMetadataBlob = await UsbdgDataProcessorService.GetReportMetadataBlob(logDirectoryBlobs, inputBlobPath);
+                    BlobItem usbdgReportMetadataBlob = await UsbdgDataProcessorService.GetReportMetadataBlob(logDirectoryBlobs, inputBlobPath);
                     dynamic usbdgReportMetadata = await AzureStorageBlobService.DownloadAndDeserializeJsonBlob(usbdgReportMetadataBlob, inputContainer, inputBlobPath, log);
                     dynamic validatedUsbdgReportMetadataFile = await DataTransformService.ValidateJsonObject(emsConfgContainer, usbdgReportMetadata, jsonSchemaBlobNameUsbdgMetadata, log);
                     dynamic usbdgRecords = UsbdgDataProcessorService.GetUsbdgMetadataRecordsElement(usbdgReportMetadata);

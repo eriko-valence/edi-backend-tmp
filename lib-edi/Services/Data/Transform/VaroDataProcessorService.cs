@@ -7,7 +7,8 @@ using lib_edi.Services.Ems;
 using lib_edi.Services.Errors;
 using lib_edi.Services.Loggers;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Azure.Storage.Blob;
+//using Microsoft.Azure.Storage.Blob;
+using Azure.Storage.Blobs.Models;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
 using System;
@@ -35,13 +36,13 @@ namespace lib_edi.Services.Data.Transform
         /// <returns>
         /// List containing only USBDG metadata report blobs; Exception (RV62) otherwise
         /// </returns>
-        public static async Task<CloudBlockBlob> GetReportMetadataBlob(IEnumerable<IListBlobItem> logDirectoryBlobs, string blobPath)
+        public static async Task<BlobItem> GetReportMetadataBlob(IEnumerable<BlobItem> logDirectoryBlobs, string blobPath)
         {
-            List<CloudBlockBlob> reportBlobs = new();
+            List<BlobItem> reportBlobs = new();
 
             if (logDirectoryBlobs != null)
             {
-                foreach (CloudBlockBlob logBlob in logDirectoryBlobs)
+                foreach (BlobItem logBlob in logDirectoryBlobs)
                 {
                     Match m = IsThisVaroReportMetadataFile(logBlob.Name);
                     if (m.Success)
@@ -249,7 +250,7 @@ namespace lib_edi.Services.Data.Transform
         /// <returns>
         /// True if Varo; False otherwise
         /// </returns>
-        public static bool IsThisVaroCollectedEmsReportPackage(IEnumerable<IListBlobItem> list, string loggerType)
+        public static bool IsThisVaroCollectedEmsReportPackage(IEnumerable<BlobItem> list, string loggerType)
         {
             bool result = false;
             bool sFile = false;
@@ -257,7 +258,7 @@ namespace lib_edi.Services.Data.Transform
             bool rFile = false;
             bool isVaro = false;
 
-            foreach (CloudBlockBlob blob in list)
+            foreach (BlobItem blob in list)
             {
                 if (VaroDataProcessorService.IsVaroEmd(loggerType))
                 {
@@ -297,7 +298,7 @@ namespace lib_edi.Services.Data.Transform
         /// <returns>
         /// A list of CSV compatible EMD + logger data records, if successful; Exception (D39Y) if any failures occur 
         /// </returns>
-        public static async Task<EdiJob> PopulateEdiJobObject(dynamic varoReportFileObject, List<dynamic> sourceLogs, List<CloudBlockBlob> listLoggerFiles, CloudBlockBlob varoReportMetadataBlob, string packageName, string stagePath, EmdEnum.Name emdTypeEnum, DataLoggerTypeEnum.Name dataLoggerType)
+        public static async Task<EdiJob> PopulateEdiJobObject(dynamic varoReportFileObject, List<dynamic> sourceLogs, List<BlobItem> listLoggerFiles, BlobItem varoReportMetadataBlob, string packageName, string stagePath, EmdEnum.Name emdTypeEnum, DataLoggerTypeEnum.Name dataLoggerType)
         {
             string sourceFile = null;
             EdiJob ediJob = new();
@@ -374,13 +375,13 @@ namespace lib_edi.Services.Data.Transform
             }
         }
 
-        public static async Task<EdiJobVaroMetadataMountTime> GetTimeFromEmsSyncFileName(List<CloudBlockBlob> listLoggerFiles)
+        public static async Task<EdiJobVaroMetadataMountTime> GetTimeFromEmsSyncFileName(List<BlobItem> listLoggerFiles)
         {
             EdiJobVaroMetadataMountTime timeInfo = null;
 
             if (listLoggerFiles != null)
             {
-                foreach (CloudBlockBlob logBlob in listLoggerFiles)
+                foreach (BlobItem logBlob in listLoggerFiles)
                 {
                     if (EmsService.IsThisEmsSyncDataFile(logBlob.Name))
                     {

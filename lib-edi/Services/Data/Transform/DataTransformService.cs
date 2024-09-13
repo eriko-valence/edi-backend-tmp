@@ -1,6 +1,6 @@
 ﻿using lib_edi.Services.Azure;
 using lib_edi.Services.Errors;
-using Microsoft.Azure.Storage.Blob;
+//using Microsoft.Azure.Storage.Blob;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -28,6 +28,9 @@ using System.Linq;
 using System.Xml;
 using System.Text.RegularExpressions;
 using lib_edi.Services.Loggers;
+using Azure.Storage.Blobs.Models;
+using Azure.Storage.Blobs.Specialized;
+using Azure.Storage.Blobs;
 
 namespace lib_edi.Services.CceDevice
 {
@@ -63,13 +66,13 @@ namespace lib_edi.Services.CceDevice
 		/// Validates a list provided JSON data objects against a provided JSON schema
 		/// </summary>
 		/// <param name="listOfJsonDataoValidate">A list of validated JSON objects</param>
-		/// <param name="cloudBlobContainer">A container in the Microsoft Azure Blob service</param>
+		/// <param name="BlobContainerClient">A container in the Microsoft Azure Blob service</param>
 		/// <param name="blobNameJsonSchema">Blob name of JSON schema that will be used to validate the JSON data</param>
 		/// <param name="log">Azure function logger object</param>
 		/// <returns>
 		/// A list of validated JSON data objects; Exception thrown if at least one report fails validation (R85Y) or if the json definition file failed to be retrieved from blob storage (FY84)
 		/// </returns>
-		public static async Task<List<dynamic>> ValidateJsonObjects(CloudBlobContainer cloudBlobContainer, List<dynamic> listOfJsonDataoValidate, string blobNameJsonSchema, ILogger log)
+		public static async Task<List<dynamic>> ValidateJsonObjects(BlobContainerClient BlobContainerClient, List<dynamic> listOfJsonDataoValidate, string blobNameJsonSchema, ILogger log)
 		{
 			List<dynamic> validatedJsonObjects = new();
 
@@ -78,7 +81,7 @@ namespace lib_edi.Services.CceDevice
 
 			try
 			{
-				configBlobJsonText = await AzureStorageBlobService.DownloadBlobTextAsync(cloudBlobContainer, blobNameJsonSchema);
+				configBlobJsonText = await AzureStorageBlobService.DownloadBlobTextAsync(BlobContainerClient, blobNameJsonSchema);
 				configJsonSchema = await JsonSchema.FromJsonAsync(configBlobJsonText);
 			}
 			catch (Exception e)
@@ -115,21 +118,21 @@ namespace lib_edi.Services.CceDevice
 		/// <summary>
 		/// Validates a provided JSON data object against a provided schema 
 		/// </summary>
-		/// <param name="cloudBlobContainer">A container in the Microsoft Azure Blob service</param>
+		/// <param name="BlobContainerClient">A container in the Microsoft Azure Blob service</param>
 		/// <param name="jsonDataToValidate">JSON data object to validate</param>
 		/// <param name="blobNameJsonSchema">Blob name of JSON schema that will be used to validate the JSON data</param>
 		/// <param name="log">Azure function logger object</param>
 		/// <returns>
 		/// A vlaidated JSON data object; Exception thrown if validation fails (YR42) or if the json definition file failed to be retrieved from blob storage (4VN5)
 		/// </returns>
-		public static async Task<dynamic> ValidateJsonObject(CloudBlobContainer cloudBlobContainer, dynamic jsonDataToValidate, string blobNameJsonSchema, ILogger log)
+		public static async Task<dynamic> ValidateJsonObject(BlobContainerClient BlobContainerClient, dynamic jsonDataToValidate, string blobNameJsonSchema, ILogger log)
 		{
 			// Deserialize JSON schema
 			string jsonSchemaString;
 			JsonSchema jsonSchemaObject;
 			try
 			{
-				jsonSchemaString = await AzureStorageBlobService.DownloadBlobTextAsync(cloudBlobContainer, blobNameJsonSchema);
+				jsonSchemaString = await AzureStorageBlobService.DownloadBlobTextAsync(BlobContainerClient, blobNameJsonSchema);
 				jsonSchemaObject = await JsonSchema.FromJsonAsync(jsonSchemaString);
 			}
 			catch (Exception e)
@@ -349,14 +352,14 @@ namespace lib_edi.Services.CceDevice
 		/// <summary>
 		/// Writes denormalized USBDG log file csv records to Azure blob storage
 		/// </summary>
-		/// <param name="cloudBlobContainer">A container in the Microsoft Azure Blob service</param>
+		/// <param name="BlobContainerClient">A container in the Microsoft Azure Blob service</param>
 		/// <param name="requestBody">EMS log transformation http reqest object</param>
 		/// <param name="usbdgRecords">A list of denormalized USBDG log records</param>
 		/// <param name="log">Azure function logger object</param>
 		/// <returns>
 		/// Blob name of USBDG csv formatted log file; Exception (Q25U)
 		/// </returns>
-		public static async Task<string> WriteRecordsToCsvBlob(CloudBlobContainer cloudBlobContainer, TransformHttpRequestMessageBodyDto requestBody, List<EdiSinkRecord> usbdgRecords, string loggerTypeName, ILogger log)
+		public static async Task<string> WriteRecordsToCsvBlob(BlobContainerClient BlobContainerClient, TransformHttpRequestMessageBodyDto requestBody, List<EdiSinkRecord> usbdgRecords, string loggerTypeName, ILogger log)
         {
             string blobName = "";
             string loggerType = loggerTypeName.ToString().ToLower();
@@ -413,8 +416,9 @@ namespace lib_edi.Services.CceDevice
                             {
                                 return blobName;
                             }
-                            CloudBlockBlob outBlob = cloudBlobContainer.GetBlockBlobReference(blobName);
-                            using var writer = await outBlob.OpenWriteAsync();
+                            BlobClient outBlob = BlobContainerClient.GetBlobClient(blobName);
+                            // using var writer = await outBlob.OpenWriteAsync();
+                            using var writer = await outBlob.OpenWriteAsync(true);
                             using var streamWriter = new StreamWriter(writer);
                             using var csvWriter = new CsvWriter(streamWriter, CultureInfo.InvariantCulture);
                             var serializedParent = JsonConvert.SerializeObject(usbdgRecords);
@@ -472,7 +476,7 @@ namespace lib_edi.Services.CceDevice
                     }
                     catch (Exception e)
                     {
-                        string customErrorMessage = await EdiErrorsService.BuildExceptionMessageString(e, "Q25U", EdiErrorsService.BuildErrorVariableArrayList(blobName, cloudBlobContainer.Name));
+                        string customErrorMessage = await EdiErrorsService.BuildExceptionMessageString(e, "Q25U", EdiErrorsService.BuildErrorVariableArrayList(blobName, BlobContainerClient.Name));
                         throw new Exception(customErrorMessage);
                     }
                 }
@@ -643,15 +647,15 @@ namespace lib_edi.Services.CceDevice
         /// <returns>
         /// List containing only Indigo V2 log blobs; Exception (L91T)
         /// </returns>
-        public static async Task<List<CloudBlockBlob>> GetLogBlobs(IEnumerable<IListBlobItem> logDirectoryBlobs, string blobPath)
+        public static async Task<List<BlobItem>> GetLogBlobs(IEnumerable<BlobItem> logDirectoryBlobs, string blobPath)
         {
-            List<CloudBlockBlob> listDataBlobs = new();
-            List<CloudBlockBlob> listSyncBlobs = new();
-            List<CloudBlockBlob> listCurrentDataBlobs = new();
+            List<BlobItem> listDataBlobs = new();
+            List<BlobItem> listSyncBlobs = new();
+            List<BlobItem> listCurrentDataBlobs = new();
 
             if (logDirectoryBlobs != null)
             {
-                foreach (CloudBlockBlob logBlob in logDirectoryBlobs)
+                foreach (BlobItem logBlob in logDirectoryBlobs)
                 {
                     // NHGH-2812 (2023.02.16) - we only want EMS logger (data, current data, and sync) files
                     if (EmsService.IsThisEmsDataFile(logBlob.Name))
