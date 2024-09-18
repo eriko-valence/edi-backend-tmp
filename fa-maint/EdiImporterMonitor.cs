@@ -3,21 +3,19 @@ using lib_edi.Models.Edi.Data.Import;
 using lib_edi.Services.Azure;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Host;
 using Microsoft.Extensions.Logging;
 using lib_edi.Models.Edi.Job;
 using lib_edi.Services.Edi;
 using lib_edi.Models.Enums.Edi.Functions;
 using lib_edi.Models.Enums.Edi.Data.Import;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Azure.WebJobs.Extensions.Http;
+using Microsoft.Azure.Functions.Worker;
 
 namespace fa_maint
 {
     public class EdiImporterMonitor
     {
-        [FunctionName("edi-maint-importer-monitor")]
+        [Function("edi-maint-importer-monitor")]
         public async Task RunAsync([TimerTrigger("%CRON_SCHEDULE_EDI_IMPORTER_MONITOR%"
             
             /*

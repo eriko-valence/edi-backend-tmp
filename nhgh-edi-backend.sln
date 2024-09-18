@@ -38,6 +38,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "fa-maint", "fa-maint\fa-mai
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Varo", "Varo", "{D7A1F5FE-12F5-4FD7-8391-3CDA91C2B357}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "fa-ccdx-provider-v2", "fa-ccdx-provider-v2\fa-ccdx-provider-v2.csproj", "{00C9E1BD-CD6E-42BC-AF5B-1CBA24A0B91A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -90,6 +92,10 @@ Global
 		{228C2535-B095-4FCD-BF61-7EE819D3F22F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{228C2535-B095-4FCD-BF61-7EE819D3F22F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{228C2535-B095-4FCD-BF61-7EE819D3F22F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{00C9E1BD-CD6E-42BC-AF5B-1CBA24A0B91A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{00C9E1BD-CD6E-42BC-AF5B-1CBA24A0B91A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{00C9E1BD-CD6E-42BC-AF5B-1CBA24A0B91A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{00C9E1BD-CD6E-42BC-AF5B-1CBA24A0B91A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

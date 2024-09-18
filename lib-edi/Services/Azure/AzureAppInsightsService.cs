@@ -100,7 +100,7 @@ namespace lib_edi.Services.Azure
 		/// <param name="pipelineStageName">A pipeline stage log entry name</param>
 		/// <param name="customProps">A dictionary of properties to include with the telemetry</param>
 		/// <param name="log">A Microsoft extensions logger object</param>
-		public static async void LogEntry(PipelineStageEnum.Name pipelineStageName, Dictionary<string, string> customProps, ILogger log)
+		public static async Task LogEntry(PipelineStageEnum.Name pipelineStageName, Dictionary<string, string> customProps, ILogger log)
 		{
 			try
 			{

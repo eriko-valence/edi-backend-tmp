@@ -6,13 +6,12 @@ using lib_edi.Services.Data.Transform;
 using lib_edi.Services.Ems;
 using lib_edi.Services.Errors;
 using lib_edi.Services.Loggers;
-using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Extensions.Kafka;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using Microsoft.Azure.Functions.Worker;
 
 namespace fa_ccdx_consumer
 {
@@ -68,7 +67,7 @@ namespace fa_ccdx_consumer
 		/// Kafka topic called the offsets topic. A message is considered consumed only when its offset is committed to the offsets 
 		/// topic. 
 		/// </remarks>
-		[FunctionName("ccdx-consumer-varo")]
+		[Function("ccdx-consumer-varo")]
         public static async Task Run(
             [KafkaTrigger(Broker,
                           Topic,

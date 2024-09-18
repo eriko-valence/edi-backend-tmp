@@ -1,6 +1,5 @@
 using System;
 using System.Threading.Tasks;
-using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
 using lib_edi.Services.Azure;
@@ -14,12 +13,13 @@ using lib_edi.Services.Edi;
 using lib_edi.Models.Edi.Job;
 using lib_edi.Models.Edi.Data.Import;
 using lib_edi.Models.Enums.Edi.Data.Import;
+using Microsoft.Azure.Functions.Worker;
 
 namespace fa_maint
 {
     public static class EdiEmailReport
     {
-        [FunctionName("edi-maint-email-report")]
+        [Function("edi-maint-email-report")]
         public static async Task Run([TimerTrigger("%CRON_SCHEDULE_EDI_EMAIL_REPORT%"
             
             /*

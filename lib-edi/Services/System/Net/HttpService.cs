@@ -2,7 +2,7 @@
 using lib_edi.Models.Dto.Http;
 using lib_edi.Services.Errors;
 using lib_edi.Services.System.IO;
-using Microsoft.AspNetCore.Http; // Microsoft.NET.Sdk.Functions
+//using Microsoft.AspNetCore.Http; // Microsoft.NET.Sdk.Functions
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -13,6 +13,8 @@ using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+//using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http;
 
 namespace lib_edi.Services.System.Net
 {

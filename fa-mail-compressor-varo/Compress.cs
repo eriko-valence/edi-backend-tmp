@@ -2,8 +2,6 @@ using System;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
@@ -18,6 +16,7 @@ using lib_edi.Models.Enums.Azure.AppInsights;
 using lib_edi.Services.Ccdx;
 using System.Net.Mail;
 using lib_edi.Helpers;
+using Microsoft.Azure.Functions.Worker;
 
 namespace fa_mail_compressor_varo
 {
@@ -27,8 +26,8 @@ namespace fa_mail_compressor_varo
         const string logPrefix2 = "  - [varo-mail-compressor]:";
         const string logPrefix3 = "    - [varo-mail-compressor]:";
 
-        [FunctionName("compress-report")]
-        public static async Task<HttpResponseMessage> Run(
+        [Function("compress-report")]
+        public static async Task<IActionResult> Run(
             [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequest req,
             ILogger log)
         {

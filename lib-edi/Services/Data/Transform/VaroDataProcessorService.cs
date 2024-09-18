@@ -6,7 +6,7 @@ using lib_edi.Services.CceDevice;
 using lib_edi.Services.Ems;
 using lib_edi.Services.Errors;
 using lib_edi.Services.Loggers;
-using Microsoft.AspNetCore.Mvc;
+//using Microsoft.AspNetCore.Mvc;
 //using Microsoft.Azure.Storage.Blob;
 using Azure.Storage.Blobs.Models;
 using Microsoft.Extensions.Logging;
@@ -347,7 +347,7 @@ namespace lib_edi.Services.Data.Transform
             }
         }
 
-        public static async void LogEmsPackageInformation_OLD(ILogger log, List<EmsEventRecord> records, EdiJob ediJob)
+        public static async Task LogEmsPackageInformation_OLD(ILogger log, List<EmsEventRecord> records, EdiJob ediJob)
         {
             int first = (records.Count - 1);
             int last = (0);

@@ -2,8 +2,6 @@ using System;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
@@ -30,17 +28,19 @@ using lib_edi.Services.Data.Transform;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using Azure.Storage.Blobs.Specialized;
+using Microsoft.Azure.Functions.Worker;
+using Microsoft.Azure.Functions.Worker.Extensions.Storage;
 
 namespace fa_adf_transform_varo
 {
     public static class Transform
     {
-        [FunctionName("transform")]
+        [Function("transform")]
         public static async Task<IActionResult> Run(
             [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequest req,
-            [Blob("%AZURE_STORAGE_BLOB_CONTAINER_NAME_INPUT_UNCOMPRESSED%", FileAccess.ReadWrite, Connection = "AZURE_STORAGE_INPUT_CONNECTION_STRING")] BlobContainerClient inputContainer,
-            [Blob("%AZURE_STORAGE_BLOB_CONTAINER_NAME_OUTPUT_PROCESSED%", FileAccess.ReadWrite, Connection = "AZURE_STORAGE_INPUT_CONNECTION_STRING")] BlobContainerClient ouputContainer,
-            [Blob("%AZURE_STORAGE_BLOB_CONTAINER_NAME_EMS_CONFIG%", FileAccess.ReadWrite, Connection = "AZURE_STORAGE_INPUT_CONNECTION_STRING")] BlobContainerClient emsConfgContainer,
+            [BlobInput("%AZURE_STORAGE_BLOB_CONTAINER_NAME_INPUT_UNCOMPRESSED%", Connection = "AZURE_STORAGE_INPUT_CONNECTION_STRING")] BlobContainerClient inputContainer,
+            [BlobInput("%AZURE_STORAGE_BLOB_CONTAINER_NAME_OUTPUT_PROCESSED%", Connection = "AZURE_STORAGE_INPUT_CONNECTION_STRING")] BlobContainerClient ouputContainer,
+            [BlobInput("%AZURE_STORAGE_BLOB_CONTAINER_NAME_EMS_CONFIG%", Connection = "AZURE_STORAGE_INPUT_CONNECTION_STRING")] BlobContainerClient emsConfgContainer,
             ILogger log)
         {
             //string loggerType = DataLoggerTypeEnum.Name.UNKNOWN.ToString();
