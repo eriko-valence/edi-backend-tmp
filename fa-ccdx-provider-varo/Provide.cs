@@ -1,7 +1,6 @@
 using System;
 using System.IO;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
@@ -12,7 +11,6 @@ using lib_edi.Services.System.Net;
 using lib_edi.Services.Ccdx;
 using lib_edi.Services.Azure;
 using lib_edi.Services.Errors;
-using lib_edi.Services.System.IO;
 using lib_edi.Models.Enums.Azure.AppInsights;
 using Microsoft.Azure.Functions.Worker;
 

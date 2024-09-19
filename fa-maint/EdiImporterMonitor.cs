@@ -8,7 +8,6 @@ using lib_edi.Models.Edi.Job;
 using lib_edi.Services.Edi;
 using lib_edi.Models.Enums.Edi.Functions;
 using lib_edi.Models.Enums.Edi.Data.Import;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Azure.Functions.Worker;
 
 namespace fa_maint

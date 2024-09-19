@@ -2,17 +2,14 @@ using System;
 using System.IO;
 using System.Net;
 using System.Net.Http;
-using lib_edi.Models.Dto.Ccdx;
 using lib_edi.Services.Azure;
 using lib_edi.Services.Ccdx;
 using lib_edi.Services.System.IO;
 using lib_edi.Services.System.Net;
 using lib_edi.Services.Errors;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 using System.Threading.Tasks;
 using lib_edi.Services.Ems;
-using System.Security.Cryptography.X509Certificates;
 using lib_edi.Models.Enums.Azure.AppInsights;
 using Microsoft.Azure.Functions.Worker;
 
