@@ -27,7 +27,7 @@ namespace fa_mail_compressor_varo
         const string logPrefix3 = "    - [varo-mail-compressor]:";
 
         [Function("compress-report")]
-        public static async Task<IActionResult> Run(
+        public static async Task<HttpResponseMessage> Run(
             [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequest req,
             ILogger log)
         {
