@@ -21,7 +21,7 @@ namespace fa_ccdx_provider_varo
     public static class Provide
     {
         [Function("publish-report-varo")]
-        public static async Task<IActionResult> Run(
+        public static async Task<HttpResponseMessage> Run(
             [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequest req,
             ILogger log)
         {
