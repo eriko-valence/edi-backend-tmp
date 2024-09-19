@@ -35,7 +35,7 @@ namespace lib_edi.Services.Ccdx
 		/// <returns>
 		/// HTTP request message
 		/// </returns>
-		public static async Task<HttpRequest> BuildCcdxHttpMultipartFormDataRequestMessage(HttpMethod httpMethod, string httpRequestUriString, MultipartFormDataContent multipartFormDataContent, string blobReportName, ILogger log)
+		public static async Task<HttpRequestMessage> BuildCcdxHttpMultipartFormDataRequestMessage(HttpMethod httpMethod, string httpRequestUriString, MultipartFormDataContent multipartFormDataContent, string blobReportName, ILogger log)
 		{
 			try
 			{
@@ -792,7 +792,7 @@ namespace lib_edi.Services.Ccdx
         /// <returns>
         /// HTTP request message
         /// </returns>
-        public static HttpRequest BuildCcdxHttpMultipartFormDataRequestMessage(MultipartFormDataContent multipartFormDataContent, string packageName, ILogger log)
+        public static HttpRequestMessage BuildCcdxHttpMultipartFormDataRequestMessage(MultipartFormDataContent multipartFormDataContent, string packageName, ILogger log)
         {
             try
             {
