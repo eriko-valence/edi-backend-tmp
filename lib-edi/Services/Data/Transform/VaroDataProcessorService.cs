@@ -347,7 +347,7 @@ namespace lib_edi.Services.Data.Transform
             }
         }
 
-        public static async void LogEmsPackageInformation_OLD(ILogger log, List<EmsEventRecord> records, EdiJob ediJob)
+        public static async Task LogEmsPackageInformation_OLD(ILogger log, List<EmsEventRecord> records, EdiJob ediJob)
         {
             int first = (records.Count - 1);
             int last = (0);
