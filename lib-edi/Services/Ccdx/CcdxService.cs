@@ -13,6 +13,7 @@ using System.IO;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 
 namespace lib_edi.Services.Ccdx
 {
@@ -34,7 +35,7 @@ namespace lib_edi.Services.Ccdx
 		/// <returns>
 		/// HTTP request message
 		/// </returns>
-		public static async Task<HttpRequestMessage> BuildCcdxHttpMultipartFormDataRequestMessage(HttpMethod httpMethod, string httpRequestUriString, MultipartFormDataContent multipartFormDataContent, string blobReportName, ILogger log)
+		public static async Task<HttpRequest> BuildCcdxHttpMultipartFormDataRequestMessage(HttpMethod httpMethod, string httpRequestUriString, MultipartFormDataContent multipartFormDataContent, string blobReportName, ILogger log)
 		{
 			try
 			{
@@ -791,7 +792,7 @@ namespace lib_edi.Services.Ccdx
         /// <returns>
         /// HTTP request message
         /// </returns>
-        public static HttpRequestMessage BuildCcdxHttpMultipartFormDataRequestMessage(MultipartFormDataContent multipartFormDataContent, string packageName, ILogger log)
+        public static HttpRequest BuildCcdxHttpMultipartFormDataRequestMessage(MultipartFormDataContent multipartFormDataContent, string packageName, ILogger log)
         {
             try
             {

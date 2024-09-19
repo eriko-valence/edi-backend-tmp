@@ -8,14 +8,13 @@ using lib_edi.Services.Ccdx;
 using lib_edi.Services.System.IO;
 using lib_edi.Services.System.Net;
 using lib_edi.Services.Errors;
-using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Host;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using System.Threading.Tasks;
 using lib_edi.Services.Ems;
 using System.Security.Cryptography.X509Certificates;
 using lib_edi.Models.Enums.Azure.AppInsights;
+using Microsoft.Azure.Functions.Worker;
 
 namespace fa_ccdx_provider
 {
@@ -50,7 +49,7 @@ namespace fa_ccdx_provider
         /// - Telemetry files are uploaded to a CCDX multipart/form-data http endpoint as a byte array. 
         /// - Headers are used to route the report to the CCDX data consumer specified by the Data Owner. 
         /// - Only compressed USBDG telemetry data are currently supported.
-        [FunctionName("ccdx-provider")]
+        [Function("ccdx-provider")]
         public static async Task Run(
             [BlobTrigger("%AZURE_STORAGE_BLOB_CONTAINER_NAME_INPUT%/{ccBlobInputName}", Connection = "AZURE_STORAGE_INPUT_CONNECTION_STRING")]
             Stream ccBlobInput,

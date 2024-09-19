@@ -13,16 +13,14 @@ using lib_edi.Models.Enums.Edi.Functions;
 using lib_edi.Services.Azure;
 using lib_edi.Services.Edi;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Extensions.Http;
-using Microsoft.Azure.WebJobs.Host;
 using Microsoft.Extensions.Logging;
+using Microsoft.Azure.Functions.Worker;
 
 namespace fa_maint
 {
     public class EdiImporter
     {
-        [FunctionName("edi-maint-importer")]
+        [Function("edi-maint-importer")]
         public static async Task Run([TimerTrigger("%CRON_SCHEDULE_EDI_IMPORTER%"
          
             /*

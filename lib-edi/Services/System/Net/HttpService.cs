@@ -79,7 +79,7 @@ namespace lib_edi.Services.System.Net
 		/// <returns>
 		/// Header value as string
 		/// </returns>
-		public static string GetHeaderStringValue(HttpRequestMessage hrm, string headerName)
+		public static string GetHeaderStringValue(HttpRequest hrm, string headerName)
 		{
 			IEnumerable<string> ceid;
 			if (hrm.Headers.TryGetValues(headerName, out ceid))
@@ -132,7 +132,7 @@ namespace lib_edi.Services.System.Net
 		/// <returns>
 		/// Status code of HTTP reseponse
 		/// </returns>
-		public static async Task<HttpStatusCode> SendHttpRequestMessage(HttpRequestMessage requestMessage)
+		public static async Task<HttpStatusCode> SendHttpRequestMessage(HttpRequest requestMessage)
 		{
 			try
 			{

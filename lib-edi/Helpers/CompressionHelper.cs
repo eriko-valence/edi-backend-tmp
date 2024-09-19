@@ -65,8 +65,6 @@ namespace lib_edi.Helpers
                 }
                 tarOutputStream.Close();
             }
-
-            outputStream.Flush();
             outputStream.Position = 0;
 
             return outputStream;

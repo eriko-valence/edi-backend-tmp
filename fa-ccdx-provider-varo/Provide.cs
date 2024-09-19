@@ -2,8 +2,6 @@ using System;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
@@ -16,13 +14,14 @@ using lib_edi.Services.Azure;
 using lib_edi.Services.Errors;
 using lib_edi.Services.System.IO;
 using lib_edi.Models.Enums.Azure.AppInsights;
+using Microsoft.Azure.Functions.Worker;
 
 namespace fa_ccdx_provider_varo
 {
     public static class Provide
     {
-        [FunctionName("publish-report-varo")]
-        public static async Task<HttpResponseMessage> Run(
+        [Function("publish-report-varo")]
+        public static async Task<IActionResult> Run(
             [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequest req,
             ILogger log)
         {
