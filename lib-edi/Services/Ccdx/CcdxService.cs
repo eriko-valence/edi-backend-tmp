@@ -13,7 +13,7 @@ using System.IO;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
+using Microsoft.Azure.Functions.Worker.Extensions.Http.AspNetCore;
 
 namespace lib_edi.Services.Ccdx
 {
