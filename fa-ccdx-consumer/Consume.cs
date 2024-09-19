@@ -1,11 +1,9 @@
-using lib_edi.Models.Azure.AppInsights;
-using lib_edi.Models.Enums.Azure.AppInsights;
-using lib_edi.Services.Azure;
-using lib_edi.Services.Ccdx;
-using lib_edi.Services.Data.Transform;
-using lib_edi.Services.Ems;
-using lib_edi.Services.Errors;
-using lib_edi.Services.Loggers;
+using lib_edi_in_process.Models.Enums.Azure.AppInsights;
+using lib_edi_in_process.Services.Ccdx;
+using lib_edi_in_process.Services.Data.Transform;
+using lib_edi_in_process.Services.Azure;
+using lib_edi_in_process.Services.Errors;
+using lib_edi_in_process.Services.Ems;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Kafka;
 using Microsoft.Extensions.Logging;

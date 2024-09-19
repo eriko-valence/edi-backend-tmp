@@ -31,12 +31,17 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "fa-mail-compressor-varo", "fa-mail-compressor-varo\fa-mail-compressor-varo.csproj", "{7A3F2376-9B78-478C-9953-92E9F06BD739}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "fa-ccdx-consumer-varo", "fa-ccdx-consumer-varo\fa-ccdx-consumer-varo.csproj", "{11A92166-8691-40EA-A374-413EB0049D8E}"
+	ProjectSection(ProjectDependencies) = postProject
+		{7AB8BBDF-FCF2-404E-AEA3-E8890D902CFF} = {7AB8BBDF-FCF2-404E-AEA3-E8890D902CFF}
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "fa-adf-transform-varo", "fa-adf-transform-varo\fa-adf-transform-varo.csproj", "{536FFE09-2BAD-4709-A284-EC7FE4F7ABF8}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "fa-maint", "fa-maint\fa-maint.csproj", "{228C2535-B095-4FCD-BF61-7EE819D3F22F}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Varo", "Varo", "{D7A1F5FE-12F5-4FD7-8391-3CDA91C2B357}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "lib-edi-in-process", "lib-edi-in-process\lib-edi-in-process.csproj", "{7AB8BBDF-FCF2-404E-AEA3-E8890D902CFF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -90,6 +95,10 @@ Global
 		{228C2535-B095-4FCD-BF61-7EE819D3F22F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{228C2535-B095-4FCD-BF61-7EE819D3F22F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{228C2535-B095-4FCD-BF61-7EE819D3F22F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7AB8BBDF-FCF2-404E-AEA3-E8890D902CFF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7AB8BBDF-FCF2-404E-AEA3-E8890D902CFF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7AB8BBDF-FCF2-404E-AEA3-E8890D902CFF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7AB8BBDF-FCF2-404E-AEA3-E8890D902CFF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -107,6 +116,7 @@ Global
 		{536FFE09-2BAD-4709-A284-EC7FE4F7ABF8} = {D7A1F5FE-12F5-4FD7-8391-3CDA91C2B357}
 		{228C2535-B095-4FCD-BF61-7EE819D3F22F} = {9349330D-2771-4357-9C93-C161C31DC480}
 		{D7A1F5FE-12F5-4FD7-8391-3CDA91C2B357} = {9349330D-2771-4357-9C93-C161C31DC480}
+		{7AB8BBDF-FCF2-404E-AEA3-E8890D902CFF} = {64CD169C-2DC2-4467-A6D7-6C485F4B5F8F}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {48FE592C-9504-419F-8FC2-6D997B1FCAAA}

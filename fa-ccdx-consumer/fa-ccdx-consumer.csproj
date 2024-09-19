@@ -9,7 +9,7 @@
 	<PackageReference Include="Microsoft.Azure.WebJobs.Extensions.Kafka" Version="4.0.0" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\lib-edi\lib-edi.csproj" />
+    <ProjectReference Include="..\lib-edi-in-process\lib-edi-in-process.csproj" />
   </ItemGroup>
   <ItemGroup>
     <None Update="host.json">
