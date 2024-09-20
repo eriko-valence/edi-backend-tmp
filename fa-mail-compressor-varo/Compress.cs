@@ -36,7 +36,7 @@ namespace fa_mail_compressor_varo
         const string logPrefix3 = "    - [varo-mail-compressor]:";
 
         [Function("compress-report")]
-        public async Task<HttpResponseMessage> Run(
+        public async Task<IActionResult> Run(
         [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequest req)
         {
 
@@ -114,18 +114,22 @@ namespace fa_mail_compressor_varo
                     var returnObject = new { name = outputPackageName, content = compressedOutputBase64String };
 
                     _logger.LogInformation($"{logPrefix1} send base64 encoded tarball in http response message");
+                    /*
                     HttpResponseMessage httpResponseMessage;
                     httpResponseMessage = new HttpResponseMessage()
                     {
                         StatusCode = System.Net.HttpStatusCode.OK,
                         Content = new StringContent(JsonConvert.SerializeObject(returnObject, Formatting.Indented), Encoding.UTF8, "application/json")
                     };
+                    */
 
                     _logger.LogInformation($"{logPrefix1} done");
 
 					CcdxService.LogMailCompressorSuccessEventToAppInsights(outputPackageName, PipelineStageEnum.Name.MAIL_COMPRESSOR_VARO, _logger);
 
-					return httpResponseMessage;
+                    return new OkObjectResult(JsonConvert.SerializeObject(returnObject, Formatting.Indented));
+
+                    //return httpResponseMessage;
                 } else
                 {
                     _logger.LogError($"{outputPackageName} unable to generate report package name from email attachments");
@@ -139,7 +143,8 @@ namespace fa_mail_compressor_varo
                     {
                         StatusCode = System.Net.HttpStatusCode.InternalServerError
                     };
-                    return httpResponseMessage;
+                    return new StatusCodeResult(StatusCodes.Status500InternalServerError);
+                    //return httpResponseMessage;
                 }
             }
             catch (Exception e)
@@ -157,7 +162,8 @@ namespace fa_mail_compressor_varo
                 {
                     StatusCode = System.Net.HttpStatusCode.InternalServerError
                 };
-                return httpResponseMessage;
+                //return httpResponseMessage;
+                return new StatusCodeResult(StatusCodes.Status500InternalServerError);
             }
 
         }
