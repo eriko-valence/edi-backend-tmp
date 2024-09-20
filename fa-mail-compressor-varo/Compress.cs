@@ -17,26 +17,34 @@ using lib_edi.Services.Ccdx;
 using System.Net.Mail;
 using lib_edi.Helpers;
 using Microsoft.Azure.Functions.Worker;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace fa_mail_compressor_varo
 {
-    public static class Compress
+
+    public class Compress
     {
-		const string logPrefix1 = "- [varo-mail-compressor]:";
+        private readonly ILogger<Compress> _logger;
+
+        public Compress(ILogger<Compress> logger)
+        {
+            _logger = logger;
+        }
+
+        const string logPrefix1 = "- [varo-mail-compressor]:";
         const string logPrefix2 = "  - [varo-mail-compressor]:";
         const string logPrefix3 = "    - [varo-mail-compressor]:";
 
         [Function("compress-report")]
-        public static async Task<HttpResponseMessage> Run(
-            [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequest req,
-            ILogger log)
+        public async Task<HttpResponseMessage> Run(
+        [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequest req)
         {
 
             string outputPackageName = null;
 
 			try
 			{
-                log.LogInformation($"{logPrefix1} http trigger function received a compression request.");
+                _logger.LogInformation($"{logPrefix1} http trigger function received a compression request.");
 
                 // NHGH-3474 20240912 1126 Use a dictionary to store the varo report data to compress
                 Dictionary<string, byte[]> varoReportDataToCompress = new();
@@ -52,13 +60,13 @@ namespace fa_mail_compressor_varo
                 // NHGH-2815 2023-03-01 1033 Generate the Varo package name from the Varo report file name
                 outputPackageName = VaroDataProcessorService.GeneratePackageNameFromVaroReportFileName(attachments);
 
-				log.LogInformation($"{logPrefix1} generate output tarball name: {outputPackageName}");
+                _logger.LogInformation($"{logPrefix1} generate output tarball name: {outputPackageName}");
 
-				CcdxService.LogMailCompressorStartedEventToAppInsights(outputPackageName, PipelineStageEnum.Name.MAIL_COMPRESSOR_VARO, log);
+				CcdxService.LogMailCompressorStartedEventToAppInsights(outputPackageName, PipelineStageEnum.Name.MAIL_COMPRESSOR_VARO, _logger);
 
 				if (outputPackageName != null)
                 {
-                    log.LogInformation($"{logPrefix1} locate varo report data to add to tarball");
+                    _logger.LogInformation($"{logPrefix1} locate varo report data to add to tarball");
                     if (attachments != null)
                     {
                         int i = 0;
@@ -74,7 +82,7 @@ namespace fa_mail_compressor_varo
                                 {
                                     if (item.Name != null && item.ContentBytes != null)
                                     {
-                                        log.LogInformation($"{logPrefix2} uncompressed varo file found: {item.Name}");
+                                        _logger.LogInformation($"{logPrefix2} uncompressed varo file found: {item.Name}");
                                         varoReportDataToCompress.Add(elementName, (byte[])item.ContentBytes);
                                     }
                                 }
@@ -84,11 +92,11 @@ namespace fa_mail_compressor_varo
                                 {
                                     if (item.ContentBytes != null)
                                     {
-                                        log.LogInformation($"{logPrefix2} compressed varo file found: {item.Name}");
+                                        _logger.LogInformation($"{logPrefix2} compressed varo file found: {item.Name}");
                                         Dictionary<string, byte[]> extractedVaroDataBytes = CompressionHelper.ExtractZipArchive((byte[])item.ContentBytes);
                                         foreach (KeyValuePair<string, byte[]> extractedItem in extractedVaroDataBytes)
                                         {
-                                            log.LogInformation($"{logPrefix3} archive entry: {item.Name}");
+                                            _logger.LogInformation($"{logPrefix3} archive entry: {item.Name}");
                                             varoReportDataToCompress.Add(extractedItem.Key, extractedItem.Value);
                                         }
                                     }
@@ -98,14 +106,14 @@ namespace fa_mail_compressor_varo
                         }
                     }
 
-                    log.LogInformation($"{logPrefix1} add varo report data to tarball");
+                    _logger.LogInformation($"{logPrefix1} add varo report data to tarball");
                     using MemoryStream outputStream = CompressionHelper.BuildTarball(varoReportDataToCompress);
-                    
-                    log.LogInformation($"{logPrefix1} base64 encode tarball stream");
+
+                    _logger.LogInformation($"{logPrefix1} base64 encode tarball stream");
                     string compressedOutputBase64String = Convert.ToBase64String(outputStream.ToArray());
                     var returnObject = new { name = outputPackageName, content = compressedOutputBase64String };
 
-                    log.LogInformation($"{logPrefix1} send base64 encoded tarball in http response message");
+                    _logger.LogInformation($"{logPrefix1} send base64 encoded tarball in http response message");
                     HttpResponseMessage httpResponseMessage;
                     httpResponseMessage = new HttpResponseMessage()
                     {
@@ -113,19 +121,19 @@ namespace fa_mail_compressor_varo
                         Content = new StringContent(JsonConvert.SerializeObject(returnObject, Formatting.Indented), Encoding.UTF8, "application/json")
                     };
 
-                    log.LogInformation($"{logPrefix1} done");
+                    _logger.LogInformation($"{logPrefix1} done");
 
-					CcdxService.LogMailCompressorSuccessEventToAppInsights(outputPackageName, PipelineStageEnum.Name.MAIL_COMPRESSOR_VARO, log);
+					CcdxService.LogMailCompressorSuccessEventToAppInsights(outputPackageName, PipelineStageEnum.Name.MAIL_COMPRESSOR_VARO, _logger);
 
 					return httpResponseMessage;
                 } else
                 {
-					log.LogError($"{outputPackageName} unable to generate report package name from email attachments");
-					log.LogError($"{logPrefix1} unable to build a Varo package file name");
+                    _logger.LogError($"{outputPackageName} unable to generate report package name from email attachments");
+                    _logger.LogError($"{logPrefix1} unable to build a Varo package file name");
 
-					log.LogError($"{logPrefix1} Incoming telemetry file {outputPackageName} is not from a supported data logger");
-					log.LogInformation($"{logPrefix1} Track ccdx provider unsupported logger event (app insights)");
-					CcdxService.LogMailCompressorUnknownReportPackageToAppInsights(outputPackageName, PipelineStageEnum.Name.MAIL_COMPRESSOR_VARO, log);
+                    _logger.LogError($"{logPrefix1} Incoming telemetry file {outputPackageName} is not from a supported data logger");
+                    _logger.LogInformation($"{logPrefix1} Track ccdx provider unsupported logger event (app insights)");
+					CcdxService.LogMailCompressorUnknownReportPackageToAppInsights(outputPackageName, PipelineStageEnum.Name.MAIL_COMPRESSOR_VARO, _logger);
 
 					HttpResponseMessage httpResponseMessage = new HttpResponseMessage()
                     {
@@ -137,13 +145,13 @@ namespace fa_mail_compressor_varo
             catch (Exception e)
             {
 				string errorCode = "THLB";
-				log.LogError($"{logPrefix1} something went wrong while compressing the Varo package file name");
-                log.LogError($"{logPrefix1} exception  : " + e.Message);
-				log.LogError($"{logPrefix1} error code : " + errorCode);
+                _logger.LogError($"{logPrefix1} something went wrong while compressing the Varo package file name");
+                _logger.LogError($"{logPrefix1} exception  : " + e.Message);
+                _logger.LogError($"{logPrefix1} error code : " + errorCode);
 
-				log.LogError($"{outputPackageName} An exception was thrown compressing and packaging these email attachments: {e.Message} ({errorCode})");
+                _logger.LogError($"{outputPackageName} An exception was thrown compressing and packaging these email attachments: {e.Message} ({errorCode})");
 
-				CcdxService.LogMailCompressorErrorEventToAppInsights(outputPackageName, PipelineStageEnum.Name.MAIL_COMPRESSOR_VARO, log, e, errorCode);
+				await CcdxService.LogMailCompressorErrorEventToAppInsights(outputPackageName, PipelineStageEnum.Name.MAIL_COMPRESSOR_VARO, _logger, e, errorCode);
 
 				HttpResponseMessage httpResponseMessage = new HttpResponseMessage()
                 {
