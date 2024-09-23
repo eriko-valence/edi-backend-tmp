@@ -5,6 +5,7 @@
     <RootNamespace>fa_maint</RootNamespace>
     <OutputType>Exe</OutputType>
     <ImplicitUsings>enabled</ImplicitUsings>
+	<ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\lib-edi\lib-edi.csproj" />
