@@ -5,6 +5,7 @@
     <RootNamespace>fa_adf_transform_indigo_v2</RootNamespace>
     <OutputType>Exe</OutputType>
     <ImplicitUsings>enabled</ImplicitUsings>
+	<ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Azure.Storage.Blobs" Version="12.21.2" />
