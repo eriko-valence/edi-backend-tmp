@@ -129,7 +129,6 @@ namespace fa_mail_compressor_varo
 
                     return new OkObjectResult(JsonConvert.SerializeObject(returnObject, Formatting.Indented));
 
-                    //return httpResponseMessage;
                 } else
                 {
                     _logger.LogError($"{outputPackageName} unable to generate report package name from email attachments");
@@ -144,7 +143,6 @@ namespace fa_mail_compressor_varo
                         StatusCode = System.Net.HttpStatusCode.InternalServerError
                     };
                     return new StatusCodeResult(StatusCodes.Status500InternalServerError);
-                    //return httpResponseMessage;
                 }
             }
             catch (Exception e)
@@ -162,7 +160,6 @@ namespace fa_mail_compressor_varo
                 {
                     StatusCode = System.Net.HttpStatusCode.InternalServerError
                 };
-                //return httpResponseMessage;
                 return new StatusCodeResult(StatusCodes.Status500InternalServerError);
             }
 
