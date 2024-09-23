@@ -17,8 +17,15 @@ namespace fa_maint
 {
     public class EdiImporter
     {
+        private readonly ILogger<EdiImporter> _logger;
+
+        public EdiImporter(ILogger<EdiImporter> logger)
+        {
+            _logger = logger;
+        }
+
         [Function("edi-maint-importer")]
-        public static async Task Run([TimerTrigger("%CRON_SCHEDULE_EDI_IMPORTER%"
+        public async Task Run([TimerTrigger("%CRON_SCHEDULE_EDI_IMPORTER%"
          
             /*
             #if DEBUG
@@ -26,11 +33,11 @@ namespace fa_maint
             #endif
             */
 
-            )] TimerInfo schedule, ILogger log)
+            )] TimerInfo schedule)
         {
             string logPrefix = "- [edi_importer->run]: ";
 
-            log.LogInformation($"{logPrefix} retrieve azure sql database connection information from azure key vault");
+            _logger.LogInformation($"{logPrefix} retrieve azure sql database connection information from azure key vault");
             
 
             // track import job results using these objects
@@ -48,63 +55,63 @@ namespace fa_maint
             try
             {
                 EdiJobInfo job = EdiService.InitializeMaintJobImportEvents(EdiFunctionsEnum.Name.EDI_MAINT_IMPORTER);
-                log.LogInformation($"{logPrefix} - job.edilaw.workspaceid .............. : {job.EdiLaw.WorkspaceId}");
-                log.LogInformation($"{logPrefix} - job.edilaw.azurebloburiccdxprovider . : {job.EdiLaw.AzureBlobUriCcdxProvider}");
-                log.LogInformation($"{logPrefix} - job.edilaw.queryhours ............... : {job.EdiLaw.QueryHours}");
-                log.LogInformation($"{logPrefix} - job.edidb.name ...................... : {job.EdiDb.Name}");
-                log.LogInformation($"{logPrefix} - job.edidb.server .................... : {job.EdiDb.Server}");
+                _logger.LogInformation($"{logPrefix} - job.edilaw.workspaceid .............. : {job.EdiLaw.WorkspaceId}");
+                _logger.LogInformation($"{logPrefix} - job.edilaw.azurebloburiccdxprovider . : {job.EdiLaw.AzureBlobUriCcdxProvider}");
+                _logger.LogInformation($"{logPrefix} - job.edilaw.queryhours ............... : {job.EdiLaw.QueryHours}");
+                _logger.LogInformation($"{logPrefix} - job.edidb.name ...................... : {job.EdiDb.Name}");
+                _logger.LogInformation($"{logPrefix} - job.edidb.server .................... : {job.EdiDb.Server}");
 
-                log.LogInformation($"{logPrefix} query log analytics workspace for edi usbdg job results (high level status)");
-                List<EdiJobStatusResult> l1a = await AzureMonitorService.QueryWorkspaceForEdiUsbdgJobsStatus(job, log);
-				log.LogInformation($"{logPrefix} query log analytics workspace for edi varo job results (high level status)");
-				List<EdiJobStatusResult> l1b = await AzureMonitorService.QueryWorkspaceForEdiVaroJobsStatus(job, log);
-				log.LogInformation($"{logPrefix} merge edi usbdg and varo job results (high level status)");
+                _logger.LogInformation($"{logPrefix} query log analytics workspace for edi usbdg job results (high level status)");
+                List<EdiJobStatusResult> l1a = await AzureMonitorService.QueryWorkspaceForEdiUsbdgJobsStatus(job, _logger);
+                _logger.LogInformation($"{logPrefix} query log analytics workspace for edi varo job results (high level status)");
+				List<EdiJobStatusResult> l1b = await AzureMonitorService.QueryWorkspaceForEdiVaroJobsStatus(job, _logger);
+                _logger.LogInformation($"{logPrefix} merge edi usbdg and varo job results (high level status)");
                 l1a.AddRange(l1b);
 
 				if (l1a.Count > 0)
                 {
-                    log.LogInformation($"{logPrefix} insert these edi (usbdg & varo) job results (high level status) into azure sql");
-                    r1 = await AzureSqlDatabaseService.InsertEdiJobStatusEvents(job, l1a, log);
+                    _logger.LogInformation($"{logPrefix} insert these edi (usbdg & varo) job results (high level status) into azure sql");
+                    r1 = await AzureSqlDatabaseService.InsertEdiJobStatusEvents(job, l1a, _logger);
                 }
                 else
                 {
-                    log.LogInformation($"{logPrefix} no edi (usbdg & varo) job status records found in the log analytics workspace");
+                    _logger.LogInformation($"{logPrefix} no edi (usbdg & varo) job status records found in the log analytics workspace");
                 }
 
-                log.LogInformation($"{logPrefix} query log analytics workspace for edi job results (azure function app events)");
+                _logger.LogInformation($"{logPrefix} query log analytics workspace for edi job results (azure function app events)");
                 List<EdiPipelineEventResult> l2 = await AzureMonitorService.QueryWorkspaceForEdiPipelineEvents(job);
                 if (l2.Count > 0)
                 {
-                    log.LogInformation($"{logPrefix} insert these edi job results (azure function app events) into azure sql");
+                    _logger.LogInformation($"{logPrefix} insert these edi job results (azure function app events) into azure sql");
                     r2 = await AzureSqlDatabaseService.InsertEdiPipelineEvents(job, l2);
                 }
                 else
                 {
-                    log.LogInformation($"{logPrefix} no edi pipeline records found in the log analytics workspace");
+                    _logger.LogInformation($"{logPrefix} no edi pipeline records found in the log analytics workspace");
                 }
 
-                log.LogInformation($"{logPrefix} query log analytics workspace for edi job results (adf pipeline)");
+                _logger.LogInformation($"{logPrefix} query log analytics workspace for edi job results (adf pipeline)");
                 List<EdiAdfActivityResult> l3 = await AzureMonitorService.QueryWorkspaceForEdiAdfActivityData(job);
                 if (l3.Count > 0)
                 {
-                    log.LogInformation($"{logPrefix} insert these edi job results (adf pipeline) into azure sql");
+                    _logger.LogInformation($"{logPrefix} insert these edi job results (adf pipeline) into azure sql");
                     r3 = await AzureSqlDatabaseService.InsertEdiAdfActivityEvents(job, l3);
                 }
                 else
                 {
-                    log.LogInformation($"{logPrefix} no edi adf pipeline activity records found in the log analytics workspace");
+                    _logger.LogInformation($"{logPrefix} no edi adf pipeline activity records found in the log analytics workspace");
                 }
 
-                log.LogInformation($"{logPrefix} query log analytics workspace for edi job results (azure function traces)");
+                _logger.LogInformation($"{logPrefix} query log analytics workspace for edi job results (azure function traces)");
                 List<AzureFunctionTraceResult> l4 = await AzureMonitorService.QueryWorkspaceForAzureFunctionTraceData(job);
                 if (l4.Count > 0)
                 {
-                    log.LogInformation($"{logPrefix} insert these edi job results (azure function traces) into azure sql");
+                    _logger.LogInformation($"{logPrefix} insert these edi job results (azure function traces) into azure sql");
                     r4 = await AzureSqlDatabaseService.InsertEdiAzureFunctionTraceRecords(job, l4);
                 }
                 else
                 {
-                    log.LogInformation($"{logPrefix} no edi adf pipeline activity records found in the log analytics workspace");
+                    _logger.LogInformation($"{logPrefix} no edi adf pipeline activity records found in the log analytics workspace");
                 }
 
 				List<EdiPipelineEventResult> warnEvents = l2.Where(x => x.PipelineEvent == PipelineEventEnum.Name.WARN.ToString()).ToList();
@@ -120,19 +127,19 @@ namespace fa_maint
                     Skipped = r1.Skipped + r2.Skipped + r3.Skipped + r4.Skipped,
                     Failed = r1.Failed + r2.Failed + r3.Failed + r4.Failed
                 };
-                log.LogInformation($"{logPrefix} overall import results");
-                log.LogInformation($"{logPrefix} - function app name ......................: {results.EdiFunctionApp}");
-                log.LogInformation($"{logPrefix} - maint job event type ...................: {results.EdiJobEventType}");
-                log.LogInformation($"{logPrefix} - maint job name .........................: {results.EdiJobName}");
-                log.LogInformation($"{logPrefix} - maint job status .......................: {results.EdiJobStatus}");
-                log.LogInformation($"{logPrefix} - total events ...........................: {results.Queried}");
-                log.LogInformation($"{logPrefix} - events loaded into db ..................: {results.Loaded}");
-                log.LogInformation($"{logPrefix} - events not loaded into db (duplicates) .: {results.Skipped}");
-                log.LogInformation($"{logPrefix} - events not loaded into db (failed) .....: {results.Failed}");
-				log.LogInformation($"{logPrefix} - total warning events ...................: {warnEvents.Count}");
+                _logger.LogInformation($"{logPrefix} overall import results");
+                _logger.LogInformation($"{logPrefix} - function app name ......................: {results.EdiFunctionApp}");
+                _logger.LogInformation($"{logPrefix} - maint job event type ...................: {results.EdiJobEventType}");
+                _logger.LogInformation($"{logPrefix} - maint job name .........................: {results.EdiJobName}");
+                _logger.LogInformation($"{logPrefix} - maint job status .......................: {results.EdiJobStatus}");
+                _logger.LogInformation($"{logPrefix} - total events ...........................: {results.Queried}");
+                _logger.LogInformation($"{logPrefix} - events loaded into db ..................: {results.Loaded}");
+                _logger.LogInformation($"{logPrefix} - events not loaded into db (duplicates) .: {results.Skipped}");
+                _logger.LogInformation($"{logPrefix} - events not loaded into db (failed) .....: {results.Failed}");
+                _logger.LogInformation($"{logPrefix} - total warning events ...................: {warnEvents.Count}");
 
 				AzureAppInsightsService.LogEvent(results);
-                log.LogInformation($"{logPrefix} done");
+                _logger.LogInformation($"{logPrefix} done");
             }
             catch (Exception ex)
             {
